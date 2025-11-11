@@ -1,5 +1,17 @@
 <?php
 
+// Include Logger class
+require_once __DIR__ . '/logger.php';
+
+// Initialize global logger instance
+function get_logger() {
+    static $logger = null;
+    if ($logger === null) {
+        $logger = new Logger('logs/activity.json');
+    }
+    return $logger;
+}
+
 function sanitize_relative_path(string $relativePath): string
 {
     $segments = preg_split('/[\\\\\/]+/', $relativePath, -1, PREG_SPLIT_NO_EMPTY);
@@ -243,6 +255,7 @@ function delete_single_path(string $root, string $relativePath): array
         );
 
         foreach ($iterator as $item) {
+            /** @var SplFileInfo $item */
             $pathName = $item->getPathname();
             if ($item->isDir()) {
                 error_log('[DEBUG] Deleting subdirectory: ' . $pathName);
@@ -296,6 +309,7 @@ function delete_paths(string $root, array $relativePaths): array
     
     $deleted = [];
     $errors = [];
+    $logger = get_logger();
 
     $uniquePaths = [];
     foreach ($relativePaths as $path) {
@@ -316,11 +330,29 @@ function delete_paths(string $root, array $relativePaths): array
 
     foreach ($uniquePaths as $sanitized) {
         try {
+            // Log delete attempt
+            $logger->log('delete', $sanitized, ['status' => 'attempt']);
+            
             error_log('[DEBUG] Attempting to delete path: ' . $sanitized);
-            $deleted[] = delete_single_path($root, $sanitized);
+            $result = delete_single_path($root, $sanitized);
+            $deleted[] = $result;
+            
+            // Log successful delete
+            $logger->log('delete', $sanitized, [
+                'status' => 'success',
+                'target_type' => $result['type']
+            ]);
+            
             error_log('[DEBUG] Successfully deleted path: ' . $sanitized);
         } catch (Throwable $e) {
             error_log('[DEBUG] Failed to delete path: ' . $sanitized . ' with error: ' . $e->getMessage());
+            
+            // Log failed delete
+            $logger->log('delete', $sanitized, [
+                'status' => 'failed',
+                'error' => $e->getMessage()
+            ]);
+            
             $errors[] = [
                 'path' => $sanitized,
                 'error' => $e->getMessage(),
@@ -578,6 +610,7 @@ function list_directory(string $root, string $relativePath = ''): array
     }
 
     foreach ($dir as $fileInfo) {
+        /** @var DirectoryIterator $fileInfo */
         if ($fileInfo->isDot()) {
             continue;
         }
@@ -606,6 +639,7 @@ function list_directory(string $root, string $relativePath = ''): array
 
 function rename_item(string $root, string $oldRelativePath, string $newRelativePath): array
 {
+    $logger = get_logger();
     $normalizedRoot = realpath($root);
     if ($normalizedRoot === false) {
         throw new RuntimeException('Root directory tidak ditemukan.');
@@ -625,6 +659,7 @@ function rename_item(string $root, string $oldRelativePath, string $newRelativeP
     }
     
     $isDir = is_dir($oldRealPath);
+    $targetType = $isDir ? 'folder' : 'file';
     
     // Validasi path baru
     $segments = explode('/', $newRelativePath);
@@ -661,30 +696,71 @@ function rename_item(string $root, string $oldRelativePath, string $newRelativeP
         throw new RuntimeException('Nama sudah digunakan.');
     }
     
-    // Lakukan rename
-    if (!@rename($oldRealPath, $newRealPath)) {
-        $error = error_get_last();
-        $message = $error['message'] ?? 'Gagal mengubah nama item.';
-        throw new RuntimeException($message);
+    // Log rename attempt
+    $logger->log('rename', $sanitizedOldPath, [
+        'status' => 'attempt',
+        'target_type' => $targetType,
+        'old_path' => $sanitizedOldPath,
+        'new_path' => $sanitizedNewPath
+    ]);
+    
+    try {
+        // Lakukan rename
+        if (!@rename($oldRealPath, $newRealPath)) {
+            $error = error_get_last();
+            $message = $error['message'] ?? 'Gagal mengubah nama item.';
+            
+            // Log failed rename
+            $logger->log('rename', $sanitizedOldPath, [
+                'status' => 'failed',
+                'target_type' => $targetType,
+                'old_path' => $sanitizedOldPath,
+                'new_path' => $sanitizedNewPath,
+                'error' => $message
+            ]);
+            
+            throw new RuntimeException($message);
+        }
+        
+        clearstatcache(true, $newRealPath);
+        $modified = filemtime($newRealPath) ?: time();
+        $size = $isDir ? null : (filesize($newRealPath) ?: 0);
+        
+        // Log successful rename
+        $logger->log('rename', $sanitizedNewPath, [
+            'status' => 'success',
+            'target_type' => $targetType,
+            'old_path' => $sanitizedOldPath,
+            'new_path' => $sanitizedNewPath
+        ]);
+        
+        return [
+            'name' => $newName,
+            'path' => $sanitizedNewPath,
+            'type' => $targetType,
+            'size' => $size,
+            'modified' => $modified,
+        ];
+    } catch (Exception $e) {
+        // Log failed rename if not already logged
+        if (strpos($e->getMessage(), 'Gagal mengubah nama item.') === false) {
+            $logger->log('rename', $sanitizedOldPath, [
+                'status' => 'failed',
+                'target_type' => $targetType,
+                'old_path' => $sanitizedOldPath,
+                'new_path' => $sanitizedNewPath,
+                'error' => $e->getMessage()
+            ]);
+        }
+        throw $e;
     }
-    
-    clearstatcache(true, $newRealPath);
-    $modified = filemtime($newRealPath) ?: time();
-    $size = $isDir ? null : (filesize($newRealPath) ?: 0);
-    
-    return [
-        'name' => $newName,
-        'path' => $sanitizedNewPath,
-        'type' => $isDir ? 'folder' : 'file',
-        'size' => $size,
-        'modified' => $modified,
-    ];
 }
 
 function move_item(string $root, string $oldRelativePath, string $newRelativePath): array
 {
     error_log('[DEBUG] move_item called with oldPath: "' . $oldRelativePath . '", newPath: "' . $newRelativePath . '"');
     
+    $logger = get_logger();
     $normalizedRoot = realpath($root);
     if ($normalizedRoot === false) {
         throw new RuntimeException('Root directory tidak ditemukan.');
@@ -704,6 +780,7 @@ function move_item(string $root, string $oldRelativePath, string $newRelativePat
     }
     
     $isDir = is_dir($oldRealPath);
+    $targetType = $isDir ? 'folder' : 'file';
     
     // Validasi path baru
     $segments = explode('/', $newRelativePath);
@@ -743,22 +820,62 @@ function move_item(string $root, string $oldRelativePath, string $newRelativePat
     
     error_log('[DEBUG] Moving from "' . $oldRealPath . '" to "' . $newRealPath . '"');
     
-    // Lakukan move
-    if (!@rename($oldRealPath, $newRealPath)) {
-        $error = error_get_last();
-        $message = $error['message'] ?? 'Gagal memindahkan item.';
-        throw new RuntimeException($message);
+    // Log move attempt
+    $logger->log('move', $sanitizedOldPath, [
+        'status' => 'attempt',
+        'target_type' => $targetType,
+        'old_path' => $sanitizedOldPath,
+        'new_path' => $sanitizedNewPath
+    ]);
+    
+    try {
+        // Lakukan move
+        if (!@rename($oldRealPath, $newRealPath)) {
+            $error = error_get_last();
+            $message = $error['message'] ?? 'Gagal memindahkan item.';
+            
+            // Log failed move
+            $logger->log('move', $sanitizedOldPath, [
+                'status' => 'failed',
+                'target_type' => $targetType,
+                'old_path' => $sanitizedOldPath,
+                'new_path' => $sanitizedNewPath,
+                'error' => $message
+            ]);
+            
+            throw new RuntimeException($message);
+        }
+        
+        clearstatcache(true, $newRealPath);
+        $modified = filemtime($newRealPath) ?: time();
+        $size = $isDir ? null : (filesize($newRealPath) ?: 0);
+        
+        // Log successful move
+        $logger->log('move', $sanitizedNewPath, [
+            'status' => 'success',
+            'target_type' => $targetType,
+            'old_path' => $sanitizedOldPath,
+            'new_path' => $sanitizedNewPath
+        ]);
+        
+        return [
+            'name' => $newName,
+            'path' => $sanitizedNewPath,
+            'type' => $targetType,
+            'size' => $size,
+            'modified' => $modified,
+        ];
+    } catch (Exception $e) {
+        // Log failed move if not already logged
+        if (strpos($e->getMessage(), 'Gagal memindahkan item.') === false) {
+            $logger->log('move', $sanitizedOldPath, [
+                'status' => 'failed',
+                'target_type' => $targetType,
+                'old_path' => $sanitizedOldPath,
+                'new_path' => $sanitizedNewPath,
+                'error' => $e->getMessage()
+            ]);
+        }
+        throw $e;
     }
-    
-    clearstatcache(true, $newRealPath);
-    $modified = filemtime($newRealPath) ?: time();
-    $size = $isDir ? null : (filesize($newRealPath) ?: 0);
-    
-    return [
-        'name' => $newName,
-        'path' => $sanitizedNewPath,
-        'type' => $isDir ? 'folder' : 'file',
-        'size' => $size,
-        'modified' => $modified,
-    ];
 }

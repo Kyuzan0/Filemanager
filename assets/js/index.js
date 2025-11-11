@@ -59,6 +59,15 @@
                 lastData: null,
                 recents: [],
             },
+            logs: {
+                isOpen: false,
+                isLoading: false,
+                currentPage: 1,
+                totalPages: 1,
+                filter: '',
+                data: [],
+                isCleaningUp: false,
+            },
         };
 
         const tableBody = document.getElementById('file-table');
@@ -179,6 +188,23 @@
         const moveCurrentShortcut = document.getElementById('move-current-shortcut');
         const moveSearchInput = document.getElementById('move-search');
         const moveRecents = document.getElementById('move-recents');
+        
+        // Log modal elements
+        const btnLogs = document.getElementById('btn-logs');
+        const logOverlay = document.getElementById('log-overlay');
+        const logTitle = document.getElementById('log-title');
+        const logSubtitle = document.getElementById('log-subtitle');
+        const logFilter = document.getElementById('log-filter');
+        const logPrev = document.getElementById('log-prev');
+        const logNext = document.getElementById('log-next');
+        const logPageInfo = document.getElementById('log-page-info');
+        const logTableBody = document.getElementById('log-table-body');
+        const logError = document.getElementById('log-error');
+        const logRefresh = document.getElementById('log-refresh');
+        const logClose = document.getElementById('log-close');
+        const logCleanup = document.getElementById('log-cleanup');
+        const logCleanupDays = document.getElementById('log-cleanup-days');
+        
         // Debug logging for context menu elements
         console.log('[DEBUG] Context menu element:', contextMenu);
         console.log('[DEBUG] Context menu items:', contextMenuItems.length);
@@ -2875,6 +2901,551 @@ cellName.appendChild(icon);
         // Initialize recents from storage at load
         state.move.recents = loadMoveRecentsFromStorage();
         // ======== End Move overlay implementation ========
+
+        // ========== Log modal implementation ==========
+        function openLogModal() {
+            if (state.logs.isOpen) {
+                return;
+            }
+
+            state.logs.isOpen = true;
+            state.logs.currentPage = 1;
+            state.logs.filter = '';
+            logFilter.value = '';
+            
+            logOverlay.hidden = false;
+            requestAnimationFrame(() => {
+                logOverlay.classList.add('visible');
+            });
+            logOverlay.setAttribute('aria-hidden', 'false');
+            document.body.classList.add('modal-open');
+            
+            // Load initial log data
+            fetchLogData();
+        }
+
+        function closeLogModal() {
+            if (!state.logs.isOpen) {
+                return;
+            }
+
+            state.logs.isOpen = false;
+            logOverlay.classList.remove('visible');
+            logOverlay.setAttribute('aria-hidden', 'true');
+            document.body.classList.remove('modal-open');
+            
+            setTimeout(() => {
+                if (!state.logs.isOpen) {
+                    logOverlay.hidden = true;
+                }
+            }, 200);
+        }
+
+        function setLogLoading(isLoading) {
+            state.logs.isLoading = isLoading;
+            if (logRefresh) {
+                logRefresh.disabled = isLoading;
+                if (isLoading) {
+                    logRefresh.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 6V3L8 7l4 4V8c2.76 0 5 2.24 5 5a5 5 0 0 1-5 5 5 5 0 0 1-4.33-2.5h-2.3A7 7 0 0 0 12 20a7 7 0 0 0 7-7c0-3.87-3.13-7-7-7z"/></svg><span>Memuat...</span>';
+                } else {
+                    logRefresh.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 6V3L8 7l4 4V8c2.76 0 5 2.24 5 5a5 5 0 0 1-5 5 5 5 0 0 1-4.33-2.5h-2.3A7 7 0 0 0 12 20a7 7 0 0 0 7-7c0-3.87-3.13-7-7-7z"/></svg><span>Refresh</span>';
+                }
+            }
+        }
+
+        function updateLogPagination() {
+            if (logPrev) {
+                logPrev.disabled = state.logs.currentPage <= 1 || state.logs.isLoading;
+            }
+            if (logNext) {
+                logNext.disabled = state.logs.currentPage >= state.logs.totalPages || state.logs.isLoading;
+            }
+            if (logPageInfo) {
+                logPageInfo.textContent = `Halaman ${state.logs.currentPage} dari ${state.logs.totalPages}`;
+            }
+        }
+
+        function formatLogEntry(log) {
+            const date = new Date(log.timestamp);
+            const formattedDate = date.toLocaleString('id-ID', {
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit',
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit'
+            });
+            
+            const actionLabels = {
+                'create': 'Buat',
+                'delete': 'Hapus',
+                'move': 'Pindah',
+                'rename': 'Ubah Nama',
+                'upload': 'Unggah',
+                'download': 'Unduh',
+                'read': 'Baca',
+                'copy': 'Salin',
+                'unknown': 'Tidak Diketahui'
+            };
+            
+            const typeLabels = {
+                'file': 'File',
+                'folder': 'Folder',
+                'unknown': 'Tidak Diketahui'
+            };
+            
+            return {
+                ...log,
+                formattedDate: formattedDate,
+                actionLabel: actionLabels[log.action] || actionLabels['unknown'],
+                typeLabel: typeLabels[log.target_type] || typeLabels['unknown']
+            };
+        }
+
+        function renderLogTable(logs) {
+            if (!logTableBody) return;
+
+            if (logs.length === 0) {
+                logTableBody.innerHTML = '<tr><td colspan="5" class="log-empty">Tidak ada data log yang tersedia.</td></tr>';
+                return;
+            }
+
+            logTableBody.innerHTML = '';
+            logs.forEach(log => {
+                const formattedLog = formatLogEntry(log);
+                const row = document.createElement('tr');
+                
+                // Time cell with better formatting
+                const timeCell = document.createElement('td');
+                timeCell.className = 'log-time';
+                timeCell.innerHTML = `<span class="log-date">${formattedLog.formattedDate}</span>`;
+                timeCell.title = `Timestamp: ${log.timestamp}`;
+                row.appendChild(timeCell);
+                
+                // Action cell with label
+                const actionCell = document.createElement('td');
+                actionCell.className = 'log-action';
+                actionCell.innerHTML = `<span class="log-badge log-action-${log.action}">${formattedLog.actionLabel}</span>`;
+                row.appendChild(actionCell);
+                
+                // Target cell with path tooltip
+                const targetCell = document.createElement('td');
+                targetCell.className = 'log-target';
+                const targetName = log.target_name || log.target_path || '-';
+                targetCell.innerHTML = `<span class="log-target-name" title="${log.target_path || '-'}">${targetName}</span>`;
+                row.appendChild(targetCell);
+                
+                // Type cell with icon
+                const typeCell = document.createElement('td');
+                typeCell.className = 'log-type';
+                const typeIcon = log.target_type === 'folder' ? '📁' : '📄';
+                typeCell.innerHTML = `<span class="log-type-badge">${typeIcon} ${formattedLog.typeLabel}</span>`;
+                row.appendChild(typeCell);
+                
+                // IP cell
+                const ipCell = document.createElement('td');
+                ipCell.className = 'log-ip';
+                ipCell.textContent = log.ip_address || '-';
+                ipCell.title = `IP: ${log.ip_address || '-'}`;
+                row.appendChild(ipCell);
+                
+                logTableBody.appendChild(row);
+            });
+        }
+
+        function applyLogFilter() {
+            const filterSelect = document.getElementById('log-filter');
+            const startDateInput = document.getElementById('log-start-date');
+            const endDateInput = document.getElementById('log-end-date');
+            const targetTypeSelect = document.getElementById('log-target-type');
+            const pathSearchInput = document.getElementById('log-path-search');
+            const sortBySelect = document.getElementById('log-sort-by');
+            const sortOrderSelect = document.getElementById('log-sort-order');
+            
+            // Build filter object
+            const filters = {};
+            
+            if (filterSelect && filterSelect.value) {
+                filters.action = filterSelect.value;
+            }
+            
+            if (startDateInput && startDateInput.value) {
+                filters.start_date = startDateInput.value;
+            }
+            
+            if (endDateInput && endDateInput.value) {
+                filters.end_date = endDateInput.value;
+            }
+            
+            if (targetTypeSelect && targetTypeSelect.value) {
+                filters.target_type = targetTypeSelect.value;
+            }
+            
+            if (pathSearchInput && pathSearchInput.value) {
+                filters.path_search = pathSearchInput.value;
+            }
+            
+            if (sortBySelect && sortBySelect.value) {
+                filters.sort_by = sortBySelect.value;
+            }
+            
+            if (sortOrderSelect && sortOrderSelect.value) {
+                filters.sort_order = sortOrderSelect.value;
+            }
+            
+            // Reset to first page when applying new filters
+            state.logs.currentPage = 1;
+            state.logs.activeFilters = filters;
+            
+            // Fetch data with new filters
+            fetchLogDataWithFilters(filters);
+        }
+
+        async function fetchLogDataWithFilters(filters = {}) {
+            try {
+                setLogLoading(true);
+                if (logError) {
+                    logError.hidden = true;
+                    logError.textContent = '';
+                }
+
+                const params = new URLSearchParams({
+                    action: 'logs',
+                    limit: 50,
+                    offset: (state.logs.currentPage - 1) * 50
+                });
+
+                // Add filters to params
+                Object.keys(filters).forEach(key => {
+                    if (filters[key]) {
+                        params.append(key, filters[key]);
+                    }
+                });
+
+                const response = await fetch(`api.php?${params.toString()}`);
+                if (!response.ok) {
+                    throw new Error('Gagal mengambil data log.');
+                }
+
+                const data = await response.json();
+                if (!data.success) {
+                    throw new Error(data.error || 'Gagal mengambil data log.');
+                }
+
+                state.logs.data = data.logs || [];
+                state.logs.totalPages = Math.ceil(data.total / 50) || 1;
+                
+                renderLogTable(state.logs.data);
+                updateLogPagination();
+            } catch (error) {
+                console.error('Error fetching log data:', error);
+                if (logError) {
+                    logError.textContent = error.message || 'Terjadi kesalahan saat memuat data log.';
+                    logError.hidden = false;
+                }
+                if (logTableBody) {
+                    logTableBody.innerHTML = '<tr><td colspan="5" class="log-error">Gagal memuat data log.</td></tr>';
+                }
+            } finally {
+                setLogLoading(false);
+            }
+        }
+
+        async function fetchLogData() {
+            return fetchLogDataWithFilters(state.logs.activeFilters || {});
+        }
+
+        function exportLogs(format = 'csv') {
+            if (!state.logs.data || state.logs.data.length === 0) {
+                setError('Tidak ada data log untuk diekspor.');
+                return;
+            }
+
+            try {
+                let content, filename, mimeType;
+                
+                if (format === 'csv') {
+                    content = exportLogsToCSV(state.logs.data);
+                    filename = `logs_${new Date().toISOString().split('T')[0]}.csv`;
+                    mimeType = 'text/csv';
+                } else if (format === 'json') {
+                    content = JSON.stringify(state.logs.data, null, 2);
+                    filename = `logs_${new Date().toISOString().split('T')[0]}.json`;
+                    mimeType = 'application/json';
+                } else {
+                    throw new Error('Format export tidak didukung.');
+                }
+
+                // Create download link
+                const blob = new Blob([content], { type: mimeType });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = filename;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+                
+                flashStatus(`Log berhasil diekspor sebagai ${format.toUpperCase()}.`);
+            } catch (error) {
+                console.error('Error exporting logs:', error);
+                setError(`Gagal mengekspor log: ${error.message}`);
+            }
+        }
+
+        function exportLogsToCSV(logs) {
+            if (!logs || logs.length === 0) return '';
+            
+            const headers = ['Timestamp', 'Action', 'Target', 'Type', 'IP Address'];
+            const csvRows = [headers.join(',')];
+            
+            logs.forEach(log => {
+                const formattedLog = formatLogEntry(log);
+                const row = [
+                    `"${log.timestamp}"`,
+                    `"${formattedLog.actionLabel}"`,
+                    `"${log.target_path || ''}"`,
+                    `"${formattedLog.typeLabel}"`,
+                    `"${log.ip_address || ''}"`
+                ];
+                csvRows.push(row.join(','));
+            });
+            
+            return csvRows.join('\n');
+        }
+
+        function startRealTimeRefresh(interval = 30000) { // 30 seconds default
+            if (state.logs.refreshInterval) {
+                clearInterval(state.logs.refreshInterval);
+            }
+            
+            state.logs.refreshInterval = setInterval(() => {
+                if (state.logs.isOpen && !state.logs.isLoading) {
+                    fetchLogData();
+                }
+            }, interval);
+        }
+
+        function stopRealTimeRefresh() {
+            if (state.logs.refreshInterval) {
+                clearInterval(state.logs.refreshInterval);
+                state.logs.refreshInterval = null;
+            }
+        }
+
+        // Log modal event listeners
+        if (btnLogs) {
+            btnLogs.addEventListener('click', () => {
+                if (state.isLoading) return;
+                openLogModal();
+            });
+        }
+
+        if (logClose) {
+            logClose.addEventListener('click', () => {
+                if (state.logs.isLoading) return;
+                closeLogModal();
+                stopRealTimeRefresh();
+            });
+        }
+
+        if (logRefresh) {
+            logRefresh.addEventListener('click', () => {
+                if (state.logs.isLoading) return;
+                fetchLogData();
+            });
+        }
+
+        if (logFilter) {
+            logFilter.addEventListener('change', () => {
+                if (state.logs.isLoading) return;
+                applyLogFilter();
+            });
+        }
+
+        if (logPrev) {
+            logPrev.addEventListener('click', () => {
+                if (state.logs.currentPage <= 1 || state.logs.isLoading) return;
+                state.logs.currentPage--;
+                fetchLogData();
+            });
+        }
+
+        if (logNext) {
+            logNext.addEventListener('click', () => {
+                if (state.logs.currentPage >= state.logs.totalPages || state.logs.isLoading) return;
+                state.logs.currentPage++;
+                fetchLogData();
+            });
+        }
+
+        if (logCleanup) {
+            logCleanup.addEventListener('click', () => {
+                if (state.logs.isLoading || state.logs.isCleaningUp) return;
+                const days = parseInt(logCleanupDays.value);
+                cleanupLogs(days);
+            });
+        }
+
+        if (logOverlay) {
+            logOverlay.addEventListener('click', (event) => {
+                if (event.target === logOverlay && !state.logs.isLoading) {
+                    closeLogModal();
+                    stopRealTimeRefresh();
+                }
+            });
+        }
+
+        // Additional filter event listeners
+        const logStartDate = document.getElementById('log-start-date');
+        const logEndDate = document.getElementById('log-end-date');
+        const logTargetType = document.getElementById('log-target-type');
+        const logPathSearch = document.getElementById('log-path-search');
+        const logSortBy = document.getElementById('log-sort-by');
+        const logSortOrder = document.getElementById('log-sort-order');
+        const logExportCsv = document.getElementById('log-export-csv');
+        const logExportJson = document.getElementById('log-export-json');
+        const logAutoRefresh = document.getElementById('log-auto-refresh');
+
+        if (logStartDate) {
+            logStartDate.addEventListener('change', () => {
+                if (state.logs.isLoading) return;
+                applyLogFilter();
+            });
+        }
+
+        if (logEndDate) {
+            logEndDate.addEventListener('change', () => {
+                if (state.logs.isLoading) return;
+                applyLogFilter();
+            });
+        }
+
+        if (logTargetType) {
+            logTargetType.addEventListener('change', () => {
+                if (state.logs.isLoading) return;
+                applyLogFilter();
+            });
+        }
+
+        if (logPathSearch) {
+            let searchTimeout;
+            logPathSearch.addEventListener('input', () => {
+                clearTimeout(searchTimeout);
+                searchTimeout = setTimeout(() => {
+                    if (state.logs.isLoading) return;
+                    applyLogFilter();
+                }, 500); // Debounce search
+            });
+        }
+
+        if (logSortBy) {
+            logSortBy.addEventListener('change', () => {
+                if (state.logs.isLoading) return;
+                applyLogFilter();
+            });
+        }
+
+        if (logSortOrder) {
+            logSortOrder.addEventListener('change', () => {
+                if (state.logs.isLoading) return;
+                applyLogFilter();
+            });
+        }
+
+        if (logExportCsv) {
+            logExportCsv.addEventListener('click', () => {
+                exportLogs('csv');
+            });
+        }
+
+        if (logExportJson) {
+            logExportJson.addEventListener('click', () => {
+                exportLogs('json');
+            });
+        }
+
+        if (logAutoRefresh) {
+            logAutoRefresh.addEventListener('change', (event) => {
+                if (event.target.checked) {
+                    startRealTimeRefresh(30000); // 30 seconds
+                    flashStatus('Auto-refresh diaktifkan (30 detik)');
+                } else {
+                    stopRealTimeRefresh();
+                    flashStatus('Auto-refresh dinonaktifkan');
+                }
+            });
+        }
+
+        // Keyboard navigation for log modal
+        document.addEventListener('keydown', (event) => {
+            if (event.key === 'Escape' && state.logs.isOpen && !state.logs.isLoading) {
+                event.preventDefault();
+                closeLogModal();
+                stopRealTimeRefresh();
+            }
+        });
+        // Cleanup logs function
+        async function cleanupLogs(days) {
+            if (state.logs.isCleaningUp || state.logs.isLoading) {
+                return;
+            }
+
+            const confirmed = await new Promise((resolve) => {
+                openConfirmOverlay({
+                    message: `Hapus log yang lebih tua dari ${days} hari?`,
+                    description: 'Log yang dihapus tidak dapat dikembalikan. Operasi ini akan membersihkan log lama untuk menghemat ruang penyimpanan.',
+                    paths: [],
+                    showList: false,
+                    confirmLabel: 'Hapus Log',
+                    onSave: () => {
+                        closeConfirmOverlay();
+                        resolve(true);
+                    },
+                    onDiscard: () => {
+                        closeConfirmOverlay();
+                        resolve(false);
+                    },
+                    onCancel: () => {
+                        closeConfirmOverlay();
+                        resolve(false);
+                    }
+                });
+            });
+
+            if (!confirmed) {
+                return;
+            }
+
+            try {
+                state.logs.isCleaningUp = true;
+                setLogLoading(true);
+
+                const response = await fetch(`api.php?action=cleanup_logs&days=${days}`);
+                if (!response.ok) {
+                    throw new Error('Gagal membersihkan log.');
+                }
+
+                const data = await response.json();
+                if (!data.success) {
+                    throw new Error(data.error || 'Gagal membersihkan log.');
+                }
+
+                flashStatus(`${data.deleted_count} log berhasil dihapus. ${data.remaining_count} log tersisa.`);
+                
+                // Refresh log data after cleanup
+                await fetchLogData();
+            } catch (error) {
+                console.error('Error cleaning up logs:', error);
+                setError(error.message || 'Terjadi kesalahan saat membersihkan log.');
+            } finally {
+                state.logs.isCleaningUp = false;
+                setLogLoading(false);
+            }
+        }
+
+        // ======== End Log modal implementation ========
 
         btnUp.addEventListener('click', () => {
             const parent = btnUp.dataset.parentPath || '';

@@ -1,4 +1,3 @@
-# test
 # Manajer Berkas (File Manager)
 
 Ringkasan singkat:

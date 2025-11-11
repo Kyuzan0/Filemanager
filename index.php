@@ -38,6 +38,10 @@
                         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4h6l2 2h6a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2z"/></svg>
                         <span>Upload</span>
                     </button>
+                    <button id="btn-logs" type="button" class="action-pill" title="Log Aktivitas" data-action="logs">
+                        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6z"/><path d="M14 2v6h6M16 13H8M16 17H8M10 9H8"/></svg>
+                        <span>Log Aktivitas</span>
+                    </button>
                     <input id="upload-input" type="file" hidden multiple>
                     <div class="split-action" role="group" aria-label="Tambah">
                         <button type="button" class="action-pill split-main" title="Tambah File" data-action="add-file">
@@ -286,6 +290,153 @@
                 <div class="move-actions-spacer"></div>
                 <button type="button" class="move-button outline" id="move-cancel">Batal</button>
                 <button type="button" class="move-button primary" id="move-confirm" disabled>Pindahkan</button>
+            </footer>
+        </div>
+    </div>
+
+    <div class="log-overlay" id="log-overlay" aria-hidden="true" hidden>
+        <div class="log-dialog" role="dialog" aria-modal="true" aria-labelledby="log-title">
+            <header class="log-header">
+                <div class="log-icon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6z"/><path d="M14 2v6h6M16 13H8M16 17H8M10 9H8"/></svg>
+                </div>
+                <div class="log-title-group">
+                    <h2 class="log-title" id="log-title">Log Aktivitas</h2>
+                    <p class="log-subtitle" id="log-subtitle">Riwayat aktivitas file manager</p>
+                </div>
+            </header>
+            <div class="log-body">
+                <div class="log-controls">
+                    <div class="log-filter-section">
+                        <div class="log-filter-group">
+                            <label for="log-filter">Filter Aksi:</label>
+                            <select id="log-filter" class="log-filter-select">
+                                <option value="">Semua Aktivitas</option>
+                                <option value="create">Buat</option>
+                                <option value="delete">Hapus</option>
+                                <option value="move">Pindah</option>
+                                <option value="rename">Ubah Nama</option>
+                                <option value="upload">Unggah</option>
+                                <option value="download">Unduh</option>
+                            </select>
+                        </div>
+                        
+                        <div class="log-filter-group">
+                            <label for="log-target-type">Tipe Target:</label>
+                            <select id="log-target-type" class="log-filter-select">
+                                <option value="">Semua Tipe</option>
+                                <option value="file">File</option>
+                                <option value="folder">Folder</option>
+                            </select>
+                        </div>
+                        
+                        <div class="log-filter-group">
+                            <label for="log-start-date">Dari Tanggal:</label>
+                            <input type="date" id="log-start-date" class="log-date-input">
+                        </div>
+                        
+                        <div class="log-filter-group">
+                            <label for="log-end-date">Hingga Tanggal:</label>
+                            <input type="date" id="log-end-date" class="log-date-input">
+                        </div>
+                        
+                        <div class="log-filter-group">
+                            <label for="log-path-search">Cari Path:</label>
+                            <input type="text" id="log-path-search" class="log-search-input" placeholder="Cari dalam path target...">
+                        </div>
+                        
+                        <div class="log-filter-group">
+                            <label for="log-sort-by">Urutkan:</label>
+                            <select id="log-sort-by" class="log-filter-select">
+                                <option value="timestamp">Waktu</option>
+                                <option value="action">Aksi</option>
+                                <option value="target_path">Target Path</option>
+                                <option value="ip_address">IP Address</option>
+                            </select>
+                        </div>
+                        
+                        <div class="log-filter-group">
+                            <label for="log-sort-order">Urutan:</label>
+                            <select id="log-sort-order" class="log-filter-select">
+                                <option value="desc">Terbaru ke Terlama</option>
+                                <option value="asc">Terlama ke Terbaru</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="log-controls-bottom">
+                        <div class="log-pagination">
+                            <button id="log-prev" type="button" class="log-pagination-btn" disabled>
+                                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/></svg>
+                            </button>
+                            <span id="log-page-info">Halaman 1</span>
+                            <button id="log-next" type="button" class="log-pagination-btn" disabled>
+                                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/></svg>
+                            </button>
+                        </div>
+                        
+                        <div class="log-actions-group">
+                            <div class="log-auto-refresh">
+                                <label for="log-auto-refresh" class="checkbox-label">
+                                    <input type="checkbox" id="log-auto-refresh">
+                                    <span class="checkbox-custom"></span>
+                                    Auto-refresh (30s)
+                                </label>
+                            </div>
+                            
+                            <div class="log-export-buttons">
+                                <button type="button" id="log-export-csv" class="log-button outline">
+                                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6z"/><path d="M14 2v6h6M16 13H8M16 17H8M10 9H8"/></svg>
+                                    <span>Export CSV</span>
+                                </button>
+                                <button type="button" id="log-export-json" class="log-button outline">
+                                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 3h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2zm7 4v2h2V7h-2zm0 4v2h2v-2h-2zm0 4v2h2v-2h-2z"/></svg>
+                                    <span>Export JSON</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="log-table-wrapper">
+                    <table class="log-table">
+                        <thead>
+                            <tr>
+                                <th>Waktu</th>
+                                <th>Aksi</th>
+                                <th>Target</th>
+                                <th>Tipe</th>
+                                <th>IP Address</th>
+                            </tr>
+                        </thead>
+                        <tbody id="log-table-body">
+                            <tr>
+                                <td colspan="5" class="log-loading">Memuat data log...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="log-error" id="log-error" role="alert" hidden></div>
+            </div>
+            <footer class="log-actions">
+                <div class="log-actions-left">
+                    <div class="log-cleanup-group">
+                        <select id="log-cleanup-days" class="log-cleanup-select">
+                            <option value="7">7 hari</option>
+                            <option value="30" selected>30 hari</option>
+                        </select>
+                        <button type="button" class="log-button danger" id="log-cleanup">
+                            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg>
+                            <span>Cleanup</span>
+                        </button>
+                    </div>
+                </div>
+                <div class="log-actions-right">
+                    <button type="button" class="log-button outline" id="log-refresh">
+                        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 6V3L8 7l4 4V8c2.76 0 5 2.24 5 5a5 5 0 0 1-5 5 5 5 0 0 1-4.33-2.5h-2.3A7 7 0 0 0 12 20a7 7 0 0 0 7-7c0-3.87-3.13-7-7-7z"/></svg>
+                        <span>Refresh</span>
+                    </button>
+                    <button type="button" class="log-button primary" id="log-close">Tutup</button>
+                </div>
             </footer>
         </div>
     </div>

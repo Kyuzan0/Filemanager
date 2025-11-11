@@ -365,6 +365,143 @@ try {
         exit;
     }
 
+    if ($action === 'logs') {
+        require_once __DIR__ . '/lib/logger.php';
+        
+        // Ensure logs directory exists
+        if (!is_dir(__DIR__ . '/logs')) {
+            mkdir(__DIR__ . '/logs', 0755, true);
+        }
+        
+        $logger = new Logger('logs/activity.json');
+        
+        // Get pagination and filter parameters
+        $limit = isset($_GET['limit']) && is_numeric($_GET['limit']) ? (int)$_GET['limit'] : 50;
+        $offset = isset($_GET['offset']) && is_numeric($_GET['offset']) ? (int)$_GET['offset'] : 0;
+        
+        // Build filters array with enhanced options
+        $filters = [];
+        
+        // Basic action filter
+        if (isset($_GET['action']) && !empty($_GET['action'])) {
+            $filters['action'] = $_GET['action'];
+        }
+        
+        // Date range filters
+        if (isset($_GET['start_date']) && !empty($_GET['start_date'])) {
+            $filters['start_date'] = $_GET['start_date'];
+        }
+        
+        if (isset($_GET['end_date']) && !empty($_GET['end_date'])) {
+            $filters['end_date'] = $_GET['end_date'];
+        }
+        
+        // Target type filter
+        if (isset($_GET['target_type']) && !empty($_GET['target_type'])) {
+            $filters['target_type'] = $_GET['target_type'];
+        }
+        
+        // Path search filter
+        if (isset($_GET['path_search']) && !empty($_GET['path_search'])) {
+            $filters['path_search'] = $_GET['path_search'];
+        }
+        
+        // IP address filter
+        if (isset($_GET['ip_address']) && !empty($_GET['ip_address'])) {
+            $filters['ip_address'] = $_GET['ip_address'];
+        }
+        
+        // Sorting parameters
+        $sortBy = isset($_GET['sort_by']) ? $_GET['sort_by'] : 'timestamp';
+        $sortOrder = isset($_GET['sort_order']) ? $_GET['sort_order'] : 'desc';
+        
+        // Validate sort parameters
+        $validSortBy = ['timestamp', 'action', 'target_path', 'target_type', 'ip_address'];
+        if (!in_array($sortBy, $validSortBy)) {
+            $sortBy = 'timestamp';
+        }
+        
+        $validSortOrder = ['asc', 'desc'];
+        if (!in_array($sortOrder, $validSortOrder)) {
+            $sortOrder = 'desc';
+        }
+        
+        // Get logs with filters and sorting
+        $logs = $logger->getLogs($limit, $offset, $filters, $sortBy, $sortOrder);
+        
+        // Get total count for pagination with same filters
+        $allLogs = $logger->getLogs(10000, 0, $filters, $sortBy, $sortOrder);
+        $total = count($allLogs);
+        
+        echo json_encode([
+            'success' => true,
+            'type' => 'logs',
+            'logs' => $logs,
+            'total' => $total,
+            'limit' => $limit,
+            'offset' => $offset,
+            'filters' => $filters,
+            'sort_by' => $sortBy,
+            'sort_order' => $sortOrder,
+            'generated_at' => time(),
+        ], JSON_UNESCAPED_UNICODE);
+        exit;
+    }
+
+    if ($action === 'cleanup_logs') {
+        require_once __DIR__ . '/lib/logger.php';
+        
+        // Ensure logs directory exists
+        if (!is_dir(__DIR__ . '/logs')) {
+            mkdir(__DIR__ . '/logs', 0755, true);
+        }
+        
+        // Get and validate days parameter
+        $days = isset($_GET['days']) && is_numeric($_GET['days']) ? (int)$_GET['days'] : 30;
+        
+        // Only allow 7 or 30 days as specified in requirements
+        if (!in_array($days, [7, 30])) {
+            http_response_code(400);
+            echo json_encode([
+                'success' => false,
+                'error' => 'Parameter days hanya boleh 7 atau 30',
+                'type' => 'cleanup_logs',
+                'generated_at' => time(),
+            ], JSON_UNESCAPED_UNICODE);
+            exit;
+        }
+        
+        $logger = new Logger('logs/activity.json');
+        
+        // Perform cleanup
+        $result = $logger->cleanup($days);
+        
+        if ($result) {
+            // Get remaining logs count
+            $remainingLogs = $logger->getLogs(10000, 0, []);
+            $remainingCount = count($remainingLogs);
+            
+            echo json_encode([
+                'success' => true,
+                'type' => 'cleanup_logs',
+                'days' => $days,
+                'message' => "Log cleanup berhasil untuk {$days} hari terakhir",
+                'deleted_count' => $result['deleted_count'] ?? 0,
+                'remaining_count' => $remainingCount,
+                'generated_at' => time(),
+            ], JSON_UNESCAPED_UNICODE);
+        } else {
+            http_response_code(500);
+            echo json_encode([
+                'success' => false,
+                'error' => 'Log cleanup gagal',
+                'type' => 'cleanup_logs',
+                'generated_at' => time(),
+            ], JSON_UNESCAPED_UNICODE);
+        }
+        exit;
+    }
+
     $items = list_directory($root, $sanitizedPath);
     $breadcrumbs = build_breadcrumbs($sanitizedPath, 'Root');
 

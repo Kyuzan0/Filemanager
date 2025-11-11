@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Log Menu</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f7fb;
+        }
+        .test-container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        button {
+            background: #118bee;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #0f7cd3;
+        }
+        .result {
+            margin-top: 10px;
+            padding: 10px;
+            border-radius: 4px;
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+        }
+        .success {
+            background: #d4edda;
+            border-color: #c3e6cb;
+            color: #155724;
+        }
+        .error {
+            background: #f8d7da;
+            border-color: #f5c6cb;
+            color: #721c24;
+        }
+    </style>
+</head>
+<body>
+    <h1>Test Log Menu Implementation</h1>
+    
+    <div class="test-container">
+        <h2>Test 1: Create Test Log Entry</h2>
+        <button onclick="createTestLog()">Create Test Log Entry</button>
+        <div id="create-result" class="result" style="display:none;"></div>
+    </div>
+    
+    <div class="test-container">
+        <h2>Test 2: Fetch Log Data</h2>
+        <button onclick="fetchLogs()">Fetch Logs</button>
+        <div id="fetch-result" class="result" style="display:none;"></div>
+    </div>
+    
+    <div class="test-container">
+        <h2>Test 3: Test Log API Endpoint</h2>
+        <button onclick="testLogEndpoint()">Test Log API</button>
+        <div id="endpoint-result" class="result" style="display:none;"></div>
+    </div>
+
+    <script>
+        async function createTestLog() {
+            const resultDiv = document.getElementById('create-result');
+            try {
+                const response = await fetch('api.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        action: 'create',
+                        type: 'file',
+                        name: 'test-log-entry.txt',
+                        content: 'This is a test log entry for testing the log menu implementation.'
+                    })
+                });
+                
+                const data = await response.json();
+                if (data.success) {
+                    resultDiv.className = 'result success';
+                    resultDiv.textContent = 'Success: Test log entry created';
+                } else {
+                    resultDiv.className = 'result error';
+                    resultDiv.textContent = 'Error: ' + (data.error || 'Unknown error');
+                }
+            } catch (error) {
+                resultDiv.className = 'result error';
+                resultDiv.textContent = 'Error: ' + error.message;
+            }
+            resultDiv.style.display = 'block';
+        }
+        
+        async function fetchLogs() {
+            const resultDiv = document.getElementById('fetch-result');
+            try {
+                const response = await fetch('api.php?action=logs&limit=10');
+                const data = await response.json();
+                
+                if (data.success) {
+                    resultDiv.className = 'result success';
+                    resultDiv.innerHTML = `
+                        <strong>Success:</strong> Fetched ${data.logs.length} log entries<br>
+                        <strong>Total logs:</strong> ${data.total}<br>
+                        <strong>Sample entry:</strong> ${JSON.stringify(data.logs[0] || {}, null, 2)}
+                    `;
+                } else {
+                    resultDiv.className = 'result error';
+                    resultDiv.textContent = 'Error: ' + (data.error || 'Unknown error');
+                }
+            } catch (error) {
+                resultDiv.className = 'result error';
+                resultDiv.textContent = 'Error: ' + error.message;
+            }
+            resultDiv.style.display = 'block';
+        }
+        
+        async function testLogEndpoint() {
+            const resultDiv = document.getElementById('endpoint-result');
+            try {
+                const response = await fetch('api.php?action=logs&limit=5&filter=create');
+                const data = await response.json();
+                
+                if (data.success) {
+                    resultDiv.className = 'result success';
+                    resultDiv.innerHTML = `
+                        <strong>Success:</strong> Log API endpoint working<br>
+                        <strong>Filtered logs (create action):</strong> ${data.logs.length}<br>
+                        <strong>Response structure:</strong> <pre>${JSON.stringify(data, null, 2)}</pre>
+                    `;
+                } else {
+                    resultDiv.className = 'result error';
+                    resultDiv.textContent = 'Error: ' + (data.error || 'Unknown error');
+                }
+            } catch (error) {
+                resultDiv.className = 'result error';
+                resultDiv.textContent = 'Error: ' + error.message;
+            }
+            resultDiv.style.display = 'block';
+        }
+    </script>
+</body>
+</html>
