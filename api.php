@@ -366,86 +366,142 @@ try {
     }
 
     if ($action === 'logs') {
-        require_once __DIR__ . '/lib/logger.php';
+        error_log('[DEBUG] Logs endpoint accessed');
         
-        // Ensure logs directory exists
-        if (!is_dir(__DIR__ . '/logs')) {
-            mkdir(__DIR__ . '/logs', 0755, true);
+        try {
+            require_once __DIR__ . '/lib/logger.php';
+            
+            // Ensure logs directory exists
+            $logsDir = __DIR__ . '/logs';
+            if (!is_dir($logsDir)) {
+                error_log('[DEBUG] Creating logs directory');
+                mkdir($logsDir, 0755, true);
+            }
+            
+            $logFile = $logsDir . '/activity.json';
+            error_log('[DEBUG] Log file path: ' . $logFile);
+            
+            // Check if log file exists and is readable
+            if (!file_exists($logFile)) {
+                error_log('[DEBUG] Log file does not exist, creating empty response');
+                echo json_encode([
+                    'success' => true,
+                    'type' => 'logs',
+                    'logs' => [],
+                    'total' => 0,
+                    'limit' => 50,
+                    'offset' => 0,
+                    'filters' => [],
+                    'sort_by' => 'timestamp',
+                    'sort_order' => 'desc',
+                    'generated_at' => time(),
+                ], JSON_UNESCAPED_UNICODE);
+                exit;
+            }
+            
+            if (!is_readable($logFile)) {
+                error_log('[DEBUG] Log file is not readable');
+                throw new Exception('Log file tidak dapat dibaca');
+            }
+            
+            $logger = new Logger($logFile);
+            
+            // Get pagination and filter parameters
+            $limit = isset($_GET['limit']) && is_numeric($_GET['limit']) ? (int)$_GET['limit'] : 50;
+            $offset = isset($_GET['offset']) && is_numeric($_GET['offset']) ? (int)$_GET['offset'] : 0;
+            
+            error_log('[DEBUG] Pagination: limit=' . $limit . ', offset=' . $offset);
+            
+            // Build filters array with enhanced options
+            $filters = [];
+            
+            // Note: We need to handle the 'action' parameter conflict
+            // The 'action' parameter is used both for endpoint determination and as a filter
+            // We'll use 'log_action' as the filter parameter name to avoid conflict
+            if (isset($_GET['log_action']) && !empty($_GET['log_action'])) {
+                $filters['action'] = $_GET['log_action'];
+                error_log('[DEBUG] Action filter: ' . $_GET['log_action']);
+            }
+            
+            // Date range filters
+            if (isset($_GET['start_date']) && !empty($_GET['start_date'])) {
+                $filters['start_date'] = $_GET['start_date'];
+                error_log('[DEBUG] Start date filter: ' . $_GET['start_date']);
+            }
+            
+            if (isset($_GET['end_date']) && !empty($_GET['end_date'])) {
+                $filters['end_date'] = $_GET['end_date'];
+                error_log('[DEBUG] End date filter: ' . $_GET['end_date']);
+            }
+            
+            // Target type filter
+            if (isset($_GET['target_type']) && !empty($_GET['target_type'])) {
+                $filters['target_type'] = $_GET['target_type'];
+                error_log('[DEBUG] Target type filter: ' . $_GET['target_type']);
+            }
+            
+            // Path search filter
+            if (isset($_GET['path_search']) && !empty($_GET['path_search'])) {
+                $filters['path_search'] = $_GET['path_search'];
+                error_log('[DEBUG] Path search filter: ' . $_GET['path_search']);
+            }
+            
+            // IP address filter
+            if (isset($_GET['ip_address']) && !empty($_GET['ip_address'])) {
+                $filters['ip_address'] = $_GET['ip_address'];
+                error_log('[DEBUG] IP address filter: ' . $_GET['ip_address']);
+            }
+            
+            // Sorting parameters
+            $sortBy = isset($_GET['sort_by']) ? $_GET['sort_by'] : 'timestamp';
+            $sortOrder = isset($_GET['sort_order']) ? $_GET['sort_order'] : 'desc';
+            
+            // Validate sort parameters
+            $validSortBy = ['timestamp', 'action', 'target_path', 'target_type', 'ip_address'];
+            if (!in_array($sortBy, $validSortBy)) {
+                $sortBy = 'timestamp';
+            }
+            
+            $validSortOrder = ['asc', 'desc'];
+            if (!in_array($sortOrder, $validSortOrder)) {
+                $sortOrder = 'desc';
+            }
+            
+            error_log('[DEBUG] Sort: by=' . $sortBy . ', order=' . $sortOrder);
+            
+            // Get logs with filters and sorting
+            $logs = $logger->getLogs($limit, $offset, $filters, $sortBy, $sortOrder);
+            error_log('[DEBUG] Retrieved ' . count($logs) . ' log entries');
+            
+            // Get total count for pagination with same filters
+            $allLogs = $logger->getLogs(10000, 0, $filters, $sortBy, $sortOrder);
+            $total = count($allLogs);
+            error_log('[DEBUG] Total logs matching filters: ' . $total);
+            
+            echo json_encode([
+                'success' => true,
+                'type' => 'logs',
+                'logs' => $logs,
+                'total' => $total,
+                'limit' => $limit,
+                'offset' => $offset,
+                'filters' => $filters,
+                'sort_by' => $sortBy,
+                'sort_order' => $sortOrder,
+                'generated_at' => time(),
+            ], JSON_UNESCAPED_UNICODE);
+            exit;
+        } catch (Exception $e) {
+            error_log('[DEBUG] Error in logs endpoint: ' . $e->getMessage());
+            http_response_code(500);
+            echo json_encode([
+                'success' => false,
+                'error' => $e->getMessage(),
+                'type' => 'logs',
+                'generated_at' => time(),
+            ], JSON_UNESCAPED_UNICODE);
+            exit;
         }
-        
-        $logger = new Logger('logs/activity.json');
-        
-        // Get pagination and filter parameters
-        $limit = isset($_GET['limit']) && is_numeric($_GET['limit']) ? (int)$_GET['limit'] : 50;
-        $offset = isset($_GET['offset']) && is_numeric($_GET['offset']) ? (int)$_GET['offset'] : 0;
-        
-        // Build filters array with enhanced options
-        $filters = [];
-        
-        // Basic action filter
-        if (isset($_GET['action']) && !empty($_GET['action'])) {
-            $filters['action'] = $_GET['action'];
-        }
-        
-        // Date range filters
-        if (isset($_GET['start_date']) && !empty($_GET['start_date'])) {
-            $filters['start_date'] = $_GET['start_date'];
-        }
-        
-        if (isset($_GET['end_date']) && !empty($_GET['end_date'])) {
-            $filters['end_date'] = $_GET['end_date'];
-        }
-        
-        // Target type filter
-        if (isset($_GET['target_type']) && !empty($_GET['target_type'])) {
-            $filters['target_type'] = $_GET['target_type'];
-        }
-        
-        // Path search filter
-        if (isset($_GET['path_search']) && !empty($_GET['path_search'])) {
-            $filters['path_search'] = $_GET['path_search'];
-        }
-        
-        // IP address filter
-        if (isset($_GET['ip_address']) && !empty($_GET['ip_address'])) {
-            $filters['ip_address'] = $_GET['ip_address'];
-        }
-        
-        // Sorting parameters
-        $sortBy = isset($_GET['sort_by']) ? $_GET['sort_by'] : 'timestamp';
-        $sortOrder = isset($_GET['sort_order']) ? $_GET['sort_order'] : 'desc';
-        
-        // Validate sort parameters
-        $validSortBy = ['timestamp', 'action', 'target_path', 'target_type', 'ip_address'];
-        if (!in_array($sortBy, $validSortBy)) {
-            $sortBy = 'timestamp';
-        }
-        
-        $validSortOrder = ['asc', 'desc'];
-        if (!in_array($sortOrder, $validSortOrder)) {
-            $sortOrder = 'desc';
-        }
-        
-        // Get logs with filters and sorting
-        $logs = $logger->getLogs($limit, $offset, $filters, $sortBy, $sortOrder);
-        
-        // Get total count for pagination with same filters
-        $allLogs = $logger->getLogs(10000, 0, $filters, $sortBy, $sortOrder);
-        $total = count($allLogs);
-        
-        echo json_encode([
-            'success' => true,
-            'type' => 'logs',
-            'logs' => $logs,
-            'total' => $total,
-            'limit' => $limit,
-            'offset' => $offset,
-            'filters' => $filters,
-            'sort_by' => $sortBy,
-            'sort_order' => $sortOrder,
-            'generated_at' => time(),
-        ], JSON_UNESCAPED_UNICODE);
-        exit;
     }
 
     if ($action === 'cleanup_logs') {

@@ -2904,13 +2904,16 @@ cellName.appendChild(icon);
 
         // ========== Log modal implementation ==========
         function openLogModal() {
+            console.log('[DEBUG] openLogModal called');
             if (state.logs.isOpen) {
+                console.log('[DEBUG] Log modal already open, returning');
                 return;
             }
 
             state.logs.isOpen = true;
             state.logs.currentPage = 1;
             state.logs.filter = '';
+            state.logs.activeFilters = {};
             logFilter.value = '';
             
             logOverlay.hidden = false;
@@ -2920,8 +2923,9 @@ cellName.appendChild(icon);
             logOverlay.setAttribute('aria-hidden', 'false');
             document.body.classList.add('modal-open');
             
+            console.log('[DEBUG] Loading initial log data');
             // Load initial log data
-            fetchLogData();
+            fetchLogDataWithFilters({});
         }
 
         function closeLogModal() {
@@ -3003,15 +3007,23 @@ cellName.appendChild(icon);
         }
 
         function renderLogTable(logs) {
-            if (!logTableBody) return;
+            console.log('[DEBUG] renderLogTable called with logs:', logs);
+            
+            if (!logTableBody) {
+                console.log('[DEBUG] logTableBody element not found');
+                return;
+            }
 
             if (logs.length === 0) {
+                console.log('[DEBUG] No logs to display, showing empty message');
                 logTableBody.innerHTML = '<tr><td colspan="5" class="log-empty">Tidak ada data log yang tersedia.</td></tr>';
                 return;
             }
 
+            console.log('[DEBUG] Rendering', logs.length, 'log entries');
             logTableBody.innerHTML = '';
-            logs.forEach(log => {
+            logs.forEach((log, index) => {
+                console.log(`[DEBUG] Processing log ${index}:`, log);
                 const formattedLog = formatLogEntry(log);
                 const row = document.createElement('tr');
                 
@@ -3051,6 +3063,8 @@ cellName.appendChild(icon);
                 
                 logTableBody.appendChild(row);
             });
+            
+            console.log('[DEBUG] Log table rendering completed');
         }
 
         function applyLogFilter() {
@@ -3066,7 +3080,7 @@ cellName.appendChild(icon);
             const filters = {};
             
             if (filterSelect && filterSelect.value) {
-                filters.action = filterSelect.value;
+                filters.log_action = filterSelect.value;
             }
             
             if (startDateInput && startDateInput.value) {
@@ -3103,17 +3117,17 @@ cellName.appendChild(icon);
 
         async function fetchLogDataWithFilters(filters = {}) {
             try {
+                console.log('[DEBUG] fetchLogDataWithFilters called with filters:', filters);
                 setLogLoading(true);
                 if (logError) {
                     logError.hidden = true;
                     logError.textContent = '';
                 }
 
-                const params = new URLSearchParams({
-                    action: 'logs',
-                    limit: 50,
-                    offset: (state.logs.currentPage - 1) * 50
-                });
+                const params = new URLSearchParams();
+                params.append('action', 'logs');
+                params.append('limit', '50');
+                params.append('offset', String((state.logs.currentPage - 1) * 50));
 
                 // Add filters to params
                 Object.keys(filters).forEach(key => {
@@ -3122,12 +3136,19 @@ cellName.appendChild(icon);
                     }
                 });
 
-                const response = await fetch(`api.php?${params.toString()}`);
+                const url = `api.php?${params.toString()}`;
+                console.log('[DEBUG] Fetching logs from URL:', url);
+                
+                const response = await fetch(url);
+                console.log('[DEBUG] Response status:', response.status);
+                
                 if (!response.ok) {
-                    throw new Error('Gagal mengambil data log.');
+                    throw new Error(`HTTP error! status: ${response.status}`);
                 }
 
                 const data = await response.json();
+                console.log('[DEBUG] Response data:', data);
+                
                 if (!data.success) {
                     throw new Error(data.error || 'Gagal mengambil data log.');
                 }
@@ -3135,10 +3156,13 @@ cellName.appendChild(icon);
                 state.logs.data = data.logs || [];
                 state.logs.totalPages = Math.ceil(data.total / 50) || 1;
                 
+                console.log('[DEBUG] Logs data loaded:', state.logs.data.length, 'entries');
+                console.log('[DEBUG] Total pages:', state.logs.totalPages);
+                
                 renderLogTable(state.logs.data);
                 updateLogPagination();
             } catch (error) {
-                console.error('Error fetching log data:', error);
+                console.error('[DEBUG] Error fetching log data:', error);
                 if (logError) {
                     logError.textContent = error.message || 'Terjadi kesalahan saat memuat data log.';
                     logError.hidden = false;
