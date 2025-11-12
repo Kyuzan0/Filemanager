@@ -1,10 +1,11 @@
-# Ignore backup schema file
-backup_schema.json
-
 # Ignore all contents in the file folder
 file/*
 
 # Keep the file folder itself but ignore all contents
 # This ensures the folder structure is preserved
 !file/
-!.gitignore
+.gitignore
+
+tests
+
+logs/*
