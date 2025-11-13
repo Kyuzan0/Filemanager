@@ -2916,6 +2916,9 @@ cellName.appendChild(icon);
             state.logs.activeFilters = {};
             logFilter.value = '';
             
+            // Initialize active filters display
+            updateActiveFiltersDisplay({});
+            
             logOverlay.hidden = false;
             requestAnimationFrame(() => {
                 logOverlay.classList.add('visible');
@@ -2923,9 +2926,422 @@ cellName.appendChild(icon);
             logOverlay.setAttribute('aria-hidden', 'false');
             document.body.classList.add('modal-open');
             
+            // Initialize log filter section functionality
+            initializeLogFilterSection();
+            
+            // Initialize responsive enhancements
+            enhanceLogFilterResponsiveness();
+            
             console.log('[DEBUG] Loading initial log data');
             // Load initial log data
             fetchLogDataWithFilters({});
+        }
+        
+        // Initialize log filter section functionality
+        function initializeLogFilterSection() {
+            const filterSection = document.getElementById('log-filter-section');
+            const toggleButton = document.getElementById('toggle-filters'); // Correct ID to match HTML
+            const clearButton = document.getElementById('reset-filters'); // Correct ID to match HTML
+            const applyButton = document.getElementById('apply-filters'); // Correct ID to match HTML
+            const filterContent = document.getElementById('filter-content'); // Correct ID to match HTML
+            
+            if (!filterSection || !toggleButton) return;
+            
+            // Check screen size and auto-collapse on small screens
+            function checkScreenSize() {
+                const isSmallScreen = window.innerWidth <= 768;
+                const isExtraSmallScreen = window.innerWidth <= 480;
+                const isCollapsed = filterSection.classList.contains('collapsed');
+                
+                // Auto-collapse on small screens if not already collapsed
+                if (isSmallScreen && !isCollapsed) {
+                    filterSection.classList.add('collapsed');
+                    filterSection.classList.remove('expanded');
+                    toggleButton.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M7 14l5-5 5 5z"/></svg>';
+                    toggleButton.setAttribute('aria-label', 'Expand filter section');
+                    
+                    if (filterContent) {
+                        filterContent.style.maxHeight = '0';
+                    }
+                }
+                // Auto-expand on larger screens if not manually collapsed
+                else if (!isSmallScreen && !localStorage.getItem('logFilterCollapsed')) {
+                    filterSection.classList.remove('collapsed');
+                    filterSection.classList.add('expanded');
+                    toggleButton.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M7 10l5 5 5-5z"/></svg>';
+                    toggleButton.setAttribute('aria-label', 'Collapse filter section');
+                    
+                    if (filterContent) {
+                        filterContent.style.maxHeight = 'none';
+                    }
+                }
+                
+                // Adjust filter layout for extra small screens
+                if (isExtraSmallScreen) {
+                    filterSection.classList.add('extra-small');
+                    // Reorganize filter rows for vertical layout
+                    const filterRows = filterSection.querySelectorAll('.filter-row');
+                    filterRows.forEach(row => {
+                        row.classList.add('vertical');
+                    });
+                } else {
+                    filterSection.classList.remove('extra-small');
+                    const filterRows = filterSection.querySelectorAll('.filter-row');
+                    filterRows.forEach(row => {
+                        row.classList.remove('vertical');
+                    });
+                }
+            }
+            
+            // Initial check
+            checkScreenSize();
+            
+            // Listen for resize events with debouncing
+            let resizeTimeout;
+            window.addEventListener('resize', () => {
+                clearTimeout(resizeTimeout);
+                resizeTimeout = setTimeout(checkScreenSize, 100);
+            });
+            
+            // Handle orientation change for mobile devices
+            window.addEventListener('orientationchange', () => {
+                setTimeout(checkScreenSize, 200); // Delay to allow for orientation change completion
+            });
+            
+            // Toggle filter section collapse/expand
+            toggleButton.addEventListener('click', () => {
+                const isCollapsed = filterSection.classList.contains('collapsed');
+                
+                if (isCollapsed) {
+                    // Expand
+                    filterSection.classList.remove('collapsed');
+                    filterSection.classList.add('expanded');
+                    toggleButton.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M7 10l5 5 5-5z"/></svg>';
+                    toggleButton.setAttribute('aria-label', 'Collapse filter section');
+                    
+                    // Animate content appearance
+                    if (filterContent) {
+                        // First set the height to 0 to ensure proper animation
+                        filterContent.style.maxHeight = '0';
+                        filterContent.style.overflow = 'hidden';
+                        
+                        // Then trigger a reflow and set to the actual height
+                        setTimeout(() => {
+                            filterContent.style.maxHeight = filterContent.scrollHeight + 'px';
+                            
+                            // After animation completes, set to none for normal behavior
+                            setTimeout(() => {
+                                filterContent.style.maxHeight = 'none';
+                                filterContent.style.overflow = 'visible';
+                            }, 300);
+                        }, 10);
+                    }
+                } else {
+                    // Collapse
+                    filterSection.classList.add('collapsed');
+                    filterSection.classList.remove('expanded');
+                    toggleButton.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M7 14l5-5 5 5z"/></svg>';
+                    toggleButton.setAttribute('aria-label', 'Expand filter section');
+                    
+                    // Animate content disappearance
+                    if (filterContent) {
+                        filterContent.style.maxHeight = filterContent.scrollHeight + 'px';
+                        filterContent.style.overflow = 'hidden';
+                        
+                        setTimeout(() => {
+                            filterContent.style.maxHeight = '0';
+                        }, 10);
+                    }
+                }
+                
+                // Save state to localStorage
+                localStorage.setItem('logFilterCollapsed', !isCollapsed);
+            });
+            
+            // Restore saved state
+            const savedCollapsedState = localStorage.getItem('logFilterCollapsed') === 'true';
+            if (savedCollapsedState) {
+                filterSection.classList.add('collapsed');
+                filterSection.classList.remove('expanded');
+                toggleButton.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M7 14l5-5 5 5z"/></svg>';
+                toggleButton.setAttribute('aria-label', 'Expand filter section');
+                if (filterContent) {
+                    filterContent.style.maxHeight = '0';
+                    filterContent.style.overflow = 'hidden';
+                }
+            }
+            
+            // Clear filters button
+            if (clearButton) {
+                clearButton.addEventListener('click', () => {
+                    // Reset all filter inputs
+                    const filterInputs = filterSection.querySelectorAll('input, select');
+                    filterInputs.forEach(input => {
+                        if (input.type === 'date' || input.type === 'text') {
+                            input.value = '';
+                        } else if (input.tagName === 'SELECT') {
+                            input.selectedIndex = 0;
+                        }
+                    });
+                    
+                    // Visual feedback
+                    clearButton.classList.add('success');
+                    clearButton.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg><span>Cleared!</span>';
+                    
+                    setTimeout(() => {
+                        clearButton.classList.remove('success');
+                        clearButton.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg><span>Clear</span>';
+                    }, 1500);
+                    
+                    // Apply cleared filters
+                    applyLogFilter();
+                    
+                    // Update active filters display immediately
+                    updateActiveFiltersDisplay({});
+                });
+            }
+            
+            // Apply filters button
+            if (applyButton) {
+                applyButton.addEventListener('click', () => {
+                    // Visual feedback
+                    applyButton.classList.add('loading');
+                    applyButton.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true" class="spin"><path fill="currentColor" d="M12 6V3L8 7l4 4V8c2.76 0 5 2.24 5 5a5 5 0 0 1-5 5 5 5 0 0 1-4.33-2.5h-2.3A7 7 0 0 0 12 20a7 7 0 0 0 7-7c0-3.87-3.13-7-7-7z"/></svg><span>Applying...</span>';
+                    
+                    // Add loading state to filter section
+                    filterSection.classList.add('loading');
+                    
+                    // Apply filters
+                    applyLogFilter();
+                    
+                    // Reset button state after a delay
+                    setTimeout(() => {
+                        applyButton.classList.remove('loading');
+                        applyButton.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg><span>Apply</span>';
+                        filterSection.classList.remove('loading');
+                    }, 1000);
+                });
+            }
+            
+            // Add input change listeners for auto-apply on Enter key
+            const filterInputs = filterSection.querySelectorAll('input, select');
+            filterInputs.forEach(input => {
+                input.addEventListener('keydown', (event) => {
+                    if (event.key === 'Enter') {
+                        applyLogFilter();
+                    }
+                });
+                
+                // Add visual feedback for changed inputs
+                input.addEventListener('change', () => {
+                    input.classList.add('changed');
+                    setTimeout(() => {
+                        input.classList.remove('changed');
+                    }, 300);
+                });
+            });
+            
+            // Add filter row hover effects
+            const filterRows = filterSection.querySelectorAll('.filter-row');
+            filterRows.forEach(row => {
+                row.addEventListener('mouseenter', () => {
+                    row.classList.add('hover');
+                });
+                
+                row.addEventListener('mouseleave', () => {
+                    row.classList.remove('hover');
+                });
+            });
+        }
+        
+        // Function to update active filters display
+        function updateActiveFiltersDisplay(filters) {
+            const activeFiltersContainer = document.getElementById('active-filters-display');
+            if (!activeFiltersContainer) return;
+            
+            // Clear existing badges
+            activeFiltersContainer.innerHTML = '';
+            
+            // If no filters, hide the container
+            if (Object.keys(filters).length === 0) {
+                activeFiltersContainer.style.display = 'none';
+                return;
+            }
+            
+            // Show container and add badges for active filters
+            activeFiltersContainer.style.display = 'flex';
+            
+            // Create badge for each active filter
+            Object.entries(filters).forEach(([key, value]) => {
+                if (!value) return;
+                
+                const badge = document.createElement('div');
+                badge.className = 'active-filter-badge';
+                
+                // Get readable label for the filter
+                let label = '';
+                switch(key) {
+                    case 'log_action':
+                        label = `Action: ${value}`;
+                        break;
+                    case 'start_date':
+                        label = `From: ${value}`;
+                        break;
+                    case 'end_date':
+                        label = `To: ${value}`;
+                        break;
+                    case 'target_type':
+                        label = `Type: ${value}`;
+                        break;
+                    case 'path_search':
+                        label = `Path: ${value}`;
+                        break;
+                    case 'sort_by':
+                        label = `Sort: ${value}`;
+                        break;
+                    case 'sort_order':
+                        label = `Order: ${value}`;
+                        break;
+                    default:
+                        label = `${key}: ${value}`;
+                }
+                
+                badge.textContent = label;
+                
+                // Add remove button
+                const removeBtn = document.createElement('button');
+                removeBtn.className = 'remove-filter';
+                removeBtn.innerHTML = '&times;';
+                removeBtn.addEventListener('click', () => {
+                    // Remove this specific filter
+                    const inputElement = document.getElementById(`log-${key.replace('_', '-')}`);
+                    if (inputElement) {
+                        if (inputElement.tagName === 'SELECT') {
+                            inputElement.selectedIndex = 0;
+                        } else {
+                            inputElement.value = '';
+                        }
+                    }
+                    
+                    // Re-apply filters
+                    applyLogFilter();
+                    
+                    // Update active filters display immediately
+                    setTimeout(() => {
+                        // Get current filter values after removal
+                        const filterSelect = document.getElementById('log-filter');
+                        const startDateInput = document.getElementById('log-start-date');
+                        const endDateInput = document.getElementById('log-end-date');
+                        const targetTypeSelect = document.getElementById('log-target-type');
+                        const pathSearchInput = document.getElementById('log-path-search');
+                        const sortBySelect = document.getElementById('log-sort-by');
+                        const sortOrderSelect = document.getElementById('log-sort-order');
+                        
+                        // Build updated filter object
+                        const updatedFilters = {};
+                        
+                        if (filterSelect && filterSelect.value) {
+                            updatedFilters.log_action = filterSelect.value;
+                        }
+                        
+                        if (startDateInput && startDateInput.value) {
+                            updatedFilters.start_date = startDateInput.value;
+                        }
+                        
+                        if (endDateInput && endDateInput.value) {
+                            updatedFilters.end_date = endDateInput.value;
+                        }
+                        
+                        if (targetTypeSelect && targetTypeSelect.value) {
+                            updatedFilters.target_type = targetTypeSelect.value;
+                        }
+                        
+                        if (pathSearchInput && pathSearchInput.value) {
+                            updatedFilters.path_search = pathSearchInput.value;
+                        }
+                        
+                        if (sortBySelect && sortBySelect.value) {
+                            updatedFilters.sort_by = sortBySelect.value;
+                        }
+                        
+                        if (sortOrderSelect && sortOrderSelect.value) {
+                            updatedFilters.sort_order = sortOrderSelect.value;
+                        }
+                        
+                        updateActiveFiltersDisplay(updatedFilters);
+                    }, 100);
+                });
+                
+                badge.appendChild(removeBtn);
+                activeFiltersContainer.appendChild(badge);
+            });
+        }
+        
+        // Add responsive enhancements for log filter section
+        function enhanceLogFilterResponsiveness() {
+            const filterSection = document.getElementById('log-filter-section');
+            if (!filterSection) return;
+            
+            // Handle window resize events
+            function handleResize() {
+                const isSmallScreen = window.innerWidth <= 768;
+                const isExtraSmallScreen = window.innerWidth <= 480;
+                
+                // Adjust filter section layout based on screen size
+                if (isExtraSmallScreen) {
+                    filterSection.classList.add('extra-small');
+                    // Reorganize filter rows for vertical layout
+                    const filterRows = filterSection.querySelectorAll('.filter-row');
+                    filterRows.forEach(row => {
+                        row.classList.add('vertical');
+                    });
+                } else {
+                    filterSection.classList.remove('extra-small');
+                    const filterRows = filterSection.querySelectorAll('.filter-row');
+                    filterRows.forEach(row => {
+                        row.classList.remove('vertical');
+                    });
+                }
+                
+                // Update active filters display for current screen size
+                if (state.logs.activeFilters) {
+                    updateActiveFiltersDisplay(state.logs.activeFilters);
+                }
+            }
+            
+            // Initial call
+            handleResize();
+            
+            // Add resize listener with debouncing
+            let resizeTimeout;
+            window.addEventListener('resize', () => {
+                clearTimeout(resizeTimeout);
+                resizeTimeout = setTimeout(handleResize, 100);
+            });
+            
+            // Handle orientation change for mobile devices
+            window.addEventListener('orientationchange', () => {
+                setTimeout(handleResize, 200); // Delay to allow for orientation change completion
+            });
+            
+            // Add touch support for mobile devices
+            if ('ontouchstart' in window) {
+                filterSection.classList.add('touch-device');
+                
+                // Add touch feedback for buttons
+                const buttons = filterSection.querySelectorAll('button');
+                buttons.forEach(button => {
+                    button.addEventListener('touchstart', () => {
+                        button.classList.add('touch-active');
+                    });
+                    
+                    button.addEventListener('touchend', () => {
+                        setTimeout(() => {
+                            button.classList.remove('touch-active');
+                        }, 150);
+                    });
+                });
+            }
         }
 
         function closeLogModal() {
@@ -3022,28 +3438,85 @@ cellName.appendChild(icon);
 
             console.log('[DEBUG] Rendering', logs.length, 'log entries');
             logTableBody.innerHTML = '';
+            
+            // Check screen size for responsive display
+            const isSmallScreen = window.innerWidth <= 768;
+            const isExtraSmallScreen = window.innerWidth <= 480;
+            const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+            
             logs.forEach((log, index) => {
                 console.log(`[DEBUG] Processing log ${index}:`, log);
                 const formattedLog = formatLogEntry(log);
                 const row = document.createElement('tr');
                 
+                // Add touch-friendly class for mobile devices
+                if (isTouchDevice) {
+                    row.classList.add('touch-friendly');
+                }
+                
                 // Time cell with better formatting
                 const timeCell = document.createElement('td');
                 timeCell.className = 'log-time';
-                timeCell.innerHTML = `<span class="log-date">${formattedLog.formattedDate}</span>`;
+                
+                // Format date differently for small screens
+                let displayDate = formattedLog.formattedDate;
+                if (isSmallScreen) {
+                    // Shorten date format for small screens
+                    const date = new Date(log.timestamp);
+                    displayDate = date.toLocaleString('id-ID', {
+                        month: 'short',
+                        day: '2-digit',
+                        hour: '2-digit',
+                        minute: '2-digit'
+                    });
+                }
+                
+                timeCell.innerHTML = `<span class="log-date">${displayDate}</span>`;
                 timeCell.title = `Timestamp: ${log.timestamp}`;
                 row.appendChild(timeCell);
                 
                 // Action cell with label
                 const actionCell = document.createElement('td');
                 actionCell.className = 'log-action';
-                actionCell.innerHTML = `<span class="log-badge log-action-${log.action}">${formattedLog.actionLabel}</span>`;
+                
+                // Use shorter labels on small screens
+                let actionLabel = formattedLog.actionLabel;
+                if (isExtraSmallScreen) {
+                    switch(log.action) {
+                        case 'create': actionLabel = 'Buat'; break;
+                        case 'delete': actionLabel = 'Hapus'; break;
+                        case 'move': actionLabel = 'Pindah'; break;
+                        case 'rename': actionLabel = 'Ubah'; break;
+                        case 'upload': actionLabel = 'Unggah'; break;
+                        case 'download': actionLabel = 'Unduh'; break;
+                        case 'read': actionLabel = 'Baca'; break;
+                        case 'copy': actionLabel = 'Salin'; break;
+                        default: actionLabel = formattedLog.actionLabel;
+                    }
+                }
+                
+                actionCell.innerHTML = `<span class="log-badge log-action-${log.action}">${actionLabel}</span>`;
                 row.appendChild(actionCell);
                 
                 // Target cell with path tooltip
                 const targetCell = document.createElement('td');
                 targetCell.className = 'log-target';
-                const targetName = log.target_name || log.target_path || '-';
+                let targetName = log.target_name || log.target_path || '-';
+                
+                // Truncate long paths on small screens
+                if (isSmallScreen && targetName.length > 20) {
+                    targetName = targetName.substring(0, 18) + '...';
+                }
+                
+                // Add touch-friendly click handler for mobile
+                if (isTouchDevice) {
+                    targetCell.style.cursor = 'pointer';
+                    targetCell.addEventListener('click', () => {
+                        // Show full path in a modal or alert on mobile
+                        alert(`Path: ${log.target_path || '-'}`);
+                    });
+                }
+                
                 targetCell.innerHTML = `<span class="log-target-name" title="${log.target_path || '-'}">${targetName}</span>`;
                 row.appendChild(targetCell);
                 
@@ -3051,18 +3524,49 @@ cellName.appendChild(icon);
                 const typeCell = document.createElement('td');
                 typeCell.className = 'log-type';
                 const typeIcon = log.target_type === 'folder' ? '📁' : '📄';
-                typeCell.innerHTML = `<span class="log-type-badge">${typeIcon} ${formattedLog.typeLabel}</span>`;
+                
+                // Use shorter type labels on small screens
+                let typeLabel = formattedLog.typeLabel;
+                if (isExtraSmallScreen) {
+                    typeLabel = log.target_type === 'folder' ? 'Fldr' : 'File';
+                }
+                
+                typeCell.innerHTML = `<span class="log-type-badge">${typeIcon} ${typeLabel}</span>`;
                 row.appendChild(typeCell);
                 
-                // IP cell
-                const ipCell = document.createElement('td');
-                ipCell.className = 'log-ip';
-                ipCell.textContent = log.ip_address || '-';
-                ipCell.title = `IP: ${log.ip_address || '-'}`;
-                row.appendChild(ipCell);
+                // IP cell - hide on very small screens
+                if (!isExtraSmallScreen) {
+                    const ipCell = document.createElement('td');
+                    ipCell.className = 'log-ip';
+                    let ipAddress = log.ip_address || '-';
+                    
+                    // Shorten IP on small screens
+                    if (isSmallScreen && ipAddress.length > 12) {
+                        const parts = ipAddress.split('.');
+                        if (parts.length === 4) {
+                            ipAddress = `${parts[0]}.${parts[1]}.*.*`;
+                        }
+                    }
+                    
+                    ipCell.textContent = ipAddress;
+                    ipCell.title = `IP: ${log.ip_address || '-'}`;
+                    row.appendChild(ipCell);
+                }
                 
                 logTableBody.appendChild(row);
             });
+            
+            // Add responsive table wrapper if needed
+            const logTable = document.querySelector('.log-table');
+            if (logTable && isSmallScreen) {
+                // Check if wrapper already exists
+                if (!logTable.parentElement.classList.contains('log-table-wrapper')) {
+                    const wrapper = document.createElement('div');
+                    wrapper.className = 'log-table-wrapper';
+                    logTable.parentNode.insertBefore(wrapper, logTable);
+                    wrapper.appendChild(logTable);
+                }
+            }
             
             console.log('[DEBUG] Log table rendering completed');
         }
@@ -3110,6 +3614,9 @@ cellName.appendChild(icon);
             // Reset to first page when applying new filters
             state.logs.currentPage = 1;
             state.logs.activeFilters = filters;
+            
+            // Add visual feedback for active filters
+            updateActiveFiltersDisplay(filters);
             
             // Fetch data with new filters
             fetchLogDataWithFilters(filters);
@@ -3159,6 +3666,16 @@ cellName.appendChild(icon);
                 console.log('[DEBUG] Logs data loaded:', state.logs.data.length, 'entries');
                 console.log('[DEBUG] Total pages:', state.logs.totalPages);
                 
+                // Add fade-in animation to the log table
+                const logTable = document.querySelector('.log-table');
+                if (logTable) {
+                    logTable.classList.add('fade-in');
+                    // Remove animation class after animation completes
+                    setTimeout(() => {
+                        logTable.classList.remove('fade-in');
+                    }, 500);
+                }
+                
                 renderLogTable(state.logs.data);
                 updateLogPagination();
             } catch (error) {
@@ -3172,6 +3689,11 @@ cellName.appendChild(icon);
                 }
             } finally {
                 setLogLoading(false);
+                // Remove loading state from filter section
+                const filterSection = document.getElementById('log-filter-section');
+                if (filterSection) {
+                    filterSection.classList.remove('loading');
+                }
             }
         }
 
