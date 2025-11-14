@@ -2462,63 +2462,6 @@ body.dragging {
     position: relative;
 }
 
-.filter-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 16px 20px;
-    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-hover) 100%);
-    color: white;
-    border-bottom: 1px solid var(--border);
-    cursor: pointer;
-    user-select: none;
-}
-
-.filter-title {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    margin: 0;
-    font-size: 1.1rem;
-    font-weight: 600;
-}
-
-.filter-icon {
-    width: 20px;
-    height: 20px;
-    opacity: 0.9;
-}
-
-.toggle-filters {
-    background: rgba(255, 255, 255, 0.2);
-    border: none;
-    border-radius: 6px;
-    padding: 6px;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.toggle-filters:hover {
-    background: rgba(255, 255, 255, 0.3);
-}
-
-.toggle-filters:focus {
-    outline: 2px solid rgba(255, 255, 255, 0.5);
-    outline-offset: 2px;
-}
-
-.toggle-icon {
-    width: 20px;
-    height: 20px;
-    transition: transform 0.3s ease;
-}
-
-.toggle-filters[aria-expanded="false"] .toggle-icon {
-    transform: rotate(-90deg);
-}
 
 .filter-content {
     padding: 20px;
@@ -3531,9 +3474,6 @@ body.dragging {
         z-index: 100;
     }
     
-    .filter-header {
-        padding: 12px 16px;
-    }
     
     .filter-title {
         font-size: 1rem;
@@ -3782,9 +3722,6 @@ body.dragging {
         margin-bottom: 8px;
     }
     
-    .filter-header {
-        padding: 10px 12px;
-    }
     
     .filter-title {
         font-size: 0.9rem;

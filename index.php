@@ -309,19 +309,6 @@
                 <!-- Sticky Filter Header Bar -->
                 <div class="log-filter-header">
                     <div class="log-filter-section">
-                        <div class="filter-header">
-                            <h3 class="filter-title">
-                                <svg viewBox="0 0 24 24" aria-hidden="true" class="filter-icon">
-                                    <path fill="currentColor" d="M3 4h18v2H3V4zm0 7h12v2H3v-2zm0 7h6v2H3v-2z"/>
-                                </svg>
-                                Filter Log
-                            </h3>
-                            <button type="button" id="toggle-filters" class="toggle-filters" aria-expanded="true" aria-label="Toggle filter visibility">
-                                <svg viewBox="0 0 24 24" aria-hidden="true" class="toggle-icon">
-                                    <path fill="currentColor" d="M7 10l5 5 5-5H7z"/>
-                                </svg>
-                            </button>
-                        </div>
                         
                         <div class="filter-content" id="filter-content">
                             <div class="filter-row-horizontal">
