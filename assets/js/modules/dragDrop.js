@@ -313,3 +313,14 @@ export function setupUpRowDropZone(upRow, state, handleBodyDragOver, handleBodyD
         state.drag.dropTarget = null;
     });
 }
+
+/**
+ * Setup drag and drop functionality
+ * Main setup function that initializes drag and drop for the file manager
+ */
+export function setupDragAndDrop() {
+    // This function will be called during app initialization
+    // The actual drag and drop setup is done in uiRenderer when creating file items
+    // This is a placeholder function to satisfy the import in appInitializer.js
+    console.log('[DEBUG] Drag and Drop module initialized');
+}

@@ -27,7 +27,7 @@ import {
 import { setupMoveOverlayHandlers } from './moveOverlay.js';
 import { setupDragAndDrop } from './dragDrop.js';
 import { fetchDirectory } from './apiService.js';
-import { renderItems, updateSortUI } from './uiRenderer.js';
+import { renderItems as renderItemsComplex, updateSortUI } from './uiRenderer.js';
 import { 
     openPreviewOverlay, 
     closePreviewOverlay, 
@@ -46,24 +46,460 @@ import {
     createItem, 
     uploadFiles 
 } from './fileOperations.js';
-import { 
-    hasUnsavedChanges, 
-    confirmDiscardChanges, 
-    setSelectionForVisible, 
-    changeSort,
-    navigateTo,
-    startPolling,
-    handleContextMenuAction,
-    closeContextMenu,
-    updatePreviewStatus,
-    updateLineNumbers,
-    ensureConsistentStyling,
-    syncLineNumbersScroll,
-    savePreviewContent
+import {
+    hasUnsavedChanges,
+    compareItems,
+    getSortDescription,
+    synchronizeSelection,
+    copyPathToClipboard,
+    getFileExtension,
+    isWordDocument,
+    buildFileUrl,
+    formatBytes,
+    formatDate
 } from './utils.js';
 import { logInfo, logError, createLogger } from './logManager.js';
 
 const logger = createLogger('INITIALIZER');
+
+// Internal helper functions
+function confirmDiscardChanges(message) {
+    return new Promise((resolve) => {
+        if (confirm(message)) {
+            resolve(true);
+        } else {
+            resolve(false);
+        }
+    });
+}
+
+function setSelectionForVisible(isSelected) {
+    state.visibleItems.forEach((item) => {
+        if (isSelected) {
+            state.selected.add(item.path);
+        } else {
+            state.selected.delete(item.path);
+        }
+    });
+    updateSelectionUI();
+}
+
+// Create a simple wrapper for renderItems
+function renderItems(items, lastUpdated, highlightNew) {
+    console.log('[DEBUG] renderItems called with:', { items, lastUpdated, highlightNew });
+    console.log('[DEBUG] Current state:', state);
+    
+    // Basic implementation to render files and folders
+    if (elements.tableBody && elements.emptyState) {
+        elements.tableBody.innerHTML = '';
+        
+        if (!items || items.length === 0) {
+            elements.emptyState.hidden = false;
+            elements.emptyState.textContent = 'Tidak ada file atau folder di direktori ini.';
+        } else {
+            elements.emptyState.hidden = true;
+            
+            // Render each item as a table row
+            items.forEach(item => {
+                console.log('[DEBUG] Rendering item:', item);
+                const row = document.createElement('tr');
+                row.className = 'item';
+                row.setAttribute('data-path', item.path);
+                row.setAttribute('data-type', item.type);
+                
+                // Name column
+                const nameCell = document.createElement('td');
+                nameCell.className = 'item-name';
+                
+                const nameSpan = document.createElement('span');
+                nameSpan.className = 'name';
+                nameSpan.textContent = item.name;
+                
+                const iconSpan = document.createElement('span');
+                iconSpan.className = 'icon';
+                iconSpan.textContent = item.type === 'folder' ? '📁' : '📄';
+                
+                nameCell.appendChild(iconSpan);
+                nameCell.appendChild(nameSpan);
+                
+                // Size column
+                const sizeCell = document.createElement('td');
+                sizeCell.className = 'item-size';
+                sizeCell.textContent = item.type === 'folder' ? '-' : (item.size || '0 B');
+                
+                // Date column
+                const dateCell = document.createElement('td');
+                dateCell.className = 'item-date';
+                dateCell.textContent = item.modified || '';
+                
+                // Action column
+                const actionCell = document.createElement('td');
+                actionCell.className = 'item-actions';
+                
+                const actionButton = document.createElement('button');
+                actionButton.className = 'action-btn';
+                actionButton.textContent = '⋮';
+                actionButton.setAttribute('aria-label', 'More actions');
+                
+                actionCell.appendChild(actionButton);
+                
+                // Add double-click event listener first (higher priority)
+                row.addEventListener('dblclick', (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    console.log('[DEBUG] Double-clicked item:', item);
+                    console.log('[DEBUG] Item type:', item.type, 'Item path:', item.path);
+                    if (item.type === 'folder') {
+                        console.log('[DEBUG] Navigating to folder:', item.path);
+                        navigateTo(item.path);
+                    } else {
+                        console.log('[DEBUG] Opening file:', item.path);
+                        // Open file (could implement preview here)
+                        window.open(`file.php?path=${encodeURIComponent(item.path)}`, '_blank');
+                    }
+                }, { passive: false });
+                
+                // Add click handler with delay to avoid conflict with double-click
+                let clickTimeout;
+                row.addEventListener('click', (e) => {
+                    clearTimeout(clickTimeout);
+                    clickTimeout = setTimeout(() => {
+                        // Handle single click (selection) after ensuring it's not part of a double-click
+                        console.log('[DEBUG] Single-clicked item:', item.name);
+                        // Add selection logic here if needed
+                    }, 300); // Wait 300ms to see if there's a double-click
+                });
+                
+                row.appendChild(nameCell);
+                row.appendChild(sizeCell);
+                row.appendChild(dateCell);
+                row.appendChild(actionCell);
+                
+                elements.tableBody.appendChild(row);
+            });
+        }
+    }
+    
+    // Update status
+    if (elements.statusInfo) {
+        const itemCount = items ? items.length : 0;
+        elements.statusInfo.textContent = itemCount > 0 ?
+            `${itemCount} item ditampilkan` :
+            'Tidak ada data';
+    }
+}
+
+function changeSort(key) {
+    const newDirection = state.sortKey === key && state.sortDirection === 'asc' ? 'desc' : 'asc';
+    updateState({
+        sortKey: key,
+        sortDirection: newDirection
+    });
+    renderItems(state.items, state.lastUpdated, false);
+    updateSortUI(elements.sortHeaders, elements.statusSort, state);
+}
+
+function navigateTo(path) {
+    console.log('[DEBUG] navigateTo called with path:', path);
+    console.log('[DEBUG] Current state path before navigation:', state.currentPath);
+    fetchDirectoryWrapper(path);
+}
+
+/**
+ * Wrapper function for fetchDirectory that integrates with state and UI
+ * @param {string} path - Directory path to fetch
+ * @param {Object} options - Options for the fetch operation
+ */
+async function fetchDirectoryWrapper(path = '', options = {}) {
+    try {
+        console.log('[DEBUG] fetchDirectoryWrapper called with path:', path);
+        
+        // Update loading state
+        updateState({ isLoading: true });
+        
+        // Call the API
+        const data = await fetchDirectory(path, options);
+        console.log('[DEBUG] API response for path "' + path + '":', data);
+        
+        if (data && data.success) {
+            // Update state with the fetched data
+            updateState({
+                currentPath: data.path || path,
+                items: data.items || [],
+                lastUpdated: data.lastUpdated || new Date().toISOString(),
+                isLoading: false
+            });
+            
+            // Create itemMap for quick lookup
+            const itemMap = new Map();
+            if (data.items && Array.isArray(data.items)) {
+                data.items.forEach(item => {
+                    itemMap.set(item.path, item);
+                });
+            }
+            updateState({ itemMap });
+            
+            // Update visibleItems based on filter
+            const visibleItems = state.items.filter(item => {
+                if (!state.filter) return true;
+                return item.name.toLowerCase().includes(state.filter.toLowerCase());
+            });
+            updateState({ visibleItems });
+            
+            // Render the items
+            renderItems(state.items, state.lastUpdated, false);
+            
+            // Update UI elements
+            updateSelectionUI();
+            
+            console.log('[DEBUG] State updated successfully:', state);
+        } else {
+            console.error('[DEBUG] API returned unsuccessful response:', data);
+            updateState({ isLoading: false });
+            if (elements.statusInfo) {
+                elements.statusInfo.textContent = 'Gagal memuat data direktori';
+            }
+        }
+    } catch (error) {
+        console.error('[DEBUG] fetchDirectoryWrapper error:', error);
+        updateState({ isLoading: false });
+        if (elements.statusInfo) {
+            elements.statusInfo.textContent = 'Error: ' + (error.message || 'Gagal memuat data');
+        }
+    }
+}
+
+function startPolling() {
+    if (state.polling) {
+        clearInterval(state.polling);
+    }
+    state.polling = setInterval(() => {
+        if (!document.hidden) {
+            fetchDirectoryWrapper(state.currentPath);
+        }
+    }, config.pollingInterval || 30000);
+}
+
+function handleContextMenuAction(action) {
+    const { targetItem } = state.contextMenu;
+    if (!targetItem) return;
+    
+    closeContextMenu();
+    
+    switch (action) {
+        case 'open':
+            if (targetItem.type === 'folder') {
+                navigateTo(targetItem.path);
+            } else {
+                window.open(buildFileUrl(targetItem.path), '_blank');
+            }
+            break;
+        case 'rename':
+            openRenameOverlayWrapper(targetItem);
+            break;
+        case 'delete':
+            openConfirmOverlayWrapper({
+                message: `Hapus "${targetItem.name}"?`,
+                description: 'Item yang dihapus tidak dapat dikembalikan.',
+                paths: [targetItem.path],
+                showList: false,
+                confirmLabel: 'Hapus',
+            });
+            break;
+        case 'copy-path':
+            copyPathToClipboard(targetItem.path);
+            break;
+    }
+}
+
+function closeContextMenu() {
+    updateState({
+        contextMenu: {
+            ...state.contextMenu,
+            isOpen: false,
+            targetItem: null
+        }
+    });
+}
+
+function updatePreviewStatus() {
+    // Basic implementation - can be enhanced
+    const { previewStatus } = elements;
+    if (previewStatus) {
+        const { dirty, isSaving } = state.preview;
+        if (isSaving) {
+            previewStatus.textContent = 'Menyimpan...';
+        } else if (dirty) {
+            previewStatus.textContent = 'Perubahan belum disimpan';
+        } else {
+            previewStatus.textContent = 'Disimpan';
+        }
+    }
+}
+
+function updateLineNumbers() {
+    // Basic implementation - can be enhanced
+    const { previewEditor, previewLineNumbers } = elements;
+    if (previewEditor && previewLineNumbers) {
+        const lines = previewEditor.value.split('\n').length;
+        const lineNumbersHtml = Array.from({ length: lines }, (_, i) => i + 1).join('\n');
+        previewLineNumbers.textContent = lineNumbersHtml;
+    }
+}
+
+function ensureConsistentStyling() {
+    // Basic implementation - can be enhanced
+    const { previewEditor, previewLineNumbers } = elements;
+    if (previewEditor && previewLineNumbers) {
+        const editorStyles = getComputedStyle(previewEditor);
+        previewLineNumbers.style.fontFamily = editorStyles.fontFamily;
+        previewLineNumbers.style.fontSize = editorStyles.fontSize;
+        previewLineNumbers.style.lineHeight = editorStyles.lineHeight;
+    }
+}
+
+function syncLineNumbersScroll() {
+    // Basic implementation - can be enhanced
+    const { previewEditor, previewLineNumbers } = elements;
+    if (previewEditor && previewLineNumbers) {
+        previewLineNumbers.scrollTop = previewEditor.scrollTop;
+    }
+}
+
+function savePreviewContent() {
+    // Basic implementation - can be enhanced
+    if (state.preview.isSaving) return;
+    
+    updateState({
+        preview: {
+            ...state.preview,
+            isSaving: true
+        }
+    });
+    
+    // Implementation would call API to save content
+    setTimeout(() => {
+        updateState({
+            preview: {
+                ...state.preview,
+                isSaving: false,
+                dirty: false,
+                originalContent: elements.previewEditor.value
+            }
+        });
+        updatePreviewStatus();
+    }, 1000);
+}
+
+function updateSelectionUI() {
+    const { btnDeleteSelected, btnMoveSelected, selectAllCheckbox } = elements;
+    const selectedCount = state.selected.size;
+    
+    if (btnDeleteSelected) {
+        btnDeleteSelected.disabled = selectedCount === 0 || state.isLoading;
+        btnDeleteSelected.textContent = selectedCount > 0
+            ? `Hapus (${selectedCount})`
+            : 'Hapus';
+    }
+    
+    if (btnMoveSelected) {
+        btnMoveSelected.disabled = selectedCount === 0 || state.isLoading;
+    }
+    
+    if (selectAllCheckbox) {
+        const totalVisible = state.visibleItems.length;
+        const selectedVisible = state.visibleItems.filter(item => state.selected.has(item.path)).length;
+        selectAllCheckbox.checked = totalVisible > 0 && selectedVisible === totalVisible;
+        selectAllCheckbox.indeterminate = selectedVisible > 0 && selectedVisible < totalVisible;
+    }
+}
+
+/**
+ * Wrapper function for openCreateOverlay with proper parameters
+ * @param {string} kind - Type of item to create ('file' or 'folder')
+ */
+function openCreateOverlayWrapper(kind) {
+    openCreateOverlay(
+        state,
+        elements.createOverlay,
+        elements.createTitle,
+        elements.createSubtitle,
+        elements.createLabel,
+        elements.createName,
+        elements.createHint,
+        elements.createSubmit,
+        kind
+    );
+}
+
+/**
+ * Wrapper function for openRenameOverlay with proper parameters
+ * @param {Object} item - Item to rename
+ */
+function openRenameOverlayWrapper(item) {
+    openRenameOverlay(
+        state,
+        elements.renameOverlay,
+        elements.renameTitle,
+        elements.renameSubtitle,
+        elements.renameLabel,
+        elements.renameName,
+        elements.renameHint,
+        elements.renameSubmit,
+        item
+    );
+}
+
+/**
+ * Wrapper function for openConfirmOverlay with proper parameters
+ * @param {Object} options - Confirmation options
+ */
+function openConfirmOverlayWrapper(options) {
+    openConfirmOverlay(
+        state,
+        elements.confirmOverlay,
+        elements.confirmMessage,
+        elements.confirmDescription,
+        elements.confirmList,
+        elements.confirmConfirm,
+        options
+    );
+}
+
+/**
+ * Wrapper function for closeCreateOverlay with proper parameters
+ */
+function closeCreateOverlayWrapper() {
+    closeCreateOverlay(
+        state,
+        elements.createOverlay,
+        elements.createForm,
+        elements.createHint,
+        elements.createSubmit,
+        elements.createName
+    );
+}
+
+/**
+ * Wrapper function for closeRenameOverlay with proper parameters
+ */
+function closeRenameOverlayWrapper() {
+    closeRenameOverlay(
+        state,
+        elements.renameOverlay,
+        elements.renameForm,
+        elements.renameHint,
+        elements.renameSubmit,
+        elements.renameName
+    );
+}
+
+/**
+ * Wrapper function for closeConfirmOverlay with proper parameters
+ */
+function closeConfirmOverlayWrapper() {
+    closeConfirmOverlay(state, elements.confirmOverlay);
+}
 
 /**
  * Menginisialisasi aplikasi
@@ -80,7 +516,7 @@ export async function initializeApp() {
             itemMap: new Map(),
             selected: new Set(),
             sortKey: 'name',
-            sortOrder: 'asc',
+            sortDirection: 'asc',
             filter: '',
             lastUpdated: null,
             polling: null,
@@ -177,7 +613,7 @@ function setupEventHandlers() {
         state,
         hasUnsavedChanges,
         confirmDiscardChanges,
-        fetchDirectory
+        fetchDirectoryWrapper
     );
     
     // Setup up handler
@@ -215,7 +651,7 @@ function setupEventHandlers() {
         state,
         hasUnsavedChanges,
         confirmDiscardChanges,
-        openConfirmOverlay
+        openConfirmOverlayWrapper
     );
     
     // Setup upload handler
@@ -254,7 +690,7 @@ function setupEventHandlers() {
         elements.confirmCancel,
         elements.confirmConfirm,
         state,
-        closeConfirmOverlay,
+        closeConfirmOverlayWrapper,
         deleteItems
     );
     
@@ -267,7 +703,7 @@ function setupEventHandlers() {
         elements.createCancel,
         elements.createSubmit,
         state,
-        closeCreateOverlay,
+        closeCreateOverlayWrapper,
         createItem
     );
     
@@ -280,7 +716,7 @@ function setupEventHandlers() {
         elements.renameCancel,
         elements.renameSubmit,
         state,
-        closeRenameOverlay,
+        closeRenameOverlayWrapper,
         renameItem
     );
     
@@ -298,9 +734,9 @@ function setupEventHandlers() {
     setupKeyboardHandler(
         state,
         closeUnsavedOverlay,
-        closeConfirmOverlay,
-        closeCreateOverlay,
-        closeRenameOverlay,
+        closeConfirmOverlayWrapper,
+        closeCreateOverlayWrapper,
+        closeRenameOverlayWrapper,
         closePreviewOverlay,
         hasUnsavedChanges
     );
@@ -308,7 +744,7 @@ function setupEventHandlers() {
     // Setup visibility handler
     setupVisibilityHandler(
         state,
-        fetchDirectory,
+        fetchDirectoryWrapper,
         startPolling
     );
     
@@ -328,7 +764,7 @@ function setupEventHandlers() {
         elements.splitMenu,
         elements.splitOptions,
         elements.splitMain,
-        openCreateOverlay
+        openCreateOverlayWrapper
     );
     
     logger.info('Event handlers setup completed');
@@ -342,10 +778,10 @@ async function loadInitialDirectory() {
         logger.info('Loading initial directory...');
         
         const path = elements.currentPath || '';
-        await fetchDirectory(path);
+        await fetchDirectoryWrapper(path);
         
         // Update sort UI
-        updateSortUI();
+        updateSortUI(elements.sortHeaders, elements.statusSort, state);
         
         logger.info('Initial directory loaded successfully');
         
@@ -528,13 +964,13 @@ function setupKeyboardShortcuts() {
         // Ctrl/Cmd + N for new file
         if ((event.ctrlKey || event.metaKey) && event.key === 'n') {
             event.preventDefault();
-            openCreateOverlay('file');
+            openCreateOverlayWrapper('file');
         }
         
         // Ctrl/Cmd + Shift + N for new folder
         if ((event.ctrlKey || event.metaKey) && event.shiftKey && event.key === 'N') {
             event.preventDefault();
-            openCreateOverlay('folder');
+            openCreateOverlayWrapper('folder');
         }
         
         // Ctrl/Cmd + R for refresh (prevent browser refresh)
@@ -559,7 +995,6 @@ function initializeAdditionalFeatures() {
 
 // Export fungsi utama
 export {
-    initializeApp,
     setupEventHandlers,
     loadInitialDirectory,
     initializeAdditionalFeatures

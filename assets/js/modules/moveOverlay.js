@@ -6,7 +6,7 @@
 import { elements, config } from './constants.js';
 import { state, updateState } from './state.js';
 import { logModalOperation, modalLogger } from './logManager.js';
-import { buildFileUrl, sanitizePath } from './utils.js';
+import { buildFileUrl, encodePathSegments } from './utils.js';
 import { fetchDirectory } from './apiService.js';
 
 /**
@@ -28,19 +28,29 @@ export function openMoveOverlay(paths) {
         }
     });
 
-    // Reset form
-    elements.movePath.value = state.currentPath;
-    elements.moveHint.textContent = 'Pilih folder tujuan untuk memindahkan item.';
-    elements.moveHint.classList.remove('error');
-    elements.moveSubmit.disabled = false;
-    elements.moveCancel.disabled = false;
+    // Reset form (only if elements exist)
+    if (elements.movePath) {
+        elements.movePath.value = state.currentPath;
+    }
+    if (elements.moveHint) {
+        elements.moveHint.textContent = 'Pilih folder tujuan untuk memindahkan item.';
+        elements.moveHint.classList.remove('error');
+    }
+    if (elements.moveSubmit) {
+        elements.moveSubmit.disabled = false;
+    }
+    if (elements.moveCancel) {
+        elements.moveCancel.disabled = false;
+    }
 
     // Load current directory in move overlay
     loadMoveDirectory(state.currentPath);
 
     // Show overlay
     elements.moveOverlay.setAttribute('aria-hidden', 'false');
-    elements.movePath.focus();
+    if (elements.movePath) {
+        elements.movePath.focus();
+    }
 
     logModalOperation('move', 'open', { paths });
 }
@@ -74,8 +84,12 @@ export function closeMoveOverlay() {
 async function loadMoveDirectory(path) {
     try {
         updateState({ move: { ...state.move, isLoading: true, error: null } });
-        elements.moveSubmit.disabled = true;
-        elements.movePath.disabled = true;
+        if (elements.moveSubmit) {
+            elements.moveSubmit.disabled = true;
+        }
+        if (elements.movePath) {
+            elements.movePath.disabled = true;
+        }
 
         const response = await fetch(`${config.apiBaseUrl}?path=${encodeURIComponent(path)}&json=1`);
         if (!response.ok) {
@@ -95,18 +109,24 @@ async function loadMoveDirectory(path) {
         renderMoveFolderList(folders, path);
         
         // Update current path display
-        elements.movePath.value = path;
+        if (elements.movePath) {
+            elements.movePath.value = path;
+        }
         
-        updateState({ 
-            move: { 
-                ...state.move, 
-                isLoading: false, 
-                targetPath: path 
-            } 
+        updateState({
+            move: {
+                ...state.move,
+                isLoading: false,
+                targetPath: path
+            }
         });
         
-        elements.moveSubmit.disabled = false;
-        elements.movePath.disabled = false;
+        if (elements.moveSubmit) {
+            elements.moveSubmit.disabled = false;
+        }
+        if (elements.movePath) {
+            elements.movePath.disabled = false;
+        }
         
     } catch (error) {
         modalLogger.error('Failed to load move directory', error);
@@ -118,10 +138,16 @@ async function loadMoveDirectory(path) {
             } 
         });
         
-        elements.moveHint.textContent = `Error: ${error.message}`;
-        elements.moveHint.classList.add('error');
-        elements.moveSubmit.disabled = true;
-        elements.movePath.disabled = false;
+        if (elements.moveHint) {
+            elements.moveHint.textContent = `Error: ${error.message}`;
+            elements.moveHint.classList.add('error');
+        }
+        if (elements.moveSubmit) {
+            elements.moveSubmit.disabled = true;
+        }
+        if (elements.movePath) {
+            elements.movePath.disabled = false;
+        }
     }
 }
 
@@ -200,37 +226,49 @@ export async function moveItems() {
         return;
     }
 
-    const targetPath = sanitizePath(elements.movePath.value);
+    const targetPath = elements.movePath ? encodePathSegments(elements.movePath.value) : state.move.targetPath || state.currentPath;
     
     // Validate target path
     if (!targetPath) {
-        elements.moveHint.textContent = 'Path tujuan tidak valid.';
-        elements.moveHint.classList.add('error');
+        if (elements.moveHint) {
+            elements.moveHint.textContent = 'Path tujuan tidak valid.';
+            elements.moveHint.classList.add('error');
+        }
         return;
     }
 
     // Check if target path is the same as current path
     if (targetPath === state.currentPath) {
-        elements.moveHint.textContent = 'Tidak dapat memindahkan ke folder yang sama.';
-        elements.moveHint.classList.add('error');
+        if (elements.moveHint) {
+            elements.moveHint.textContent = 'Tidak dapat memindahkan ke folder yang sama.';
+            elements.moveHint.classList.add('error');
+        }
         return;
     }
 
     // Check if any item would be moved into its own subtree
     for (const sourcePath of state.move.paths) {
         if (targetPath.startsWith(sourcePath + '/')) {
-            elements.moveHint.textContent = 'Tidak dapat memindahkan folder ke dalam subfoldernya sendiri.';
-            elements.moveHint.classList.add('error');
+            if (elements.moveHint) {
+                elements.moveHint.textContent = 'Tidak dapat memindahkan folder ke dalam subfoldernya sendiri.';
+                elements.moveHint.classList.add('error');
+            }
             return;
         }
     }
 
     try {
         updateState({ move: { ...state.move, isLoading: true, error: null } });
-        elements.moveSubmit.disabled = true;
-        elements.moveCancel.disabled = true;
-        elements.moveHint.textContent = 'Memindahkan item...';
-        elements.moveHint.classList.remove('error');
+        if (elements.moveSubmit) {
+            elements.moveSubmit.disabled = true;
+        }
+        if (elements.moveCancel) {
+            elements.moveCancel.disabled = true;
+        }
+        if (elements.moveHint) {
+            elements.moveHint.textContent = 'Memindahkan item...';
+            elements.moveHint.classList.remove('error');
+        }
 
         const formData = new FormData();
         formData.append('action', 'move');
@@ -272,10 +310,16 @@ export async function moveItems() {
             } 
         });
         
-        elements.moveHint.textContent = `Error: ${error.message}`;
-        elements.moveHint.classList.add('error');
-        elements.moveSubmit.disabled = false;
-        elements.moveCancel.disabled = false;
+        if (elements.moveHint) {
+            elements.moveHint.textContent = `Error: ${error.message}`;
+            elements.moveHint.classList.add('error');
+        }
+        if (elements.moveSubmit) {
+            elements.moveSubmit.disabled = false;
+        }
+        if (elements.moveCancel) {
+            elements.moveCancel.disabled = false;
+        }
     }
 }
 
@@ -283,21 +327,25 @@ export async function moveItems() {
  * Mengatur event handler untuk move overlay
  */
 export function setupMoveOverlayHandlers() {
-    // Form submit
-    elements.moveForm.addEventListener('submit', (event) => {
-        event.preventDefault();
-        if (!state.move.isLoading) {
-            moveItems();
-        }
-    });
+    // Form submit - only if form exists
+    if (elements.moveForm) {
+        elements.moveForm.addEventListener('submit', (event) => {
+            event.preventDefault();
+            if (!state.move.isLoading) {
+                moveItems();
+            }
+        });
+    }
 
-    // Path input change
-    elements.movePath.addEventListener('input', () => {
-        if (elements.moveHint.classList.contains('error')) {
-            elements.moveHint.classList.remove('error');
-            elements.moveHint.textContent = 'Pilih folder tujuan untuk memindahkan item.';
-        }
-    });
+    // Path input change - only if path input exists
+    if (elements.movePath) {
+        elements.movePath.addEventListener('input', () => {
+            if (elements.moveHint && elements.moveHint.classList.contains('error')) {
+                elements.moveHint.classList.remove('error');
+                elements.moveHint.textContent = 'Pilih folder tujuan untuk memindahkan item.';
+            }
+        });
+    }
 
     // Cancel button
     elements.moveCancel.addEventListener('click', () => {

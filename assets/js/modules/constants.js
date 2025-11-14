@@ -106,6 +106,11 @@ export const elements = {
     
     // Move overlay elements
     moveOverlay: document.getElementById('move-overlay'),
+    moveForm: null, // No form element in the current HTML structure
+    movePath: null, // No path input in the current HTML structure
+    moveHint: document.getElementById('move-error'), // Use move-error as hint element
+    moveSubmit: document.getElementById('move-confirm'), // Submit button
+    moveFolderList: document.getElementById('move-list'), // Folder list
     moveBreadcrumbs: document.getElementById('move-breadcrumbs'),
     moveList: document.getElementById('move-list'),
     moveError: document.getElementById('move-error'),
@@ -132,6 +137,15 @@ export const elements = {
     logCleanup: document.getElementById('log-cleanup'),
     logCleanupDays: document.getElementById('log-cleanup-days'),
 };
+
+// Get current path from URL parameters
+const getCurrentPath = () => {
+    const urlParams = new URLSearchParams(window.location.search);
+    return urlParams.get('path') || '';
+};
+
+// Add currentPath to elements object
+elements.currentPath = getCurrentPath();
 
 // File type configurations
 export const previewableExtensions = new Set([
@@ -178,6 +192,9 @@ export const actionIcons = {
 
 // Application configuration
 export const config = {
+    // API base URL
+    apiBaseUrl: 'api.php',
+    
     // Polling interval in milliseconds
     pollingInterval: 5000,
     

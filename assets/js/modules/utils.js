@@ -390,3 +390,17 @@ export function removeFromLocalStorage(key) {
         console.error('Failed to remove from localStorage:', error);
     }
 }
+
+/**
+ * Mengubah kunci sorting
+ * @param {string} key - Kunci sorting baru
+ * @returns {void}
+ */
+export function changeSort(key) {
+    // This function should be implemented where it has access to state
+    // For now, we'll dispatch a custom event that can be caught by the main app
+    const event = new CustomEvent('changeSortRequested', {
+        detail: { key }
+    });
+    document.dispatchEvent(event);
+}
