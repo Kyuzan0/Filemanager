@@ -1,0 +1,665 @@
+/**
+ * File Operations Module
+ * Berisi fungsi-fungsi untuk operasi file seperti delete, move, rename, dll.
+ */
+
+import { deleteItems as apiDeleteItems, moveItem as apiMoveItem, renameItem as apiRenameItem, createItem as apiCreateItem, uploadFiles as apiUploadFiles } from './apiService.js';
+import { errorMessages, successMessages } from './constants.js';
+import { getParentPath, isSubPath } from './utils.js';
+
+/**
+ * Menghapus item-item yang dipilih
+ * @param {Array} paths - Array path item yang akan dihapus
+ * @param {Object} state - State aplikasi
+ * @param {Function} setLoading - Fungsi set loading
+ * @param {Function} setError - Fungsi set error
+ * @param {Function} fetchDirectory - Fungsi fetch directory
+ * @param {Function} closeConfirmOverlay - Fungsi tutup confirm overlay
+ * @param {Function} updateSelectionUI - Fungsi update selection UI
+ * @param {Function} closePreviewOverlay - Fungsi tutup preview overlay
+ * @param {HTMLElement} btnDeleteSelected - Tombol delete selected
+ */
+export async function deleteItems(
+    paths,
+    state,
+    setLoading,
+    setError,
+    fetchDirectory,
+    closeConfirmOverlay,
+    updateSelectionUI,
+    closePreviewOverlay,
+    btnDeleteSelected
+) {
+    console.log('[DEBUG] deleteItems called with paths:', paths);
+    
+    if (!Array.isArray(paths) || paths.length === 0) {
+        console.log('[DEBUG] No paths provided for deletion');
+        return;
+    }
+
+    closeConfirmOverlay();
+    state.isDeleting = true;
+    setLoading(true);
+    updateSelectionUI();
+
+    try {
+        console.log('[DEBUG] Sending delete request to API');
+        const data = await apiDeleteItems(paths);
+        console.log('[DEBUG] Delete response received:', data);
+
+        const deletedList = Array.isArray(data.deleted) ? data.deleted : [];
+        const failedList = Array.isArray(data.failed) ? data.failed : [];
+        
+        console.log('[DEBUG] Deleted items:', deletedList);
+        console.log('[DEBUG] Failed items:', failedList);
+
+        const deletedPaths = new Set(
+            deletedList
+                .map((entry) => {
+                    if (typeof entry === 'string') {
+                        return entry;
+                    }
+                    if (entry && typeof entry === 'object' && typeof entry.path === 'string') {
+                        return entry.path;
+                    }
+                    return '';
+                })
+                .filter((value) => value !== ''),
+        );
+
+        if (state.preview.isOpen && state.preview.path && deletedPaths.has(state.preview.path)) {
+            closePreviewOverlay(true);
+        }
+
+        if (failedList.length > 0) {
+            const failedSet = new Set();
+            failedList.forEach((entry) => {
+                if (entry && typeof entry === 'object' && typeof entry.path === 'string' && entry.path !== '') {
+                    failedSet.add(entry.path);
+                }
+            });
+            state.selected = failedSet;
+
+            const example = failedList[0] ?? null;
+            let detail = '';
+            if (example && typeof example === 'object' && 'path' in example) {
+                const examplePath = example.path;
+                const exampleError = example.error ?? 'Tidak diketahui';
+                detail = `${examplePath}: ${exampleError}`;
+            }
+            const message = failedList.length === 1
+                ? `Gagal menghapus ${detail || 'item.'}`
+                : `Gagal menghapus ${failedList.length.toLocaleString('id-ID')} item. ${detail ? `Contoh: ${detail}` : ''}`;
+            setError(message.trim());
+        } else {
+            state.selected.clear();
+            setError('');
+        }
+
+        await fetchDirectory(state.currentPath, { silent: true });
+    } catch (error) {
+        console.log('[DEBUG] Delete operation error:', error);
+        const message = error instanceof Error ? error.message : 'Terjadi kesalahan saat menghapus item.';
+        setError(message);
+    } finally {
+        state.isDeleting = false;
+        if (btnDeleteSelected) {
+            btnDeleteSelected.textContent = state.selected.size > 0
+                ? `Hapus (${state.selected.size.toLocaleString('id-ID')})`
+                : 'Hapus Terpilih';
+        }
+        setLoading(false);
+        updateSelectionUI();
+    }
+}
+
+/**
+ * Memindahkan item ke lokasi baru
+ * @param {string} sourcePath - Path sumber
+ * @param {string} targetPath - Path target
+ * @param {Object} state - State aplikasi
+ * @param {Function} setLoading - Fungsi set loading
+ * @param {Function} setError - Fungsi set error
+ * @param {Function} fetchDirectory - Fungsi fetch directory
+ * @param {Function} flashStatus - Fungsi flash status
+ * @param {HTMLElement} previewTitle - Elemen preview title
+ * @param {HTMLElement} previewMeta - Elemen preview meta
+ * @param {HTMLElement} previewOpenRaw - Elemen preview open raw
+ * @param {Function} buildFileUrl - Fungsi build file URL
+ */
+export async function moveItem(
+    sourcePath,
+    targetPath,
+    state,
+    setLoading,
+    setError,
+    fetchDirectory,
+    flashStatus,
+    previewTitle,
+    previewMeta,
+    previewOpenRaw,
+    buildFileUrl
+) {
+    try {
+        setLoading(true);
+        
+        console.log('[DEBUG] Moving item from', sourcePath, 'to', targetPath);
+        
+        const data = await apiMoveItem(sourcePath, targetPath);
+        console.log('[DEBUG] Move response:', data);
+        
+        flashStatus(`"${data.item.name}" berhasil dipindahkan.`);
+        
+        // Refresh the directory
+        await fetchDirectory(state.currentPath, { silent: true });
+        
+        // If the moved item is currently open in preview, update the preview
+        if (state.preview.isOpen && state.preview.path === sourcePath) {
+            state.preview.path = data.item.path;
+            previewTitle.textContent = data.item.name;
+            previewMeta.textContent = previewMeta.textContent.replace(
+                state.currentPath === '' ? sourcePath : `${state.currentPath}/${sourcePath}`,
+                state.currentPath === '' ? data.item.path : `${state.currentPath}/${data.item.path}`
+            );
+            previewOpenRaw.href = buildFileUrl(data.item.path);
+        }
+        
+    } catch (error) {
+        console.error(error);
+        const message = error instanceof Error ? error.message : 'Terjadi kesalahan saat memindahkan item.';
+        setError(message);
+    } finally {
+        setLoading(false);
+    }
+}
+
+/**
+ * Mengubah nama item
+ * @param {Object} item - Item yang akan di-rename
+ * @param {string} newName - Nama baru
+ * @param {Object} state - State aplikasi
+ * @param {Function} setLoading - Fungsi set loading
+ * @param {Function} setError - Fungsi set error
+ * @param {Function} fetchDirectory - Fungsi fetch directory
+ * @param {Function} flashStatus - Fungsi flash status
+ * @param {Function} closeRenameOverlay - Fungsi tutup rename overlay
+ * @param {HTMLElement} renameSubmit - Tombol submit rename
+ * @param {HTMLElement} renameName - Input nama rename
+ * @param {HTMLElement} renameHint - Elemen hint rename
+ * @param {HTMLElement} previewTitle - Elemen preview title
+ * @param {HTMLElement} previewMeta - Elemen preview meta
+ * @param {HTMLElement} previewOpenRaw - Elemen preview open raw
+ * @param {Function} buildFileUrl - Fungsi build file URL
+ * @param {Function} encodePathSegments - Fungsi encode path segments
+ */
+export async function renameItem(
+    item,
+    newName,
+    state,
+    setLoading,
+    setError,
+    fetchDirectory,
+    flashStatus,
+    closeRenameOverlay,
+    renameSubmit,
+    renameName,
+    renameHint,
+    previewTitle,
+    previewMeta,
+    previewOpenRaw,
+    buildFileUrl,
+    encodePathSegments
+) {
+    const oldPath = item.path;
+    const directory = oldPath.substring(0, oldPath.lastIndexOf('/'));
+    const newPath = directory ? `${directory}/${newName}` : newName;
+
+    try {
+        setLoading(true);
+        renameSubmit.disabled = true;
+        renameName.disabled = true;
+
+        const data = await apiRenameItem(oldPath, newName, newPath);
+        
+        flashStatus(`${item.name} berhasil diubah namanya menjadi ${newName}.`);
+        closeRenameOverlay();
+        
+        // If renamed item is currently open in preview, update the preview
+        if (state.preview.isOpen && state.preview.path === oldPath) {
+            state.preview.path = newPath;
+            previewTitle.textContent = newName;
+            previewMeta.textContent = previewMeta.textContent.replace(item.name, newName);
+            previewOpenRaw.href = buildFileUrl(newPath);
+        }
+        
+        return fetchDirectory(state.currentPath, { silent: true });
+    } catch (error) {
+        const message = error instanceof Error ? error.message : 'Gagal mengubah nama item.';
+        setError(message);
+        renameHint.textContent = message;
+        renameHint.classList.add('error');
+        renameSubmit.disabled = false;
+        renameName.disabled = false;
+        renameName.focus();
+    } finally {
+        setLoading(false);
+    }
+}
+
+/**
+ * Membuat item baru (file atau folder)
+ * @param {string} kind - Jenis item ('file' atau 'folder')
+ * @param {string} name - Nama item
+ * @param {Object} state - State aplikasi
+ * @param {Function} setLoading - Fungsi set loading
+ * @param {Function} setError - Fungsi set error
+ * @param {Function} fetchDirectory - Fungsi fetch directory
+ * @param {Function} flashStatus - Fungsi flash status
+ * @param {Function} closeCreateOverlay - Fungsi tutup create overlay
+ * @param {HTMLElement} createSubmit - Tombol submit create
+ * @param {HTMLElement} createName - Input nama create
+ * @param {HTMLElement} createHint - Elemen hint create
+ * @param {Function} encodePathSegments - Fungsi encode path segments
+ */
+export async function createItem(
+    kind,
+    name,
+    state,
+    setLoading,
+    setError,
+    fetchDirectory,
+    flashStatus,
+    closeCreateOverlay,
+    createSubmit,
+    createName,
+    createHint,
+    encodePathSegments
+) {
+    const trimmed = name.trim();
+    if (trimmed === '') {
+        createHint.textContent = 'Nama tidak boleh kosong.';
+        createHint.classList.add('error');
+        return;
+    }
+
+    try {
+        setLoading(true);
+        createSubmit.disabled = true;
+        createName.disabled = true;
+
+        const data = await apiCreateItem(state.currentPath, kind, trimmed);
+        flashStatus(`${data.item.name} berhasil dibuat.`);
+        closeCreateOverlay();
+        return fetchDirectory(state.currentPath, { silent: true });
+    } catch (error) {
+        const message = error instanceof Error ? error.message : 'Gagal membuat item baru.';
+        setError(message);
+        createHint.textContent = message;
+        createHint.classList.add('error');
+        createSubmit.disabled = false;
+        createName.disabled = false;
+        createName.focus();
+    } finally {
+        setLoading(false);
+    }
+}
+
+/**
+ * Mengunggah file ke server
+ * @param {FileList} files - Daftar file yang akan diunggah
+ * @param {Object} state - State aplikasi
+ * @param {Function} setLoading - Fungsi set loading
+ * @param {Function} setError - Fungsi set error
+ * @param {Function} fetchDirectory - Fungsi fetch directory
+ * @param {Function} flashStatus - Fungsi flash status
+ * @param {HTMLElement} btnUpload - Tombol upload
+ */
+export async function uploadFiles(
+    files,
+    state,
+    setLoading,
+    setError,
+    fetchDirectory,
+    flashStatus,
+    btnUpload
+) {
+    if (!files || files.length === 0) {
+        return;
+    }
+
+    const formData = new FormData();
+    Array.from(files).forEach((file) => {
+        formData.append('files[]', file, file.name);
+    });
+    formData.append('path', state.currentPath);
+
+    try {
+        setLoading(true);
+        btnUpload.disabled = true;
+
+        const data = await apiUploadFiles(formData);
+
+        const uploaded = Array.isArray(data.uploaded) ? data.uploaded : [];
+        const failures = Array.isArray(data.errors) ? data.errors : [];
+        if (uploaded.length > 0) {
+            const names = uploaded.map((item) => item.name).join(', ');
+            flashStatus(`File diunggah: ${names}`);
+        } else {
+            flashStatus('Tidak ada file yang diunggah.');
+        }
+
+        if (failures.length > 0) {
+            const firstFailure = failures[0];
+            const detail = firstFailure && typeof firstFailure === 'object'
+                ? `${firstFailure.name || 'File'}: ${firstFailure.error || 'Tidak diketahui'}`
+                : 'Beberapa file gagal diunggah.';
+            setError(`Sebagian file gagal diunggah. ${detail}`);
+        } else {
+            setError('');
+        }
+
+        await fetchDirectory(state.currentPath, { silent: true });
+    } catch (error) {
+        const message = error instanceof Error ? error.message : 'Terjadi kesalahan saat mengunggah.';
+        setError(message);
+    } finally {
+        setLoading(false);
+        btnUpload.disabled = false;
+    }
+}
+
+/**
+ * Membuka dokumen di Microsoft Word
+ * @param {Object} item - Item yang akan dibuka
+ * @param {Function} buildAbsoluteFileUrl - Fungsi build absolute file URL
+ * @param {Function} buildUncSharePath - Fungsi build UNC share path
+ * @param {Function} buildFileUrl - Fungsi build file URL
+ * @param {Function} flashStatus - Fungsi flash status
+ * @param {Function} setError - Fungsi set error
+ */
+export function openInWord(
+    item,
+    buildAbsoluteFileUrl,
+    buildUncSharePath,
+    buildFileUrl,
+    flashStatus,
+    setError
+) {
+    if (!item || item.type !== 'file') {
+        return;
+    }
+
+    const httpAbsUrl = buildAbsoluteFileUrl(item.path);
+    const uncSharePath = buildUncSharePath(item.path);
+
+    const proceed = window.confirm(
+        'Buka dokumen ini di Microsoft Word?\n' +
+        'Jika muncul prompt keamanan, pilih "Yes".\n' +
+        'Jika gagal via UNC, sistem akan mencoba alamat web.'
+    );
+    if (!proceed) {
+        // Fallback: buka di tab baru (web)
+        const url = buildFileUrl(item.path);
+        const win = window.open(url, '_blank');
+        if (win) {
+            win.opener = null;
+        }
+        return;
+    }
+
+    // Final fallback setelah semua percobaan: buka tab web dan tampilkan overlay bantuan
+    const finalFallback = () => {
+        flashStatus(`Word tidak dapat membuka langsung. File dibuka di tab baru. Jika masih gagal, lihat bantuan konfigurasi untuk membuka di Word.`);
+        const url = buildFileUrl(item.path);
+        const win = window.open(url, '_blank');
+        if (win) {
+            win.opener = null;
+        }
+
+        try {
+            const host = window.location.hostname || 'localhost';
+            const uncPath = uncSharePath;
+            const httpUrl = httpAbsUrl;
+
+            let ov = document.getElementById('word-help-overlay');
+            if (!ov) {
+                ov = document.createElement('div');
+                ov.id = 'word-help-overlay';
+                ov.setAttribute('role', 'dialog');
+                ov.setAttribute('aria-modal', 'true');
+                ov.style.position = 'fixed';
+                ov.style.inset = '0';
+                ov.style.background = 'rgba(0,0,0,0.45)';
+                ov.style.zIndex = '9999';
+
+                const panel = document.createElement('div');
+                panel.style.maxWidth = '640px';
+                panel.style.margin = '10vh auto';
+                panel.style.background = '#fff';
+                panel.style.borderRadius = '12px';
+                panel.style.boxShadow = '0 10px 30px rgba(0,0,0,0.2)';
+                panel.style.padding = '20px 24px';
+                panel.style.fontFamily = 'system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif';
+                panel.setAttribute('aria-labelledby', 'word-help-title');
+
+                const h = document.createElement('h2');
+                h.id = 'word-help-title';
+                h.textContent = 'Buka di Microsoft Word diblokir';
+                h.style.margin = '0 0 8px';
+
+                const p = document.createElement('p');
+                p.textContent = 'Office memblokir karena sumber berada di Restricted Sites. Ikuti langkah berikut agar klik .docx membuka Word:';
+                p.style.margin = '0 0 12px';
+
+                const steps = document.createElement('ol');
+                steps.style.margin = '0 0 12px 20px';
+                steps.style.padding = '0';
+                steps.innerHTML = `
+<li>Tambahkan host ke Trusted Sites atau Local Intranet:
+   buka Internet Options → Security → Trusted sites → Sites, lalu tambahkan:
+   <code>http://${host}</code>. Untuk UNC, tambahkan juga <code>file:///${host}</code>.</li>
+<li>Di Microsoft Word: File → Options → Trust Center → Trust Center Settings → Protected View.
+   Nonaktifkan opsi untuk "files from the Internet" atau "Restricted Sites" sesuai kebijakan (hubungi admin bila perlu).</li>
+<li>Alternatif: buka via File Explorer menggunakan jalur UNC di bawah.</li>
+`;
+
+                const label = document.createElement('label');
+                label.textContent = 'UNC path:';
+                label.style.fontWeight = '600';
+                label.style.display = 'block';
+                label.style.margin = '8px 0 4px';
+
+                const input = document.createElement('input');
+                input.type = 'text';
+                input.value = uncPath;
+                input.readOnly = true;
+                input.style.width = '100%';
+                input.style.padding = '8px';
+                input.style.border = '1px solid #ddd';
+                input.style.borderRadius = '8px';
+
+                const buttons = document.createElement('div');
+                buttons.style.display = 'flex';
+                buttons.style.gap = '8px';
+                buttons.style.margin = '12px 0 0';
+
+                const copyBtn = document.createElement('button');
+                copyBtn.type = 'button';
+                copyBtn.textContent = 'Salin UNC';
+                copyBtn.style.padding = '8px 12px';
+
+                const tryHttpBtn = document.createElement('button');
+                tryHttpBtn.type = 'button';
+                tryHttpBtn.textContent = 'Coba via HTTP';
+                tryHttpBtn.style.padding = '8px 12px';
+
+                const closeBtn = document.createElement('button');
+                closeBtn.type = 'button';
+                closeBtn.textContent = 'Tutup';
+                closeBtn.style.padding = '8px 12px';
+
+                buttons.append(copyBtn, tryHttpBtn, closeBtn);
+
+                panel.append(h, p, steps, label, input, buttons);
+                ov.appendChild(panel);
+                document.body.appendChild(ov);
+                document.body.classList.add('modal-open');
+
+                copyBtn.addEventListener('click', () => {
+                    navigator.clipboard.writeText(uncPath)
+                        .then(() => flashStatus('UNC tersalin ke clipboard'))
+                        .catch(() => setError('Gagal menyalin UNC'));
+                });
+                tryHttpBtn.addEventListener('click', () => {
+                    try {
+                        const msWordHttp = 'ms-word:ofe|u|' + encodeURI(httpUrl);
+                        window.location.href = msWordHttp;
+                    } catch (_) {
+                        // ignore
+                    }
+                });
+                closeBtn.addEventListener('click', () => {
+                    ov.remove();
+                    document.body.classList.remove('modal-open');
+                });
+            }
+        } catch (_) {
+            // ignore overlay errors
+        }
+    };
+
+    // Percobaan 1: gunakan UNC path langsung (JANGAN di-encode)
+    try {
+        const msWordUnc = 'ms-word:ofe|u|' + uncSharePath; // e.g. \\d.local\public\www\file\tugas metopen.docx
+        window.location.href = msWordUnc;
+    } catch (_) {
+        // lanjut ke percobaan HTTP
+    }
+
+    // Percobaan 2: gunakan URL HTTP/HTTPS absolut via ms-word setelah jeda singkat
+    const httpTryTimer = setTimeout(() => {
+        try {
+            const msWordHttp = 'ms-word:ofe|u|' + encodeURI(httpAbsUrl);
+            window.location.href = msWordHttp;
+        } catch (_) {
+            // abaikan, lanjut ke fallback terakhir
+        }
+    }, 1500);
+
+    // Fallback terakhir: buka di browser tab jika percobaan protokol tidak berhasil
+    const fallbackTimer = setTimeout(() => {
+        clearTimeout(httpTryTimer);
+        finalFallback();
+    }, 7000);
+
+    // Safety cleanup untuk memastikan tidak ada timer menggantung
+    setTimeout(() => {
+        clearTimeout(fallbackTimer);
+    }, 12000);
+}
+
+/**
+ * Validasi target untuk operasi move
+ * @param {string} targetPath - Path target
+ * @param {Array} sources - Array path sumber
+ * @param {Object} state - State aplikasi
+ * @returns {Object} Hasil validasi { valid: boolean, message: string }
+ */
+export function validateMoveTarget(targetPath, sources, state) {
+    if (typeof targetPath !== 'string') return { valid: false, message: 'Pilih folder tujuan.' };
+    for (const sp of sources) {
+        const item = state.itemMap.get(sp);
+        const isDir = item ? item.type === 'folder' : false;
+        // same folder for file
+        if (!isDir && getParentPath(sp) === targetPath) {
+            return { valid: false, message: 'Item sudah berada di folder ini.' };
+        }
+        // folder into itself or its descendant
+        if (isDir && isSubPath(sp, targetPath)) {
+            return { valid: false, message: 'Tidak dapat memindahkan folder ke dirinya sendiri atau subfoldernya.' };
+        }
+    }
+    return { valid: true, message: '' };
+}
+
+/**
+ * Melakukan operasi move untuk multiple items
+ * @param {Array} sources - Array path sumber
+ * @param {string} targetFolder - Path folder target
+ * @param {Object} state - State aplikasi
+ * @param {Function} setLoading - Fungsi set loading
+ * @param {Function} setError - Fungsi set error
+ * @param {Function} fetchDirectory - Fungsi fetch directory
+ * @param {Function} flashStatus - Fungsi flash status
+ * @param {Function} closeMoveOverlay - Fungsi tutup move overlay
+ * @param {Function} updateMoveConfirmState - Fungsi update move confirm state
+ * @param {Function} addRecentDestination - Fungsi tambah recent destination
+ */
+export async function performMove(
+    sources,
+    targetFolder,
+    state,
+    setLoading,
+    setError,
+    fetchDirectory,
+    flashStatus,
+    closeMoveOverlay,
+    updateMoveConfirmState,
+    addRecentDestination
+) {
+    if (!Array.isArray(sources) || sources.length === 0) return;
+    const check = validateMoveTarget(targetFolder ?? '', sources, state);
+    if (!check.valid) {
+        setError(check.message || 'Tujuan tidak valid.');
+        return;
+    }
+    
+    setLoading(true);
+    
+    try {
+        const results = [];
+        for (const sp of sources) {
+            try {
+                const resp = await apiMoveItem(sp, targetFolder ?? '');
+                const data = await resp.json().catch(() => null);
+                if (!resp.ok || !data || !data.success) {
+                    const err = data && data.error ? data.error : 'Gagal memindahkan item.';
+                    results.push({ path: sp, ok: false, error: err });
+                } else {
+                    results.push({ path: sp, ok: true, item: data.item });
+                }
+            } catch (e) {
+                results.push({ path: sp, ok: false, error: e instanceof Error ? e.message : 'Gagal memindahkan.' });
+            }
+        }
+
+        const okCount = results.filter(r => r.ok).length;
+        const failCount = results.length - okCount;
+
+        if (okCount > 0) {
+            // Update recents with chosen destination
+            addRecentDestination(targetFolder ?? '');
+
+            if (sources.length === 1) {
+                const name = (state.itemMap.get(sources[0])?.name) || (sources[0].split('/').pop() || sources[0]);
+                flashStatus(`"${name}" berhasil dipindahkan.`);
+            } else {
+                flashStatus(`${okCount.toLocaleString('id-ID')} item berhasil dipindahkan${failCount ? `, ${failCount.toLocaleString('id-ID')} gagal` : ''}.`);
+            }
+        }
+        if (failCount > 0) {
+            const example = results.find(r => !r.ok);
+            const detail = example ? `${example.path}: ${example.error}` : '';
+            setError(`Sebagian item gagal dipindahkan. ${detail}`);
+        } else {
+            setError('');
+        }
+
+        // Refresh once
+        await fetchDirectory(state.currentPath, { silent: true });
+        closeMoveOverlay();
+    } finally {
+        setLoading(false);
+        updateMoveConfirmState();
+    }
+}
