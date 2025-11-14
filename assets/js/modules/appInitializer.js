@@ -143,32 +143,27 @@ function renderItems(items, lastUpdated, highlightNew) {
                 
                 actionCell.appendChild(actionButton);
                 
-                // Add double-click event listener first (higher priority)
-                row.addEventListener('dblclick', (e) => {
+                // Simple double-click handler without conflicts
+                row.ondblclick = function(e) {
                     e.preventDefault();
-                    e.stopPropagation();
-                    console.log('[DEBUG] Double-clicked item:', item);
-                    console.log('[DEBUG] Item type:', item.type, 'Item path:', item.path);
+                    console.log('[DEBUG] Double-clicked item (ondblclick):', item);
+                    console.log('[DEBUG] Item type:', item.type, 'Item path:', item.path, 'Item name:', item.name);
                     if (item.type === 'folder') {
                         console.log('[DEBUG] Navigating to folder:', item.path);
                         navigateTo(item.path);
                     } else {
                         console.log('[DEBUG] Opening file:', item.path);
-                        // Open file (could implement preview here)
                         window.open(`file.php?path=${encodeURIComponent(item.path)}`, '_blank');
                     }
-                }, { passive: false });
+                };
                 
-                // Add click handler with delay to avoid conflict with double-click
-                let clickTimeout;
-                row.addEventListener('click', (e) => {
-                    clearTimeout(clickTimeout);
-                    clickTimeout = setTimeout(() => {
-                        // Handle single click (selection) after ensuring it's not part of a double-click
+                // Simple click handler for selection
+                row.onclick = function(e) {
+                    // Only handle single clicks (not part of double-click)
+                    setTimeout(() => {
                         console.log('[DEBUG] Single-clicked item:', item.name);
-                        // Add selection logic here if needed
-                    }, 300); // Wait 300ms to see if there's a double-click
-                });
+                    }, 10);
+                };
                 
                 row.appendChild(nameCell);
                 row.appendChild(sizeCell);
