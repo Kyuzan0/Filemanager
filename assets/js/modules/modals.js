@@ -1,6 +1,7 @@
 /**
  * Modal Management Module
  * Berisi fungsi-fungsi untuk mengelola berbagai modal dalam aplikasi
+ * @version 1.1.0 - Added media preview support
  */
 
 import { config } from './constants.js';

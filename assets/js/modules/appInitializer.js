@@ -1,6 +1,7 @@
 /**
  * App Initializer Module
  * Berisi fungsi-fungsi untuk menginisialisasi aplikasi
+ * @version 1.1.0 - Added media preview wrappers
  */
 
 import { state, updateState } from './state.js';
