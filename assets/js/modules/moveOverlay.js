@@ -9,6 +9,10 @@ import { logModalOperation, modalLogger } from './logManager.js';
 import { buildFileUrl, encodePathSegments } from './utils.js';
 import { fetchDirectory } from './apiService.js';
 
+// LocalStorage key untuk recent destinations
+const RECENTS_STORAGE_KEY = 'filemanager_move_recents';
+const MAX_RECENTS = 5;
+
 /**
  * Membuka move overlay
  * @param {Array} paths - Array path yang akan dipindahkan
@@ -17,6 +21,9 @@ export function openMoveOverlay(paths) {
     if (!paths || paths.length === 0) {
         return;
     }
+
+    // Load recent destinations from localStorage
+    loadMoveRecentsFromStorage();
 
     updateState({
         move: {
@@ -45,6 +52,9 @@ export function openMoveOverlay(paths) {
 
     // Load current directory in move overlay
     loadMoveDirectory(state.currentPath);
+
+    // Update recent destinations UI
+    updateMoveRecentsUI();
 
     // Show overlay - only if overlay exists
     if (elements.moveOverlay) {
@@ -305,10 +315,12 @@ export async function moveItems() {
             throw new Error(data.message || 'Gagal memindahkan item');
         }
 
-        // Success
-        modalLogger.info('Items moved successfully', { 
-            paths: state.move.paths, 
-            targetPath 
+        // Success - add to recent destinations
+        addRecentDestination(targetPath);
+        
+        modalLogger.info('Items moved successfully', {
+            paths: state.move.paths,
+            targetPath
         });
         
         closeMoveOverlay();
@@ -421,3 +433,223 @@ export function setupMoveOverlayHandlers() {
         console.warn('[MOVE_OVERLAY] moveFolderList element not found');
     }
 }
+
+/**
+ * Load recent destinations dari localStorage
+ */
+function loadMoveRecentsFromStorage() {
+    try {
+        const stored = localStorage.getItem(RECENTS_STORAGE_KEY);
+        if (stored) {
+            const recents = JSON.parse(stored);
+            if (Array.isArray(recents)) {
+                updateState({
+                    move: {
+                        ...state.move,
+                        recents: recents.slice(0, MAX_RECENTS)
+                    }
+                });
+                modalLogger.info('Loaded recent destinations from storage', { count: recents.length });
+            }
+        }
+    } catch (error) {
+        modalLogger.error('Failed to load recent destinations from storage', error);
+        // Reset to empty array on error
+        updateState({
+            move: {
+                ...state.move,
+                recents: []
+            }
+        });
+    }
+}
+
+/**
+ * Save recent destinations ke localStorage
+ */
+function saveMoveRecentsToStorage() {
+    try {
+        const recents = state.move.recents || [];
+        localStorage.setItem(RECENTS_STORAGE_KEY, JSON.stringify(recents));
+        modalLogger.info('Saved recent destinations to storage', { count: recents.length });
+    } catch (error) {
+        modalLogger.error('Failed to save recent destinations to storage', error);
+    }
+}
+
+/**
+ * Tambah destinasi baru ke recent destinations
+ * @param {string} path - Path destinasi yang akan ditambahkan
+ */
+function addRecentDestination(path) {
+    if (!path || path === '') {
+        return;
+    }
+
+    try {
+        let recents = [...(state.move.recents || [])];
+        
+        // Remove path if already exists (to move it to front)
+        recents = recents.filter(r => r !== path);
+        
+        // Add to front
+        recents.unshift(path);
+        
+        // Keep only MAX_RECENTS items
+        recents = recents.slice(0, MAX_RECENTS);
+        
+        // Update state
+        updateState({
+            move: {
+                ...state.move,
+                recents: recents
+            }
+        });
+        
+        // Save to localStorage
+        saveMoveRecentsToStorage();
+        
+        modalLogger.info('Added recent destination', { path, totalRecents: recents.length });
+    } catch (error) {
+        modalLogger.error('Failed to add recent destination', error);
+    }
+}
+
+/**
+ * Update UI untuk recent destinations
+ */
+function updateMoveRecentsUI() {
+    const recentsContainer = document.getElementById('move-recents');
+    
+    if (!recentsContainer) {
+        console.warn('[MOVE_OVERLAY] move-recents element not found, skipping UI update');
+        return;
+    }
+    
+    const recents = state.move.recents || [];
+    
+    if (recents.length === 0) {
+        recentsContainer.hidden = true;
+        recentsContainer.innerHTML = '';
+        return;
+    }
+    
+    recentsContainer.hidden = false;
+    recentsContainer.innerHTML = '';
+    
+    // Create title
+    const title = document.createElement('div');
+    title.className = 'move-recents-title';
+    title.textContent = 'Recent Destinations:';
+    title.style.cssText = `
+        font-size: 12px;
+        font-weight: 600;
+        color: var(--text-secondary, #666);
+        margin-bottom: 8px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    `;
+    recentsContainer.appendChild(title);
+    
+    // Create list container
+    const listContainer = document.createElement('div');
+    listContainer.className = 'move-recents-list';
+    listContainer.style.cssText = `
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+    `;
+    
+    // Add each recent destination
+    recents.forEach((path, index) => {
+        const item = document.createElement('button');
+        item.type = 'button';
+        item.className = 'move-recent-item';
+        item.dataset.path = path;
+        item.style.cssText = `
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 12px;
+            border: 1px solid var(--border, #e0e0e0);
+            border-radius: 6px;
+            background: var(--surface, #fff);
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-align: left;
+            width: 100%;
+        `;
+        
+        // Icon
+        const icon = document.createElement('span');
+        icon.className = 'move-recent-icon';
+        icon.innerHTML = `
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
+            </svg>
+        `;
+        icon.style.cssText = `
+            flex-shrink: 0;
+            color: var(--primary, #2196F3);
+            display: flex;
+            align-items: center;
+        `;
+        
+        // Label
+        const label = document.createElement('span');
+        label.className = 'move-recent-label';
+        label.textContent = path === '' ? '/ (Root)' : path;
+        label.style.cssText = `
+            flex: 1;
+            font-size: 14px;
+            color: var(--text-primary, #333);
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        `;
+        
+        item.appendChild(icon);
+        item.appendChild(label);
+        
+        // Click handler
+        item.addEventListener('click', () => {
+            loadMoveDirectory(path);
+        });
+        
+        // Hover effect
+        item.addEventListener('mouseenter', () => {
+            item.style.background = 'var(--hover, #f5f5f5)';
+            item.style.borderColor = 'var(--primary, #2196F3)';
+        });
+        
+        item.addEventListener('mouseleave', () => {
+            item.style.background = 'var(--surface, #fff)';
+            item.style.borderColor = 'var(--border, #e0e0e0)';
+        });
+        
+        // Keyboard navigation
+        item.tabIndex = 0;
+        item.addEventListener('keydown', (event) => {
+            if (event.key === 'Enter' || event.key === ' ') {
+                event.preventDefault();
+                loadMoveDirectory(path);
+            }
+        });
+        
+        listContainer.appendChild(item);
+    });
+    
+    recentsContainer.appendChild(listContainer);
+    
+    modalLogger.info('Updated recent destinations UI', { count: recents.length });
+}
+
+/**
+ * Export fungsi-fungsi recent destinations untuk testing
+ */
+export {
+    loadMoveRecentsFromStorage,
+    saveMoveRecentsToStorage,
+    addRecentDestination,
+    updateMoveRecentsUI
+};
