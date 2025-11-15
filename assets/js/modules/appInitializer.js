@@ -1,7 +1,7 @@
 /**
  * App Initializer Module
  * Berisi fungsi-fungsi untuk menginisialisasi aplikasi
- * @version 1.1.0 - Added media preview wrappers
+ * @version 1.2.0 - Added log modal integration
  */
 
 import { state, updateState } from './state.js';
@@ -26,8 +26,15 @@ import {
     setupSplitActionHandler
 } from './eventHandlers.js';
 import { setupMoveOverlayHandlers } from './moveOverlay.js';
-import { setupDragAndDrop } from './dragDrop.js';
-import { fetchDirectory } from './apiService.js';
+import {
+    handleDragStart,
+    handleDragEnd,
+    handleDragOver,
+    handleDrop,
+    handleDragLeave,
+    setupFileCardDropZone
+} from './dragDrop.js';
+import { fetchDirectory, fetchLogData, cleanupLogs } from './apiService.js';
 import { renderItems as renderItemsComplex, updateSortUI } from './uiRenderer.js';
 import {
     openPreviewOverlay,
@@ -41,7 +48,11 @@ import {
     closeUnsavedOverlay,
     setPreviewMode,
     ensurePreviewViewer,
-    openMediaPreview as openMediaPreviewModal
+    openMediaPreview as openMediaPreviewModal,
+    openLogModal,
+    closeLogModal,
+    setLogLoading,
+    updateLogPagination
 } from './modals.js';
 import { 
     deleteItems, 
@@ -62,7 +73,21 @@ import {
     formatBytes,
     formatDate
 } from './utils.js';
-import { logInfo, logError, createLogger } from './logManager.js';
+import {
+    logInfo,
+    logError,
+    createLogger,
+    formatLogEntry,
+    renderLogTable,
+    exportLogsToCSV,
+    exportLogsToJSON,
+    applyLogFilter,
+    updateActiveFiltersDisplay,
+    performLogCleanup,
+    setupLogAutoRefresh,
+    stopLogAutoRefresh,
+    toggleLogAutoRefresh
+} from './logManager.js';
 
 const logger = createLogger('INITIALIZER');
 
@@ -110,17 +135,17 @@ function renderItems(items, lastUpdated, highlightNew) {
         openConfirmOverlayWrapper,
         toggleSelection,
         openContextMenu,
-        null, // handleDragStart
-        null, // handleDragEnd
-        null, // handleDragOver
-        null, // handleDrop
-        null, // handleDragLeave
         isWordDocument,
         buildFileUrl,
         hasUnsavedChanges,
         confirmDiscardChanges,
         previewableExtensions,
-        mediaPreviewableExtensions
+        mediaPreviewableExtensions,
+        handleDragStart,
+        handleDragEnd,
+        handleDragOver,
+        handleDrop,
+        handleDragLeave
     );
 }
 
@@ -568,6 +593,341 @@ async function openMediaPreview(item) {
 }
 
 /**
+ * Wrapper function untuk membuka log modal
+ */
+async function openLogModalWrapper() {
+    logger.info('Opening log modal...');
+    
+    // Open the modal
+    openLogModal(
+        state,
+        elements.logOverlay,
+        elements.logClose
+    );
+    
+    // Fetch initial log data
+    await fetchLogDataWrapper();
+}
+
+/**
+ * Wrapper function untuk menutup log modal
+ */
+function closeLogModalWrapper() {
+    logger.info('Closing log modal...');
+    
+    // Stop auto-refresh if active
+    if (state.logs.refreshInterval) {
+        stopLogAutoRefresh(state);
+    }
+    
+    closeLogModal(
+        state,
+        elements.logOverlay
+    );
+}
+
+/**
+ * Wrapper function untuk fetch log data dengan filters
+ */
+async function fetchLogDataWrapper(filters = null, page = 1, limit = 50) {
+    try {
+        // Use active filters if no filters provided
+        const activeFilters = filters || state.logs.activeFilters || {};
+        
+        // Set loading state
+        setLogLoading(state, elements.logTableBody, true);
+        
+        // Fetch data from API
+        const data = await fetchLogData(activeFilters, page, limit);
+        
+        if (data && data.success) {
+            // Update state with fetched data
+            updateState({
+                logs: {
+                    ...state.logs,
+                    data: data.logs || [],
+                    currentPage: data.pagination?.current_page || page,
+                    totalPages: data.pagination?.total_pages || 1,
+                    isLoading: false
+                }
+            });
+            
+            // Render log table
+            renderLogTable(
+                state.logs.data,
+                elements.logTableBody,
+                formatDate
+            );
+            
+            // Update pagination UI
+            updateLogPagination(
+                state,
+                elements.logPrevPage,
+                elements.logNextPage,
+                elements.logPageInfo
+            );
+        } else {
+            throw new Error(data?.error || 'Failed to fetch log data');
+        }
+    } catch (error) {
+        logger.error('Error fetching log data', error);
+        setLogLoading(state, elements.logTableBody, false);
+        
+        // Show error in table
+        elements.logTableBody.innerHTML = `
+            <tr>
+                <td colspan="5" style="text-align: center; padding: 20px; color: #666;">
+                    Error: ${error.message}
+                </td>
+            </tr>
+        `;
+    }
+}
+
+/**
+ * Wrapper function untuk apply log filter
+ */
+async function applyLogFilterWrapper() {
+    // Apply filter using the logManager function
+    // The applyLogFilter function will read filter values from DOM elements directly
+    applyLogFilter(state, fetchLogDataWrapper);
+}
+
+/**
+ * Wrapper function untuk clear log filters
+ */
+async function clearLogFiltersWrapper() {
+    // Reset all filter inputs
+    if (elements.logFilterAction) elements.logFilterAction.value = '';
+    if (elements.logFilterStartDate) elements.logFilterStartDate.value = '';
+    if (elements.logFilterEndDate) elements.logFilterEndDate.value = '';
+    if (elements.logFilterType) elements.logFilterType.value = '';
+    if (elements.logFilterPath) elements.logFilterPath.value = '';
+    if (elements.logFilterSort) elements.logFilterSort.value = 'desc';
+    
+    // Clear active filters
+    updateState({
+        logs: {
+            ...state.logs,
+            activeFilters: {}
+        }
+    });
+    
+    // Update active filters display
+    updateActiveFiltersDisplay({}, elements.logActiveFilters);
+    
+    // Fetch data without filters
+    await fetchLogDataWrapper({}, 1, 50);
+}
+
+/**
+ * Wrapper function untuk export logs to CSV
+ */
+function exportLogsToCSVWrapper() {
+    try {
+        exportLogsToCSV(state.logs.data, formatDate);
+        logger.info('Logs exported to CSV successfully');
+    } catch (error) {
+        logger.error('Error exporting logs to CSV', error);
+        alert('Error exporting logs to CSV: ' + error.message);
+    }
+}
+
+/**
+ * Wrapper function untuk export logs to JSON
+ */
+function exportLogsToJSONWrapper() {
+    try {
+        exportLogsToJSON(state.logs.data);
+        logger.info('Logs exported to JSON successfully');
+    } catch (error) {
+        logger.error('Error exporting logs to JSON', error);
+        alert('Error exporting logs to JSON: ' + error.message);
+    }
+}
+
+/**
+ * Wrapper function untuk cleanup logs
+ */
+async function performLogCleanupWrapper() {
+    if (!confirm('Are you sure you want to cleanup old logs? This action cannot be undone.')) {
+        return;
+    }
+    
+    try {
+        // Set cleanup state
+        updateState({
+            logs: {
+                ...state.logs,
+                isCleaningUp: true
+            }
+        });
+        
+        // Disable cleanup button
+        if (elements.logCleanupBtn) {
+            elements.logCleanupBtn.disabled = true;
+            elements.logCleanupBtn.textContent = 'Cleaning up...';
+        }
+        
+        // Perform cleanup
+        const result = await performLogCleanup(cleanupLogs);
+        
+        if (result.success) {
+            alert(`Cleanup successful! Deleted ${result.deleted} old log entries.`);
+            
+            // Refresh log data
+            await fetchLogDataWrapper();
+        } else {
+            throw new Error(result.error || 'Cleanup failed');
+        }
+    } catch (error) {
+        logger.error('Error performing log cleanup', error);
+        alert('Error cleaning up logs: ' + error.message);
+    } finally {
+        // Reset cleanup state
+        updateState({
+            logs: {
+                ...state.logs,
+                isCleaningUp: false
+            }
+        });
+        
+        // Re-enable cleanup button
+        if (elements.logCleanupBtn) {
+            elements.logCleanupBtn.disabled = false;
+            elements.logCleanupBtn.textContent = 'Cleanup Old Logs';
+        }
+    }
+}
+
+/**
+ * Wrapper function untuk toggle auto-refresh
+ */
+function toggleLogAutoRefreshWrapper() {
+    toggleLogAutoRefresh(
+        state,
+        fetchLogDataWrapper,
+        elements.logAutoRefreshToggle
+    );
+}
+
+/**
+ * Wrapper function untuk pagination - previous page
+ */
+async function logPreviousPageWrapper() {
+    if (state.logs.currentPage > 1) {
+        await fetchLogDataWrapper(state.logs.activeFilters, state.logs.currentPage - 1, 50);
+    }
+}
+
+/**
+ * Wrapper function untuk pagination - next page
+ */
+async function logNextPageWrapper() {
+    if (state.logs.currentPage < state.logs.totalPages) {
+        await fetchLogDataWrapper(state.logs.activeFilters, state.logs.currentPage + 1, 50);
+    }
+}
+
+/**
+ * Setup log modal event handlers
+ */
+function setupLogModalHandlers() {
+    logger.info('Setting up log modal handlers...');
+    
+    // Open log modal button (assuming there's a button with id 'btn-logs')
+    const btnLogs = document.getElementById('btn-logs');
+    if (btnLogs) {
+        btnLogs.addEventListener('click', openLogModalWrapper);
+    }
+    
+    // Close log modal
+    if (elements.logClose) {
+        elements.logClose.addEventListener('click', closeLogModalWrapper);
+    }
+    
+    // Close on overlay click
+    if (elements.logOverlay) {
+        elements.logOverlay.addEventListener('click', (e) => {
+            if (e.target === elements.logOverlay) {
+                closeLogModalWrapper();
+            }
+        });
+    }
+    
+    // Apply filters button
+    if (elements.logApplyFilters) {
+        elements.logApplyFilters.addEventListener('click', applyLogFilterWrapper);
+    }
+    
+    // Clear filters button
+    if (elements.logClearFilters) {
+        elements.logClearFilters.addEventListener('click', clearLogFiltersWrapper);
+    }
+    
+    // Toggle filter section
+    const logToggleFilters = document.getElementById('log-toggle-filters');
+    const logFilterSection = document.querySelector('.log-filter-section');
+    if (logToggleFilters && logFilterSection) {
+        logToggleFilters.addEventListener('click', () => {
+            logFilterSection.classList.toggle('collapsed');
+            const isCollapsed = logFilterSection.classList.contains('collapsed');
+            logToggleFilters.textContent = isCollapsed ? '▼ Show Filters' : '▲ Hide Filters';
+        });
+    }
+    
+    // Export buttons
+    if (elements.logExportCSV) {
+        elements.logExportCSV.addEventListener('click', exportLogsToCSVWrapper);
+    }
+    
+    if (elements.logExportJSON) {
+        elements.logExportJSON.addEventListener('click', exportLogsToJSONWrapper);
+    }
+    
+    // Cleanup button
+    if (elements.logCleanupBtn) {
+        elements.logCleanupBtn.addEventListener('click', performLogCleanupWrapper);
+    }
+    
+    // Auto-refresh toggle
+    if (elements.logAutoRefreshToggle) {
+        elements.logAutoRefreshToggle.addEventListener('click', toggleLogAutoRefreshWrapper);
+    }
+    
+    // Pagination buttons
+    if (elements.logPrevPage) {
+        elements.logPrevPage.addEventListener('click', logPreviousPageWrapper);
+    }
+    
+    if (elements.logNextPage) {
+        elements.logNextPage.addEventListener('click', logNextPageWrapper);
+    }
+    
+    // Filter inputs - apply on Enter key
+    const filterInputs = [
+        elements.logFilterAction,
+        elements.logFilterStartDate,
+        elements.logFilterEndDate,
+        elements.logFilterType,
+        elements.logFilterPath,
+        elements.logFilterSort
+    ];
+    
+    filterInputs.forEach(input => {
+        if (input) {
+            input.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    applyLogFilterWrapper();
+                }
+            });
+        }
+    });
+    
+    logger.info('Log modal handlers setup completed');
+}
+
+/**
  * Menginisialisasi aplikasi
  */
 export async function initializeApp() {
@@ -647,8 +1007,8 @@ export async function initializeApp() {
         // Setup event handlers
         setupEventHandlers();
         
-        // Setup drag and drop
-        setupDragAndDrop();
+        // Setup drag and drop - fileCard drop zone
+        setupFileCardDropZone();
         
         // Setup move overlay handlers
         try {
@@ -837,6 +1197,9 @@ function setupEventHandlers() {
         elements.splitMain,
         openCreateOverlayWrapper
     );
+    
+    // Setup log modal handlers
+    setupLogModalHandlers();
     
     logger.info('Event handlers setup completed');
 }

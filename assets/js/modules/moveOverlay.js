@@ -13,6 +13,10 @@ import { fetchDirectory } from './apiService.js';
 const RECENTS_STORAGE_KEY = 'filemanager_move_recents';
 const MAX_RECENTS = 5;
 
+// Search state
+let allFolders = []; // Store all folders for filtering
+let currentSearchQuery = '';
+
 /**
  * Membuka move overlay
  * @param {Array} paths - Array path yang akan dipindahkan
@@ -125,8 +129,16 @@ async function loadMoveDirectory(path) {
         // Filter hanya folder
         const folders = data.items.filter(item => item.type === 'folder');
         
-        // Render folder list
-        renderMoveFolderList(folders, path);
+        // Store all folders for search functionality
+        allFolders = folders;
+        
+        // Render folder list (with current search query if any)
+        if (currentSearchQuery) {
+            const filteredFolders = filterFolders(folders, currentSearchQuery);
+            renderMoveFolderList(filteredFolders, path);
+        } else {
+            renderMoveFolderList(folders, path);
+        }
         
         // Update current path display
         if (elements.movePath) {
@@ -432,6 +444,98 @@ export function setupMoveOverlayHandlers() {
     } else {
         console.warn('[MOVE_OVERLAY] moveFolderList element not found');
     }
+    
+    // Search input handler - only if search input exists
+    const moveSearchInput = document.getElementById('move-search');
+    if (moveSearchInput) {
+        moveSearchInput.addEventListener('input', (event) => {
+            handleMoveSearch(event.target.value);
+        });
+        
+        // Clear search on escape
+        moveSearchInput.addEventListener('keydown', (event) => {
+            if (event.key === 'Escape') {
+                event.target.value = '';
+                handleMoveSearch('');
+            }
+        });
+    } else {
+        console.warn('[MOVE_OVERLAY] move-search element not found');
+    }
+    
+    // Root shortcut handler - navigate to root directory
+    if (elements.moveRootShortcut) {
+        elements.moveRootShortcut.addEventListener('click', (event) => {
+            event.preventDefault();
+            if (!state.move.isLoading) {
+                loadMoveDirectory('');
+                modalLogger.info('Navigated to root via shortcut');
+            }
+        });
+    } else {
+        console.warn('[MOVE_OVERLAY] moveRootShortcut element not found');
+    }
+    
+    // Current shortcut handler - navigate to current directory
+    if (elements.moveCurrentShortcut) {
+        elements.moveCurrentShortcut.addEventListener('click', (event) => {
+            event.preventDefault();
+            if (!state.move.isLoading) {
+                loadMoveDirectory(state.currentPath);
+                modalLogger.info('Navigated to current directory via shortcut', { path: state.currentPath });
+            }
+        });
+    } else {
+        console.warn('[MOVE_OVERLAY] moveCurrentShortcut element not found');
+    }
+}
+
+/**
+ * Handle search input untuk move overlay
+ * @param {string} query - Search query
+ */
+function handleMoveSearch(query) {
+    currentSearchQuery = query.toLowerCase().trim();
+    
+    // Get current path from state
+    const currentPath = state.move.targetPath || state.currentPath;
+    
+    // Filter folders based on search query
+    const filteredFolders = filterFolders(allFolders, currentSearchQuery);
+    
+    // Re-render folder list with filtered results
+    renderMoveFolderList(filteredFolders, currentPath);
+    
+    // Show/hide "no results" message
+    const folderList = elements.moveFolderList;
+    if (folderList && currentSearchQuery && filteredFolders.length === 0) {
+        const noResultsMsg = document.createElement('div');
+        noResultsMsg.className = 'move-no-results';
+        noResultsMsg.textContent = `No folders found matching "${query}"`;
+        noResultsMsg.style.cssText = `
+            padding: 20px;
+            text-align: center;
+            color: var(--text-secondary, #666);
+            font-size: 14px;
+        `;
+        folderList.appendChild(noResultsMsg);
+    }
+}
+
+/**
+ * Filter folders berdasarkan query
+ * @param {Array} folders - Array of folders to filter
+ * @param {string} query - Search query (already lowercased and trimmed)
+ * @returns {Array} Filtered folders
+ */
+function filterFolders(folders, query) {
+    if (!query) {
+        return folders;
+    }
+    
+    return folders.filter(folder => {
+        return folder.name.toLowerCase().includes(query);
+    });
 }
 
 /**

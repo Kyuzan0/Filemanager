@@ -40,6 +40,9 @@ export const elements = {
     loaderOverlay: document.getElementById('loader-overlay'),
     errorBanner: document.getElementById('error-banner'),
     
+    // Drag and drop
+    fileCard: document.querySelector('.file-card'),
+    
     // Sort headers
     sortHeaders: document.querySelectorAll('th[data-sort-key]'),
     
@@ -126,16 +129,34 @@ export const elements = {
     logOverlay: document.getElementById('log-overlay'),
     logTitle: document.getElementById('log-title'),
     logSubtitle: document.getElementById('log-subtitle'),
-    logFilter: document.getElementById('log-filter'),
-    logPrev: document.getElementById('log-prev'),
-    logNext: document.getElementById('log-next'),
-    logPageInfo: document.getElementById('log-page-info'),
+    logClose: document.getElementById('log-close'),
+    
+    // Log table and pagination
     logTableBody: document.getElementById('log-table-body'),
+    logPrevPage: document.getElementById('log-prev-page'),
+    logNextPage: document.getElementById('log-next-page'),
+    logPageInfo: document.getElementById('log-page-info'),
+    
+    // Log filters
+    logFilterAction: document.getElementById('log-filter-action'),
+    logFilterStartDate: document.getElementById('log-filter-start-date'),
+    logFilterEndDate: document.getElementById('log-filter-end-date'),
+    logFilterType: document.getElementById('log-filter-type'),
+    logFilterPath: document.getElementById('log-filter-path'),
+    logFilterSort: document.getElementById('log-filter-sort'),
+    logApplyFilters: document.getElementById('log-apply-filters'),
+    logClearFilters: document.getElementById('log-clear-filters'),
+    logActiveFilters: document.getElementById('log-active-filters'),
+    
+    // Log actions
+    logExportCSV: document.getElementById('log-export-csv'),
+    logExportJSON: document.getElementById('log-export-json'),
+    logCleanupBtn: document.getElementById('log-cleanup-btn'),
+    logAutoRefreshToggle: document.getElementById('log-auto-refresh-toggle'),
+    
+    // Other log elements
     logError: document.getElementById('log-error'),
     logRefresh: document.getElementById('log-refresh'),
-    logClose: document.getElementById('log-close'),
-    logCleanup: document.getElementById('log-cleanup'),
-    logCleanupDays: document.getElementById('log-cleanup-days'),
 };
 
 // Get current path from URL parameters

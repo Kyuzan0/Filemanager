@@ -71,8 +71,10 @@ export const state = {
         currentPage: 1,
         totalPages: 1,
         filter: '',
+        activeFilters: {},
         data: [],
         isCleaningUp: false,
+        refreshInterval: null,
     },
 };
 

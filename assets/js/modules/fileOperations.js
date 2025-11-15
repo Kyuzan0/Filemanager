@@ -140,24 +140,47 @@ export async function moveItem(
     previewOpenRaw,
     buildFileUrl
 ) {
-    // Simple implementation for basic move functionality
+    // Optimized implementation with optimistic UI update
     try {
-        setLoading(true);
-        
         console.log('[DEBUG] Moving item from', sourcePath, 'to', targetPath);
         
+        // Optimistic update: Remove item from UI immediately
+        const movedItem = state.itemMap.get(sourcePath);
+        if (movedItem) {
+            // Remove from visible items
+            state.items = state.items.filter(item => item.path !== sourcePath);
+            state.visibleItems = state.visibleItems.filter(item => item.path !== sourcePath);
+            state.itemMap.delete(sourcePath);
+            
+            console.log('[DEBUG] Optimistically removed item from UI');
+        }
+        
+        // Perform the actual move operation
         const data = await apiMoveItem(sourcePath, targetPath);
         console.log('[DEBUG] Move response:', data);
         
         flashStatus(`"${data.item.name}" berhasil dipindahkan.`);
         
-        // Refresh the directory
-        await fetchDirectory(state.currentPath, { silent: true });
+        // Only refresh if we're viewing the target directory or source/target are in current view
+        const needsRefresh =
+            state.currentPath === targetPath ||
+            state.currentPath === '' ||
+            (movedItem && movedItem.type === 'folder');
+        
+        if (needsRefresh) {
+            console.log('[DEBUG] Refreshing directory after move');
+            await fetchDirectory(state.currentPath, { silent: true });
+        } else {
+            console.log('[DEBUG] Skipping directory refresh - not needed');
+        }
         
     } catch (error) {
         console.error(error);
         const message = error instanceof Error ? error.message : 'Terjadi kesalahan saat memindahkan item.';
         setError(message);
+        
+        // Rollback: Refresh to restore correct state
+        await fetchDirectory(state.currentPath, { silent: true });
     } finally {
         setLoading(false);
     }

@@ -1,7 +1,7 @@
 /**
  * Modal Management Module
  * Berisi fungsi-fungsi untuk mengelola berbagai modal dalam aplikasi
- * @version 1.1.0 - Added media preview support
+ * @version 1.2.0 - Added log modal support
  */
 
 import { config } from './constants.js';
@@ -686,5 +686,97 @@ export async function openMediaPreview(
     const previewStatus = document.getElementById('preview-status');
     if (previewStatus) {
         previewStatus.textContent = 'Mode pratinjau media';
+    }
+}
+
+/**
+ * Membuka overlay log modal
+ * @param {Object} state - State aplikasi
+ * @param {HTMLElement} logOverlay - Elemen log overlay
+ * @param {HTMLElement} logClose - Elemen tombol close
+ */
+export function openLogModal(state, logOverlay, logClose) {
+    if (state.logs.isOpen) {
+        return;
+    }
+
+    state.logs.isOpen = true;
+    state.logs.currentPage = 1;
+    state.logs.activeFilters = {};
+    
+    logOverlay.hidden = false;
+    requestAnimationFrame(() => {
+        logOverlay.classList.add('visible');
+    });
+    logOverlay.setAttribute('aria-hidden', 'false');
+    document.body.classList.add('modal-open');
+    
+    if (logClose) {
+        logClose.focus();
+    }
+}
+
+/**
+ * Menutup overlay log modal
+ * @param {Object} state - State aplikasi
+ * @param {HTMLElement} logOverlay - Elemen log overlay
+ */
+export function closeLogModal(state, logOverlay) {
+    if (!state.logs.isOpen) {
+        return;
+    }
+
+    state.logs.isOpen = false;
+    logOverlay.classList.remove('visible');
+    logOverlay.setAttribute('aria-hidden', 'true');
+    document.body.classList.remove('modal-open');
+    
+    setTimeout(() => {
+        if (!state.logs.isOpen) {
+            logOverlay.hidden = true;
+        }
+    }, 200);
+}
+
+/**
+ * Mengatur status loading pada log modal
+ * @param {Object} state - State aplikasi
+ * @param {HTMLElement} logRefresh - Tombol refresh
+ * @param {HTMLElement} logPrev - Tombol previous
+ * @param {HTMLElement} logNext - Tombol next
+ * @param {HTMLElement} logPageInfo - Info halaman
+ * @param {boolean} isLoading - Status loading
+ */
+export function setLogLoading(state, logTableBody, isLoading) {
+    state.logs.isLoading = isLoading;
+    
+    if (isLoading && logTableBody) {
+        logTableBody.innerHTML = `
+            <tr>
+                <td colspan="5" style="text-align: center; padding: 20px;">
+                    <div class="spinner"></div>
+                    <p>Loading logs...</p>
+                </td>
+            </tr>
+        `;
+    }
+}
+
+/**
+ * Mengupdate informasi pagination log
+ * @param {Object} state - State aplikasi
+ * @param {HTMLElement} logPrev - Tombol previous
+ * @param {HTMLElement} logNext - Tombol next
+ * @param {HTMLElement} logPageInfo - Info halaman
+ */
+export function updateLogPagination(state, logPrev, logNext, logPageInfo) {
+    if (logPrev) {
+        logPrev.disabled = state.logs.currentPage <= 1 || state.logs.isLoading;
+    }
+    if (logNext) {
+        logNext.disabled = state.logs.currentPage >= state.logs.totalPages || state.logs.isLoading;
+    }
+    if (logPageInfo) {
+        logPageInfo.textContent = `Halaman ${state.logs.currentPage} dari ${state.logs.totalPages}`;
     }
 }

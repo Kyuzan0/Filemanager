@@ -60,17 +60,17 @@ export function renderBreadcrumbs(breadcrumbsEl, breadcrumbs, navigateTo) {
  * @param {Function} openConfirmOverlay - Fungsi buka confirm overlay
  * @param {Function} toggleSelection - Fungsi toggle selection
  * @param {Function} openContextMenu - Fungsi buka context menu
- * @param {Function} handleDragStart - Fungsi handle drag start
- * @param {Function} handleDragEnd - Fungsi handle drag end
- * @param {Function} handleDragOver - Fungsi handle drag over
- * @param {Function} handleDrop - Fungsi handle drop
- * @param {Function} handleDragLeave - Fungsi handle drag leave
  * @param {Function} isWordDocument - Fungsi cek dokumen Word
  * @param {Function} buildFileUrl - Fungsi build file URL
  * @param {Function} hasUnsavedChanges - Fungsi cek perubahan belum disimpan
  * @param {Function} confirmDiscardChanges - Fungsi konfirmasi perubahan
  * @param {Function} previewableExtensions - Set ekstensi yang bisa di-preview
  * @param {Function} mediaPreviewableExtensions - Set ekstensi media yang bisa di-preview
+ * @param {Function} handleDragStart - Fungsi handle drag start
+ * @param {Function} handleDragEnd - Fungsi handle drag end
+ * @param {Function} handleDragOver - Fungsi handle drag over
+ * @param {Function} handleDrop - Fungsi handle drop
+ * @param {Function} handleDragLeave - Fungsi handle drag leave
  */
 export function renderItems(
     tableBody,
@@ -89,17 +89,17 @@ export function renderItems(
     openConfirmOverlay,
     toggleSelection,
     openContextMenu,
-    handleDragStart,
-    handleDragEnd,
-    handleDragOver,
-    handleDrop,
-    handleDragLeave,
     isWordDocument,
     buildFileUrl,
     hasUnsavedChanges,
     confirmDiscardChanges,
     previewableExtensions,
-    mediaPreviewableExtensions
+    mediaPreviewableExtensions,
+    handleDragStart,
+    handleDragEnd,
+    handleDragOver,
+    handleDrop,
+    handleDragLeave
 ) {
     state.items = items;
     state.itemMap = new Map(items.map((item) => [item.path, item]));
@@ -195,10 +195,6 @@ export function renderItems(
                 event.stopImmediatePropagation();
             }
 
-            // Remove global listeners to avoid body drop firing
-            document.body.removeEventListener('dragover', handleBodyDragOver);
-            document.body.removeEventListener('drop', handleBodyDrop);
-
             const targetPath = state.parentPath || '';
             console.log('[DEBUG] Dropping', state.drag.draggedItem.name, 'onto up-row to move into parent', targetPath);
 
@@ -207,10 +203,10 @@ export function renderItems(
                 state.drag.draggedItem.path,
                 targetPath,
                 state,
-                () => { /* setLoading - will be implemented later */ },
-                (error) => { console.error('Move error:', error); },
+                (isLoading) => { console.log('[DEBUG] Loading:', isLoading); },
+                (error) => { console.error('[DEBUG] Move error:', error); },
                 () => fetchDirectory(state.currentPath, { silent: true }),
-                (message) => { console.log('Status:', message); },
+                (message) => { console.log('[DEBUG] Status:', message); },
                 null, // previewTitle
                 null, // previewMeta
                 null, // previewOpenRaw
