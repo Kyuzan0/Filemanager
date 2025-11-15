@@ -30,6 +30,11 @@ import { debugLog } from './debug.js';
 // Global virtual scroll manager instance
 let virtualScrollManager = null;
 
+// Global flag to prevent multiple simultaneous renders
+let isRendering = false;
+let lastRenderTime = 0;
+const RENDER_DEBOUNCE = 16; // ~60fps for smooth UI
+
 /**
  * Moves a row in the DOM immediately for optimistic UI update
  * @param {string} itemPath - Path of the item being moved
@@ -579,6 +584,17 @@ export function renderItems(
     flashStatus,
     setError
 ) {
+    // Prevent multiple simultaneous renders
+    const now = performance.now();
+    if (isRendering || (now - lastRenderTime) < RENDER_DEBOUNCE) {
+        console.log('[DEBUG] Skipping render - too soon or already rendering');
+        return { items, filtered: state.visibleItems || [], meta: {} };
+    }
+    
+    isRendering = true;
+    lastRenderTime = now;
+    
+    try {
     // Initialize pagination if not exists
     initPagination();
     
@@ -788,7 +804,10 @@ export function renderItems(
     });
     state.knownItems = newMap;
 
-    return { items, filtered, meta };
+        return { items, filtered, meta };
+    } finally {
+        isRendering = false;
+    }
 }
 
 /**

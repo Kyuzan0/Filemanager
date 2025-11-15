@@ -3984,12 +3984,18 @@ body.dragging {
     border-top: none;
     gap: 16px;
     flex-wrap: wrap;
+    /* Performance optimizations */
+    contain: layout style paint;
+    will-change: auto;
+    transform: translateZ(0);
 }
 
 .pagination-info {
     font-size: 0.9rem;
     color: var(--text-muted);
     font-weight: 500;
+    /* Performance optimization */
+    contain: layout style;
 }
 
 .pagination-controls {
@@ -3998,6 +4004,9 @@ body.dragging {
     gap: 8px;
     flex: 1;
     justify-content: center;
+    /* Performance optimizations */
+    contain: layout style;
+    isolation: isolate;
 }
 
 .pagination-btn {
@@ -4011,26 +4020,40 @@ body.dragging {
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    transition: all 0.2s ease;
+    transition: all 0.15s ease; /* Reduced from 0.2s for faster response */
     padding: 0;
+    /* Performance optimizations */
+    contain: layout style paint;
+    will-change: transform, background-color, border-color, color;
+    backface-visibility: hidden;
+    transform: translateZ(0);
 }
 
 .pagination-btn svg {
     width: 18px;
     height: 18px;
     fill: currentColor;
+    /* Performance optimization */
+    will-change: transform;
 }
 
 .pagination-btn:hover:not(:disabled) {
     background: var(--surface-hover);
     border-color: var(--primary);
     color: var(--primary);
-    transform: translateY(-1px);
+    transform: translateY(-1px) translateZ(0);
+}
+
+.pagination-btn:active:not(:disabled) {
+    transform: translateY(0) translateZ(0) scale(0.98);
+    transition-duration: 0.05s; /* Faster active state */
 }
 
 .pagination-btn:disabled {
     opacity: 0.4;
     cursor: not-allowed;
+    /* Performance optimization */
+    will-change: auto;
 }
 
 .pagination-btn.active {
@@ -4038,17 +4061,23 @@ body.dragging {
     color: #fff;
     border-color: var(--primary);
     font-weight: 600;
+    /* Performance optimization */
+    will-change: auto;
 }
 
 .pagination-numbers {
     display: flex;
     align-items: center;
     gap: 6px;
+    /* Performance optimization */
+    contain: layout style;
 }
 
 .pagination-number {
     min-width: 36px;
     padding: 0 8px;
+    /* Performance optimization */
+    contain: layout style paint;
 }
 
 .pagination-ellipsis {
@@ -4056,6 +4085,8 @@ body.dragging {
     padding: 0 4px;
     font-weight: 600;
     user-select: none;
+    /* Performance optimization */
+    contain: layout style;
 }
 
 .pagination-per-page {
@@ -4064,12 +4095,16 @@ body.dragging {
     gap: 8px;
     font-size: 0.9rem;
     color: var(--text);
+    /* Performance optimization */
+    contain: layout style;
 }
 
 .pagination-per-page label {
     font-weight: 500;
     color: var(--text-muted);
     white-space: nowrap;
+    /* Performance optimization */
+    contain: layout style;
 }
 
 .items-per-page-select {
@@ -4080,8 +4115,13 @@ body.dragging {
     color: var(--text);
     font-size: 0.9rem;
     cursor: pointer;
-    transition: all 0.2s ease;
+    transition: all 0.15s ease; /* Reduced from 0.2s for faster response */
     min-width: 70px;
+    /* Performance optimizations */
+    contain: layout style paint;
+    will-change: border-color, box-shadow;
+    backface-visibility: hidden;
+    transform: translateZ(0);
 }
 
 .items-per-page-select:hover {
@@ -4092,6 +4132,11 @@ body.dragging {
     outline: none;
     border-color: var(--primary);
     box-shadow: 0 0 0 3px var(--primary-soft);
+}
+
+.items-per-page-select:active {
+    transform: translateZ(0) scale(0.98);
+    transition-duration: 0.05s; /* Faster active state */
 }
 
 /* Responsive pagination */
@@ -4108,6 +4153,8 @@ body.dragging {
     .pagination-btn {
         width: 32px;
         height: 32px;
+        /* Performance optimization for medium screens */
+        will-change: transform, background-color, border-color, color;
     }
     
     .pagination-btn svg {
@@ -4126,6 +4173,8 @@ body.dragging {
         padding: 12px 12px;
         margin: 0 12px;
         gap: 12px;
+        /* Performance optimization for mobile */
+        contain: layout style paint;
     }
     
     .pagination-info {
@@ -4137,6 +4186,9 @@ body.dragging {
     .pagination-controls {
         width: 100%;
         justify-content: center;
+        /* Performance optimization for mobile controls */
+        contain: layout style paint;
+        isolation: isolate;
     }
     
     .pagination-per-page {
@@ -4154,11 +4206,17 @@ body.dragging {
     /* Show fewer page numbers on mobile */
     .pagination-numbers {
         gap: 4px;
+        /* Performance optimization for mobile page numbers */
+        contain: layout style;
     }
     
     .pagination-btn {
         width: 28px;
         height: 28px;
+        /* Performance optimization for mobile buttons */
+        will-change: transform, background-color, border-color, color;
+        backface-visibility: hidden;
+        transform: translateZ(0);
     }
     
     .pagination-btn svg {
@@ -4176,6 +4234,8 @@ body.dragging {
     .pagination-container {
         padding: 10px;
         margin: 0 12px;
+        /* Performance optimization for small screens */
+        contain: layout style paint;
     }
     
     .pagination-info {
@@ -4184,6 +4244,17 @@ body.dragging {
     
     .pagination-per-page {
         font-size: 0.8rem;
+    }
+    
+    /* Additional performance optimizations for very small screens */
+    .pagination-btn {
+        /* Reduce transition duration for faster feel on touch devices */
+        transition: all 0.1s ease;
+    }
+    
+    .items-per-page-select {
+        /* Reduce transition duration for faster feel on touch devices */
+        transition: all 0.1s ease;
     }
 }
 
@@ -4350,5 +4421,347 @@ body.dragging {
     .filter-select-compact {
         font-size: 0.82rem;
         padding: 8px 28px 8px 10px;
+    }
+}
+
+/* Additional pagination performance optimizations */
+.pagination-container {
+    /* Hardware acceleration for smoother animations */
+    transform: translateZ(0);
+    /* Optimize for frequent updates */
+    will-change: auto;
+}
+
+.pagination-btn {
+    /* Optimize for button interactions */
+    touch-action: manipulation;
+    /* Prevent text selection during clicks */
+    user-select: none;
+    -webkit-user-select: none;
+    /* Improve touch responsiveness */
+    -webkit-tap-highlight-color: transparent;
+}
+
+.pagination-btn:active {
+    /* Faster active state for better feedback */
+    transition-duration: 0.05s;
+}
+
+.items-per-page-select {
+    /* Optimize for select interactions */
+    touch-action: manipulation;
+    /* Prevent text selection */
+    user-select: none;
+    -webkit-user-select: none;
+}
+
+/* Reduce repaints during pagination changes */
+.pagination-numbers {
+    /* Optimize for page number updates */
+    contain: layout style paint;
+}
+
+/* Optimize pagination info updates */
+.pagination-info {
+    /* Optimize for text updates */
+    contain: layout style;
+    text-rendering: optimizeSpeed;
+}
+
+/* Performance optimization for pagination animations */
+@media (prefers-reduced-motion: no-preference) {
+    .pagination-btn {
+        /* Enable hardware acceleration for animations */
+        transform: translateZ(0);
+        backface-visibility: hidden;
+        perspective: 1000px;
+    }
+    
+    .pagination-btn:hover:not(:disabled) {
+        /* Smooth hover animation */
+        transition: transform 0.15s cubic-bezier(0.4, 0, 0.2, 1), 
+                    background-color 0.15s cubic-bezier(0.4, 0, 0.2, 1), 
+                    border-color 0.15s cubic-bezier(0.4, 0, 0.2, 1), 
+                    color 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    
+    .pagination-btn:active:not(:disabled) {
+        /* Smooth active animation */
+        transition: transform 0.05s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    
+    .items-per-page-select {
+        /* Smooth select animation */
+        transition: border-color 0.15s cubic-bezier(0.4, 0, 0.2, 1), 
+                    box-shadow 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+}
+
+/* Respect user's motion preferences */
+@media (prefers-reduced-motion: reduce) {
+    .pagination-btn,
+    .items-per-page-select {
+        transition: none;
+        transform: none;
+        animation: none;
+    }
+    
+    .pagination-btn:hover:not(:disabled) {
+        transform: none;
+    }
+    
+    .pagination-btn:active:not(:disabled) {
+        transform: none;
+    }
+}
+
+/* Optimize for high DPI displays */
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+    .pagination-btn svg {
+        /* Crisper icons on high DPI displays */
+        shape-rendering: crispEdges;
+    }
+}
+
+/* Dark mode optimizations */
+@media (prefers-color-scheme: dark) {
+    .pagination-container {
+        /* Reduce repaints in dark mode */
+        contain: layout style paint;
+    }
+    
+    .pagination-btn {
+        /* Optimize for dark mode transitions */
+        transition: background-color 0.15s ease, 
+                    border-color 0.15s ease, 
+                    color 0.15s ease;
+    }
+}
+
+/* Additional pagination performance optimizations */
+.pagination-container {
+    /* Hardware acceleration for smoother animations */
+    transform: translateZ(0);
+    /* Optimize for frequent updates */
+    will-change: auto;
+}
+
+.pagination-btn {
+    /* Optimize for button interactions */
+    touch-action: manipulation;
+    /* Prevent text selection during clicks */
+    user-select: none;
+    -webkit-user-select: none;
+    /* Improve touch responsiveness */
+    -webkit-tap-highlight-color: transparent;
+}
+
+.pagination-btn:active {
+    /* Faster active state for better feedback */
+    transition-duration: 0.05s;
+}
+
+.items-per-page-select {
+    /* Optimize for select interactions */
+    touch-action: manipulation;
+    /* Prevent text selection */
+    user-select: none;
+    -webkit-user-select: none;
+}
+
+/* Reduce repaints during pagination changes */
+.pagination-numbers {
+    /* Optimize for page number updates */
+    contain: layout style paint;
+}
+
+/* Optimize pagination info updates */
+.pagination-info {
+    /* Optimize for text updates */
+    contain: layout style;
+    text-rendering: optimizeSpeed;
+}
+
+/* Performance optimization for pagination animations */
+@media (prefers-reduced-motion: no-preference) {
+    .pagination-btn {
+        /* Enable hardware acceleration for animations */
+        transform: translateZ(0);
+        backface-visibility: hidden;
+        perspective: 1000px;
+    }
+    
+    .pagination-btn:hover:not(:disabled) {
+        /* Smooth hover animation */
+        transition: transform 0.15s cubic-bezier(0.4, 0, 0.2, 1), 
+                    background-color 0.15s cubic-bezier(0.4, 0, 0.2, 1), 
+                    border-color 0.15s cubic-bezier(0.4, 0, 0.2, 1), 
+                    color 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    
+    .pagination-btn:active:not(:disabled) {
+        /* Smooth active animation */
+        transition: transform 0.05s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    
+    .items-per-page-select {
+        /* Smooth select animation */
+        transition: border-color 0.15s cubic-bezier(0.4, 0, 0.2, 1), 
+                    box-shadow 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+}
+
+/* Respect user's motion preferences */
+@media (prefers-reduced-motion: reduce) {
+    .pagination-btn,
+    .items-per-page-select {
+        transition: none;
+        transform: none;
+        animation: none;
+    }
+    
+    .pagination-btn:hover:not(:disabled) {
+        transform: none;
+    }
+    
+    .pagination-btn:active:not(:disabled) {
+        transform: none;
+    }
+}
+
+/* Optimize for high DPI displays */
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+    .pagination-btn svg {
+        /* Crisper icons on high DPI displays */
+        shape-rendering: crispEdges;
+    }
+}
+
+/* Dark mode optimizations */
+@media (prefers-color-scheme: dark) {
+    .pagination-container {
+        /* Reduce repaints in dark mode */
+        contain: layout style paint;
+    }
+    
+    .pagination-btn {
+        /* Optimize for dark mode transitions */
+        transition: background-color 0.15s ease, 
+                    border-color 0.15s ease, 
+                    color 0.15s ease;
+    }
+}
+
+/* Additional pagination performance optimizations */
+.pagination-container {
+    /* Hardware acceleration for smoother animations */
+    transform: translateZ(0);
+    /* Optimize for frequent updates */
+    will-change: auto;
+}
+
+.pagination-btn {
+    /* Optimize for button interactions */
+    touch-action: manipulation;
+    /* Prevent text selection during clicks */
+    user-select: none;
+    -webkit-user-select: none;
+    /* Improve touch responsiveness */
+    -webkit-tap-highlight-color: transparent;
+}
+
+.pagination-btn:active {
+    /* Faster active state for better feedback */
+    transition-duration: 0.05s;
+}
+
+.items-per-page-select {
+    /* Optimize for select interactions */
+    touch-action: manipulation;
+    /* Prevent text selection */
+    user-select: none;
+    -webkit-user-select: none;
+}
+
+/* Reduce repaints during pagination changes */
+.pagination-numbers {
+    /* Optimize for page number updates */
+    contain: layout style paint;
+}
+
+/* Optimize pagination info updates */
+.pagination-info {
+    /* Optimize for text updates */
+    contain: layout style;
+    text-rendering: optimizeSpeed;
+}
+
+/* Performance optimization for pagination animations */
+@media (prefers-reduced-motion: no-preference) {
+    .pagination-btn {
+        /* Enable hardware acceleration for animations */
+        transform: translateZ(0);
+        backface-visibility: hidden;
+        perspective: 1000px;
+    }
+    
+    .pagination-btn:hover:not(:disabled) {
+        /* Smooth hover animation */
+        transition: transform 0.15s cubic-bezier(0.4, 0, 0.2, 1), 
+                    background-color 0.15s cubic-bezier(0.4, 0, 0.2, 1), 
+                    border-color 0.15s cubic-bezier(0.4, 0, 0.2, 1), 
+                    color 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    
+    .pagination-btn:active:not(:disabled) {
+        /* Smooth active animation */
+        transition: transform 0.05s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    
+    .items-per-page-select {
+        /* Smooth select animation */
+        transition: border-color 0.15s cubic-bezier(0.4, 0, 0.2, 1), 
+                    box-shadow 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+}
+
+/* Respect user's motion preferences */
+@media (prefers-reduced-motion: reduce) {
+    .pagination-btn,
+    .items-per-page-select {
+        transition: none;
+        transform: none;
+        animation: none;
+    }
+    
+    .pagination-btn:hover:not(:disabled) {
+        transform: none;
+    }
+    
+    .pagination-btn:active:not(:disabled) {
+        transform: none;
+    }
+}
+
+/* Optimize for high DPI displays */
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+    .pagination-btn svg {
+        /* Crisper icons on high DPI displays */
+        shape-rendering: crispEdges;
+    }
+}
+
+/* Dark mode optimizations */
+@media (prefers-color-scheme: dark) {
+    .pagination-container {
+        /* Reduce repaints in dark mode */
+        contain: layout style paint;
+    }
+    
+    .pagination-btn {
+        /* Optimize for dark mode transitions */
+        transition: background-color 0.15s ease, 
+                    border-color 0.15s ease, 
+                    color 0.15s ease;
     }
 }

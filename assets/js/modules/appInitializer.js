@@ -1774,10 +1774,14 @@ function setupEventHandlers() {
         tableContainer.addEventListener('scroll', throttledVirtualScroll, { passive: true });
     }
     
-    // Setup pagination change event listener
+    // Setup pagination change event listener with optimization
     document.addEventListener('pagination-change', () => {
         console.log('[DEBUG] Pagination changed, re-rendering items');
-        renderItems(state.items, state.lastUpdated, false);
+        
+        // Use requestAnimationFrame for smoother rendering
+        requestAnimationFrame(() => {
+            renderItems(state.items, state.lastUpdated, false);
+        });
     });
     
     // Setup preview overlay handler

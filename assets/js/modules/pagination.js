@@ -6,6 +6,12 @@
 import { state, updateState } from './state.js';
 import { elements } from './constants.js';
 
+// Global flag to prevent multiple simultaneous renders
+let isRendering = false;
+let lastRenderTime = 0;
+const RENDER_DEBOUNCE = 50; // Reduced from 100ms to 50ms for faster response
+let renderTimeout = null;
+
 /**
  * Inisialisasi pagination state
  */
@@ -303,28 +309,58 @@ function attachPaginationEventListeners(container) {
     const pageButtons = container.querySelectorAll('.pagination-btn[data-page]');
     pageButtons.forEach(button => {
         button.addEventListener('click', (e) => {
+            // Prevent multiple rapid clicks
+            if (isRendering) return;
+            
             const page = e.currentTarget.getAttribute('data-page');
+            let pageChanged = false;
             
             switch(page) {
                 case 'first':
-                    goToFirstPage();
+                    if (state.pagination.currentPage > 1) {
+                        goToFirstPage();
+                        pageChanged = true;
+                    }
                     break;
                 case 'prev':
-                    goToPreviousPage();
+                    if (state.pagination.currentPage > 1) {
+                        goToPreviousPage();
+                        pageChanged = true;
+                    }
                     break;
                 case 'next':
-                    goToNextPage();
+                    if (state.pagination.currentPage < state.pagination.totalPages) {
+                        goToNextPage();
+                        pageChanged = true;
+                    }
                     break;
                 case 'last':
-                    goToLastPage();
+                    if (state.pagination.currentPage < state.pagination.totalPages) {
+                        goToLastPage();
+                        pageChanged = true;
+                    }
                     break;
                 default:
-                    goToPage(parseInt(page));
+                    const pageNum = parseInt(page);
+                    if (!isNaN(pageNum) && pageNum !== state.pagination.currentPage) {
+                        goToPage(pageNum);
+                        pageChanged = true;
+                    }
             }
             
-            // Trigger re-render
-            const renderEvent = new CustomEvent('pagination-change');
-            window.dispatchEvent(renderEvent);
+            // Only trigger re-render if page actually changed
+            if (pageChanged) {
+                // Clear any existing timeout
+                if (renderTimeout) {
+                    clearTimeout(renderTimeout);
+                }
+                
+                // Use a shorter debounce for immediate feedback
+                renderTimeout = setTimeout(() => {
+                    const renderEvent = new CustomEvent('pagination-change');
+                    window.dispatchEvent(renderEvent);
+                }, RENDER_DEBOUNCE);
+            }
         });
     });
     
@@ -332,12 +368,24 @@ function attachPaginationEventListeners(container) {
     const itemsPerPageSelect = container.querySelector('#items-per-page');
     if (itemsPerPageSelect) {
         itemsPerPageSelect.addEventListener('change', (e) => {
-            const newItemsPerPage = parseInt(e.target.value);
-            changeItemsPerPage(newItemsPerPage);
+            // Prevent multiple rapid changes
+            if (isRendering) return;
             
-            // Trigger re-render
-            const renderEvent = new CustomEvent('pagination-change');
-            window.dispatchEvent(renderEvent);
+            const newItemsPerPage = parseInt(e.target.value);
+            if (newItemsPerPage !== state.pagination.itemsPerPage) {
+                changeItemsPerPage(newItemsPerPage);
+                
+                // Clear any existing timeout
+                if (renderTimeout) {
+                    clearTimeout(renderTimeout);
+                }
+                
+                // Use a slightly longer debounce for items per page changes
+                renderTimeout = setTimeout(() => {
+                    const renderEvent = new CustomEvent('pagination-change');
+                    window.dispatchEvent(renderEvent);
+                }, RENDER_DEBOUNCE * 2);
+            }
         });
     }
 }
