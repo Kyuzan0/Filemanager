@@ -172,6 +172,11 @@ async function fetchDirectoryWrapper(path = '', options = {}) {
         console.log('[DEBUG] API response for path "' + path + '":', data);
         
         if (data && data.success) {
+            // Ensure state.selected is a Set before updating
+            if (!(state.selected instanceof Set)) {
+                state.selected = new Set();
+            }
+            
             // Update state with the fetched data
             updateState({
                 currentPath: data.path || path,
