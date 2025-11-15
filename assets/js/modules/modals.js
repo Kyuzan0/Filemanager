@@ -650,22 +650,53 @@ export async function openMediaPreview(
         // Decide element based on type
         let el;
         if (extension === 'pdf') {
+            // Optimization 8: Progressive PDF loading with loading indicator
+            const loadingMsg = document.createElement('div');
+            loadingMsg.style.cssText = 'text-align: center; padding: 40px; color: var(--text-secondary);';
+            loadingMsg.innerHTML = '<div class="spinner"></div><p>Loading PDF...</p>';
+            viewer.appendChild(loadingMsg);
+            
             el = document.createElement('iframe');
             el.src = url;
             el.title = item.name;
             el.setAttribute('aria-label', `Pratinjau PDF ${item.name}`);
+            el.style.display = 'none'; // Hide until loaded
+            
+            // Show iframe when loaded
+            el.addEventListener('load', () => {
+                console.log('[MEDIA] PDF loaded successfully:', item.name);
+                loadingMsg.remove();
+                el.style.display = 'block';
+            });
         } else {
-            // Image types: png, jpg, jpeg, gif, webp, svg
+            // Optimization 11: Image Lazy Loading with native loading="lazy"
+            // Optimization 8: Progressive image loading with placeholder
+            const loadingMsg = document.createElement('div');
+            loadingMsg.style.cssText = 'text-align: center; padding: 40px; color: var(--text-secondary);';
+            loadingMsg.innerHTML = '<div class="spinner"></div><p>Loading image...</p>';
+            viewer.appendChild(loadingMsg);
+            
             el = document.createElement('img');
             el.src = url;
             el.alt = item.name;
+            el.loading = 'lazy'; // Native lazy loading
+            el.decoding = 'async'; // Async decode for better performance
+            el.style.display = 'none'; // Hide until loaded
             
             // Add loading and error handlers
             el.addEventListener('load', () => {
                 console.log('[MEDIA] Image loaded successfully:', item.name);
+                loadingMsg.remove();
+                el.style.display = 'block';
+                
+                // Optimization 8: Log performance metrics
+                if (item.size && item.size > 1048576) { // > 1MB
+                    console.log(`[MEDIA PERFORMANCE] Large image (${(item.size / 1048576).toFixed(2)}MB) loaded`);
+                }
             });
             el.addEventListener('error', () => {
                 console.error('[MEDIA] Failed to load image:', item.name);
+                loadingMsg.remove();
                 viewer.innerHTML = '<p style="color: var(--error); text-align: center; padding: 20px;">Gagal memuat gambar</p>';
             });
         }

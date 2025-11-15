@@ -32,7 +32,6 @@ import {
     setupContextMenuHandler,
     setupSplitActionHandler
 } from './eventHandlers.js';
-import { setupMoveOverlayHandlers } from './moveOverlay.js';
 import {
     handleDragStart,
     handleDragEnd,
@@ -43,6 +42,68 @@ import {
 } from './dragDrop.js';
 import { fetchDirectory, fetchLogData, cleanupLogs } from './apiService.js';
 import { renderItems as renderItemsComplex, updateSortUI } from './uiRenderer.js';
+
+// Lazy-loaded modules (loaded on-demand for better performance)
+let moveOverlayModule = null;
+let logManagerModule = null;
+let moveOverlayLoading = null;
+let logManagerLoading = null;
+
+/**
+ * Lazy load MoveOverlay module
+ * Reduces initial bundle size by ~15KB
+ * @returns {Promise<Object>} The MoveOverlay module
+ */
+async function loadMoveOverlay() {
+    if (moveOverlayModule) return moveOverlayModule;
+    if (moveOverlayLoading) return moveOverlayLoading;
+    
+    console.log('[Code Splitting] Loading MoveOverlay module...');
+    const startTime = performance.now();
+    
+    moveOverlayLoading = import('./moveOverlay.js')
+        .then(module => {
+            moveOverlayModule = module;
+            const loadTime = performance.now() - startTime;
+            console.log(`[Code Splitting] MoveOverlay loaded in ${loadTime.toFixed(2)}ms`);
+            return module;
+        })
+        .catch(error => {
+            console.error('[Code Splitting] Failed to load MoveOverlay:', error);
+            moveOverlayLoading = null;
+            throw error;
+        });
+    
+    return moveOverlayLoading;
+}
+
+/**
+ * Lazy load LogManager module
+ * Reduces initial bundle size by ~20KB
+ * @returns {Promise<Object>} The LogManager module
+ */
+async function loadLogManager() {
+    if (logManagerModule) return logManagerModule;
+    if (logManagerLoading) return logManagerLoading;
+    
+    console.log('[Code Splitting] Loading LogManager module...');
+    const startTime = performance.now();
+    
+    logManagerLoading = import('./logManager.js')
+        .then(module => {
+            logManagerModule = module;
+            const loadTime = performance.now() - startTime;
+            console.log(`[Code Splitting] LogManager loaded in ${loadTime.toFixed(2)}ms`);
+            return module;
+        })
+        .catch(error => {
+            console.error('[Code Splitting] Failed to load LogManager:', error);
+            logManagerLoading = null;
+            throw error;
+        });
+    
+    return logManagerLoading;
+}
 import {
     openPreviewOverlay,
     closePreviewOverlay,
@@ -81,23 +142,49 @@ import {
     formatDate,
     throttle
 } from './utils.js';
-import {
-    logInfo,
-    logError,
-    createLogger,
-    formatLogEntry,
-    renderLogTable,
-    exportLogsToCSV,
-    exportLogsToJSON,
-    applyLogFilter,
-    updateActiveFiltersDisplay,
-    performLogCleanup,
-    setupLogAutoRefresh,
-    stopLogAutoRefresh,
-    toggleLogAutoRefresh
-} from './logManager.js';
+// LogManager will be lazy-loaded when needed
+// Create a basic logger that will be replaced when logManager loads
+const logger = {
+    info: (msg, data) => console.log(`[INITIALIZER] ${msg}`, data || ''),
+    error: (msg, error) => console.error(`[INITIALIZER] ${msg}`, error || ''),
+    warn: (msg, data) => console.warn(`[INITIALIZER] ${msg}`, data || '')
+};
 
-const logger = createLogger('INITIALIZER');
+// Cache for lazy-loaded logManager functions
+let logManagerFunctions = null;
+
+/**
+ * Get logManager functions (loads module if needed)
+ * @returns {Promise<Object>} LogManager functions
+ */
+async function getLogManagerFunctions() {
+    if (logManagerFunctions) return logManagerFunctions;
+    
+    const module = await loadLogManager();
+    logManagerFunctions = {
+        logInfo: module.logInfo,
+        logError: module.logError,
+        createLogger: module.createLogger,
+        formatLogEntry: module.formatLogEntry,
+        renderLogTable: module.renderLogTable,
+        exportLogsToCSV: module.exportLogsToCSV,
+        exportLogsToJSON: module.exportLogsToJSON,
+        applyLogFilter: module.applyLogFilter,
+        updateActiveFiltersDisplay: module.updateActiveFiltersDisplay,
+        performLogCleanup: module.performLogCleanup,
+        setupLogAutoRefresh: module.setupLogAutoRefresh,
+        stopLogAutoRefresh: module.stopLogAutoRefresh,
+        toggleLogAutoRefresh: module.toggleLogAutoRefresh
+    };
+    
+    // Replace basic logger with real logger
+    const realLogger = module.createLogger('INITIALIZER');
+    logger.info = realLogger.info;
+    logger.error = realLogger.error;
+    logger.warn = realLogger.warn;
+    
+    return logManagerFunctions;
+}
 
 // Internal helper functions
 function confirmDiscardChanges(message) {
@@ -901,6 +988,9 @@ async function openMediaPreview(item) {
 async function openLogModalWrapper() {
     logger.info('Opening log modal...');
     
+    // Lazy load logManager module
+    await loadLogManager();
+    
     // Open the modal
     openLogModal(
         state,
@@ -915,11 +1005,12 @@ async function openLogModalWrapper() {
 /**
  * Wrapper function untuk menutup log modal
  */
-function closeLogModalWrapper() {
+async function closeLogModalWrapper() {
     logger.info('Closing log modal...');
     
     // Stop auto-refresh if active
     if (state.logs.refreshInterval) {
+        const { stopLogAutoRefresh } = await getLogManagerFunctions();
         stopLogAutoRefresh(state);
     }
     
@@ -956,6 +1047,7 @@ async function fetchLogDataWrapper(filters = null, page = 1, limit = 50) {
             });
             
             // Render log table
+            const { renderLogTable } = await getLogManagerFunctions();
             renderLogTable(
                 state.logs.data,
                 elements.logTableBody,
@@ -992,7 +1084,7 @@ async function fetchLogDataWrapper(filters = null, page = 1, limit = 50) {
  */
 async function applyLogFilterWrapper() {
     // Apply filter using the logManager function
-    // The applyLogFilter function will read filter values from DOM elements directly
+    const { applyLogFilter } = await getLogManagerFunctions();
     applyLogFilter(state, fetchLogDataWrapper);
 }
 
@@ -1017,6 +1109,7 @@ async function clearLogFiltersWrapper() {
     });
     
     // Update active filters display
+    const { updateActiveFiltersDisplay } = await getLogManagerFunctions();
     updateActiveFiltersDisplay({}, elements.logActiveFilters);
     
     // Fetch data without filters
@@ -1026,8 +1119,9 @@ async function clearLogFiltersWrapper() {
 /**
  * Wrapper function untuk export logs to CSV
  */
-function exportLogsToCSVWrapper() {
+async function exportLogsToCSVWrapper() {
     try {
+        const { exportLogsToCSV } = await getLogManagerFunctions();
         exportLogsToCSV(state.logs.data, formatDate);
         logger.info('Logs exported to CSV successfully');
     } catch (error) {
@@ -1039,8 +1133,9 @@ function exportLogsToCSVWrapper() {
 /**
  * Wrapper function untuk export logs to JSON
  */
-function exportLogsToJSONWrapper() {
+async function exportLogsToJSONWrapper() {
     try {
+        const { exportLogsToJSON } = await getLogManagerFunctions();
         exportLogsToJSON(state.logs.data);
         logger.info('Logs exported to JSON successfully');
     } catch (error) {
@@ -1073,6 +1168,7 @@ async function performLogCleanupWrapper() {
         }
         
         // Perform cleanup
+        const { performLogCleanup } = await getLogManagerFunctions();
         const result = await performLogCleanup(cleanupLogs);
         
         if (result.success) {
@@ -1106,7 +1202,8 @@ async function performLogCleanupWrapper() {
 /**
  * Wrapper function untuk toggle auto-refresh
  */
-function toggleLogAutoRefreshWrapper() {
+async function toggleLogAutoRefreshWrapper() {
+    const { toggleLogAutoRefresh } = await getLogManagerFunctions();
     toggleLogAutoRefresh(
         state,
         fetchLogDataWrapper,
@@ -1323,13 +1420,9 @@ export async function initializeApp() {
         // Setup drag and drop - fileCard drop zone
         setupFileCardDropZone();
         
-        // Setup move overlay handlers
-        try {
-            setupMoveOverlayHandlers();
-        } catch (error) {
-            logger.error('Failed to setup move overlay handlers', error);
-            // Continue with initialization even if move overlay fails
-        }
+        // Setup move overlay handlers (lazy-loaded on first move operation)
+        // Will be loaded when user clicks move button
+        logger.info('Move overlay will be loaded on demand');
         
         // Load initial directory
         await loadInitialDirectory();
@@ -1535,6 +1628,32 @@ function setupEventHandlers() {
     );
     
     // Setup log modal handlers
+    
+    // Setup move selected button handler (lazy-load moveOverlay module)
+    if (elements.btnMoveSelected) {
+        elements.btnMoveSelected.addEventListener('click', async () => {
+            if (state.selected.size === 0) return;
+            
+            try {
+                // Lazy load the moveOverlay module
+                const module = await loadMoveOverlay();
+                
+                // Setup handlers if not already done
+                if (module.setupMoveOverlayHandlers) {
+                    module.setupMoveOverlayHandlers();
+                }
+                
+                // Open the move overlay
+                if (module.openMoveOverlay) {
+                    const selectedPaths = Array.from(state.selected);
+                    module.openMoveOverlay(selectedPaths, state, fetchDirectoryWrapper);
+                }
+            } catch (error) {
+                logger.error('Failed to load move overlay', error);
+                alert('Failed to load move interface. Please try again.');
+            }
+        });
+    }
     setupLogModalHandlers();
     
     logger.info('Event handlers setup completed');

@@ -3,7 +3,15 @@
  * Berisi fungsi-fungsi untuk merender UI aplikasi
  */
 
-import { compareItems, getSortDescription, synchronizeSelection, createRowActionButton } from './utils.js';
+import {
+    compareItems,
+    getSortDescription,
+    synchronizeSelection,
+    createRowActionButton,
+    getFileExtension,
+    formatBytes,
+    formatDate
+} from './utils.js';
 import { getItemIcon } from './fileIcons.js';
 import { actionIcons, config } from './constants.js';
 import { moveItem } from './fileOperations.js';
@@ -840,32 +848,4 @@ export function setError(errorBanner, message) {
         errorBanner.textContent = '';
         errorBanner.classList.remove('visible', 'error');
     }
-}
-
-// Helper functions that need to be imported from utils
-function getFileExtension(name) {
-    const index = name.lastIndexOf('.');
-    return index === -1 ? '' : name.slice(index + 1).toLowerCase();
-}
-
-function formatBytes(bytes) {
-    if (bytes === null || typeof bytes === 'undefined') {
-        return '-';
-    }
-    const units = ['B', 'KB', 'MB', 'GB', 'TB'];
-    let size = bytes;
-    let unit = 0;
-    while (size >= 1024 && unit < units.length - 1) {
-        size /= 1024;
-        unit++;
-    }
-    return `${size.toFixed(size >= 10 || unit === 0 ? 0 : 1)} ${units[unit]}`;
-}
-
-function formatDate(timestamp) {
-    if (!timestamp) {
-        return '-';
-    }
-    const date = new Date(timestamp * 1000);
-    return date.toLocaleString('id-ID');
 }

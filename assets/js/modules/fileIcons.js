@@ -3,6 +3,9 @@
  * Berisi fungsi-fungsi terkait icon untuk berbagai jenis file
  */
 
+// Icon cache to avoid redundant lookups
+const iconCache = new Map();
+
 // Determine a file kind string from an extension
 export function fileKindFromExtension(ext) {
     const e = (ext || '').toLowerCase();
@@ -47,18 +50,50 @@ export const itemTypeIcons = {
     video: '<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M17 10.5V6c0-1.1-.9-2-2-2H5C3.9 4 3 4.9 3 6v12c0 1.1.9 2 2 2h10c1.1 0 2-.9 2-2v-4.5l4 4v-11l-4 4z"/></svg>',
 };
 
-// Get icon info { className, svg } for an item
+// Get icon info { className, svg } for an item with caching
 export function getItemIcon(item) {
     if (!item || !item.type) {
         return { className: 'file', svg: itemTypeIcons.file };
     }
+    
+    // Folders always use the same icon
     if (item.type === 'folder') {
         return { className: 'folder', svg: itemTypeIcons.folder };
     }
+    
+    // Extract extension for caching
     const ext = typeof item.name === 'string' ? getFileExtension(item.name) : '';
+    
+    // Check cache first
+    const cacheKey = `file-${ext}`;
+    if (iconCache.has(cacheKey)) {
+        return iconCache.get(cacheKey);
+    }
+    
+    // Compute and cache the result
     const kind = fileKindFromExtension(ext);
     const svg = itemTypeIcons[kind] || itemTypeIcons.file;
-    return { className: `file ${kind}`, svg };
+    const result = { className: `file ${kind}`, svg };
+    
+    iconCache.set(cacheKey, result);
+    return result;
+}
+
+/**
+ * Clear icon cache (useful for testing or memory management)
+ */
+export function clearIconCache() {
+    iconCache.clear();
+}
+
+/**
+ * Get cache statistics for debugging
+ */
+export function getIconCacheStats() {
+    return {
+        size: iconCache.size,
+        keys: Array.from(iconCache.keys())
+    };
 }
 
 // Re-export getFileExtension from utils to avoid circular dependency

@@ -779,6 +779,8 @@ td.actions-cell {
 tbody tr {
  border-bottom: 1px solid var(--border);
  transition: background 0.18s ease, box-shadow 0.18s ease;
+ /* CSS Containment for better reflow performance */
+ contain: layout style paint;
 }
 
 tbody tr:hover {

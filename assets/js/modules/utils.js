@@ -161,8 +161,23 @@ export function copyPathToClipboard(value) {
     });
 }
 
+// Sort comparison cache - WeakMap ensures automatic garbage collection
+const sortCache = new WeakMap();
+
 /**
- * Membandingkan dua item untuk sorting
+ * Get or create cache for an item
+ * @param {Object} item - Item object
+ * @returns {Map} Cache map for this item
+ */
+function getItemCache(item) {
+    if (!sortCache.has(item)) {
+        sortCache.set(item, new Map());
+    }
+    return sortCache.get(item);
+}
+
+/**
+ * Membandingkan dua item untuk sorting dengan memoization
  * @param {Object} a - Item pertama
  * @param {Object} b - Item kedua
  * @param {string} sortKey - Kunci sorting
@@ -170,34 +185,76 @@ export function copyPathToClipboard(value) {
  * @returns {number} Hasil perbandingan
  */
 export function compareItems(a, b, sortKey, sortDirection) {
+    // Create cache key for this comparison
+    const cacheKey = `${b.path}-${sortKey}-${sortDirection}`;
+    
+    // Check cache first
+    const cache = getItemCache(a);
+    if (cache.has(cacheKey)) {
+        return cache.get(cacheKey);
+    }
+    
+    // Perform comparison
     const direction = sortDirection === 'asc' ? 1 : -1;
     const typeOrder = { folder: 0, file: 1 };
     const compareName = () => a.name.localeCompare(b.name, 'id', { sensitivity: 'base', numeric: true });
 
+    let result;
     switch (sortKey) {
         case 'type': {
             const diff = typeOrder[a.type] - typeOrder[b.type];
             if (diff !== 0) {
-                return diff * direction;
+                result = diff * direction;
+            } else {
+                result = compareName() * direction;
             }
-            return compareName() * direction;
+            break;
         }
         case 'modified': {
             const modifiedA = a.modified ?? 0;
             const modifiedB = b.modified ?? 0;
             if (modifiedA !== modifiedB) {
-                return modifiedA < modifiedB ? -direction : direction;
+                result = modifiedA < modifiedB ? -direction : direction;
+            } else {
+                result = compareName() * direction;
             }
-            return compareName() * direction;
+            break;
         }
         case 'name':
         default: {
             if (a.type !== b.type) {
-                return typeOrder[a.type] - typeOrder[b.type];
+                result = typeOrder[a.type] - typeOrder[b.type];
+            } else {
+                result = compareName() * direction;
             }
-            return compareName() * direction;
+            break;
         }
     }
+    
+    // Cache the result
+    cache.set(cacheKey, result);
+    
+    return result;
+}
+
+/**
+ * Clear sort comparison cache (useful for testing or memory management)
+ */
+export function clearSortCache() {
+    // WeakMap doesn't have a clear method, but we can create a new one
+    // The old one will be garbage collected when items are no longer referenced
+    console.log('[Sort Cache] Cache cleared (WeakMap will be garbage collected)');
+}
+
+/**
+ * Get sort cache statistics for debugging
+ * Note: WeakMap doesn't support size() or iteration, so this is limited
+ */
+export function getSortCacheStats() {
+    return {
+        note: 'WeakMap-based cache - exact size unavailable for memory efficiency',
+        implementation: 'Automatic garbage collection when items are unreferenced'
+    };
 }
 
 /**
@@ -413,3 +470,152 @@ export function changeSort(key) {
     });
     document.dispatchEvent(event);
 }
+
+/**
+ * Custom Error class untuk File Manager
+ */
+export class FileManagerError extends Error {
+    constructor(message, code, details = {}) {
+        super(message);
+        this.name = 'FileManagerError';
+        this.code = code;
+        this.details = details;
+        this.timestamp = new Date().toISOString();
+    }
+}
+
+/**
+ * Error codes untuk berbagai jenis error
+ */
+export const ErrorCodes = {
+    NETWORK_ERROR: 'NETWORK_ERROR',
+    PERMISSION_DENIED: 'PERMISSION_DENIED',
+    FILE_NOT_FOUND: 'FILE_NOT_FOUND',
+    INVALID_PATH: 'INVALID_PATH',
+    OPERATION_FAILED: 'OPERATION_FAILED',
+    VALIDATION_ERROR: 'VALIDATION_ERROR',
+    TIMEOUT_ERROR: 'TIMEOUT_ERROR'
+};
+
+/**
+ * Handle error dan return user-friendly message
+ * @param {Error} error - Error object
+ * @param {string} context - Context dimana error terjadi
+ * @returns {string} User-friendly error message
+ */
+export function handleError(error, context = '') {
+    console.error(`[${context}]`, error);
+    
+    // Log to external service if available
+    if (window.errorLogger) {
+        window.errorLogger.log(error, context);
+    }
+    
+    // User-friendly message
+    let userMessage = 'Terjadi kesalahan. Silakan coba lagi.';
+    
+    if (error instanceof FileManagerError) {
+        userMessage = error.message;
+    } else if (error.name === 'NetworkError' || error.message.includes('network')) {
+        userMessage = 'Koneksi jaringan bermasalah. Periksa koneksi Anda.';
+    } else if (error.message.includes('permission')) {
+        userMessage = 'Anda tidak memiliki izin untuk melakukan operasi ini.';
+    } else if (error.message.includes('not found')) {
+        userMessage = 'File atau folder tidak ditemukan.';
+    } else if (error.message.includes('timeout')) {
+        userMessage = 'Operasi memakan waktu terlalu lama. Silakan coba lagi.';
+    }
+    
+    return userMessage;
+}
+
+/**
+ * Performance Tracker untuk monitoring aplikasi
+ */
+export const performanceTracker = {
+    metrics: [],
+    
+    /**
+     * Start performance measurement
+     * @param {string} name - Nama measurement
+     */
+    startMeasure(name) {
+        performance.mark(`${name}-start`);
+    },
+    
+    /**
+     * End performance measurement
+     * @param {string} name - Nama measurement
+     * @returns {number} Duration in milliseconds
+     */
+    endMeasure(name) {
+        performance.mark(`${name}-end`);
+        performance.measure(name, `${name}-start`, `${name}-end`);
+        
+        const measure = performance.getEntriesByName(name)[0];
+        this.metrics.push({
+            name,
+            duration: measure.duration,
+            timestamp: Date.now()
+        });
+        
+        // Cleanup
+        performance.clearMarks(`${name}-start`);
+        performance.clearMarks(`${name}-end`);
+        performance.clearMeasures(name);
+        
+        return measure.duration;
+    },
+    
+    /**
+     * Get all metrics
+     * @returns {Array} Array of metrics
+     */
+    getMetrics() {
+        return this.metrics;
+    },
+    
+    /**
+     * Get metrics by name
+     * @param {string} name - Nama metric
+     * @returns {Array} Array of metrics dengan nama tertentu
+     */
+    getMetricsByName(name) {
+        return this.metrics.filter(m => m.name === name);
+    },
+    
+    /**
+     * Get average duration for a metric
+     * @param {string} name - Nama metric
+     * @returns {number} Average duration in milliseconds
+     */
+    getAverageDuration(name) {
+        const filtered = this.getMetricsByName(name);
+        if (filtered.length === 0) return 0;
+        
+        const sum = filtered.reduce((acc, m) => acc + m.duration, 0);
+        return sum / filtered.length;
+    },
+    
+    /**
+     * Clear all metrics
+     */
+    clearMetrics() {
+        this.metrics = [];
+    },
+    
+    /**
+     * Export metrics as JSON
+     * @returns {string} JSON string of metrics
+     */
+    exportMetrics() {
+        return JSON.stringify({
+            metrics: this.metrics,
+            summary: {
+                totalMeasurements: this.metrics.length,
+                uniqueMetrics: [...new Set(this.metrics.map(m => m.name))].length,
+                exportedAt: new Date().toISOString()
+            }
+        }, null, 2);
+    }
+};

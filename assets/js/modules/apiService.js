@@ -6,6 +6,20 @@
 import { encodePathSegments } from './utils.js';
 import { errorMessages } from './constants.js';
 
+// Global AbortController for request cancellation
+let currentAbortController = null;
+
+/**
+ * Cancel any pending API request
+ */
+export function cancelPendingRequests() {
+    if (currentAbortController) {
+        currentAbortController.abort();
+        currentAbortController = null;
+        console.log('[API] Previous request cancelled');
+    }
+}
+
 /**
  * Mengambil data direktori dari server
  * @param {string} path - Path direktori
@@ -15,9 +29,16 @@ import { errorMessages } from './constants.js';
 export async function fetchDirectory(path = '', options = {}) {
     const { silent = false } = options;
     
+    // Cancel any pending request before starting a new one
+    cancelPendingRequests();
+    
+    // Create new AbortController for this request
+    currentAbortController = new AbortController();
+    const signal = currentAbortController.signal;
+    
     try {
         const encodedPath = encodePathSegments(path);
-        const response = await fetch(`api.php?path=${encodedPath}`);
+        const response = await fetch(`api.php?path=${encodedPath}`, { signal });
         
         if (!response.ok) {
             throw new Error(errorMessages.fetchFailed);
@@ -30,8 +51,18 @@ export async function fetchDirectory(path = '', options = {}) {
 
         return data;
     } catch (error) {
+        // Don't log or throw if request was cancelled
+        if (error.name === 'AbortError') {
+            console.log('[API] Request aborted for path:', path);
+            return null;
+        }
         console.error('Error fetching directory:', error);
         throw error;
+    } finally {
+        // Clear controller if this was the current one
+        if (currentAbortController && currentAbortController.signal === signal) {
+            currentAbortController = null;
+        }
     }
 }
 
