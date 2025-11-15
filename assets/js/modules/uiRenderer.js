@@ -5,9 +5,13 @@
 
 import { compareItems, getSortDescription, synchronizeSelection, createRowActionButton } from './utils.js';
 import { getItemIcon } from './fileIcons.js';
-import { actionIcons } from './constants.js';
+import { actionIcons, config } from './constants.js';
 import { moveItem } from './fileOperations.js';
 import { fetchDirectory } from './apiService.js';
+import { VirtualScrollManager, createSpacer, shouldUseVirtualScroll } from './virtualScroll.js';
+
+// Global virtual scroll manager instance
+let virtualScrollManager = null;
 
 /**
  * Merender breadcrumbs navigasi
@@ -40,6 +44,376 @@ export function renderBreadcrumbs(breadcrumbsEl, breadcrumbs, navigateTo) {
             breadcrumbsEl.appendChild(separator);
         }
     });
+}
+
+/**
+ * Render single item row (extracted from renderItems for reusability)
+ * @param {Object} item - Item data
+ * @param {Object} state - Application state
+ * @param {Object} params - Rendering parameters (callbacks, elements, etc.)
+ * @returns {HTMLElement} - The created row element
+ */
+function renderItemRow(item, state, params) {
+    const {
+        previewableExtensions,
+        mediaPreviewableExtensions,
+        openTextPreview,
+        openMediaPreview,
+        navigateTo,
+        openInWord,
+        copyPathToClipboard,
+        openRenameOverlay,
+        openMoveOverlay,
+        openConfirmOverlay,
+        toggleSelection,
+        openContextMenu,
+        isWordDocument,
+        buildFileUrl,
+        hasUnsavedChanges,
+        confirmDiscardChanges,
+        handleDragStart,
+        handleDragEnd,
+        handleDragOver,
+        handleDrop,
+        handleDragLeave,
+        flashStatus,
+        setError,
+        highlightNew,
+        generatedAt
+    } = params;
+
+    const key = item.path;
+    const previouslySeen = state.knownItems.has(key);
+    const row = document.createElement('tr');
+    row.dataset.itemPath = key;
+    row.dataset.itemType = item.type;
+    row.tabIndex = 0;
+    const extension = item.type === 'file' ? getFileExtension(item.name) : '';
+    const isPreviewable = item.type === 'file' && previewableExtensions.has(extension);
+    const isMediaPreviewable = item.type === 'file' && mediaPreviewableExtensions.has(extension);
+    
+    if (isPreviewable || isMediaPreviewable) {
+        row.dataset.previewable = 'true';
+    }
+
+    if (!previouslySeen && highlightNew) {
+        row.classList.add('is-new');
+    }
+
+    // Selection cell
+    const selectionCell = document.createElement('td');
+    selectionCell.className = 'selection-cell';
+    const checkbox = document.createElement('input');
+    checkbox.type = 'checkbox';
+    checkbox.className = 'item-select';
+    checkbox.dataset.path = key;
+    checkbox.checked = state.selected.has(key);
+    checkbox.setAttribute('aria-label', `Pilih ${item.name}`);
+    checkbox.addEventListener('click', (event) => event.stopPropagation());
+    checkbox.addEventListener('keydown', (event) => event.stopPropagation());
+    checkbox.addEventListener('change', (event) => toggleSelection(key, event.target.checked));
+    selectionCell.appendChild(checkbox);
+    row.appendChild(selectionCell);
+
+    // Double-click and keyboard handlers
+    if (item.type === 'folder') {
+        row.addEventListener('dblclick', () => navigateTo(item.path));
+        row.addEventListener('keydown', (event) => {
+            if (event.key === 'Enter' || event.key === ' ') {
+                event.preventDefault();
+                navigateTo(item.path);
+            }
+        });
+    } else if (isPreviewable || isMediaPreviewable) {
+        const openPreview = () => {
+            if (isPreviewable) {
+                openTextPreview(item);
+            } else {
+                openMediaPreview(item);
+            }
+        };
+        row.addEventListener('dblclick', openPreview);
+        row.addEventListener('keydown', (event) => {
+            if (event.key === 'Enter' || event.key === ' ') {
+                event.preventDefault();
+                openPreview();
+            }
+        });
+    } else {
+        const openFile = () => {
+            const ext = getFileExtension(item.name);
+            if (isWordDocument(ext)) {
+                openInWord(item);
+            } else {
+                const url = buildFileUrl(item.path);
+                const newWindow = window.open(url, '_blank');
+                if (newWindow) newWindow.opener = null;
+            }
+        };
+        row.addEventListener('dblclick', openFile);
+        row.addEventListener('keydown', (event) => {
+            if (event.key === 'Enter' || event.key === ' ') {
+                event.preventDefault();
+                openFile();
+            }
+        });
+    }
+
+    // Context menu
+    row.addEventListener('contextmenu', (event) => {
+        event.preventDefault();
+        openContextMenu(event.clientX, event.clientY, item);
+    });
+
+    // Drag and drop
+    row.draggable = true;
+    row.addEventListener('dragstart', (event) => handleDragStart(event, item));
+    row.addEventListener('dragend', (event) => handleDragEnd(event));
+    
+    if (item.type === 'folder') {
+        row.addEventListener('dragover', (event) => handleDragOver(event, item));
+        row.addEventListener('drop', (event) => handleDrop(event, item));
+        row.addEventListener('dragleave', (event) => handleDragLeave(event));
+    }
+
+    // Name cell with icon
+    const cellName = document.createElement('td');
+    cellName.className = 'name-cell item-name';
+    const iconInfo = getItemIcon(item);
+    const icon = document.createElement('span');
+    icon.className = `item-icon ${iconInfo.className}`;
+    icon.innerHTML = iconInfo.svg;
+    cellName.appendChild(icon);
+
+    const link = document.createElement('a');
+    link.className = 'item-link';
+    link.textContent = item.name;
+
+    if (item.type === 'folder') {
+        link.href = '#';
+        link.addEventListener('click', (event) => {
+            event.preventDefault();
+            navigateTo(item.path);
+        });
+    } else if (isPreviewable || isMediaPreviewable) {
+        link.href = '#';
+        link.addEventListener('click', (event) => {
+            event.preventDefault();
+            if (isPreviewable) {
+                openTextPreview(item);
+            } else {
+                openMediaPreview(item);
+            }
+        });
+    } else {
+        const extForLink = getFileExtension(item.name);
+        if (isWordDocument(extForLink)) {
+            link.href = '#';
+            link.addEventListener('click', (event) => {
+                event.preventDefault();
+                openInWord(item);
+            });
+        } else {
+            link.href = buildFileUrl(item.path);
+            link.target = '_blank';
+            link.rel = 'noopener';
+        }
+    }
+
+    cellName.appendChild(link);
+
+    // Badge for new items
+    let badge = null;
+    if (!previouslySeen && highlightNew) {
+        badge = document.createElement('span');
+        badge.className = 'badge badge-new';
+        badge.textContent = 'Baru';
+        cellName.appendChild(badge);
+    }
+
+    // Modified date cell
+    const cellModified = document.createElement('td');
+    cellModified.className = 'modified-cell';
+    cellModified.textContent = formatDate(item.modified);
+
+    // Actions cell
+    const actionCell = document.createElement('td');
+    actionCell.className = 'actions-cell';
+    const actionGroup = document.createElement('div');
+    actionGroup.className = 'row-actions';
+
+    if (item.type === 'folder') {
+        actionGroup.appendChild(createRowActionButton(
+            actionIcons.open,
+            'Buka',
+            () => navigateTo(item.path),
+        ));
+    } else if (isPreviewable || isMediaPreviewable) {
+        actionGroup.appendChild(createRowActionButton(
+            actionIcons.preview,
+            'Pratinjau',
+            () => {
+                if (isPreviewable) {
+                    openTextPreview(item);
+                } else {
+                    openMediaPreview(item);
+                }
+            },
+        ));
+    } else {
+        const extForAction = getFileExtension(item.name);
+        if (isWordDocument(extForAction)) {
+            actionGroup.appendChild(createRowActionButton(
+                actionIcons.open,
+                'Buka di Word',
+                () => openInWord(item),
+            ));
+        } else {
+            actionGroup.appendChild(createRowActionButton(
+                actionIcons.view,
+                'Lihat File',
+                () => {
+                    const url = buildFileUrl(item.path);
+                    const newWindow = window.open(url, '_blank');
+                    if (newWindow) newWindow.opener = null;
+                },
+            ));
+        }
+    }
+
+    actionGroup.appendChild(createRowActionButton(
+        actionIcons.copy,
+        'Salin Path',
+        () => {
+            copyPathToClipboard(item.path)
+                .then(() => flashStatus(`Path "${item.name}" tersalin.`))
+                .catch(() => setError('Gagal menyalin path.'));
+        },
+    ));
+
+    actionGroup.appendChild(createRowActionButton(
+        actionIcons.delete,
+        'Hapus Item',
+        () => {
+            if (hasUnsavedChanges(state.preview)) {
+                confirmDiscardChanges('Perubahan belum disimpan. Tetap hapus item terpilih?')
+                    .then((proceed) => {
+                        if (!proceed) return;
+                        openConfirmOverlay({
+                            message: `Hapus "${item.name}"?`,
+                            description: 'Item yang dihapus tidak dapat dikembalikan.',
+                            paths: [item.path],
+                            showList: false,
+                            confirmLabel: 'Hapus',
+                        });
+                    });
+                return;
+            }
+
+            openConfirmOverlay({
+                message: `Hapus "${item.name}"?`,
+                description: 'Item yang dihapus tidak dapat dikembalikan.',
+                paths: [item.path],
+                showList: false,
+                confirmLabel: 'Hapus',
+            });
+        },
+        'danger',
+    ));
+
+    actionCell.appendChild(actionGroup);
+    row.appendChild(cellName);
+    row.appendChild(cellModified);
+    row.appendChild(actionCell);
+
+    // Auto-remove highlight after 5s
+    if (!previouslySeen && highlightNew) {
+        setTimeout(() => {
+            row.classList.remove('is-new');
+            if (badge) badge.remove();
+        }, 5000);
+    }
+
+    return row;
+}
+
+/**
+ * Render items using virtual scrolling
+ * @param {HTMLElement} tableBody - Table body element
+ * @param {Array} filtered - Filtered items array
+ * @param {Object} state - Application state
+ * @param {Object} params - Rendering parameters
+ */
+function renderVirtualItems(tableBody, filtered, state, params) {
+    const vsConfig = config.virtualScroll || {
+        enabled: true,
+        threshold: 100,
+        itemHeight: 40,
+        overscan: 5
+    };
+    
+    // Initialize virtual scroll manager if not exists
+    if (!virtualScrollManager) {
+        virtualScrollManager = new VirtualScrollManager(
+            tableBody,
+            filtered.length,
+            vsConfig.itemHeight,
+            vsConfig.overscan
+        );
+    } else {
+        // Update total count
+        virtualScrollManager.updateTotalItems(filtered.length);
+    }
+
+    // Get visible range
+    const { start, end } = virtualScrollManager.getVisibleRange();
+    
+    // Clear existing rows (keep up-row if exists)
+    const upRow = tableBody.querySelector('.up-row');
+    tableBody.innerHTML = '';
+    if (upRow) {
+        tableBody.appendChild(upRow);
+    }
+
+    // Create top spacer
+    const topSpacer = createSpacer((start * vsConfig.itemHeight) + 'px');
+    tableBody.appendChild(topSpacer);
+
+    // Render visible items
+    const fragment = document.createDocumentFragment();
+    for (let i = start; i < end; i++) {
+        if (i >= filtered.length) break;
+        const item = filtered[i];
+        const row = renderItemRow(item, state, params);
+        fragment.appendChild(row);
+    }
+    tableBody.appendChild(fragment);
+
+    // Create bottom spacer
+    const remainingItems = Math.max(0, filtered.length - end);
+    const bottomSpacer = createSpacer((remainingItems * vsConfig.itemHeight) + 'px');
+    tableBody.appendChild(bottomSpacer);
+
+    // Track performance
+    virtualScrollManager.trackRender(end - start);
+}
+
+/**
+ * Render items normally (non-virtual)
+ * @param {HTMLElement} tableBody - Table body element
+ * @param {Array} filtered - Filtered items array
+ * @param {Object} state - Application state
+ * @param {Object} params - Rendering parameters
+ */
+function renderNormalItems(tableBody, filtered, state, params) {
+    const fragment = document.createDocumentFragment();
+    
+    filtered.forEach((item) => {
+        const row = renderItemRow(item, state, params);
+        fragment.appendChild(row);
+    });
+    
+    tableBody.appendChild(fragment);
 }
 
 /**
@@ -225,6 +599,7 @@ export function renderItems(
         tableBody.appendChild(upRow);
     }
 
+    // Show/hide empty state
     if (filtered.length === 0) {
         emptyState.hidden = false;
         emptyState.textContent = items.length === 0
@@ -234,285 +609,57 @@ export function renderItems(
         emptyState.hidden = true;
     }
 
-    filtered.forEach((item) => {
-        const key = item.path;
-        const previouslySeen = state.knownItems.has(key);
-        const row = document.createElement('tr');
-        row.dataset.itemPath = key;
-        row.dataset.itemType = item.type;
-        row.tabIndex = 0;
-        const extension = item.type === 'file' ? getFileExtension(item.name) : '';
-        const isPreviewable = item.type === 'file' && previewableExtensions.has(extension);
-        const isMediaPreviewable = item.type === 'file' && mediaPreviewableExtensions.has(extension);
-        if (isPreviewable || isMediaPreviewable) {
-            row.dataset.previewable = 'true';
-        }
+    // Prepare rendering parameters
+    const renderParams = {
+        previewableExtensions,
+        mediaPreviewableExtensions,
+        openTextPreview,
+        openMediaPreview,
+        navigateTo,
+        openInWord,
+        copyPathToClipboard,
+        openRenameOverlay,
+        openMoveOverlay,
+        openConfirmOverlay,
+        toggleSelection,
+        openContextMenu,
+        isWordDocument,
+        buildFileUrl,
+        hasUnsavedChanges,
+        confirmDiscardChanges,
+        handleDragStart,
+        handleDragEnd,
+        handleDragOver,
+        handleDrop,
+        handleDragLeave,
+        flashStatus,
+        setError,
+        highlightNew,
+        generatedAt
+    };
 
-        if (!previouslySeen && highlightNew) {
-            row.classList.add('is-new');
-        }
+    // Use virtual scrolling for large lists, normal rendering otherwise
+    // Safe check for virtualScroll config
+    const vsConfig = config.virtualScroll || {
+        enabled: false,
+        threshold: 100,
+        itemHeight: 40,
+        overscan: 5
+    };
+    
+    const useVirtual = shouldUseVirtualScroll(
+        filtered.length,
+        vsConfig.threshold,
+        vsConfig.enabled
+    );
 
-        const selectionCell = document.createElement('td');
-        selectionCell.className = 'selection-cell';
-        const checkbox = document.createElement('input');
-        checkbox.type = 'checkbox';
-        checkbox.className = 'item-select';
-        checkbox.dataset.path = key;
-        checkbox.checked = state.selected.has(key);
-        checkbox.setAttribute('aria-label', `Pilih ${item.name}`);
-        checkbox.addEventListener('click', (event) => {
-            event.stopPropagation();
-        });
-        checkbox.addEventListener('keydown', (event) => {
-            event.stopPropagation();
-        });
-        checkbox.addEventListener('change', (event) => {
-            toggleSelection(key, event.target.checked);
-        });
-        selectionCell.appendChild(checkbox);
-        row.appendChild(selectionCell);
-
-        if (item.type === 'folder') {
-            row.addEventListener('dblclick', () => navigateTo(item.path));
-            row.addEventListener('keydown', (event) => {
-                if (event.key === 'Enter' || event.key === ' ') {
-                    event.preventDefault();
-                    navigateTo(item.path);
-                }
-            });
-        } else if (isPreviewable || isMediaPreviewable) {
-            const openPreview = () => {
-                if (isPreviewable) {
-                    openTextPreview(item);
-                } else {
-                    openMediaPreview(item);
-                }
-            };
-            row.addEventListener('dblclick', openPreview);
-            row.addEventListener('keydown', (event) => {
-                if (event.key === 'Enter' || event.key === ' ') {
-                    event.preventDefault();
-                    openPreview();
-                }
-            });
-        } else {
-            const openFile = () => {
-                const ext = getFileExtension(item.name);
-                if (isWordDocument(ext)) {
-                    openInWord(item);
-                } else {
-                    const url = buildFileUrl(item.path);
-                    const newWindow = window.open(url, '_blank');
-                    if (newWindow) {
-                        newWindow.opener = null;
-                    }
-                }
-            };
-            row.addEventListener('dblclick', openFile);
-            row.addEventListener('keydown', (event) => {
-                if (event.key === 'Enter' || event.key === ' ') {
-                    event.preventDefault();
-                    openFile();
-                }
-            });
-        }
-
-        // Add context menu event listener
-        row.addEventListener('contextmenu', (event) => {
-            console.log('[DEBUG] Context menu event triggered for item:', item.name);
-            event.preventDefault();
-            openContextMenu(event.clientX, event.clientY, item);
-        });
-
-        // Add drag and drop event listeners
-        row.draggable = true;
-        row.addEventListener('dragstart', (event) => {
-            handleDragStart(event, item);
-        });
-        row.addEventListener('dragend', (event) => {
-            handleDragEnd(event);
-        });
-        
-        // Only folders can be drop targets
-        if (item.type === 'folder') {
-            row.addEventListener('dragover', (event) => {
-                handleDragOver(event, item);
-            });
-            row.addEventListener('drop', (event) => {
-                handleDrop(event, item);
-            });
-            row.addEventListener('dragleave', (event) => {
-                handleDragLeave(event);
-            });
-        }
-
-        const cellName = document.createElement('td');
-        cellName.className = 'name-cell item-name';
-
-        const iconInfo = getItemIcon(item);
-        const icon = document.createElement('span');
-        icon.className = `item-icon ${iconInfo.className}`;
-        icon.innerHTML = iconInfo.svg;
-        cellName.appendChild(icon);
-
-        const link = document.createElement('a');
-        link.className = 'item-link';
-        link.textContent = item.name;
-
-        if (item.type === 'folder') {
-            link.href = '#';
-            link.addEventListener('click', (event) => {
-                event.preventDefault();
-                navigateTo(item.path);
-            });
-        } else if (isPreviewable || isMediaPreviewable) {
-            link.href = '#';
-            link.addEventListener('click', (event) => {
-                event.preventDefault();
-                if (isPreviewable) {
-                    openTextPreview(item);
-                } else {
-                    openMediaPreview(item);
-                }
-            });
-        } else {
-            const extForLink = getFileExtension(item.name);
-            if (isWordDocument(extForLink)) {
-                link.href = '#';
-                link.addEventListener('click', (event) => {
-                    event.preventDefault();
-                    openInWord(item);
-                });
-            } else {
-                link.href = buildFileUrl(item.path);
-                link.target = '_blank';
-                link.rel = 'noopener';
-            }
-        }
-
-        cellName.appendChild(link);
-
-        let badge = null;
-        if (!previouslySeen && highlightNew) {
-            badge = document.createElement('span');
-            badge.className = 'badge badge-new';
-            badge.textContent = 'Baru';
-            cellName.appendChild(badge);
-        }
-
-        const cellModified = document.createElement('td');
-        cellModified.className = 'modified-cell';
-        cellModified.textContent = formatDate(item.modified);
-
-        const actionCell = document.createElement('td');
-        actionCell.className = 'actions-cell';
-        const actionGroup = document.createElement('div');
-        actionGroup.className = 'row-actions';
-
-        if (item.type === 'folder') {
-            actionGroup.appendChild(createRowActionButton(
-                actionIcons.open,
-                'Buka',
-                () => navigateTo(item.path),
-            ));
-        } else if (isPreviewable || isMediaPreviewable) {
-            actionGroup.appendChild(createRowActionButton(
-                actionIcons.preview,
-                'Pratinjau',
-                () => {
-                    if (isPreviewable) {
-                        openTextPreview(item);
-                    } else {
-                        openMediaPreview(item);
-                    }
-                },
-            ));
-        } else {
-            const extForAction = getFileExtension(item.name);
-            if (isWordDocument(extForAction)) {
-                actionGroup.appendChild(createRowActionButton(
-                    actionIcons.open,
-                    'Buka di Word',
-                    () => openInWord(item),
-                ));
-            } else {
-                actionGroup.appendChild(createRowActionButton(
-                    actionIcons.view,
-                    'Lihat File',
-                    () => {
-                        const url = buildFileUrl(item.path);
-                        const newWindow = window.open(url, '_blank');
-                        if (newWindow) {
-                            newWindow.opener = null;
-                        }
-                    },
-                ));
-            }
-        }
-
-        actionGroup.appendChild(createRowActionButton(
-            actionIcons.copy,
-            'Salin Path',
-            () => {
-                copyPathToClipboard(item.path)
-                    .then(() => {
-                        flashStatus(`Path "${item.name}" tersalin.`);
-                    })
-                    .catch(() => {
-                        setError('Gagal menyalin path.');
-                    });
-            },
-        ));
-
-        actionGroup.appendChild(createRowActionButton(
-            actionIcons.delete,
-            'Hapus Item',
-            () => {
-                if (hasUnsavedChanges(state.preview)) {
-                    confirmDiscardChanges('Perubahan belum disimpan. Tetap hapus item terpilih?')
-                        .then((proceed) => {
-                            if (!proceed) {
-                                return;
-                            }
-                            openConfirmOverlay({
-                                message: `Hapus "${item.name}"?`,
-                                description: 'Item yang dihapus tidak dapat dikembalikan.',
-                                paths: [item.path],
-                                showList: false,
-                                confirmLabel: 'Hapus',
-                            });
-                        });
-                    return;
-                }
-
-                openConfirmOverlay({
-                    message: `Hapus "${item.name}"?`,
-                    description: 'Item yang dihapus tidak dapat dikembalikan.',
-                    paths: [item.path],
-                    showList: false,
-                    confirmLabel: 'Hapus',
-                });
-            },
-            'danger',
-        ));
-
-        actionCell.appendChild(actionGroup);
-
-        row.appendChild(cellName);
-        row.appendChild(cellModified);
-        row.appendChild(actionCell);
-
-        tableBody.appendChild(row);
-
-        if (!previouslySeen && highlightNew) {
-            setTimeout(() => {
-                row.classList.remove('is-new');
-                if (badge) {
-                    badge.remove();
-                }
-            }, 5000);
-        }
-    });
+    if (useVirtual) {
+        console.log(`[Virtual Scroll] Rendering ${filtered.length} items with virtual scrolling`);
+        renderVirtualItems(tableBody, filtered, state, renderParams);
+    } else {
+        console.log(`[Normal Render] Rendering ${filtered.length} items normally`);
+        renderNormalItems(tableBody, filtered, state, renderParams);
+    }
 
     const newMap = new Map();
     items.forEach((item) => {

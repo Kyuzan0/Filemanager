@@ -257,6 +257,15 @@ export const config = {
         hour: '2-digit',
         minute: '2-digit'
     },
+    
+    // Virtual scrolling configuration
+    virtualScroll: {
+        enabled: true,           // Enable/disable virtual scrolling globally
+        itemHeight: 40,          // Height of each row in pixels (must match CSS)
+        overscan: 5,             // Number of extra items to render above/below viewport
+        threshold: 100,          // Minimum number of items to activate virtual scrolling
+        bufferMultiplier: 1.5,   // Multiplier for buffer zone calculation
+    },
 };
 
 // Error messages

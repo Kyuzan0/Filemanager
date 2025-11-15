@@ -1,11 +1,18 @@
 /**
  * App Initializer Module
  * Berisi fungsi-fungsi untuk menginisialisasi aplikasi
- * @version 1.2.0 - Added log modal integration
+ * @version 1.3.0 - Added state persistence with localStorage
  */
 
 import { state, updateState } from './state.js';
 import { elements, config, previewableExtensions, mediaPreviewableExtensions } from './constants.js';
+import {
+    saveSortPreferences,
+    loadSortPreferences,
+    saveLastPath,
+    loadLastPath,
+    isLocalStorageAvailable
+} from './storage.js';
 import { 
     setupRefreshHandler,
     setupUpHandler,
@@ -71,7 +78,8 @@ import {
     isWordDocument,
     buildFileUrl,
     formatBytes,
-    formatDate
+    formatDate,
+    throttle
 } from './utils.js';
 import {
     logInfo,
@@ -211,6 +219,10 @@ function changeSort(key) {
         sortKey: key,
         sortDirection: newDirection
     });
+    
+    // Save sort preferences to localStorage
+    saveSortPreferences(key, newDirection);
+    
     renderItems(state.items, state.lastUpdated, false);
     updateSortUI(elements.sortHeaders, elements.statusSort, state);
 }
@@ -218,6 +230,10 @@ function changeSort(key) {
 function navigateTo(path) {
     console.log('[DEBUG] navigateTo called with path:', path);
     console.log('[DEBUG] Current state path before navigation:', state.currentPath);
+    
+    // Save last visited path to localStorage
+    saveLastPath(path);
+    
     fetchDirectoryWrapper(path);
 }
 
@@ -1221,15 +1237,25 @@ export async function initializeApp() {
     try {
         logger.info('Initializing application...');
         
-        // Set initial state
+        // Load saved preferences from localStorage
+        const savedSort = loadSortPreferences();
+        const savedPath = loadLastPath();
+        
+        logger.info('Loaded preferences:', {
+            sort: savedSort,
+            lastPath: savedPath,
+            storageAvailable: isLocalStorageAvailable()
+        });
+        
+        // Set initial state with saved preferences
         updateState({
-            currentPath: elements.currentPath,
+            currentPath: savedPath || elements.currentPath,
             isLoading: true,
             items: [],
             itemMap: new Map(),
             selected: new Set(),
-            sortKey: 'name',
-            sortDirection: 'asc',
+            sortKey: savedSort.sortKey,
+            sortDirection: savedSort.sortDirection,
             filter: '',
             lastUpdated: null,
             polling: null,
@@ -1395,6 +1421,29 @@ function setupEventHandlers() {
         savePreviewContent
     );
     
+    // Setup throttled scroll sync for line numbers (60fps = ~16ms)
+    if (elements.previewEditor) {
+        const throttledScrollSync = throttle(() => {
+            syncLineNumbersScroll();
+        }, 16);
+        
+        elements.previewEditor.addEventListener('scroll', throttledScrollSync, { passive: true });
+    }
+    
+    // Setup scroll listener for virtual scrolling on table
+    if (elements.tableBody && elements.tableBody.parentElement) {
+        const tableContainer = elements.tableBody.parentElement;
+        const throttledVirtualScroll = throttle(() => {
+            // Virtual scroll manager will handle this if active
+            // The manager updates visible range on scroll
+            if (window.virtualScrollManager && window.virtualScrollManager.isActive) {
+                renderItems(state.items, state.lastUpdated, false);
+            }
+        }, 16);
+        
+        tableContainer.addEventListener('scroll', throttledVirtualScroll, { passive: true });
+    }
+    
     // Setup preview overlay handler
     setupPreviewOverlayHandler(
         elements.previewOverlay,
@@ -1498,7 +1547,8 @@ async function loadInitialDirectory() {
     try {
         logger.info('Loading initial directory...');
         
-        const path = elements.currentPath || '';
+        // Use saved path from state (already loaded in initializeApp)
+        const path = state.currentPath || '';
         await fetchDirectoryWrapper(path);
         
         // Update sort UI

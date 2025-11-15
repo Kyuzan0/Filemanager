@@ -62,10 +62,19 @@ export function setupUpHandler(btnUp, state, navigateTo) {
 export function setupFilterHandler(filterInput, clearSearch, state, renderItems) {
     clearSearch.hidden = true;
 
-    filterInput.addEventListener('input', (event) => {
-        state.filter = event.target.value.trim();
+    // Debounced filter for better performance
+    const debouncedFilter = debounce((value, items, lastUpdated) => {
+        state.filter = value.trim();
         clearSearch.hidden = state.filter === '';
-        renderItems(state.items, state.lastUpdated, false);
+        renderItems(items, lastUpdated, false);
+    }, 300); // 300ms delay
+
+    filterInput.addEventListener('input', (event) => {
+        const value = event.target.value;
+        // Show/hide clear button immediately for better UX
+        clearSearch.hidden = value === '';
+        // Debounce the actual filtering and rendering
+        debouncedFilter(value, state.items, state.lastUpdated);
     });
 
     filterInput.addEventListener('keydown', (event) => {

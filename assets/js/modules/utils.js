@@ -299,6 +299,25 @@ export function debounce(func, wait) {
 }
 
 /**
+ * Throttle function untuk membatasi frekuensi eksekusi fungsi
+ * @param {Function} func - Fungsi yang akan di-throttle
+ * @param {number} limit - Waktu minimum antar eksekusi dalam ms
+ * @returns {Function} Fungsi yang sudah di-throttle
+ */
+export function throttle(func, limit) {
+    let inThrottle;
+    return function executedFunction(...args) {
+        if (!inThrottle) {
+            func.apply(this, args);
+            inThrottle = true;
+            setTimeout(() => {
+                inThrottle = false;
+            }, limit);
+        }
+    };
+}
+
+/**
  * Menampilkan pesan status untuk sementara waktu
  * @param {string} message - Pesan yang akan ditampilkan
  * @param {number} duration - Durasi dalam ms

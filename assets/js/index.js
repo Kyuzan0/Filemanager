@@ -128,8 +128,10 @@ if (typeof window !== 'undefined' && window.location.hostname === 'localhost') {
         getEventHandlers: () => import('./modules/eventHandlers.js'),
         getLogManager: () => import('./modules/logManager.js'),
         getMoveOverlay: () => import('./modules/moveOverlay.js'),
-        getAppInitializer: () => import('./modules/appInitializer.js')
+        getAppInitializer: () => import('./modules/appInitializer.js'),
+        getStorage: () => import('./modules/storage.js')
     };
     
     console.log('Debug modules available at window.debugModules');
+    console.log('Storage module included for testing');
 }
