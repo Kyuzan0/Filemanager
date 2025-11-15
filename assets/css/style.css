@@ -1188,8 +1188,8 @@ table {
 }
 
 .preview-dialog {
- width: min(980px, calc(100% - 32px));
- max-height: min(780px, calc(100% - 32px));
+ width: min(1400px, calc(100% - 32px));
+ max-height: min(900px, calc(100% - 32px));
  background: var(--surface);
  border-radius: 16px;
  border: 1px solid var(--border);
@@ -1458,8 +1458,8 @@ table {
  }
 
  .preview-dialog {
- width: min(880px, calc(100% - 24px));
- max-height: min(680px, calc(100% - 24px));
+ width: min(1200px, calc(100% - 24px));
+ max-height: min(800px, calc(100% - 24px));
  }
 
  .preview-body {
@@ -1468,8 +1468,8 @@ table {
 
  .preview-editor-wrapper {
  grid-template-columns: minmax(40px, 54px) 1fr;
- min-height: clamp(280px, 58vh, 440px);
- max-height: min(580px, calc(100vh - 120px));
+ min-height: clamp(360px, 58vh, 540px);
+ max-height: min(720px, calc(100vh - 120px));
  width: 100%;
  min-width: 0;
  }
@@ -1554,7 +1554,7 @@ table {
 
  .preview-dialog {
  width: calc(100% - 16px);
- max-height: min(560px, calc(100% - 16px));
+ max-height: min(680px, calc(100% - 16px));
  }
 
  .preview-body {
@@ -1563,8 +1563,8 @@ table {
 
  .preview-editor-wrapper {
  grid-template-columns: minmax(36px, 48px) 1fr;
- min-height: clamp(220px, 66vh, 340px);
- max-height: min(480px, calc(100vh - 80px));
+ min-height: clamp(280px, 66vh, 420px);
+ max-height: min(580px, calc(100vh - 80px));
  width: 100%;
  min-width: 0;
  }
@@ -3308,7 +3308,7 @@ body.dragging {
     flex-grow: 0;
     gap: 16px;
     flex-wrap: wrap;
-    margin: 0 20px 20px;
+    margin: 0px 20px 20px;
 }
 
 @media (max-width: 768px) {
