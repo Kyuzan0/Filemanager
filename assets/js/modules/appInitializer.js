@@ -248,6 +248,76 @@ function setLoading(loading) {
     }
 }
 
+/**
+ * EMERGENCY FAILSAFE: Force clear ALL loading states
+ * Call this if loading indicators get stuck
+ * @param {string} source - Where this was called from for debugging
+ */
+function clearAllLoadingStates(source = 'unknown') {
+    const timestamp = new Date().toISOString();
+    console.warn(`[EMERGENCY_CLEAR ${timestamp}] Forcing all loading states to clear. Called from:`, source);
+    console.trace('[EMERGENCY_CLEAR] Stack trace:');
+    
+    // Find and clear ALL possible loading indicators
+    const selectors = [
+        '.loader-overlay',
+        '.loader',
+        '.loading',
+        '.spinner',
+        '[class*="loading"]',
+        '[id*="loading"]',
+        '[id*="loader"]'
+    ];
+    
+    let clearedCount = 0;
+    selectors.forEach(selector => {
+        const elements = document.querySelectorAll(selector);
+        elements.forEach(el => {
+            if (el.classList.contains('visible') ||
+                el.style.display === 'flex' ||
+                el.style.display === 'block') {
+                
+                el.classList.remove('visible', 'active', 'loading');
+                if (el.classList.contains('loader-overlay') || el.classList.contains('loader')) {
+                    el.style.display = 'none';
+                }
+                clearedCount++;
+                console.log(`[EMERGENCY_CLEAR] Cleared element:`, {
+                    selector: selector,
+                    element: el.className || el.id,
+                    was: el.style.display
+                });
+            }
+        });
+    });
+    
+    // Force state updates
+    updateState({ isLoading: false });
+    if (state.logs) {
+        updateState({
+            logs: {
+                ...state.logs,
+                isLoading: false
+            }
+        });
+    }
+    
+    // Re-enable buttons
+    const buttons = document.querySelectorAll('button[disabled]');
+    buttons.forEach(btn => {
+        if (btn.id === 'btn-refresh' || btn.disabled) {
+            btn.disabled = false;
+        }
+    });
+    
+    console.warn(`[EMERGENCY_CLEAR] ✓ Cleared ${clearedCount} loading elements and reset all states`);
+    
+    return clearedCount;
+}
+
+// Make clearAllLoadingStates available globally for emergency use
+window.clearAllLoadingStates = clearAllLoadingStates;
+
 // Wrapper for renderItems that calls the complex renderer from uiRenderer.js
 function renderItems(items, lastUpdated, highlightNew) {
     console.log('[DEBUG] renderItems wrapper called');
@@ -1077,20 +1147,71 @@ async function closeLogModalWrapper() {
 
 /**
  * Wrapper function untuk fetch log data dengan filters
+ * ENHANCED: Comprehensive debug logging and multiple failsafes
  */
 async function fetchLogDataWrapper(filters = null, page = 1, limit = 50) {
+    const startTime = performance.now();
+    const requestId = `LOG_${Date.now()}`;
+    
+    console.log(`[${requestId}] ========== LOG FETCH START ==========`);
+    console.log(`[${requestId}] Params:`, { filters, page, limit });
+    console.trace(`[${requestId}] Called from:`);
+    
+    // FAILSAFE 1: Timeout with forced cleanup after 10 seconds
+    const loadingTimeout = setTimeout(() => {
+        const elapsed = performance.now() - startTime;
+        console.error(`[${requestId}] ⚠️ TIMEOUT after ${elapsed.toFixed(0)}ms - forcing cleanup`);
+        
+        // Force clear loading state
+        setLogLoading(state, elements.logTableBody, false);
+        updateState({
+            logs: {
+                ...state.logs,
+                isLoading: false
+            }
+        });
+        
+        if (elements.logTableBody) {
+            elements.logTableBody.innerHTML = `
+                <tr>
+                    <td colspan="5" style="text-align: center; padding: 20px; color: #f44336;">
+                        ⚠️ Loading timeout after ${(elapsed/1000).toFixed(1)}s - please try refreshing
+                    </td>
+                </tr>
+            `;
+        }
+        
+        // FAILSAFE 2: Double-check global loader is hidden
+        const loaderOverlay = document.querySelector('.loader-overlay');
+        if (loaderOverlay) {
+            loaderOverlay.classList.remove('visible');
+            console.error(`[${requestId}] Timeout failsafe: Global loader force-hidden`);
+        }
+    }, 10000);
+    
     try {
         // Use active filters if no filters provided
         const activeFilters = filters || state.logs.activeFilters || {};
+        console.log(`[${requestId}] Active filters:`, activeFilters);
         
         // Set loading state
+        console.log(`[${requestId}] Setting loading state TRUE`);
         setLogLoading(state, elements.logTableBody, true);
         
         // Fetch data from API
+        console.log(`[${requestId}] Calling fetchLogData API...`);
+        const fetchStart = performance.now();
         const data = await fetchLogData(activeFilters, page, limit);
+        const fetchDuration = performance.now() - fetchStart;
+        console.log(`[${requestId}] API response received in ${fetchDuration.toFixed(0)}ms:`, {
+            success: data?.success,
+            logCount: data?.logs?.length,
+            pagination: data?.pagination
+        });
         
         if (data && data.success) {
             // Update state with fetched data
+            console.log(`[${requestId}] Updating state with ${data.logs?.length || 0} logs`);
             updateState({
                 logs: {
                     ...state.logs,
@@ -1102,35 +1223,88 @@ async function fetchLogDataWrapper(filters = null, page = 1, limit = 50) {
             });
             
             // Render log table
+            console.log(`[${requestId}] Rendering log table...`);
+            const renderStart = performance.now();
             const { renderLogTable } = await getLogManagerFunctions();
             renderLogTable(
                 state.logs.data,
                 elements.logTableBody,
                 formatDate
             );
+            const renderDuration = performance.now() - renderStart;
+            console.log(`[${requestId}] Table rendered in ${renderDuration.toFixed(0)}ms`);
             
             // Update pagination UI
+            console.log(`[${requestId}] Updating pagination UI`);
             updateLogPagination(
                 state,
                 elements.logPrevPage,
                 elements.logNextPage,
                 elements.logPageInfo
             );
+            
+            console.log(`[${requestId}] ✓ Fetch completed successfully`);
         } else {
             throw new Error(data?.error || 'Failed to fetch log data');
         }
     } catch (error) {
+        console.error(`[${requestId}] ✗ Error fetching log data:`, error);
         logger.error('Error fetching log data', error);
-        setLogLoading(state, elements.logTableBody, false);
         
         // Show error in table
-        elements.logTableBody.innerHTML = `
-            <tr>
-                <td colspan="5" style="text-align: center; padding: 20px; color: #666;">
-                    Error: ${error.message}
-                </td>
-            </tr>
-        `;
+        if (elements.logTableBody) {
+            elements.logTableBody.innerHTML = `
+                <tr>
+                    <td colspan="5" style="text-align: center; padding: 20px; color: #666;">
+                        Error: ${error.message}
+                    </td>
+                </tr>
+            `;
+        }
+    } finally {
+        // Clear the timeout since operation completed
+        clearTimeout(loadingTimeout);
+        
+        const totalDuration = performance.now() - startTime;
+        console.log(`[${requestId}] Finally block executing after ${totalDuration.toFixed(0)}ms`);
+        
+        // CRITICAL: Always clear loading state, even on error
+        console.log(`[${requestId}] Setting loading state FALSE`);
+        setLogLoading(state, elements.logTableBody, false);
+        
+        // Update state to ensure isLoading is false
+        updateState({
+            logs: {
+                ...state.logs,
+                isLoading: false
+            }
+        });
+        
+        console.log(`[${requestId}] State updated - isLoading: ${state.logs.isLoading}`);
+        
+        // FAILSAFE 3: Triple-check everything is cleared
+        setTimeout(() => {
+            const loaderOverlay = document.querySelector('.loader-overlay');
+            if (loaderOverlay && loaderOverlay.classList.contains('visible')) {
+                console.error(`[${requestId}] ⚠️ CRITICAL: Loader STILL visible 100ms after clear! Force removing...`);
+                loaderOverlay.classList.remove('visible');
+            } else if (loaderOverlay) {
+                console.log(`[${requestId}] ✓ Loader correctly hidden after cleanup`);
+            }
+            
+            if (state.logs.isLoading) {
+                console.error(`[${requestId}] ⚠️ CRITICAL: state.logs.isLoading still TRUE! Force clearing...`);
+                updateState({
+                    logs: {
+                        ...state.logs,
+                        isLoading: false
+                    }
+                });
+            }
+        }, 100);
+        
+        console.log(`[${requestId}] ========== LOG FETCH END (${totalDuration.toFixed(0)}ms) ==========`);
+        logger.info(`Log fetch completed in ${totalDuration.toFixed(0)}ms`);
     }
 }
 

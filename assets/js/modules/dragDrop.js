@@ -8,6 +8,7 @@ import { state } from './state.js';
 import { elements } from './constants.js';
 import { fetchDirectory } from './apiService.js';
 import { debugLog } from './debug.js';
+import { setLoading } from './uiRenderer.js';
 
 /**
  * DOM Reference Cache for performance optimization
@@ -197,7 +198,10 @@ export function handleDrop(event, targetItem) {
         state.drag.draggedItem.path,
         targetPath,
         state,
-        (isLoading) => { debugLog('[DEBUG] Loading:', isLoading); },
+        (isLoading) => {
+            setLoading(elements.loaderOverlay, elements.btnRefresh, isLoading);
+            debugLog('[DEBUG] Loading:', isLoading);
+        },
         (error) => { debugLog('[DEBUG] Move error:', error); },
         () => fetchDirectory(state.currentPath, { silent: true }),
         (message) => { debugLog('[DEBUG] Status:', message); },
@@ -251,7 +255,10 @@ export function handleBodyDrop(event) {
         state.drag.draggedItem.path,
         state.currentPath,
         state,
-        (isLoading) => { debugLog('[DEBUG] Loading:', isLoading); },
+        (isLoading) => {
+            setLoading(elements.loaderOverlay, elements.btnRefresh, isLoading);
+            debugLog('[DEBUG] Loading:', isLoading);
+        },
         (error) => { debugLog('[DEBUG] Move error:', error); },
         () => fetchDirectory(state.currentPath, { silent: true }),
         (message) => { debugLog('[DEBUG] Status:', message); },
@@ -305,7 +312,10 @@ export function setupFileCardDropZone() {
                     state.drag.draggedItem.path,
                     state.currentPath,
                     state,
-                    (isLoading) => { debugLog('[DEBUG] Loading:', isLoading); },
+                    (isLoading) => {
+                        setLoading(elements.loaderOverlay, elements.btnRefresh, isLoading);
+                        debugLog('[DEBUG] Loading:', isLoading);
+                    },
                     (error) => { debugLog('[DEBUG] Move error:', error); },
                     () => fetchDirectory(state.currentPath, { silent: true }),
                     (message) => { debugLog('[DEBUG] Status:', message); },
@@ -368,10 +378,13 @@ export function setupUpRowDropZone(upRow) {
             state.drag.draggedItem.path,
             targetPath,
             state,
-            () => { /* setLoading - will be implemented later */ },
-            (error) => { debugLog('Move error:', error); },
+            (isLoading) => {
+                setLoading(elements.loaderOverlay, elements.btnRefresh, isLoading);
+                debugLog('[DEBUG] Loading:', isLoading);
+            },
+            (error) => { debugLog('[DEBUG] Move error:', error); },
             () => fetchDirectory(state.currentPath, { silent: true }),
-            (message) => { debugLog('Status:', message); },
+            (message) => { debugLog('[DEBUG] Status:', message); },
             null, // previewTitle
             null, // previewMeta
             null, // previewOpenRaw

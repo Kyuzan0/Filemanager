@@ -309,7 +309,7 @@
                     <div class="filter-primary">
                         <div class="filter-search-main">
                             <svg viewBox="0 0 24 24" aria-hidden="true" class="search-icon">
-                                <path fill="currentColor" d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/>
+                                <path fill="currentColor" d="M15.5 14h-.79l-.28-.27a6 6 0 1 0-.71.71l.27.28v.79l4.5 4.5a1 1 0 0 0 1.41-1.41L15.5 14zm-6 0a4 4 0 1 1 0-8 4 4 0 0 1 0 8z"/>
                             </svg>
                             <input type="text" id="log-path-search" class="filter-search-input" placeholder="Cari aktivitas...">
                         </div>
@@ -331,63 +331,6 @@
                                 <option value="folder">Folder</option>
                             </select>
                             
-                            <button type="button" id="toggle-advanced-filters" class="btn-toggle-advanced" aria-expanded="false">
-                                <svg viewBox="0 0 24 24" aria-hidden="true" class="icon-filter">
-                                    <path fill="currentColor" d="M10 18h4v-2h-4v2zM3 6v2h18V6H3zm3 7h12v-2H6v2z"/>
-                                </svg>
-                                <span>Filter Lanjutan</span>
-                                <svg viewBox="0 0 24 24" aria-hidden="true" class="icon-chevron">
-                                    <path fill="currentColor" d="M7 10l5 5 5-5z"/>
-                                </svg>
-                            </button>
-                        </div>
-                    </div>
-                    
-                    <!-- Advanced Filters (Collapsible) -->
-                    <div class="filter-advanced" id="filter-advanced" hidden>
-                        <div class="filter-advanced-grid">
-                            <div class="filter-group-compact">
-                                <label for="log-start-date">Dari Tanggal</label>
-                                <input type="date" id="log-start-date" class="filter-input-compact">
-                            </div>
-                            
-                            <div class="filter-group-compact">
-                                <label for="log-end-date">Hingga Tanggal</label>
-                                <input type="date" id="log-end-date" class="filter-input-compact">
-                            </div>
-                            
-                            <div class="filter-group-compact">
-                                <label for="log-sort-by">Urutkan</label>
-                                <select id="log-sort-by" class="filter-select-compact">
-                                    <option value="timestamp">Waktu</option>
-                                    <option value="action">Aksi</option>
-                                    <option value="target_path">Path</option>
-                                    <option value="ip_address">IP</option>
-                                </select>
-                            </div>
-                            
-                            <div class="filter-group-compact">
-                                <label for="log-sort-order">Urutan</label>
-                                <select id="log-sort-order" class="filter-select-compact">
-                                    <option value="desc">Terbaru</option>
-                                    <option value="asc">Terlama</option>
-                                </select>
-                            </div>
-                        </div>
-                        
-                        <div class="filter-advanced-actions">
-                            <button type="button" id="apply-filters" class="btn-apply">
-                                <svg viewBox="0 0 24 24" aria-hidden="true">
-                                    <path fill="currentColor" d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z"/>
-                                </svg>
-                                Terapkan
-                            </button>
-                            <button type="button" id="reset-filters" class="btn-reset">
-                                <svg viewBox="0 0 24 24" aria-hidden="true">
-                                    <path fill="currentColor" d="M12 5V1L7 6l5 5V7c3.31 0 6 2.69 6 6s-2.69 6-6 6-6-2.69-6-6H4c0 4.42 3.58 8 8 8s8-3.58 8-8-3.58-8-8-8z"/>
-                                </svg>
-                                Reset
-                            </button>
                         </div>
                     </div>
                     

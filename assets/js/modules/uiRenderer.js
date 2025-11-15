@@ -653,7 +653,10 @@ export function renderItems(
                 state.drag.draggedItem.path,
                 targetPath,
                 state,
-                (isLoading) => { debugLog('[DEBUG] Loading:', isLoading); },
+                (isLoading) => {
+                    setLoading(document.querySelector('.loader-overlay'), document.querySelector('#btn-refresh'), isLoading);
+                    debugLog('[DEBUG] Loading:', isLoading);
+                },
                 (error) => { debugLog('[DEBUG] Move error:', error); },
                 () => fetchDirectory(state.currentPath, { silent: true }),
                 (message) => { debugLog('[DEBUG] Status:', message); },

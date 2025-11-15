@@ -330,9 +330,6 @@ function delete_paths(string $root, array $relativePaths): array
 
     foreach ($uniquePaths as $sanitized) {
         try {
-            // Log delete attempt
-            $logger->log('delete', $sanitized, ['status' => 'attempt']);
-            
             error_log('[DEBUG] Attempting to delete path: ' . $sanitized);
             $result = delete_single_path($root, $sanitized);
             $deleted[] = $result;
@@ -691,21 +688,13 @@ function rename_item(string $root, string $oldRelativePath, string $newRelativeP
         throw new RuntimeException('Nama sudah digunakan.');
     }
     
-    // Log rename attempt
-    $logger->log('rename', $sanitizedOldPath, [
-        'status' => 'attempt',
-        'target_type' => $targetType,
-        'old_path' => $sanitizedOldPath,
-        'new_path' => $sanitizedNewPath
-    ]);
-    
     try {
         // Lakukan rename
         if (!@rename($oldRealPath, $newRealPath)) {
             $error = error_get_last();
             $message = $error['message'] ?? 'Gagal mengubah nama item.';
             
-            // Log failed rename
+            // Log failed rename (only log on actual failure)
             $logger->log('rename', $sanitizedOldPath, [
                 'status' => 'failed',
                 'target_type' => $targetType,
@@ -813,21 +802,13 @@ function move_item(string $root, string $oldRelativePath, string $newRelativePat
     
     error_log('[DEBUG] Moving from "' . $oldRealPath . '" to "' . $newRealPath . '"');
     
-    // Log move attempt
-    $logger->log('move', $sanitizedOldPath, [
-        'status' => 'attempt',
-        'target_type' => $targetType,
-        'old_path' => $sanitizedOldPath,
-        'new_path' => $sanitizedNewPath
-    ]);
-    
     try {
         // Lakukan move
         if (!@rename($oldRealPath, $newRealPath)) {
             $error = error_get_last();
             $message = $error['message'] ?? 'Gagal memindahkan item.';
             
-            // Log failed move
+            // Log failed move (only log on actual failure)
             $logger->log('move', $sanitizedOldPath, [
                 'status' => 'failed',
                 'target_type' => $targetType,

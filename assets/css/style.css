@@ -2955,6 +2955,15 @@ body.dragging {
     min-width: 180px;
 }
 
+/* Search icon sizing fix for log modal */
+.log-filter-bar .search-icon,
+.filter-search-main .search-icon {
+    width: 18px;
+    height: 18px;
+    flex-shrink: 0;
+    color: var(--text-muted);
+}
+
 .log-filter-actions {
     display: flex;
     align-items: flex-end;

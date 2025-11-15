@@ -778,18 +778,92 @@ export function closeLogModal(state, logOverlay) {
  * @param {HTMLElement} logPageInfo - Info halaman
  * @param {boolean} isLoading - Status loading
  */
+/**
+ * Mengatur status loading pada log modal
+ * CRITICAL FIX: Now manages BOTH table body AND global loader overlay
+ * @param {Object} state - State aplikasi
+ * @param {HTMLElement} logTableBody - Table body element
+ * @param {boolean} isLoading - Status loading
+ */
 export function setLogLoading(state, logTableBody, isLoading) {
+    const timestamp = new Date().toISOString();
+    console.log(`[LOG_LOADING ${timestamp}] Setting loading state:`, {
+        isLoading,
+        hasTableBody: !!logTableBody,
+        currentState: state.logs.isLoading,
+        stackTrace: new Error().stack
+    });
+    
+    // Update state
     state.logs.isLoading = isLoading;
     
-    if (isLoading && logTableBody) {
-        logTableBody.innerHTML = `
-            <tr>
-                <td colspan="5" style="text-align: center; padding: 20px;">
-                    <div class="spinner"></div>
-                    <p>Loading logs...</p>
-                </td>
-            </tr>
-        `;
+    // Get global loader overlay
+    const loaderOverlay = document.querySelector('.loader-overlay');
+    const btnRefresh = document.querySelector('#btn-refresh');
+    
+    if (isLoading) {
+        // SHOW loading - both table and global overlay
+        if (logTableBody) {
+            logTableBody.innerHTML = `
+                <tr>
+                    <td colspan="5" style="text-align: center; padding: 20px;">
+                        <div class="spinner"></div>
+                        <p>Loading logs...</p>
+                    </td>
+                </tr>
+            `;
+        } else {
+            console.warn('[LOG_LOADING] logTableBody element not found');
+        }
+        
+        // Show global loader
+        if (loaderOverlay) {
+            loaderOverlay.classList.add('visible');
+            console.log('[LOG_LOADING] Global loader shown');
+        } else {
+            console.warn('[LOG_LOADING] Global loader-overlay element not found');
+        }
+        
+        // Disable refresh button
+        if (btnRefresh) {
+            btnRefresh.disabled = true;
+        }
+        
+        console.log('[LOG_LOADING] ✓ Loading state activated');
+    } else {
+        // HIDE loading - clear EVERYTHING
+        
+        // Clear table loading (renderLogTable will populate it)
+        if (logTableBody && logTableBody.innerHTML.includes('Loading logs')) {
+            // Only clear if it's still showing loading message
+            console.log('[LOG_LOADING] Table still has loading message, will be cleared by renderLogTable');
+        }
+        
+        // CRITICAL: Hide global loader
+        if (loaderOverlay) {
+            loaderOverlay.classList.remove('visible');
+            console.log('[LOG_LOADING] Global loader hidden');
+        } else {
+            console.warn('[LOG_LOADING] Global loader-overlay element not found for hiding');
+        }
+        
+        // Re-enable refresh button
+        if (btnRefresh) {
+            btnRefresh.disabled = false;
+        }
+        
+        console.log('[LOG_LOADING] ✓ Loading state deactivated');
+    }
+    
+    // Defensive check: Ensure global loader is actually hidden
+    if (!isLoading) {
+        setTimeout(() => {
+            const overlay = document.querySelector('.loader-overlay');
+            if (overlay && overlay.classList.contains('visible')) {
+                console.error('[LOG_LOADING] ⚠️ FAILSAFE: Loader still visible after clear! Force removing...');
+                overlay.classList.remove('visible');
+            }
+        }, 100);
     }
 }
 
