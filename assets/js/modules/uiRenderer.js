@@ -242,6 +242,43 @@ function renderItemRow(item, state, params) {
     const icon = document.createElement('span');
     icon.className = `item-icon ${iconInfo.className}`;
     icon.innerHTML = iconInfo.svg;
+    icon.style.cursor = 'pointer';
+    
+    // Add click handler to icon
+    if (item.type === 'folder') {
+        icon.addEventListener('click', (event) => {
+            event.preventDefault();
+            event.stopPropagation();
+            navigateTo(item.path);
+        });
+    } else if (isPreviewable || isMediaPreviewable) {
+        icon.addEventListener('click', (event) => {
+            event.preventDefault();
+            event.stopPropagation();
+            if (isPreviewable) {
+                openTextPreview(item);
+            } else {
+                openMediaPreview(item);
+            }
+        });
+    } else {
+        const extForIcon = getFileExtension(item.name);
+        if (isWordDocument(extForIcon)) {
+            icon.addEventListener('click', (event) => {
+                event.preventDefault();
+                event.stopPropagation();
+                openInWord(item);
+            });
+        } else {
+            icon.addEventListener('click', (event) => {
+                event.stopPropagation();
+                const url = buildFileUrl(item.path);
+                const newWindow = window.open(url, '_blank');
+                if (newWindow) newWindow.opener = null;
+            });
+        }
+    }
+    
     cellName.appendChild(icon);
 
     const link = document.createElement('a');
