@@ -4,7 +4,7 @@
  */
 
 import { state, updateState } from './state.js';
-import { elements, config } from './constants.js';
+import { elements, config, previewableExtensions, mediaPreviewableExtensions } from './constants.js';
 import { 
     setupRefreshHandler,
     setupUpHandler,
@@ -28,16 +28,19 @@ import { setupMoveOverlayHandlers } from './moveOverlay.js';
 import { setupDragAndDrop } from './dragDrop.js';
 import { fetchDirectory } from './apiService.js';
 import { renderItems as renderItemsComplex, updateSortUI } from './uiRenderer.js';
-import { 
-    openPreviewOverlay, 
-    closePreviewOverlay, 
-    openConfirmOverlay, 
+import {
+    openPreviewOverlay,
+    closePreviewOverlay,
+    openConfirmOverlay,
     closeConfirmOverlay,
     openCreateOverlay,
     closeCreateOverlay,
     openRenameOverlay,
     closeRenameOverlay,
-    closeUnsavedOverlay
+    closeUnsavedOverlay,
+    setPreviewMode,
+    ensurePreviewViewer,
+    openMediaPreview as openMediaPreviewModal
 } from './modals.js';
 import { 
     deleteItems, 
@@ -488,6 +491,117 @@ function closeRenameOverlayWrapper() {
  */
 function closeConfirmOverlayWrapper() {
     closeConfirmOverlay(state, elements.confirmOverlay);
+}
+
+/**
+ * Wrapper function untuk membuka text preview
+ * @param {Object} item - Item yang akan di-preview
+ */
+async function openTextPreview(item) {
+    console.log('[PREVIEW] Opening text preview for:', item.name);
+    
+    if (hasUnsavedChanges(state.preview)) {
+        const confirmed = await confirmDiscardChanges('Perubahan belum disimpan. Buka file lain tanpa menyimpan?');
+        if (!confirmed) {
+            return;
+        }
+    }
+
+    // Prepare overlay
+    elements.previewTitle.textContent = item.name;
+    const sizeInfo = typeof item.size === 'number' ? formatBytes(item.size) : '-';
+    const modifiedInfo = item.modified ? formatDate(item.modified) : '-';
+    elements.previewMeta.textContent = `${item.path} • ${sizeInfo} • ${modifiedInfo}`;
+    elements.previewOpenRaw.href = buildFileUrl(item.path);
+
+    state.preview.path = item.path;
+    state.preview.mode = 'text';
+    state.preview.dirty = false;
+    state.preview.isSaving = false;
+
+    // Enable text actions
+    elements.previewSave.disabled = true;
+    elements.previewCopy.disabled = false;
+
+    // Show loading state
+    elements.previewLoader.hidden = false;
+    elements.previewEditor.classList.add('is-loading');
+    elements.previewEditor.readOnly = true;
+    elements.previewEditor.value = '';
+    updateLineNumbers();
+
+    // Open overlay
+    openPreviewOverlay(state, elements.previewOverlay, elements.previewClose);
+    
+    // Ensure text mode
+    if (elements.previewEditorWrapper) {
+        elements.previewEditorWrapper.style.display = '';
+    }
+    const wrapper = document.getElementById('preview-viewer-wrapper');
+    if (wrapper) {
+        wrapper.style.display = 'none';
+    }
+
+    try {
+        // Fetch file content
+        const response = await fetch(`api.php?action=preview&path=${encodeURIComponent(item.path)}`);
+        const data = await response.json();
+
+        if (!response.ok || !data.success) {
+            throw new Error(data.error || 'Failed to load file');
+        }
+
+        state.preview.originalContent = data.content || '';
+        elements.previewEditor.value = state.preview.originalContent;
+        elements.previewEditor.readOnly = false;
+        updateLineNumbers();
+        ensureConsistentStyling();
+
+        if (elements.previewStatus) {
+            elements.previewStatus.textContent = `Karakter: ${data.content.length.toLocaleString('id-ID')}`;
+        }
+    } catch (error) {
+        console.error('[PREVIEW] Error loading file:', error);
+        elements.previewEditor.value = `Error: ${error.message}`;
+        if (elements.previewStatus) {
+            elements.previewStatus.textContent = 'Gagal memuat file';
+        }
+    } finally {
+        elements.previewLoader.hidden = true;
+        elements.previewEditor.classList.remove('is-loading');
+    }
+}
+
+/**
+ * Wrapper function untuk membuka media preview
+ * @param {Object} item - Item yang akan di-preview
+ */
+async function openMediaPreview(item) {
+    console.log('[PREVIEW] Opening media preview for:', item.name);
+    
+    // Open overlay first
+    openPreviewOverlay(state, elements.previewOverlay, elements.previewClose);
+    
+    // Call the modal function
+    await openMediaPreviewModal(
+        item,
+        state,
+        {
+            previewTitle: elements.previewTitle,
+            previewMeta: elements.previewMeta,
+            previewOpenRaw: elements.previewOpenRaw,
+            previewSave: elements.previewSave,
+            previewCopy: elements.previewCopy,
+            previewBody: elements.previewBody,
+            previewEditorWrapper: elements.previewEditorWrapper
+        },
+        buildFileUrl,
+        formatBytes,
+        formatDate,
+        getFileExtension,
+        hasUnsavedChanges,
+        confirmDiscardChanges
+    );
 }
 
 /**

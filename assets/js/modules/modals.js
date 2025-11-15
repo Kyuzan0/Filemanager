@@ -536,3 +536,154 @@ export function updatePreviewStatus(state, previewEditor, previewStatus, detail 
 
     previewStatus.textContent = suffix ? `${base} • ${suffix}` : base;
 }
+
+/**
+ * Memastikan media viewer wrapper ada di preview modal
+ * @param {HTMLElement} previewBody - Elemen body preview
+ * @returns {HTMLElement} Wrapper element
+ */
+export function ensurePreviewViewer(previewBody) {
+    let wrapper = document.getElementById('preview-viewer-wrapper');
+    if (!wrapper) {
+        wrapper = document.createElement('div');
+        wrapper.id = 'preview-viewer-wrapper';
+        wrapper.className = 'preview-viewer-wrapper';
+        const viewer = document.createElement('div');
+        viewer.id = 'preview-viewer';
+        viewer.className = 'preview-viewer';
+        wrapper.appendChild(viewer);
+        if (previewBody) {
+            previewBody.appendChild(wrapper);
+        }
+    }
+    return wrapper;
+}
+
+/**
+ * Switch modal antara text editor dan media preview modes
+ * @param {Object} state - State aplikasi
+ * @param {HTMLElement} previewEditorWrapper - Wrapper editor
+ */
+export function setPreviewMode(state, previewEditorWrapper) {
+    const mode = state.preview.mode;
+    if (previewEditorWrapper) {
+        // Show text editor saat mode text, hide otherwise
+        previewEditorWrapper.style.display = mode === 'text' ? '' : 'none';
+    }
+    const wrapper = document.getElementById('preview-viewer-wrapper');
+    if (wrapper) {
+        // Default CSS sets .preview-viewer-wrapper { display: none }
+        // Use explicit 'block' untuk make it visible di media mode
+        wrapper.style.display = mode === 'media' ? 'block' : 'none';
+    }
+}
+
+/**
+ * Membuka media preview (images, pdf) di dalam modal tanpa download
+ * @param {Object} item - Item yang akan di-preview
+ * @param {Object} state - State aplikasi
+ * @param {Object} elements - Object berisi elemen-elemen DOM yang dibutuhkan
+ * @param {Function} buildFileUrl - Fungsi untuk build URL file
+ * @param {Function} formatBytes - Fungsi format bytes
+ * @param {Function} formatDate - Fungsi format date
+ * @param {Function} getFileExtension - Fungsi get file extension
+ * @param {Function} hasUnsavedChanges - Fungsi cek unsaved changes
+ * @param {Function} confirmDiscardChanges - Fungsi konfirmasi discard changes
+ */
+export async function openMediaPreview(
+    item,
+    state,
+    elements,
+    buildFileUrl,
+    formatBytes,
+    formatDate,
+    getFileExtension,
+    hasUnsavedChanges,
+    confirmDiscardChanges
+) {
+    const {
+        previewTitle,
+        previewMeta,
+        previewOpenRaw,
+        previewSave,
+        previewCopy,
+        previewBody,
+        previewEditorWrapper
+    } = elements;
+
+    // Cek unsaved changes
+    if (hasUnsavedChanges(state.preview)) {
+        const confirmed = await confirmDiscardChanges('Perubahan belum disimpan. Buka file lain tanpa menyimpan?');
+        if (!confirmed) {
+            return;
+        }
+    }
+
+    // Prepare overlay
+    previewTitle.textContent = item.name;
+    const sizeInfo = typeof item.size === 'number' ? formatBytes(item.size) : '-';
+    const modifiedInfo = item.modified ? formatDate(item.modified) : '-';
+    previewMeta.textContent = `${item.path} • ${sizeInfo} • ${modifiedInfo}`;
+    previewOpenRaw.href = buildFileUrl(item.path);
+
+    state.preview.path = item.path;
+    state.preview.originalContent = '';
+    state.preview.dirty = false;
+    state.preview.isSaving = false;
+
+    // Disable text-only actions untuk media
+    previewSave.disabled = true;
+    previewCopy.disabled = true;
+
+    // Ensure preview is open
+    const wrapper = ensurePreviewViewer(previewBody);
+    state.preview.mode = 'media';
+    setPreviewMode(state, previewEditorWrapper);
+
+    const viewer = document.getElementById('preview-viewer');
+    if (viewer) {
+        const extension = getFileExtension(item.name);
+        const url = buildFileUrl(item.path);
+        viewer.innerHTML = '';
+
+        // Decide element based on type
+        let el;
+        if (extension === 'pdf') {
+            el = document.createElement('iframe');
+            el.src = url;
+            el.title = item.name;
+            el.setAttribute('aria-label', `Pratinjau PDF ${item.name}`);
+        } else {
+            // Image types: png, jpg, jpeg, gif, webp, svg
+            el = document.createElement('img');
+            el.src = url;
+            el.alt = item.name;
+            
+            // Add loading and error handlers
+            el.addEventListener('load', () => {
+                console.log('[MEDIA] Image loaded successfully:', item.name);
+            });
+            el.addEventListener('error', () => {
+                console.error('[MEDIA] Failed to load image:', item.name);
+                viewer.innerHTML = '<p style="color: var(--error); text-align: center; padding: 20px;">Gagal memuat gambar</p>';
+            });
+        }
+
+        // Basic sizing (CSS can refine later)
+        el.style.maxWidth = '100%';
+        el.style.maxHeight = '70vh';
+        el.style.border = '1px solid var(--border)';
+        el.style.borderRadius = '12px';
+        el.style.background = 'var(--surface)';
+        el.style.display = 'block';
+        el.style.margin = '0 auto';
+
+        viewer.appendChild(el);
+    }
+
+    // Update status
+    const previewStatus = document.getElementById('preview-status');
+    if (previewStatus) {
+        previewStatus.textContent = 'Mode pratinjau media';
+    }
+}

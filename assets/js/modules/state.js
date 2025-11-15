@@ -25,6 +25,7 @@ export const state = {
         originalContent: '',
         dirty: false,
         isSaving: false,
+        mode: 'text', // 'text' or 'media'
     },
     confirm: {
         isOpen: false,
@@ -169,6 +170,7 @@ export function resetState() {
     state.preview.originalContent = '';
     state.preview.dirty = false;
     state.preview.isSaving = false;
+    state.preview.mode = 'text';
     
     // Reset other states
     state.confirm.isOpen = false;
