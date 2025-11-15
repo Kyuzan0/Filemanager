@@ -6,6 +6,8 @@
 import { compareItems, getSortDescription, synchronizeSelection, createRowActionButton } from './utils.js';
 import { getItemIcon } from './fileIcons.js';
 import { actionIcons } from './constants.js';
+import { moveItem } from './fileOperations.js';
+import { fetchDirectory } from './apiService.js';
 
 /**
  * Merender breadcrumbs navigasi
@@ -145,11 +147,7 @@ export function renderItems(
         upName.appendChild(upLink);
         upRow.appendChild(upName);
 
-        // Size and Modified columns show "-"
-        const upSize = document.createElement('td');
-        upSize.textContent = '-';
-        upRow.appendChild(upSize);
-
+        // Modified column shows "-"
         const upModified = document.createElement('td');
         upModified.textContent = '-';
         upRow.appendChild(upModified);
@@ -205,7 +203,19 @@ export function renderItems(
             console.log('[DEBUG] Dropping', state.drag.draggedItem.name, 'onto up-row to move into parent', targetPath);
 
             // Perform the move operation to parent directory
-            moveItem(state.drag.draggedItem.path, targetPath);
+            moveItem(
+                state.drag.draggedItem.path,
+                targetPath,
+                state,
+                () => { /* setLoading - will be implemented later */ },
+                (error) => { console.error('Move error:', error); },
+                () => fetchDirectory(state.currentPath, { silent: true }),
+                (message) => { console.log('Status:', message); },
+                null, // previewTitle
+                null, // previewMeta
+                null, // previewOpenRaw
+                null  // buildFileUrl
+            );
 
             // Clean up highlight/state
             upRow.classList.remove('drop-target');
@@ -337,7 +347,7 @@ export function renderItems(
         }
 
         const cellName = document.createElement('td');
-        cellName.className = 'item-name';
+        cellName.className = 'name-cell item-name';
 
         const iconInfo = getItemIcon(item);
         const icon = document.createElement('span');
@@ -390,10 +400,8 @@ export function renderItems(
             cellName.appendChild(badge);
         }
 
-        const cellSize = document.createElement('td');
-        cellSize.textContent = item.type === 'folder' ? '-' : formatBytes(item.size);
-
         const cellModified = document.createElement('td');
+        cellModified.className = 'modified-cell';
         cellModified.textContent = formatDate(item.modified);
 
         const actionCell = document.createElement('td');
@@ -491,7 +499,6 @@ export function renderItems(
         actionCell.appendChild(actionGroup);
 
         row.appendChild(cellName);
-        row.appendChild(cellSize);
         row.appendChild(cellModified);
         row.appendChild(actionCell);
 

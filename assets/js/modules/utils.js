@@ -182,14 +182,6 @@ export function compareItems(a, b, sortKey, sortDirection) {
             }
             return compareName() * direction;
         }
-        case 'size': {
-            const sizeA = a.type === 'folder' || a.size === null ? -1 : a.size;
-            const sizeB = b.type === 'folder' || b.size === null ? -1 : b.size;
-            if (sizeA !== sizeB) {
-                return sizeA < sizeB ? -direction : direction;
-            }
-            return compareName() * direction;
-        }
         case 'modified': {
             const modifiedA = a.modified ?? 0;
             const modifiedB = b.modified ?? 0;
@@ -219,8 +211,6 @@ export function getSortDescription(key, direction) {
     switch (key) {
         case 'type':
             return order ? 'Jenis (Folder → File)' : 'Jenis (File → Folder)';
-        case 'size':
-            return order ? 'Ukuran (Kecil → Besar)' : 'Ukuran (Besar → Kecil)';
         case 'modified':
             return order ? 'Terakhir diubah (Lama → Baru)' : 'Terakhir diubah (Baru → Lama)';
         case 'name':

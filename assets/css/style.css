@@ -749,6 +749,33 @@ td.selection-cell {
  width: 64px;
 }
 
+/* Adjust column widths for three-column layout (name, modified, actions) */
+th[data-sort-key="name"],
+td.name-cell {
+ width: auto;
+ min-width: 200px;
+ max-width: 50%;
+}
+
+th[data-sort-key="modified"],
+td.modified-cell {
+ width: 180px;
+ min-width: 140px;
+ text-align: center;
+}
+
+/* Ensure proper text alignment for name column */
+th[data-sort-key="name"],
+td.name-cell {
+ text-align: left;
+}
+
+th.actions-column,
+td.actions-cell {
+ width: 180px;
+ text-align: right;
+}
+
 tbody tr {
  border-bottom: 1px solid var(--border);
  transition: background 0.18s ease, box-shadow 0.18s ease;
@@ -813,6 +840,23 @@ tbody tr.is-new {
 
 .actions-column {
  width: 180px;
+ text-align: right;
+}
+
+/* Ensure proper spacing for three-column layout */
+.table-wrapper {
+ overflow: hidden;
+ border-radius: 20px;
+ margin: 0 24px;
+ border: 1px solid var(--border);
+}
+
+/* Adjust table layout for better column distribution */
+table {
+ width: 100%;
+ border-collapse: collapse;
+ background: var(--surface);
+ table-layout: fixed;
 }
 
 .row-actions {
@@ -1355,11 +1399,28 @@ tbody tr.is-new {
  }
 
  .table-wrapper {
- margin: 0 18px;
+  margin: 0 18px;
  }
 
  th, td {
- padding: 14px 16px;
+  padding: 14px 16px;
+ }
+ 
+ /* Adjust column widths for medium screens */
+ th[data-sort-key="name"],
+ td.name-cell {
+  min-width: 160px;
+ }
+ 
+ th[data-sort-key="modified"],
+ td.modified-cell {
+  width: 140px;
+  min-width: 120px;
+ }
+ 
+ th.actions-column,
+ td.actions-cell {
+  width: 140px;
  }
 
  .preview-dialog {
@@ -1407,11 +1468,46 @@ tbody tr.is-new {
  }
 
  .table-wrapper {
- margin: 0 12px;
+  margin: 0 12px;
  }
 
  table {
- font-size: 0.9rem;
+  font-size: 0.9rem;
+ }
+ 
+ /* Adjust column widths for small screens */
+ th[data-sort-key="name"],
+ td.name-cell {
+  min-width: 120px;
+  max-width: 45%;
+ }
+ 
+ th[data-sort-key="modified"],
+ td.modified-cell {
+  width: 100px;
+  min-width: 80px;
+  font-size: 0.85rem;
+ }
+ 
+ th.actions-column,
+ td.actions-cell {
+  width: 100px;
+  min-width: 80px;
+ }
+ 
+ /* Adjust action buttons for smaller screens */
+ .row-actions {
+  gap: 6px;
+ }
+ 
+ .row-action {
+  width: 30px;
+  height: 30px;
+ }
+ 
+ .row-action svg {
+  width: 14px;
+  height: 14px;
  }
 
  :root {

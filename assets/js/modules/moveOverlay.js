@@ -46,10 +46,15 @@ export function openMoveOverlay(paths) {
     // Load current directory in move overlay
     loadMoveDirectory(state.currentPath);
 
-    // Show overlay
-    elements.moveOverlay.setAttribute('aria-hidden', 'false');
-    if (elements.movePath) {
-        elements.movePath.focus();
+    // Show overlay - only if overlay exists
+    if (elements.moveOverlay) {
+        elements.moveOverlay.setAttribute('aria-hidden', 'false');
+        if (elements.movePath) {
+            elements.movePath.focus();
+        }
+    } else {
+        console.error('[MOVE_OVERLAY] Cannot open overlay: moveOverlay element not found');
+        return;
     }
 
     logModalOperation('move', 'open', { paths });
@@ -73,7 +78,12 @@ export function closeMoveOverlay() {
         }
     });
 
-    elements.moveOverlay.setAttribute('aria-hidden', 'true');
+    // Hide overlay - only if overlay exists
+    if (elements.moveOverlay) {
+        elements.moveOverlay.setAttribute('aria-hidden', 'true');
+    } else {
+        console.warn('[MOVE_OVERLAY] Cannot close overlay: moveOverlay element not found');
+    }
     logModalOperation('move', 'close');
 }
 
@@ -157,6 +167,12 @@ async function loadMoveDirectory(path) {
  * @param {string} currentPath - Path saat ini
  */
 function renderMoveFolderList(folders, currentPath) {
+    // Check if folder list exists before trying to modify it
+    if (!elements.moveFolderList) {
+        console.error('[MOVE_OVERLAY] Cannot render folder list: moveFolderList element not found');
+        return;
+    }
+    
     elements.moveFolderList.innerHTML = '';
     
     // Add parent directory option (if not at root)
@@ -335,6 +351,8 @@ export function setupMoveOverlayHandlers() {
                 moveItems();
             }
         });
+    } else {
+        console.warn('[MOVE_OVERLAY] moveForm element not found');
     }
 
     // Path input change - only if path input exists
@@ -345,47 +363,61 @@ export function setupMoveOverlayHandlers() {
                 elements.moveHint.textContent = 'Pilih folder tujuan untuk memindahkan item.';
             }
         });
+    } else {
+        console.warn('[MOVE_OVERLAY] movePath element not found');
     }
 
-    // Cancel button
-    elements.moveCancel.addEventListener('click', () => {
-        if (!state.move.isLoading) {
-            closeMoveOverlay();
-        }
-    });
-
-    // Overlay click
-    elements.moveOverlay.addEventListener('click', (event) => {
-        if (event.target === elements.moveOverlay && !state.move.isLoading) {
-            closeMoveOverlay();
-        }
-    });
-
-    // Keyboard navigation
-    elements.moveOverlay.addEventListener('keydown', (event) => {
-        if (event.key === 'Escape' && !state.move.isLoading) {
-            closeMoveOverlay();
-        }
-    });
-
-    // Folder list keyboard navigation
-    elements.moveFolderList.addEventListener('keydown', (event) => {
-        if (event.key === 'ArrowDown') {
-            event.preventDefault();
-            const focusedItem = document.activeElement;
-            const items = Array.from(elements.moveFolderList.children);
-            const currentIndex = items.indexOf(focusedItem);
-            if (currentIndex < items.length - 1) {
-                items[currentIndex + 1].focus();
+    // Cancel button - only if cancel button exists
+    if (elements.moveCancel) {
+        elements.moveCancel.addEventListener('click', () => {
+            if (!state.move.isLoading) {
+                closeMoveOverlay();
             }
-        } else if (event.key === 'ArrowUp') {
-            event.preventDefault();
-            const focusedItem = document.activeElement;
-            const items = Array.from(elements.moveFolderList.children);
-            const currentIndex = items.indexOf(focusedItem);
-            if (currentIndex > 0) {
-                items[currentIndex - 1].focus();
+        });
+    } else {
+        console.warn('[MOVE_OVERLAY] moveCancel element not found');
+    }
+
+    // Overlay click - only if overlay exists
+    if (elements.moveOverlay) {
+        elements.moveOverlay.addEventListener('click', (event) => {
+            if (event.target === elements.moveOverlay && !state.move.isLoading) {
+                closeMoveOverlay();
             }
-        }
-    });
+        });
+
+        // Keyboard navigation - only if overlay exists
+        elements.moveOverlay.addEventListener('keydown', (event) => {
+            if (event.key === 'Escape' && !state.move.isLoading) {
+                closeMoveOverlay();
+            }
+        });
+    } else {
+        console.warn('[MOVE_OVERLAY] moveOverlay element not found');
+    }
+
+    // Folder list keyboard navigation - only if folder list exists
+    if (elements.moveFolderList) {
+        elements.moveFolderList.addEventListener('keydown', (event) => {
+            if (event.key === 'ArrowDown') {
+                event.preventDefault();
+                const focusedItem = document.activeElement;
+                const items = Array.from(elements.moveFolderList.children);
+                const currentIndex = items.indexOf(focusedItem);
+                if (currentIndex < items.length - 1) {
+                    items[currentIndex + 1].focus();
+                }
+            } else if (event.key === 'ArrowUp') {
+                event.preventDefault();
+                const focusedItem = document.activeElement;
+                const items = Array.from(elements.moveFolderList.children);
+                const currentIndex = items.indexOf(focusedItem);
+                if (currentIndex > 0) {
+                    items[currentIndex - 1].focus();
+                }
+            }
+        });
+    } else {
+        console.warn('[MOVE_OVERLAY] moveFolderList element not found');
+    }
 }

@@ -122,11 +122,6 @@ function renderItems(items, lastUpdated, highlightNew) {
                 nameCell.appendChild(iconSpan);
                 nameCell.appendChild(nameSpan);
                 
-                // Size column
-                const sizeCell = document.createElement('td');
-                sizeCell.className = 'item-size';
-                sizeCell.textContent = item.type === 'folder' ? '-' : (item.size || '0 B');
-                
                 // Date column
                 const dateCell = document.createElement('td');
                 dateCell.className = 'item-date';
@@ -166,7 +161,6 @@ function renderItems(items, lastUpdated, highlightNew) {
                 };
                 
                 row.appendChild(nameCell);
-                row.appendChild(sizeCell);
                 row.appendChild(dateCell);
                 row.appendChild(actionCell);
                 
@@ -580,7 +574,12 @@ export async function initializeApp() {
         setupDragAndDrop();
         
         // Setup move overlay handlers
-        setupMoveOverlayHandlers();
+        try {
+            setupMoveOverlayHandlers();
+        } catch (error) {
+            logger.error('Failed to setup move overlay handlers', error);
+            // Continue with initialization even if move overlay fails
+        }
         
         // Load initial directory
         await loadInitialDirectory();
@@ -992,5 +991,6 @@ function initializeAdditionalFeatures() {
 export {
     setupEventHandlers,
     loadInitialDirectory,
-    initializeAdditionalFeatures
+    initializeAdditionalFeatures,
+    handleContextMenuAction
 };

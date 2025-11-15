@@ -106,11 +106,11 @@ export const elements = {
     
     // Move overlay elements
     moveOverlay: document.getElementById('move-overlay'),
-    moveForm: null, // No form element in the current HTML structure
-    movePath: null, // No path input in the current HTML structure
-    moveHint: document.getElementById('move-error'), // Use move-error as hint element
-    moveSubmit: document.getElementById('move-confirm'), // Submit button
-    moveFolderList: document.getElementById('move-list'), // Folder list
+    moveForm: document.getElementById('move-form'),
+    movePath: document.getElementById('move-path'),
+    moveHint: document.getElementById('move-hint'),
+    moveSubmit: document.getElementById('move-submit'),
+    moveFolderList: document.getElementById('move-list'),
     moveBreadcrumbs: document.getElementById('move-breadcrumbs'),
     moveList: document.getElementById('move-list'),
     moveError: document.getElementById('move-error'),

@@ -99,9 +99,6 @@
                                 <th scope="col" class="sortable" data-sort-key="name" aria-sort="none">
                                     <span class="column-header">Nama</span>
                                 </th>
-                                <th scope="col" class="sortable" data-sort-key="size" aria-sort="none">
-                                    <span class="column-header">Ukuran</span>
-                                </th>
                                 <th scope="col" class="sortable" data-sort-key="modified" aria-sort="none">
                                     <span class="column-header">Diubah</span>
                                 </th>

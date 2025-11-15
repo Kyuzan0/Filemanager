@@ -438,7 +438,6 @@ function create_folder(string $root, string $relativePath): array
         'name' => $info['name'],
         'path' => $info['sanitized'],
         'type' => 'folder',
-        'size' => null,
         'modified' => $modified,
     ];
 }
@@ -455,14 +454,12 @@ function create_file(string $root, string $relativePath, string $content = ''): 
     }
 
     clearstatcache(true, $info['target_path']);
-    $size = filesize($info['target_path']);
     $modified = filemtime($info['target_path']) ?: time();
 
     return [
         'name' => $info['name'],
         'path' => $info['sanitized'],
         'type' => 'file',
-        'size' => $size === false ? 0 : $size,
         'modified' => $modified,
     ];
 }
@@ -570,7 +567,6 @@ function upload_files(string $root, string $relativePath, array $files): array
             'name' => $basename,
             'path' => $relativeItemPath,
             'type' => 'file',
-            'size' => filesize($targetPath) ?: $size,
             'modified' => filemtime($targetPath) ?: time(),
         ];
     }
@@ -621,7 +617,6 @@ function list_directory(string $root, string $relativePath = ''): array
         $items[] = [
             'name' => $fileInfo->getFilename(),
             'type' => $fileInfo->isDir() ? 'folder' : 'file',
-            'size' => $fileInfo->isDir() ? null : $fileInfo->getSize(),
             'modified' => $fileInfo->getMTime(),
             'path' => $relativeItemPath,
         ];
@@ -724,7 +719,6 @@ function rename_item(string $root, string $oldRelativePath, string $newRelativeP
         
         clearstatcache(true, $newRealPath);
         $modified = filemtime($newRealPath) ?: time();
-        $size = $isDir ? null : (filesize($newRealPath) ?: 0);
         
         // Log successful rename
         $logger->log('rename', $sanitizedNewPath, [
@@ -738,7 +732,6 @@ function rename_item(string $root, string $oldRelativePath, string $newRelativeP
             'name' => $newName,
             'path' => $sanitizedNewPath,
             'type' => $targetType,
-            'size' => $size,
             'modified' => $modified,
         ];
     } catch (Exception $e) {
@@ -848,7 +841,6 @@ function move_item(string $root, string $oldRelativePath, string $newRelativePat
         
         clearstatcache(true, $newRealPath);
         $modified = filemtime($newRealPath) ?: time();
-        $size = $isDir ? null : (filesize($newRealPath) ?: 0);
         
         // Log successful move
         $logger->log('move', $sanitizedNewPath, [
@@ -862,7 +854,6 @@ function move_item(string $root, string $oldRelativePath, string $newRelativePat
             'name' => $newName,
             'path' => $sanitizedNewPath,
             'type' => $targetType,
-            'size' => $size,
             'modified' => $modified,
         ];
     } catch (Exception $e) {

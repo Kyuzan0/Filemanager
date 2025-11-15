@@ -3,7 +3,9 @@
  * Berisi fungsi-fungsi untuk menangani drag and drop
  */
 
-import { moveItem } from './apiService.js';
+import { moveItem } from './fileOperations.js';
+import { state } from './state.js';
+import { fetchDirectory } from './apiService.js';
 
 /**
  * Menangani event drag start
@@ -161,7 +163,19 @@ export function handleDrop(event, targetItem, state, handleBodyDragOver, handleB
     document.body.removeEventListener('drop', handleBodyDrop);
     
     // Perform the move operation
-    moveItem(state.drag.draggedItem.path, targetPath);
+    moveItem(
+        state.drag.draggedItem.path,
+        targetPath,
+        state,
+        () => { /* setLoading - will be implemented later */ },
+        (error) => { console.error('Move error:', error); },
+        () => fetchDirectory(state.currentPath, { silent: true }),
+        (message) => { console.log('Status:', message); },
+        null, // previewTitle
+        null, // previewMeta
+        null, // previewOpenRaw
+        null  // buildFileUrl
+    );
     
     // Clean up
     event.currentTarget.classList.remove('drop-target');
@@ -208,7 +222,19 @@ export function handleBodyDrop(event, state, fileCard, handleBodyDragOver, handl
     console.log('[DEBUG] Dropping', state.drag.draggedItem.name, 'in current directory', state.currentPath);
     
     // Drop in the current directory
-    moveItem(state.drag.draggedItem.path, state.currentPath);
+    moveItem(
+        state.drag.draggedItem.path,
+        state.currentPath,
+        state,
+        () => { /* setLoading - will be implemented later */ },
+        (error) => { console.error('Move error:', error); },
+        () => fetchDirectory(state.currentPath, { silent: true }),
+        (message) => { console.log('Status:', message); },
+        null, // previewTitle
+        null, // previewMeta
+        null, // previewOpenRaw
+        null  // buildFileUrl
+    );
 }
 
 /**
@@ -254,7 +280,19 @@ export function setupFileCardDropZone(fileCard, state, handleBodyDragOver, handl
                 document.body.removeEventListener('dragover', handleBodyDragOver);
                 document.body.removeEventListener('drop', handleBodyDrop);
                 // Drop in current directory
-                moveItem(state.drag.draggedItem.path, state.currentPath);
+                moveItem(
+                    state.drag.draggedItem.path,
+                    state.currentPath,
+                    state,
+                    () => { /* setLoading - will be implemented later */ },
+                    (error) => { console.error('Move error:', error); },
+                    () => fetchDirectory(state.currentPath, { silent: true }),
+                    (message) => { console.log('Status:', message); },
+                    null, // previewTitle
+                    null, // previewMeta
+                    null, // previewOpenRaw
+                    null  // buildFileUrl
+                );
             }
         }
     });
@@ -306,7 +344,19 @@ export function setupUpRowDropZone(upRow, state, handleBodyDragOver, handleBodyD
         console.log('[DEBUG] Dropping', state.drag.draggedItem.name, 'onto up-row to move into parent', targetPath);
         
         // Perform the move operation to parent directory
-        moveItem(state.drag.draggedItem.path, targetPath);
+        moveItem(
+            state.drag.draggedItem.path,
+            targetPath,
+            state,
+            () => { /* setLoading - will be implemented later */ },
+            (error) => { console.error('Move error:', error); },
+            () => fetchDirectory(state.currentPath, { silent: true }),
+            (message) => { console.log('Status:', message); },
+            null, // previewTitle
+            null, // previewMeta
+            null, // previewOpenRaw
+            null  // buildFileUrl
+        );
         
         // Clean up highlight/state
         upRow.classList.remove('drop-target');
@@ -319,8 +369,50 @@ export function setupUpRowDropZone(upRow, state, handleBodyDragOver, handleBodyD
  * Main setup function that initializes drag and drop for the file manager
  */
 export function setupDragAndDrop() {
-    // This function will be called during app initialization
-    // The actual drag and drop setup is done in uiRenderer when creating file items
-    // This is a placeholder function to satisfy the import in appInitializer.js
+    console.log('[DEBUG] Setting up drag and drop functionality');
+    
+    // Set up body as a drop zone for dragging to current directory
+    const bodyDragOverHandler = (event) => {
+        if (!state.drag) return;
+        event.preventDefault();
+        event.dataTransfer.dropEffect = 'move';
+    };
+    
+    const bodyDropHandler = (event) => {
+        if (!state.drag) return;
+        event.preventDefault();
+        
+        if (!state.drag.draggedItem) {
+            return;
+        }
+        
+        console.log('[DEBUG] Body drop - dropping in current directory:', state.currentPath);
+        
+        // Drop in current directory
+        moveItem(
+            state.drag.draggedItem.path,
+            state.currentPath,
+            state,
+            () => { /* setLoading - will be implemented later */ },
+            (error) => { console.error('Move error:', error); },
+            () => fetchDirectory(state.currentPath, { silent: true }),
+            (message) => { console.log('Status:', message); },
+            null, // previewTitle
+            null, // previewMeta
+            null, // previewOpenRaw
+            null  // buildFileUrl
+        );
+        
+        // Clean up
+        document.body.removeEventListener('dragover', bodyDragOverHandler);
+        document.body.removeEventListener('drop', bodyDropHandler);
+    };
+    
+    // Store handlers for later removal
+    window.bodyDragHandlers = {
+        dragOver: bodyDragOverHandler,
+        drop: bodyDropHandler
+    };
+    
     console.log('[DEBUG] Drag and Drop module initialized');
 }

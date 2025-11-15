@@ -80,7 +80,42 @@ export const state = {
  * @param {Object} updates - Objek berisi properti yang akan diupdate
  */
 export function updateState(updates) {
-    Object.assign(state, updates);
+    // Deep merge untuk nested objects
+    Object.keys(updates).forEach(key => {
+        if (typeof updates[key] === 'object' && updates[key] !== null && !Array.isArray(updates[key])) {
+            if (typeof state[key] === 'object' && state[key] !== null && !Array.isArray(state[key])) {
+                state[key] = { ...state[key], ...updates[key] };
+            } else {
+                state[key] = { ...updates[key] };
+            }
+        } else {
+            state[key] = updates[key];
+        }
+    });
+}
+
+/**
+ * State update lock untuk mencegah race conditions
+ */
+let stateUpdateLock = false;
+
+/**
+ * Mengupdate state dengan locking untuk mencegah race conditions
+ * @param {Object} updates - Objek berisi properti yang akan diupdate
+ */
+export function updateStateLocked(updates) {
+    if (stateUpdateLock) {
+        console.warn('[STATE] State update in progress, queuing update:', updates);
+        setTimeout(() => updateStateLocked(updates), 10);
+        return;
+    }
+    
+    stateUpdateLock = true;
+    try {
+        updateState(updates);
+    } finally {
+        stateUpdateLock = false;
+    }
 }
 
 /**

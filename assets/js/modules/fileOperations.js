@@ -140,6 +140,43 @@ export async function moveItem(
     previewOpenRaw,
     buildFileUrl
 ) {
+    // Simple implementation for basic move functionality
+    try {
+        setLoading(true);
+        
+        console.log('[DEBUG] Moving item from', sourcePath, 'to', targetPath);
+        
+        const data = await apiMoveItem(sourcePath, targetPath);
+        console.log('[DEBUG] Move response:', data);
+        
+        flashStatus(`"${data.item.name}" berhasil dipindahkan.`);
+        
+        // Refresh the directory
+        await fetchDirectory(state.currentPath, { silent: true });
+        
+    } catch (error) {
+        console.error(error);
+        const message = error instanceof Error ? error.message : 'Terjadi kesalahan saat memindahkan item.';
+        setError(message);
+    } finally {
+        setLoading(false);
+    }
+}
+
+// Keep the complex version for backward compatibility
+export async function moveItemComplex(
+    sourcePath,
+    targetPath,
+    state,
+    setLoading,
+    setError,
+    fetchDirectory,
+    flashStatus,
+    previewTitle,
+    previewMeta,
+    previewOpenRaw,
+    buildFileUrl
+) {
     try {
         setLoading(true);
         
