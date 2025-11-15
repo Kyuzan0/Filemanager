@@ -213,6 +213,9 @@ export const actionIcons = {
 
 // Application configuration
 export const config = {
+    // Debug mode - set to false in production to disable console logging
+    debugMode: true,
+    
     // API base URL
     apiBaseUrl: 'api.php',
     

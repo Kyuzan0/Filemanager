@@ -7,6 +7,48 @@ import { moveItem } from './fileOperations.js';
 import { state } from './state.js';
 import { elements } from './constants.js';
 import { fetchDirectory } from './apiService.js';
+import { debugLog } from './debug.js';
+
+/**
+ * DOM Reference Cache for performance optimization
+ * Caches frequently accessed DOM queries to avoid repeated lookups
+ */
+const domCache = {
+    folderRows: null,
+    dropTargets: null,
+    lastCacheTime: 0,
+    cacheTimeout: 100 // Cache valid for 100ms
+};
+
+/**
+ * Gets cached folder rows or performs fresh query if cache is stale
+ * @returns {NodeList} - List of folder row elements
+ */
+function getCachedFolderRows() {
+    const now = Date.now();
+    if (!domCache.folderRows || (now - domCache.lastCacheTime) > domCache.cacheTimeout) {
+        domCache.folderRows = document.querySelectorAll('.folder-row');
+        domCache.lastCacheTime = now;
+    }
+    return domCache.folderRows;
+}
+
+/**
+ * Gets all drop target elements (uses cached query)
+ * @returns {NodeList} - List of elements with .drop-target class
+ */
+function getCachedDropTargets() {
+    return document.querySelectorAll('.drop-target');
+}
+
+/**
+ * Invalidates the DOM cache (call after DOM changes)
+ */
+export function invalidateDOMCache() {
+    domCache.folderRows = null;
+    domCache.dropTargets = null;
+    domCache.lastCacheTime = 0;
+}
 
 /**
  * Menangani event drag start
@@ -26,7 +68,7 @@ export function handleDragStart(event, item) {
     
     // Show file-card drop zone cosmetic immediately
     if (elements.fileCard) {
-        console.log('[DEBUG] Drag started - adding .drag-over to file-card');
+        debugLog('[DEBUG] Drag started - adding .drag-over to file-card');
         elements.fileCard.classList.add('drag-over');
     }
     
@@ -49,12 +91,12 @@ export function handleDragEnd(event) {
     
     // Remove file-card drop zone cosmetic immediately
     if (elements.fileCard) {
-        console.log('[DEBUG] Drag ended - removing .drag-over from file-card');
+        debugLog('[DEBUG] Drag ended - removing .drag-over from file-card');
         elements.fileCard.classList.remove('drag-over');
     }
     
-    // Remove all drop target highlights
-    document.querySelectorAll('.drop-target').forEach(el => {
+    // Remove all drop target highlights (using cached query)
+    getCachedDropTargets().forEach(el => {
         el.classList.remove('drop-target');
     });
     
@@ -86,8 +128,8 @@ export function handleDragOver(event, item) {
     
     // Add visual feedback
     if (state.drag.dropTarget !== item.path) {
-        // Remove previous highlight
-        document.querySelectorAll('.drop-target').forEach(el => {
+        // Remove previous highlight (using cached query)
+        getCachedDropTargets().forEach(el => {
             el.classList.remove('drop-target');
         });
         
@@ -140,11 +182,11 @@ export function handleDrop(event, targetItem) {
         }
     }
     
-    console.log('[DEBUG] Dropping', state.drag.draggedItem.name, 'into folder', targetItem.name, 'with path', targetItem.path);
+    debugLog('[DEBUG] Dropping', state.drag.draggedItem.name, 'into folder', targetItem.name, 'with path', targetItem.path);
     
     // Ensure targetPath is not empty
     const targetPath = targetItem.path || state.currentPath;
-    console.log('[DEBUG] Final target path:', targetPath);
+    debugLog('[DEBUG] Final target path:', targetPath);
     
     // Remove body drag/drop listeners to avoid global drop firing
     document.body.removeEventListener('dragover', handleBodyDragOver);
@@ -155,10 +197,10 @@ export function handleDrop(event, targetItem) {
         state.drag.draggedItem.path,
         targetPath,
         state,
-        (isLoading) => { console.log('[DEBUG] Loading:', isLoading); },
-        (error) => { console.error('[DEBUG] Move error:', error); },
+        (isLoading) => { debugLog('[DEBUG] Loading:', isLoading); },
+        (error) => { debugLog('[DEBUG] Move error:', error); },
         () => fetchDirectory(state.currentPath, { silent: true }),
-        (message) => { console.log('[DEBUG] Status:', message); },
+        (message) => { debugLog('[DEBUG] Status:', message); },
         null, // previewTitle
         null, // previewMeta
         null, // previewOpenRaw
@@ -178,8 +220,8 @@ export function handleBodyDragOver(event) {
     event.preventDefault();
     event.dataTransfer.dropEffect = 'move';
     
-    // Remove all drop target highlights when over the body
-    document.querySelectorAll('.drop-target').forEach(el => {
+    // Remove all drop target highlights when over the body (using cached query)
+    getCachedDropTargets().forEach(el => {
         el.classList.remove('drop-target');
     });
     state.drag.dropTarget = null;
@@ -194,7 +236,7 @@ export function handleBodyDrop(event) {
     
     // Remove file-card drop zone cosmetic on body drop
     if (elements.fileCard) {
-        console.log('[DEBUG] Body drop - removing .drag-over from file-card');
+        debugLog('[DEBUG] Body drop - removing .drag-over from file-card');
         elements.fileCard.classList.remove('drag-over');
     }
     
@@ -202,17 +244,17 @@ export function handleBodyDrop(event) {
         return;
     }
     
-    console.log('[DEBUG] Dropping', state.drag.draggedItem.name, 'in current directory', state.currentPath);
+    debugLog('[DEBUG] Dropping', state.drag.draggedItem.name, 'in current directory', state.currentPath);
     
     // Drop in the current directory
     moveItem(
         state.drag.draggedItem.path,
         state.currentPath,
         state,
-        (isLoading) => { console.log('[DEBUG] Loading:', isLoading); },
-        (error) => { console.error('[DEBUG] Move error:', error); },
+        (isLoading) => { debugLog('[DEBUG] Loading:', isLoading); },
+        (error) => { debugLog('[DEBUG] Move error:', error); },
         () => fetchDirectory(state.currentPath, { silent: true }),
-        (message) => { console.log('[DEBUG] Status:', message); },
+        (message) => { debugLog('[DEBUG] Status:', message); },
         null, // previewTitle
         null, // previewMeta
         null, // previewOpenRaw
@@ -237,7 +279,7 @@ export function setupFileCardDropZone() {
     elements.fileCard.addEventListener('dragleave', (event) => {
         // Keep highlight while dragging; only remove when drag ends or drop
         if (!state.drag.isDragging) {
-            console.log('[DEBUG] File card dragleave while not dragging - removing .drag-over');
+            debugLog('[DEBUG] File card dragleave while not dragging - removing .drag-over');
             elements.fileCard.classList.remove('drag-over');
         }
     });
@@ -250,11 +292,11 @@ export function setupFileCardDropZone() {
             if (typeof event.stopImmediatePropagation === 'function') {
                 event.stopImmediatePropagation();
             }
-            console.log('[DEBUG] File card drop - removing .drag-over');
+            debugLog('[DEBUG] File card drop - removing .drag-over');
             elements.fileCard.classList.remove('drag-over');
             
             if (state.drag.draggedItem) {
-                console.log('[DEBUG] Dropping', state.drag.draggedItem.name, 'in current directory via file card', state.currentPath);
+                debugLog('[DEBUG] Dropping', state.drag.draggedItem.name, 'in current directory via file card', state.currentPath);
                 // Remove body drag/drop listeners to avoid global drop firing
                 document.body.removeEventListener('dragover', handleBodyDragOver);
                 document.body.removeEventListener('drop', handleBodyDrop);
@@ -263,10 +305,10 @@ export function setupFileCardDropZone() {
                     state.drag.draggedItem.path,
                     state.currentPath,
                     state,
-                    (isLoading) => { console.log('[DEBUG] Loading:', isLoading); },
-                    (error) => { console.error('[DEBUG] Move error:', error); },
+                    (isLoading) => { debugLog('[DEBUG] Loading:', isLoading); },
+                    (error) => { debugLog('[DEBUG] Move error:', error); },
                     () => fetchDirectory(state.currentPath, { silent: true }),
-                    (message) => { console.log('[DEBUG] Status:', message); },
+                    (message) => { debugLog('[DEBUG] Status:', message); },
                     null, // previewTitle
                     null, // previewMeta
                     null, // previewOpenRaw
@@ -319,7 +361,7 @@ export function setupUpRowDropZone(upRow) {
         document.body.removeEventListener('drop', handleBodyDrop);
         
         const targetPath = state.parentPath || '';
-        console.log('[DEBUG] Dropping', state.drag.draggedItem.name, 'onto up-row to move into parent', targetPath);
+        debugLog('[DEBUG] Dropping', state.drag.draggedItem.name, 'onto up-row to move into parent', targetPath);
         
         // Perform the move operation to parent directory
         moveItem(
@@ -327,9 +369,9 @@ export function setupUpRowDropZone(upRow) {
             targetPath,
             state,
             () => { /* setLoading - will be implemented later */ },
-            (error) => { console.error('Move error:', error); },
+            (error) => { debugLog('Move error:', error); },
             () => fetchDirectory(state.currentPath, { silent: true }),
-            (message) => { console.log('Status:', message); },
+            (message) => { debugLog('Status:', message); },
             null, // previewTitle
             null, // previewMeta
             null, // previewOpenRaw

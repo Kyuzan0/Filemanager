@@ -24,9 +24,53 @@ import {
     renderPaginationControls,
     resetPagination
 } from './pagination.js';
+import { invalidateDOMCache } from './dragDrop.js';
+import { debugLog } from './debug.js';
 
 // Global virtual scroll manager instance
 let virtualScrollManager = null;
+
+/**
+ * Moves a row in the DOM immediately for optimistic UI update
+ * @param {string} itemPath - Path of the item being moved
+ * @returns {Object|null} - Object with row element and original position for rollback, or null if not found
+ */
+export function moveRowInDOM(itemPath) {
+    const tableBody = document.querySelector('#file-table tbody');
+    if (!tableBody) return null;
+    
+    const row = tableBody.querySelector(`tr[data-item-path="${CSS.escape(itemPath)}"]`);
+    if (!row) return null;
+    
+    // Store original position for rollback
+    const originalPosition = {
+        row: row,
+        parent: row.parentNode,
+        nextSibling: row.nextSibling
+    };
+    
+    // Remove row from DOM immediately
+    row.remove();
+    
+    return originalPosition;
+}
+
+/**
+ * Rolls back a DOM move operation
+ * @param {Object} originalPosition - Original position object from moveRowInDOM
+ */
+export function rollbackMove(originalPosition) {
+    if (!originalPosition || !originalPosition.row) return;
+    
+    const { row, parent, nextSibling } = originalPosition;
+    
+    // Re-insert the row at its original position
+    if (nextSibling && nextSibling.parentNode === parent) {
+        parent.insertBefore(row, nextSibling);
+    } else {
+        parent.appendChild(row);
+    }
+}
 
 /**
  * Merender breadcrumbs navigasi
@@ -385,6 +429,7 @@ function renderVirtualItems(tableBody, filtered, state, params) {
 
     // Get visible range
     const { start, end } = virtualScrollManager.getVisibleRange();
+    debugLog('[VirtualScroll] Rendering range:', start, '-', end);
     
     // Clear existing rows (keep up-row if exists)
     const upRow = tableBody.querySelector('.up-row');
@@ -601,17 +646,17 @@ export function renderItems(
             }
 
             const targetPath = state.parentPath || '';
-            console.log('[DEBUG] Dropping', state.drag.draggedItem.name, 'onto up-row to move into parent', targetPath);
+            debugLog('[DEBUG] Dropping', state.drag.draggedItem.name, 'onto up-row to move into parent', targetPath);
 
             // Perform the move operation to parent directory
             moveItem(
                 state.drag.draggedItem.path,
                 targetPath,
                 state,
-                (isLoading) => { console.log('[DEBUG] Loading:', isLoading); },
-                (error) => { console.error('[DEBUG] Move error:', error); },
+                (isLoading) => { debugLog('[DEBUG] Loading:', isLoading); },
+                (error) => { debugLog('[DEBUG] Move error:', error); },
                 () => fetchDirectory(state.currentPath, { silent: true }),
-                (message) => { console.log('[DEBUG] Status:', message); },
+                (message) => { debugLog('[DEBUG] Status:', message); },
                 null, // previewTitle
                 null, // previewMeta
                 null, // previewOpenRaw
@@ -684,15 +729,18 @@ export function renderItems(
     );
 
     if (useVirtual) {
-        console.log(`[Virtual Scroll] Rendering ${paginatedItems.length} items with virtual scrolling`);
+        debugLog(`[Virtual Scroll] Rendering ${paginatedItems.length} items with virtual scrolling`);
         renderVirtualItems(tableBody, paginatedItems, state, renderParams);
     } else {
-        console.log(`[Normal Render] Rendering ${paginatedItems.length} items normally (page ${state.pagination.currentPage}/${state.pagination.totalPages})`);
+        debugLog(`[Normal Render] Rendering ${paginatedItems.length} items normally (page ${state.pagination.currentPage}/${state.pagination.totalPages})`);
         renderNormalItems(tableBody, paginatedItems, state, renderParams);
     }
     
     // Render pagination controls
     renderPaginationControls();
+    
+    // Invalidate DOM cache after rendering to force fresh queries on next drag operation
+    invalidateDOMCache();
 
     const newMap = new Map();
     items.forEach((item) => {

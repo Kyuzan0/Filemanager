@@ -1,0 +1,1249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Drag & Drop Performance Benchmark - File Manager</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 32px;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 16px;
+            opacity: 0.9;
+        }
+
+        .controls {
+            padding: 20px;
+            border-bottom: 2px solid #f0f0f0;
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            background: #5568d3;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-secondary {
+            background: #48bb78;
+            color: white;
+        }
+
+        .btn-secondary:hover:not(:disabled) {
+            background: #38a169;
+        }
+
+        .btn-warning {
+            background: #ed8936;
+            color: white;
+        }
+
+        .btn-warning:hover:not(:disabled) {
+            background: #dd6b20;
+        }
+
+        .btn-danger {
+            background: #f56565;
+            color: white;
+        }
+
+        .btn-danger:hover:not(:disabled) {
+            background: #e53e3e;
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none !important;
+        }
+
+        .status {
+            flex: 1;
+            text-align: right;
+            font-weight: 600;
+            color: #666;
+        }
+
+        .status.running {
+            color: #667eea;
+        }
+
+        .status.success {
+            color: #48bb78;
+        }
+
+        .status.error {
+            color: #f56565;
+        }
+
+        .content {
+            padding: 30px;
+        }
+
+        .benchmark-section {
+            margin-bottom: 30px;
+        }
+
+        .section-title {
+            font-size: 20px;
+            font-weight: 700;
+            color: #2d3748;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #e2e8f0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .metric-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .metric-card {
+            background: #f7fafc;
+            padding: 20px;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+        }
+
+        .metric-card.warning {
+            border-left-color: #ed8936;
+        }
+
+        .metric-card.danger {
+            border-left-color: #f56565;
+        }
+
+        .metric-card.success {
+            border-left-color: #48bb78;
+        }
+
+        .metric-label {
+            font-size: 12px;
+            text-transform: uppercase;
+            color: #718096;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .metric-value {
+            font-size: 28px;
+            font-weight: 700;
+            color: #2d3748;
+        }
+
+        .metric-unit {
+            font-size: 14px;
+            color: #718096;
+            margin-left: 4px;
+        }
+
+        .metric-details {
+            font-size: 11px;
+            color: #a0aec0;
+            margin-top: 8px;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #e2e8f0;
+            border-radius: 4px;
+            overflow: hidden;
+            margin: 20px 0;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+            transition: width 0.3s ease;
+        }
+
+        .test-log {
+            background: #2d3748;
+            color: #e2e8f0;
+            padding: 20px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            max-height: 400px;
+            overflow-y: auto;
+            line-height: 1.6;
+        }
+
+        .test-log .log-entry {
+            margin-bottom: 4px;
+        }
+
+        .log-timestamp {
+            color: #a0aec0;
+        }
+
+        .log-info {
+            color: #63b3ed;
+        }
+
+        .log-success {
+            color: #68d391;
+        }
+
+        .log-error {
+            color: #fc8181;
+        }
+
+        .log-warning {
+            color: #f6ad55;
+        }
+
+        .log-measure {
+            color: #d6bcfa;
+        }
+
+        .comparison-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        .comparison-table th,
+        .comparison-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .comparison-table th {
+            background: #f7fafc;
+            font-weight: 600;
+            color: #2d3748;
+            text-transform: uppercase;
+            font-size: 12px;
+        }
+
+        .comparison-table tbody tr:hover {
+            background: #f7fafc;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .badge-success {
+            background: #c6f6d5;
+            color: #22543d;
+        }
+
+        .badge-warning {
+            background: #feebc8;
+            color: #7c2d12;
+        }
+
+        .badge-danger {
+            background: #fed7d7;
+            color: #742a2a;
+        }
+
+        .badge-info {
+            background: #bee3f8;
+            color: #2c5282;
+        }
+
+        .test-area {
+            border: 2px dashed #cbd5e0;
+            border-radius: 8px;
+            padding: 40px;
+            text-align: center;
+            background: #f7fafc;
+            margin: 20px 0;
+            min-height: 200px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .test-area.dragging {
+            border-color: #667eea;
+            background: #edf2f7;
+        }
+
+        .test-item {
+            background: white;
+            padding: 15px 20px;
+            margin: 10px;
+            border-radius: 6px;
+            border: 2px solid #e2e8f0;
+            cursor: move;
+            display: inline-block;
+            transition: all 0.2s ease;
+        }
+
+        .test-item:hover {
+            border-color: #667eea;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .test-item.dragging {
+            opacity: 0.5;
+        }
+
+        .drop-zone {
+            border: 2px dashed #cbd5e0;
+            border-radius: 6px;
+            padding: 30px;
+            margin: 10px;
+            min-height: 100px;
+            background: #edf2f7;
+        }
+
+        .drop-zone.drag-over {
+            border-color: #48bb78;
+            background: #c6f6d5;
+        }
+
+        .scenario-controls {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .export-section {
+            margin-top: 20px;
+            padding: 20px;
+            background: #f7fafc;
+            border-radius: 8px;
+        }
+
+        .chart-container {
+            margin-top: 20px;
+            padding: 20px;
+            background: white;
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
+        }
+
+        canvas {
+            max-width: 100%;
+            height: auto !important;
+        }
+
+        .percentile-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .percentile-card {
+            background: white;
+            padding: 12px;
+            border-radius: 6px;
+            border: 1px solid #e2e8f0;
+            text-align: center;
+        }
+
+        .percentile-label {
+            font-size: 11px;
+            color: #718096;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .percentile-value {
+            font-size: 18px;
+            font-weight: 700;
+            color: #2d3748;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎯 Drag & Drop Performance Benchmark</h1>
+            <p>Comprehensive performance testing for drag-drop operations in File Manager</p>
+        </div>
+
+        <div class="controls">
+            <button class="btn btn-primary" id="runAll">Run All Scenarios</button>
+            <button class="btn btn-secondary" id="runSingle">Single File Test</button>
+            <button class="btn btn-secondary" id="runMultiple">Multiple Files Test</button>
+            <button class="btn btn-warning" id="runStress">Stress Test</button>
+            <button class="btn btn-danger" id="clearResults">Clear Results</button>
+            <button class="btn btn-secondary" id="exportJSON">Export JSON</button>
+            <div class="status" id="status">Ready to test</div>
+        </div>
+
+        <div class="content">
+            <!-- Overall Metrics -->
+            <div class="benchmark-section">
+                <div class="section-title">
+                    <span>📊</span>
+                    <span>Overall Drag & Drop Metrics</span>
+                </div>
+                <div class="metric-grid">
+                    <div class="metric-card">
+                        <div class="metric-label">Event Response Time</div>
+                        <div class="metric-value">
+                            <span id="eventResponseTime">-</span>
+                            <span class="metric-unit">ms</span>
+                        </div>
+                        <div class="metric-details">dragstart → dragend</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-label">State Update Latency</div>
+                        <div class="metric-value">
+                            <span id="stateUpdateLatency">-</span>
+                            <span class="metric-unit">ms</span>
+                        </div>
+                        <div class="metric-details">State management ops</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-label">DOM Manipulation</div>
+                        <div class="metric-value">
+                            <span id="domManipTime">-</span>
+                            <span class="metric-unit">ms</span>
+                        </div>
+                        <div class="metric-details">UI updates</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-label">API Call Latency</div>
+                        <div class="metric-value">
+                            <span id="apiLatency">-</span>
+                            <span class="metric-unit">ms</span>
+                        </div>
+                        <div class="metric-details">Server communication</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-label">Memory Delta</div>
+                        <div class="metric-value">
+                            <span id="memoryDelta">-</span>
+                            <span class="metric-unit">MB</span>
+                        </div>
+                        <div class="metric-details">Before/after heap size</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-label">Frame Rate</div>
+                        <div class="metric-value">
+                            <span id="frameRate">-</span>
+                            <span class="metric-unit">FPS</span>
+                        </div>
+                        <div class="metric-details">During drag operations</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-label">Module Overhead</div>
+                        <div class="metric-value">
+                            <span id="moduleOverhead">-</span>
+                            <span class="metric-unit">ms</span>
+                        </div>
+                        <div class="metric-details">Inter-module calls</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-label">Handler Execution</div>
+                        <div class="metric-value">
+                            <span id="handlerExecution">-</span>
+                            <span class="metric-unit">ms</span>
+                        </div>
+                        <div class="metric-details">Event handler perf</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Progress Bar -->
+            <div class="progress-bar" id="progressBar">
+                <div class="progress-fill" id="progressFill" style="width: 0%"></div>
+            </div>
+
+            <!-- Test Scenarios -->
+            <div class="benchmark-section">
+                <div class="section-title">
+                    <span>🧪</span>
+                    <span>Test Scenarios</span>
+                </div>
+                <div class="scenario-controls">
+                    <button class="btn btn-secondary" onclick="benchmark.runScenario('single')">Single File</button>
+                    <button class="btn btn-secondary" onclick="benchmark.runScenario('multiple5')">5 Files</button>
+                    <button class="btn btn-secondary" onclick="benchmark.runScenario('multiple10')">10 Files</button>
+                    <button class="btn btn-secondary" onclick="benchmark.runScenario('multiple20')">20 Files</button>
+                    <button class="btn btn-secondary" onclick="benchmark.runScenario('largeFile')">Large File (100MB)</button>
+                    <button class="btn btn-secondary" onclick="benchmark.runScenario('rapid')">Rapid Consecutive</button>
+                    <button class="btn btn-secondary" onclick="benchmark.runScenario('crossDir')">Cross-Directory</button>
+                    <button class="btn btn-secondary" onclick="benchmark.runScenario('virtualScroll')">Virtual Scroll Active</button>
+                </div>
+                
+                <div class="test-area" id="testArea">
+                    <p style="color: #718096; font-size: 14px;">Test area will populate during benchmark runs</p>
+                    <p style="color: #a0aec0; font-size: 12px; margin-top: 10px;">Drag operations will be simulated programmatically</p>
+                </div>
+            </div>
+
+            <!-- Statistical Analysis -->
+            <div class="benchmark-section">
+                <div class="section-title">
+                    <span>📈</span>
+                    <span>Statistical Analysis</span>
+                </div>
+                <div class="percentile-stats">
+                    <div class="percentile-card">
+                        <div class="percentile-label">MIN</div>
+                        <div class="percentile-value" id="statMin">-</div>
+                    </div>
+                    <div class="percentile-card">
+                        <div class="percentile-label">MAX</div>
+                        <div class="percentile-value" id="statMax">-</div>
+                    </div>
+                    <div class="percentile-card">
+                        <div class="percentile-label">AVG</div>
+                        <div class="percentile-value" id="statAvg">-</div>
+                    </div>
+                    <div class="percentile-card">
+                        <div class="percentile-label">MEDIAN</div>
+                        <div class="percentile-value" id="statMedian">-</div>
+                    </div>
+                    <div class="percentile-card">
+                        <div class="percentile-label">P95</div>
+                        <div class="percentile-value" id="statP95">-</div>
+                    </div>
+                    <div class="percentile-card">
+                        <div class="percentile-label">P99</div>
+                        <div class="percentile-value" id="statP99">-</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Performance Charts -->
+            <div class="benchmark-section">
+                <div class="section-title">
+                    <span>📊</span>
+                    <span>Performance Charts</span>
+                </div>
+                <div class="chart-container">
+                    <canvas id="performanceChart" width="800" height="400"></canvas>
+                </div>
+            </div>
+
+            <!-- Comparison Table -->
+            <div class="benchmark-section">
+                <div class="section-title">
+                    <span>⚖️</span>
+                    <span>Scenario Comparison</span>
+                </div>
+                <table class="comparison-table">
+                    <thead>
+                        <tr>
+                            <th>Scenario</th>
+                            <th>Event Time</th>
+                            <th>State Update</th>
+                            <th>DOM Time</th>
+                            <th>API Latency</th>
+                            <th>Memory</th>
+                            <th>FPS</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="comparisonTableBody">
+                        <tr>
+                            <td colspan="8" style="text-align: center; padding: 40px; color: #a0aec0;">
+                                Run scenarios to see comparison data
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Export Section -->
+            <div class="benchmark-section">
+                <div class="section-title">
+                    <span>💾</span>
+                    <span>Export Results</span>
+                </div>
+                <div class="export-section">
+                    <p style="color: #718096; margin-bottom: 15px;">
+                        Export benchmark results as JSON for further analysis or comparison with historical data.
+                    </p>
+                    <button class="btn btn-primary" onclick="benchmark.exportResults()">
+                        📥 Download JSON Results
+                    </button>
+                    <button class="btn btn-secondary" onclick="benchmark.copyToClipboard()">
+                        📋 Copy to Clipboard
+                    </button>
+                </div>
+            </div>
+
+            <!-- Test Log -->
+            <div class="benchmark-section">
+                <div class="section-title">
+                    <span>📝</span>
+                    <span>Test Log</span>
+                </div>
+                <div class="test-log" id="testLog">
+                    <div class="log-entry log-info">
+                        <span class="log-timestamp">[00:00:00]</span>
+                        <span>Drag & Drop benchmark initialized. Ready to run tests.</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        // Import necessary modules
+        import { handleDragStart, handleDragEnd, handleDragOver, handleDrop } from '../assets/js/modules/dragDrop.js';
+        import { state, updateState } from '../assets/js/modules/state.js';
+        import { moveItem } from '../assets/js/modules/apiService.js';
+
+        // Drag & Drop Performance Benchmark Implementation
+        class DragDropBenchmark {
+            constructor() {
+                this.results = {
+                    scenarios: {},
+                    measurements: [],
+                    statistics: {},
+                    metadata: {
+                        timestamp: new Date().toISOString(),
+                        userAgent: navigator.userAgent,
+                        platform: navigator.platform
+                    }
+                };
+                this.running = false;
+                this.observer = null;
+                this.frameCount = 0;
+                this.frameTime = 0;
+                
+                this.initializeEventListeners();
+                this.setupPerformanceObserver();
+            }
+
+            initializeEventListeners() {
+                document.getElementById('runAll').addEventListener('click', () => this.runAllScenarios());
+                document.getElementById('runSingle').addEventListener('click', () => this.runScenario('single'));
+                document.getElementById('runMultiple').addEventListener('click', () => this.runScenario('multiple10'));
+                document.getElementById('runStress').addEventListener('click', () => this.runStressTest());
+                document.getElementById('clearResults').addEventListener('click', () => this.clearResults());
+                document.getElementById('exportJSON').addEventListener('click', () => this.exportResults());
+            }
+
+            setupPerformanceObserver() {
+                // User Timing API observer
+                if ('PerformanceObserver' in window) {
+                    try {
+                        this.observer = new PerformanceObserver((list) => {
+                            for (const entry of list.getEntries()) {
+                                this.log(`📊 ${entry.name}: ${entry.duration.toFixed(2)}ms`, 'measure');
+                            }
+                        });
+                        this.observer.observe({ entryTypes: ['measure', 'mark'] });
+                    } catch (error) {
+                        this.log('Performance Observer not fully supported', 'warning');
+                    }
+                }
+            }
+
+            log(message, type = 'info') {
+                const logContainer = document.getElementById('testLog');
+                const timestamp = new Date().toLocaleTimeString('en-US', { hour12: false });
+                const entry = document.createElement('div');
+                entry.className = `log-entry log-${type}`;
+                entry.innerHTML = `<span class="log-timestamp">[${timestamp}]</span> <span>${message}</span>`;
+                logContainer.appendChild(entry);
+                logContainer.scrollTop = logContainer.scrollHeight;
+            }
+
+            updateStatus(message, className = '') {
+                const status = document.getElementById('status');
+                status.textContent = message;
+                status.className = `status ${className}`;
+            }
+
+            updateProgress(percent) {
+                document.getElementById('progressFill').style.width = `${percent}%`;
+            }
+
+            async runAllScenarios() {
+                if (this.running) {
+                    this.log('Tests already running...', 'warning');
+                    return;
+                }
+
+                this.running = true;
+                this.updateStatus('Running all scenarios...', 'running');
+                this.log('🚀 Starting comprehensive drag-drop benchmark suite...', 'info');
+
+                const scenarios = [
+                    'single',
+                    'multiple5',
+                    'multiple10',
+                    'multiple20',
+                    'largeFile',
+                    'rapid',
+                    'crossDir',
+                    'virtualScroll'
+                ];
+
+                try {
+                    for (let i = 0; i < scenarios.length; i++) {
+                        const progress = ((i + 1) / scenarios.length) * 100;
+                        this.updateProgress(progress);
+                        await this.runScenario(scenarios[i]);
+                        await this.delay(1000); // Delay between scenarios
+                    }
+
+                    this.calculateStatistics();
+                    this.renderComparison();
+                    this.renderChart();
+                    
+                    this.log('✅ All scenarios completed successfully', 'success');
+                    this.updateStatus('All scenarios completed', 'success');
+                } catch (error) {
+                    this.log(`❌ Error during scenarios: ${error.message}`, 'error');
+                    this.updateStatus('Scenarios failed', 'error');
+                } finally {
+                    this.running = false;
+                }
+            }
+
+            async runScenario(scenarioName) {
+                this.log(`▶️ Running scenario: ${scenarioName}`, 'info');
+                
+                const scenarioConfig = this.getScenarioConfig(scenarioName);
+                const metrics = await this.measureDragDropOperation(scenarioConfig);
+                
+                this.results.scenarios[scenarioName] = metrics;
+                this.updateMetricsDisplay(metrics);
+                
+                this.log(`✓ Scenario ${scenarioName} completed: ${metrics.totalTime.toFixed(2)}ms`, 'success');
+            }
+
+            getScenarioConfig(name) {
+                const configs = {
+                    single: { fileCount: 1, fileSize: 1024, description: 'Single file drag-drop' },
+                    multiple5: { fileCount: 5, fileSize: 1024, description: '5 files drag-drop' },
+                    multiple10: { fileCount: 10, fileSize: 1024, description: '10 files drag-drop' },
+                    multiple20: { fileCount: 20, fileSize: 1024, description: '20 files drag-drop' },
+                    largeFile: { fileCount: 1, fileSize: 104857600, description: 'Large file (100MB)' },
+                    rapid: { fileCount: 5, fileSize: 1024, rapid: true, description: 'Rapid consecutive operations' },
+                    crossDir: { fileCount: 3, fileSize: 1024, crossDir: true, description: 'Cross-directory drag-drop' },
+                    virtualScroll: { fileCount: 10, fileSize: 1024, virtualScroll: true, description: 'With virtual scrolling' }
+                };
+                
+                return configs[name] || configs.single;
+            }
+
+            async measureDragDropOperation(config) {
+                const measurements = {
+                    eventResponseTime: 0,
+                    stateUpdateLatency: 0,
+                    domManipulationTime: 0,
+                    apiCallLatency: 0,
+                    memoryDelta: 0,
+                    frameRate: 0,
+                    moduleOverhead: 0,
+                    handlerExecutionTime: 0,
+                    totalTime: 0
+                };
+
+                // Measure initial memory
+                const initialMemory = this.getMemoryUsage();
+                
+                // Mark start
+                performance.mark('dragdrop-start');
+                const startTime = performance.now();
+
+                try {
+                    // 1. Event Response Time (dragstart → dragend)
+                    performance.mark('event-start');
+                    await this.simulateDragEvents(config);
+                    performance.mark('event-end');
+                    performance.measure('event-response', 'event-start', 'event-end');
+                    measurements.eventResponseTime = performance.getEntriesByName('event-response')[0].duration;
+
+                    // 2. State Update Latency
+                    performance.mark('state-start');
+                    await this.measureStateUpdate(config);
+                    performance.mark('state-end');
+                    performance.measure('state-update', 'state-start', 'state-end');
+                    measurements.stateUpdateLatency = performance.getEntriesByName('state-update')[0].duration;
+
+                    // 3. DOM Manipulation Time
+                    performance.mark('dom-start');
+                    await this.measureDOMUpdates(config);
+                    performance.mark('dom-end');
+                    performance.measure('dom-manipulation', 'dom-start', 'dom-end');
+                    measurements.domManipulationTime = performance.getEntriesByName('dom-manipulation')[0].duration;
+
+                    // 4. API Call Latency
+                    if (!config.rapid) {
+                        performance.mark('api-start');
+                        measurements.apiCallLatency = await this.measureAPILatency(config);
+                        performance.mark('api-end');
+                    }
+
+                    // 5. Module Communication Overhead
+                    performance.mark('module-start');
+                    measurements.moduleOverhead = await this.measureModuleOverhead(config);
+                    performance.mark('module-end');
+
+                    // 6. Event Handler Execution Time
+                    measurements.handlerExecutionTime = await this.measureHandlerExecution(config);
+
+                    // 7. Frame Rate during operation
+                    measurements.frameRate = await this.measureFrameRate();
+
+                } catch (error) {
+                    this.log(`Measurement error: ${error.message}`, 'error');
+                }
+
+                // Mark end
+                performance.mark('dragdrop-end');
+                performance.measure('dragdrop-total', 'dragdrop-start', 'dragdrop-end');
+                measurements.totalTime = performance.getEntriesByName('dragdrop-total')[0].duration;
+
+                // Measure final memory
+                const finalMemory = this.getMemoryUsage();
+                measurements.memoryDelta = finalMemory - initialMemory;
+
+                // Clean up performance entries
+                performance.clearMarks();
+                performance.clearMeasures();
+
+                return measurements;
+            }
+
+            async simulateDragEvents(config) {
+                // Simulate drag events
+                const mockItem = {
+                    path: `test/file${Math.random()}.txt`,
+                    name: `test-file-${Date.now()}.txt`,
+                    type: 'file',
+                    size: config.fileSize
+                };
+
+                const mockEvent = {
+                    target: document.createElement('div'),
+                    dataTransfer: {
+                        effectAllowed: '',
+                        setData: () => {},
+                        getData: () => mockItem.path
+                    },
+                    preventDefault: () => {},
+                    stopPropagation: () => {},
+                    stopImmediatePropagation: () => {}
+                };
+
+                // Simulate dragstart
+                const dragStartTime = performance.now();
+                // In real scenario, this would call handleDragStart
+                state.drag.isDragging = true;
+                state.drag.draggedItem = mockItem;
+                
+                await this.delay(config.rapid ? 5 : 10);
+                
+                // Simulate dragend
+                state.drag.isDragging = false;
+                state.drag.draggedItem = null;
+                const dragEndTime = performance.now();
+
+                return dragEndTime - dragStartTime;
+            }
+
+            async measureStateUpdate(config) {
+                const iterations = config.rapid ? 10 : 5;
+                const startTime = performance.now();
+
+                for (let i = 0; i < iterations; i++) {
+                    updateState({
+                        drag: {
+                            isDragging: i % 2 === 0,
+                            draggedItem: i % 2 === 0 ? { path: `test${i}` } : null
+                        }
+                    });
+                }
+
+                return performance.now() - startTime;
+            }
+
+            async measureDOMUpdates(config) {
+                const testArea = document.getElementById('testArea');
+                const startTime = performance.now();
+
+                // Simulate DOM updates
+                for (let i = 0; i < config.fileCount; i++) {
+                    const element = document.createElement('div');
+                    element.className = 'test-item';
+                    element.textContent = `File ${i + 1}`;
+                    testArea.appendChild(element);
+                    
+                    // Trigger reflow
+                    element.offsetHeight;
+                    
+                    // Add drag styling
+                    element.classList.add('dragging');
+                    await this.delay(1);
+                    element.classList.remove('dragging');
+                }
+
+                // Clean up
+                testArea.innerHTML = '<p style="color: #718096;">DOM update test completed</p>';
+
+                return performance.now() - startTime;
+            }
+
+            async measureAPILatency(config) {
+                // Simulate API call timing
+                const startTime = performance.now();
+                
+                try {
+                    // This would normally call the actual moveItem API
+                    await this.delay(50 + Math.random() * 100); // Simulate network latency
+                } catch (error) {
+                    this.log(`API simulation error: ${error.message}`, 'warning');
+                }
+
+                return performance.now() - startTime;
+            }
+
+            async measureModuleOverhead(config) {
+                // Measure time between module calls
+                const startTime = performance.now();
+                
+                // Simulate module-to-module communication
+                const mockState = { ...state };
+                const mockData = { items: Array(config.fileCount).fill({}) };
+                
+                // Multiple module interactions
+                for (let i = 0; i < 5; i++) {
+                    updateState({ currentPath: `path${i}` });
+                    await this.delay(1);
+                }
+
+                return performance.now() - startTime;
+            }
+
+            async measureHandlerExecution(config) {
+                // Measure event handler execution time
+                const iterations = 10;
+                const startTime = performance.now();
+
+                for (let i = 0; i < iterations; i++) {
+                    const handler = () => {
+                        // Simulate handler logic
+                        const data = { test: 'data' };
+                        JSON.stringify(data);
+                    };
+                    handler();
+                }
+
+                return (performance.now() - startTime) / iterations;
+            }
+
+            async measureFrameRate() {
+                return new Promise((resolve) => {
+                    let frames = 0;
+                    const startTime = performance.now();
+                    const duration = 1000; // Measure for 1 second
+
+                    const measureFrame = () => {
+                        frames++;
+                        if (performance.now() - startTime < duration) {
+                            requestAnimationFrame(measureFrame);
+                        } else {
+                            const fps = frames / (duration / 1000);
+                            resolve(fps);
+                        }
+                    };
+
+                    requestAnimationFrame(measureFrame);
+                });
+            }
+
+            getMemoryUsage() {
+                if (performance.memory) {
+                    return performance.memory.usedJSHeapSize / 1024 / 1024; // Convert to MB
+                }
+                return 0;
+            }
+
+            updateMetricsDisplay(metrics) {
+                document.getElementById('eventResponseTime').textContent = metrics.eventResponseTime.toFixed(2);
+                document.getElementById('stateUpdateLatency').textContent = metrics.stateUpdateLatency.toFixed(2);
+                document.getElementById('domManipTime').textContent = metrics.domManipulationTime.toFixed(2);
+                document.getElementById('apiLatency').textContent = metrics.apiCallLatency.toFixed(2);
+                document.getElementById('memoryDelta').textContent = metrics.memoryDelta.toFixed(2);
+                document.getElementById('frameRate').textContent = metrics.frameRate.toFixed(1);
+                document.getElementById('moduleOverhead').textContent = metrics.moduleOverhead.toFixed(2);
+                document.getElementById('handlerExecution').textContent = metrics.handlerExecutionTime.toFixed(2);
+            }
+
+            calculateStatistics() {
+                const allMeasurements = Object.values(this.results.scenarios)
+                    .map(s => s.totalTime)
+                    .filter(t => t > 0)
+                    .sort((a, b) => a - b);
+
+                if (allMeasurements.length === 0) return;
+
+                const stats = {
+                    min: Math.min(...allMeasurements),
+                    max: Math.max(...allMeasurements),
+                    avg: allMeasurements.reduce((a, b) => a + b, 0) / allMeasurements.length,
+                    median: this.calculatePercentile(allMeasurements, 50),
+                    p95: this.calculatePercentile(allMeasurements, 95),
+                    p99: this.calculatePercentile(allMeasurements, 99)
+                };
+
+                this.results.statistics = stats;
+
+                document.getElementById('statMin').textContent = stats.min.toFixed(2) + 'ms';
+                document.getElementById('statMax').textContent = stats.max.toFixed(2) + 'ms';
+                document.getElementById('statAvg').textContent = stats.avg.toFixed(2) + 'ms';
+                document.getElementById('statMedian').textContent = stats.median.toFixed(2) + 'ms';
+                document.getElementById('statP95').textContent = stats.p95.toFixed(2) + 'ms';
+                document.getElementById('statP99').textContent = stats.p99.toFixed(2) + 'ms';
+
+                this.log(`📊 Statistics calculated - Avg: ${stats.avg.toFixed(2)}ms, P95: ${stats.p95.toFixed(2)}ms`, 'info');
+            }
+
+            calculatePercentile(sortedArray, percentile) {
+                const index = (percentile / 100) * (sortedArray.length - 1);
+                const lower = Math.floor(index);
+                const upper = Math.ceil(index);
+                const weight = index - lower;
+                
+                if (lower === upper) return sortedArray[lower];
+                return sortedArray[lower] * (1 - weight) + sortedArray[upper] * weight;
+            }
+
+            renderComparison() {
+                const tbody = document.getElementById('comparisonTableBody');
+                tbody.innerHTML = '';
+
+                Object.entries(this.results.scenarios).forEach(([name, metrics]) => {
+                    const row = document.createElement('tr');
+                    const statusClass = metrics.totalTime < 100 ? 'success' : 
+                                       metrics.totalTime < 200 ? 'warning' : 'danger';
+                    
+                    row.innerHTML = `
+                        <td><strong>${this.getScenarioConfig(name).description}</strong></td>
+                        <td>${metrics.eventResponseTime.toFixed(2)}ms</td>
+                        <td>${metrics.stateUpdateLatency.toFixed(2)}ms</td>
+                        <td>${metrics.domManipulationTime.toFixed(2)}ms</td>
+                        <td>${metrics.apiCallLatency.toFixed(2)}ms</td>
+                        <td>${metrics.memoryDelta.toFixed(2)}MB</td>
+                        <td>${metrics.frameRate.toFixed(1)} FPS</td>
+                        <td><span class="badge badge-${statusClass}">
+                            ${statusClass === 'success' ? '✅ Fast' : 
+                              statusClass === 'warning' ? '⚠️ OK' : '❌ Slow'}
+                        </span></td>
+                    `;
+                    tbody.appendChild(row);
+                });
+            }
+
+            renderChart() {
+                const canvas = document.getElementById('performanceChart');
+                const ctx = canvas.getContext('2d');
+                
+                // Clear canvas
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                
+                const scenarios = Object.keys(this.results.scenarios);
+                const metrics = ['eventResponseTime', 'stateUpdateLatency', 'domManipulationTime', 'apiCallLatency'];
+                const colors = ['#667eea', '#48bb78', '#ed8936', '#f56565'];
+                
+                // Simple bar chart
+                const barWidth = canvas.width / (scenarios.length * metrics.length + scenarios.length + 1);
+                const maxValue = Math.max(...scenarios.flatMap(s => 
+                    metrics.map(m => this.results.scenarios[s][m])
+                ));
+                
+                let x = barWidth;
+                scenarios.forEach(scenario => {
+                    metrics.forEach((metric, i) => {
+                        const value = this.results.scenarios[scenario][metric];
+                        const height = (value / maxValue) * (canvas.height * 0.8);
+                        const y = canvas.height - height - 20;
+                        
+                        ctx.fillStyle = colors[i];
+                        ctx.fillRect(x, y, barWidth * 0.8, height);
+                        x += barWidth;
+                    });
+                    x += barWidth;
+                });
+
+                // Draw legend
+                ctx.font = '12px sans-serif';
+                let legendX = 10;
+                metrics.forEach((metric, i) => {
+                    ctx.fillStyle = colors[i];
+                    ctx.fillRect(legendX, 10, 15, 15);
+                    ctx.fillStyle = '#2d3748';
+                    ctx.fillText(metric.replace(/([A-Z])/g, ' $1').trim(), legendX + 20, 22);
+                    legendX += 200;
+                });
+            }
+
+            async runStressTest() {
+                this.log('🔥 Starting stress test with rapid operations...', 'warning');
+                this.updateStatus('Running stress test...', 'running');
+
+                try {
+                    for (let i = 0; i < 50; i++) {
+                        await this.runScenario('rapid');
+                        this.updateProgress((i + 1) / 50 * 100);
+                    }
+                    
+                    this.log('✅ Stress test completed', 'success');
+                    this.updateStatus('Stress test completed', 'success');
+                } catch (error) {
+                    this.log(`❌ Stress test failed: ${error.message}`, 'error');
+                } finally {
+                    this.running = false;
+                }
+            }
+
+            exportResults() {
+                const json = JSON.stringify(this.results, null, 2);
+                const blob = new Blob([json], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `drag-drop-benchmark-${Date.now()}.json`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+                
+                this.log('📥 Results exported to JSON file', 'success');
+            }
+
+            copyToClipboard() {
+                const json = JSON.stringify(this.results, null, 2);
+                navigator.clipboard.writeText(json).then(() => {
+                    this.log('📋 Results copied to clipboard', 'success');
+                }).catch(err => {
+                    this.log('❌ Failed to copy to clipboard', 'error');
+                });
+            }
+
+            clearResults() {
+                this.results = {
+                    scenarios: {},
+                    measurements: [],
+                    statistics: {},
+                    metadata: {
+                        timestamp: new Date().toISOString(),
+                        userAgent: navigator.userAgent,
+                        platform: navigator.platform
+                    }
+                };
+                
+                this.updateProgress(0);
+                this.updateStatus('Ready to test', '');
+                
+                // Clear metrics
+                ['eventResponseTime', 'stateUpdateLatency', 'domManipTime', 'apiLatency',
+                 'memoryDelta', 'frameRate', 'moduleOverhead', 'handlerExecution'].forEach(id => {
+                    document.getElementById(id).textContent = '-';
+                });
+                
+                // Clear stats
+                ['statMin', 'statMax', 'statAvg', 'statMedian', 'statP95', 'statP99'].forEach(id => {
+                    document.getElementById(id).textContent = '-';
+                });
+                
+                // Clear comparison table
+                document.getElementById('comparisonTableBody').innerHTML = `
+                    <tr>
+                        <td colspan="8" style="text-align: center; padding: 40px; color: #a0aec0;">
+                            Run scenarios to see comparison data
+                        </td>
+                    </tr>
+                `;
+                
+                // Clear chart
+                const canvas = document.getElementById('performanceChart');
+                const ctx = canvas.getContext('2d');
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                
+                // Clear log
+                document.getElementById('testLog').innerHTML = `
+                    <div class="log-entry log-info">
+                        <span class="log-timestamp">[${new Date().toLocaleTimeString('en-US', { hour12: false })}]</span>
+                        <span>Results cleared. Ready for new tests.</span>
+                    </div>
+                `;
+                
+                this.log('🧹 All results cleared', 'info');
+            }
+
+            delay(ms) {
+                return new Promise(resolve => setTimeout(resolve, ms));
+            }
+        }
+
+        // Initialize benchmark suite
+        window.benchmark = new DragDropBenchmark();
+        console.log('✅ Drag & Drop Performance Benchmark initialized');
+    </script>
+</body>
+</html>

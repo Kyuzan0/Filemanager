@@ -6,6 +6,7 @@
 import { deleteItems as apiDeleteItems, moveItem as apiMoveItem, renameItem as apiRenameItem, createItem as apiCreateItem, uploadFiles as apiUploadFiles } from './apiService.js';
 import { errorMessages, successMessages } from './constants.js';
 import { getParentPath, isSubPath } from './utils.js';
+import { debugLog, debugError, debugPerf } from './debug.js';
 
 /**
  * Menghapus item-item yang dipilih
@@ -30,10 +31,10 @@ export async function deleteItems(
     closePreviewOverlay,
     btnDeleteSelected
 ) {
-    console.log('[DEBUG] deleteItems called with paths:', paths);
+    debugLog('[DEBUG] deleteItems called with paths:', paths);
     
     if (!Array.isArray(paths) || paths.length === 0) {
-        console.log('[DEBUG] No paths provided for deletion');
+        debugLog('[DEBUG] No paths provided for deletion');
         return;
     }
 
@@ -43,15 +44,15 @@ export async function deleteItems(
     updateSelectionUI();
 
     try {
-        console.log('[DEBUG] Sending delete request to API');
+        debugLog('[DEBUG] Sending delete request to API');
         const data = await apiDeleteItems(paths);
-        console.log('[DEBUG] Delete response received:', data);
+        debugLog('[DEBUG] Delete response received:', data);
 
         const deletedList = Array.isArray(data.deleted) ? data.deleted : [];
         const failedList = Array.isArray(data.failed) ? data.failed : [];
         
-        console.log('[DEBUG] Deleted items:', deletedList);
-        console.log('[DEBUG] Failed items:', failedList);
+        debugLog('[DEBUG] Deleted items:', deletedList);
+        debugLog('[DEBUG] Failed items:', failedList);
 
         const deletedPaths = new Set(
             deletedList
@@ -98,7 +99,7 @@ export async function deleteItems(
 
         await fetchDirectory(state.currentPath, { silent: true });
     } catch (error) {
-        console.log('[DEBUG] Delete operation error:', error);
+        debugError('[ERROR] Delete operation error:', error);
         const message = error instanceof Error ? error.message : 'Terjadi kesalahan saat menghapus item.';
         setError(message);
     } finally {
@@ -114,7 +115,7 @@ export async function deleteItems(
 }
 
 /**
- * Memindahkan item ke lokasi baru
+ * Memindahkan item ke lokasi baru dengan optimistic UI update
  * @param {string} sourcePath - Path sumber
  * @param {string} targetPath - Path target
  * @param {Object} state - State aplikasi
@@ -126,6 +127,7 @@ export async function deleteItems(
  * @param {HTMLElement} previewMeta - Elemen preview meta
  * @param {HTMLElement} previewOpenRaw - Elemen preview open raw
  * @param {Function} buildFileUrl - Fungsi build file URL
+ * @param {boolean} optimistic - Whether to use optimistic UI updates (default: true)
  */
 export async function moveItem(
     sourcePath,
@@ -138,51 +140,106 @@ export async function moveItem(
     previewTitle,
     previewMeta,
     previewOpenRaw,
-    buildFileUrl
+    buildFileUrl,
+    optimistic = true
 ) {
-    // Optimized implementation with optimistic UI update
+    // Import optimistic update functions
+    const { optimisticUpdate, commitOptimisticUpdate } = await import('./state.js');
+    const { moveRowInDOM, rollbackMove } = await import('./uiRenderer.js');
+    
+    let rollbackFn = null;
+    let domRollback = null;
+    
     try {
-        console.log('[DEBUG] Moving item from', sourcePath, 'to', targetPath);
+        debugLog('[PERF] Move operation started:', sourcePath, '->', targetPath);
+        const perfStart = performance.now();
         
-        // Optimistic update: Remove item from UI immediately
-        const movedItem = state.itemMap.get(sourcePath);
-        if (movedItem) {
-            // Remove from visible items
-            state.items = state.items.filter(item => item.path !== sourcePath);
-            state.visibleItems = state.visibleItems.filter(item => item.path !== sourcePath);
-            state.itemMap.delete(sourcePath);
+        if (optimistic) {
+            // OPTIMISTIC UPDATE: Immediately update UI before API call
+            debugLog('[PERF] Applying optimistic UI update');
+            const optimisticStart = performance.now();
             
-            console.log('[DEBUG] Optimistically removed item from UI');
+            // Remove row from DOM immediately
+            domRollback = moveRowInDOM(sourcePath);
+            
+            // Update state optimistically
+            rollbackFn = optimisticUpdate(
+                () => {
+                    // Remove from state immediately
+                    const movedItem = state.itemMap.get(sourcePath);
+                    if (movedItem) {
+                        state.items = state.items.filter(item => item.path !== sourcePath);
+                        state.visibleItems = state.visibleItems.filter(item => item.path !== sourcePath);
+                        state.itemMap.delete(sourcePath);
+                    }
+                },
+                () => {
+                    // Rollback function - restore DOM
+                    if (domRollback) {
+                        rollbackMove(domRollback);
+                    }
+                }
+            );
+            
+            const optimisticEnd = performance.now();
+            debugPerf('Optimistic UI update completed in', optimisticEnd - optimisticStart);
         }
         
-        // Perform the actual move operation
+        // Perform the actual move operation in background (non-blocking for UI)
+        debugLog('[PERF] Starting API call');
+        const apiStart = performance.now();
         const data = await apiMoveItem(sourcePath, targetPath);
-        console.log('[DEBUG] Move response:', data);
+        const apiEnd = performance.now();
+        debugPerf('API call completed in', apiEnd - apiStart);
         
-        flashStatus(`"${data.item.name}" berhasil dipindahkan.`);
+        if (optimistic) {
+            // Commit the optimistic update (clear snapshot)
+            commitOptimisticUpdate();
+        }
         
-        // Only refresh if we're viewing the target directory or source/target are in current view
+        // Show success message
+        if (flashStatus) {
+            flashStatus(`"${data.item.name}" berhasil dipindahkan.`);
+        }
+        
+        // Only refresh if needed (viewing target directory or moved a folder)
+        const movedItem = state.itemMap.get(sourcePath);
         const needsRefresh =
             state.currentPath === targetPath ||
             state.currentPath === '' ||
             (movedItem && movedItem.type === 'folder');
         
-        if (needsRefresh) {
-            console.log('[DEBUG] Refreshing directory after move');
+        if (needsRefresh && !optimistic) {
+            debugLog('[PERF] Refreshing directory');
             await fetchDirectory(state.currentPath, { silent: true });
-        } else {
-            console.log('[DEBUG] Skipping directory refresh - not needed');
         }
         
-    } catch (error) {
-        console.error(error);
-        const message = error instanceof Error ? error.message : 'Terjadi kesalahan saat memindahkan item.';
-        setError(message);
+        const perfEnd = performance.now();
+        debugPerf('Total move operation time', perfEnd - perfStart);
+        debugPerf('User perceived time', optimistic ? (optimisticEnd - optimisticStart) : (perfEnd - perfStart));
         
-        // Rollback: Refresh to restore correct state
-        await fetchDirectory(state.currentPath, { silent: true });
+    } catch (error) {
+        debugError('[ERROR] Move operation failed:', error);
+        
+        // ROLLBACK: Restore UI and state on error
+        if (optimistic && rollbackFn) {
+            debugLog('[PERF] Rolling back optimistic update');
+            rollbackFn();
+        }
+        
+        const message = error instanceof Error ? error.message : 'Terjadi kesalahan saat memindahkan item.';
+        if (setError) {
+            setError(message);
+        }
+        
+        // Refresh to ensure correct state
+        if (fetchDirectory) {
+            await fetchDirectory(state.currentPath, { silent: true });
+        }
     } finally {
-        setLoading(false);
+        if (setLoading) {
+            setLoading(false);
+        }
     }
 }
 
@@ -203,10 +260,10 @@ export async function moveItemComplex(
     try {
         setLoading(true);
         
-        console.log('[DEBUG] Moving item from', sourcePath, 'to', targetPath);
+        debugLog('[DEBUG] Moving item from', sourcePath, 'to', targetPath);
         
         const data = await apiMoveItem(sourcePath, targetPath);
-        console.log('[DEBUG] Move response:', data);
+        debugLog('[DEBUG] Move response:', data);
         
         flashStatus(`"${data.item.name}" berhasil dipindahkan.`);
         
@@ -225,7 +282,7 @@ export async function moveItemComplex(
         }
         
     } catch (error) {
-        console.error(error);
+        debugError(error);
         const message = error instanceof Error ? error.message : 'Terjadi kesalahan saat memindahkan item.';
         setError(message);
     } finally {

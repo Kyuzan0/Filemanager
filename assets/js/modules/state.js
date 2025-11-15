@@ -85,6 +85,54 @@ export const state = {
 };
 
 /**
+ * Optimistic state snapshot for rollback
+ */
+let optimisticSnapshot = null;
+
+/**
+ * Performs an optimistic state update with rollback capability
+ * @param {Function} updateFn - Function that performs the optimistic update
+ * @param {Function} rollbackFn - Function to call on rollback
+ * @returns {Function} Rollback function
+ */
+export function optimisticUpdate(updateFn, rollbackFn) {
+    // Create snapshot of current state for rollback
+    optimisticSnapshot = {
+        items: [...state.items],
+        visibleItems: [...state.visibleItems],
+        itemMap: new Map(state.itemMap),
+        selected: new Set(state.selected)
+    };
+    
+    // Perform the optimistic update
+    updateFn();
+    
+    // Return rollback function
+    return () => {
+        if (optimisticSnapshot && rollbackFn) {
+            // Restore state from snapshot
+            state.items = optimisticSnapshot.items;
+            state.visibleItems = optimisticSnapshot.visibleItems;
+            state.itemMap = optimisticSnapshot.itemMap;
+            state.selected = optimisticSnapshot.selected;
+            
+            // Call custom rollback function
+            rollbackFn();
+            
+            // Clear snapshot
+            optimisticSnapshot = null;
+        }
+    };
+}
+
+/**
+ * Commits the optimistic update (clears snapshot)
+ */
+export function commitOptimisticUpdate() {
+    optimisticSnapshot = null;
+}
+
+/**
  * Mengupdate state dengan perubahan yang diberikan
  * @param {Object} updates - Objek berisi properti yang akan diupdate
  */
