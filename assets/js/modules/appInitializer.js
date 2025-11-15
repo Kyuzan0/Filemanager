@@ -13,7 +13,7 @@ import {
     loadLastPath,
     isLocalStorageAvailable
 } from './storage.js';
-import { 
+import {
     setupRefreshHandler,
     setupUpHandler,
     setupFilterHandler,
@@ -30,7 +30,8 @@ import {
     setupKeyboardHandler,
     setupVisibilityHandler,
     setupContextMenuHandler,
-    setupSplitActionHandler
+    setupSplitActionHandler,
+    setupLogExportHandler
 } from './eventHandlers.js';
 import {
     handleDragStart,
@@ -349,6 +350,7 @@ async function fetchDirectoryWrapper(path = '', options = {}) {
             // Update state with the fetched data
             updateState({
                 currentPath: data.path || path,
+                parentPath: data.parent !== undefined ? data.parent : null,
                 items: data.items || [],
                 lastUpdated: data.lastUpdated || new Date().toISOString(),
                 isLoading: false
@@ -611,29 +613,82 @@ function debugElementStyles() {
 }
 
 
-function savePreviewContent() {
-    // Basic implementation - can be enhanced
+async function savePreviewContent() {
     if (state.preview.isSaving) return;
     
+    console.log('[PREVIEW] Saving file:', state.preview.path);
+    
+    // Update state to saving
     updateState({
         preview: {
             ...state.preview,
             isSaving: true
         }
     });
+    updatePreviewStatus();
     
-    // Implementation would call API to save content
-    setTimeout(() => {
+    try {
+        const content = elements.previewEditor.value;
+        
+        // Call API to save file
+        const response = await fetch(`api.php?action=save&path=${encodeURIComponent(state.preview.path)}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ content })
+        });
+        
+        const data = await response.json();
+        
+        if (!response.ok || !data.success) {
+            throw new Error(data.error || 'Failed to save file');
+        }
+        
+        console.log('[PREVIEW] File saved successfully:', data);
+        
+        // Update state - no longer dirty, save successful
         updateState({
             preview: {
                 ...state.preview,
                 isSaving: false,
                 dirty: false,
-                originalContent: elements.previewEditor.value
+                originalContent: content
             }
         });
-        updatePreviewStatus();
-    }, 1000);
+        
+        // Update status
+        if (elements.previewStatus) {
+            elements.previewStatus.textContent = `Disimpan • ${data.characters.toLocaleString('id-ID')} karakter`;
+        }
+        
+        // Disable save button
+        if (elements.previewSave) {
+            elements.previewSave.disabled = true;
+        }
+        
+        // Show success notification
+        flashStatus('File berhasil disimpan');
+        
+    } catch (error) {
+        console.error('[PREVIEW] Error saving file:', error);
+        
+        // Update state - save failed
+        updateState({
+            preview: {
+                ...state.preview,
+                isSaving: false
+            }
+        });
+        
+        // Update status with error
+        if (elements.previewStatus) {
+            elements.previewStatus.textContent = 'Gagal menyimpan: ' + error.message;
+        }
+        
+        // Show error notification
+        setError('Gagal menyimpan file: ' + error.message);
+    }
 }
 
 function updateSelectionUI() {
@@ -916,8 +971,8 @@ async function openTextPreview(item) {
     }
 
     try {
-        // Fetch file content
-        const response = await fetch(`api.php?action=preview&path=${encodeURIComponent(item.path)}`);
+        // Fetch file content - using 'content' action instead of 'preview'
+        const response = await fetch(`api.php?action=content&path=${encodeURIComponent(item.path)}`);
         const data = await response.json();
 
         if (!response.ok || !data.success) {
@@ -1276,13 +1331,21 @@ function setupLogModalHandlers() {
         });
     }
     
-    // Export buttons
-    if (elements.logExportCSV) {
-        elements.logExportCSV.addEventListener('click', exportLogsToCSVWrapper);
-    }
+    // Setup export dropdown handler
+    const logExportToggle = document.getElementById('log-export-toggle');
+    const logExportMenu = document.getElementById('log-export-menu');
+    const logExportCSV = document.getElementById('log-export-csv');
+    const logExportJSON = document.getElementById('log-export-json');
     
-    if (elements.logExportJSON) {
-        elements.logExportJSON.addEventListener('click', exportLogsToJSONWrapper);
+    if (logExportToggle && logExportMenu && logExportCSV && logExportJSON) {
+        setupLogExportHandler(
+            logExportToggle,
+            logExportMenu,
+            logExportCSV,
+            logExportJSON,
+            exportLogsToCSVWrapper,
+            exportLogsToJSONWrapper
+        );
     }
     
     // Cleanup button
@@ -1448,7 +1511,7 @@ function setupEventHandlers() {
     setupRefreshHandler(
         elements.btnRefresh,
         state,
-        hasUnsavedChanges,
+        () => hasUnsavedChanges(state.preview),  // Wrap hasUnsavedChanges with state.preview
         confirmDiscardChanges,
         fetchDirectoryWrapper
     );
@@ -1486,7 +1549,7 @@ function setupEventHandlers() {
     setupDeleteSelectedHandler(
         elements.btnDeleteSelected,
         state,
-        hasUnsavedChanges,
+        () => hasUnsavedChanges(state.preview),  // Wrap hasUnsavedChanges with state.preview
         confirmDiscardChanges,
         openConfirmOverlayWrapper
     );
@@ -1496,7 +1559,7 @@ function setupEventHandlers() {
         elements.btnUpload,
         elements.uploadInput,
         state,
-        hasUnsavedChanges,
+        () => hasUnsavedChanges(state.preview),  // Wrap hasUnsavedChanges with state.preview
         confirmDiscardChanges,
         uploadFilesWrapper
     );
@@ -1536,6 +1599,12 @@ function setupEventHandlers() {
         
         tableContainer.addEventListener('scroll', throttledVirtualScroll, { passive: true });
     }
+    
+    // Setup pagination change event listener
+    document.addEventListener('pagination-change', () => {
+        console.log('[DEBUG] Pagination changed, re-rendering items');
+        renderItems(state.items, state.lastUpdated, false);
+    });
     
     // Setup preview overlay handler
     setupPreviewOverlayHandler(
@@ -1598,7 +1667,7 @@ function setupEventHandlers() {
         closeCreateOverlayWrapper,
         closeRenameOverlayWrapper,
         closePreviewOverlayWrapper,
-        hasUnsavedChanges
+        () => hasUnsavedChanges(state.preview)  // Wrap hasUnsavedChanges with state.preview
     );
     
     // Setup visibility handler

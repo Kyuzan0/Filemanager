@@ -76,6 +76,12 @@ export const state = {
         isCleaningUp: false,
         refreshInterval: null,
     },
+    pagination: {
+        currentPage: 1,
+        itemsPerPage: 10,
+        totalItems: 0,
+        totalPages: 1,
+    },
 };
 
 /**

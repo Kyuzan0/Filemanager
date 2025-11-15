@@ -35,7 +35,7 @@
                 </div>
                 <div class="action-group">
                     <button id="btn-upload" type="button" class="action-pill" title="Unggah file">
-                        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4h6l2 2h6a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2z"/></svg>
+                        <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M9 16h6v-6h4l-7-7-7 7h4v6zm-4 2h14v2H5v-2z"/></svg>
                         <span>Upload</span>
                     </button>
                     <button id="btn-logs" type="button" class="action-pill" title="Log Aktivitas" data-action="logs">
@@ -71,7 +71,7 @@
                         <span>Pindah</span>
                     </button>
                     <button id="btn-delete-selected" type="button" class="action-pill danger" disabled>
-                        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 3h6l1 1h5v2H3V4h5zm1 6h2v8h-2zm4 0h2v8h-2z"/></svg>
+                        <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg>
                         <span>Hapus</span>
                     </button>
                 </div>
@@ -303,133 +303,98 @@
                 </div>
             </header>
             <div class="log-body">
-                <!-- Sticky Filter Header Bar -->
-                <div class="log-filter-header">
-                    <div class="log-filter-section">
+                <!-- Minimalist Filter Bar -->
+                <div class="log-filter-bar">
+                    <!-- Primary Filter Row -->
+                    <div class="filter-primary">
+                        <div class="filter-search-main">
+                            <svg viewBox="0 0 24 24" aria-hidden="true" class="search-icon">
+                                <path fill="currentColor" d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/>
+                            </svg>
+                            <input type="text" id="log-path-search" class="filter-search-input" placeholder="Cari aktivitas...">
+                        </div>
                         
-                        <div class="filter-content" id="filter-content">
-                            <div class="filter-row-horizontal">
-                                <div class="log-filter-group">
-                                    <label for="log-filter" class="filter-label">
-                                        <svg viewBox="0 0 24 24" aria-hidden="true" class="label-icon">
-                                            <path fill="currentColor" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
-                                        </svg>
-                                        Aksi
-                                    </label>
-                                    <select id="log-filter" class="log-filter-select">
-                                        <option value="">Semua Aktivitas</option>
-                                        <option value="create">Buat</option>
-                                        <option value="delete">Hapus</option>
-                                        <option value="move">Pindah</option>
-                                        <option value="rename">Ubah Nama</option>
-                                        <option value="upload">Unggah</option>
-                                        <option value="download">Unduh</option>
-                                    </select>
-                                </div>
-                                
-                                <div class="log-filter-group">
-                                    <label for="log-target-type" class="filter-label">
-                                        <svg viewBox="0 0 24 24" aria-hidden="true" class="label-icon">
-                                            <path fill="currentColor" d="M10 4H4c-1.11 0-2 .89-2 2v3h2V6h4V4zM10 19v-1H4v-3H2v3c0 1.11.89 2 2 2h6zm8-15h-6v2h4v3h2V6c0-1.11-.89-2-2-2zm2 13v-3h-2v3h-4v2h6c1.11 0 2-.89 2-2z"/>
-                                        </svg>
-                                        Tipe Target
-                                    </label>
-                                    <select id="log-target-type" class="log-filter-select">
-                                        <option value="">Semua Tipe</option>
-                                        <option value="file">File</option>
-                                        <option value="folder">Folder</option>
-                                    </select>
-                                </div>
-                                
-                                <div class="log-filter-group">
-                                    <label for="log-start-date" class="filter-label">
-                                        <svg viewBox="0 0 24 24" aria-hidden="true" class="label-icon">
-                                            <path fill="currentColor" d="M9 11H7v2h2v-2zm4 0h-2v2h2v-2zm4 0h-2v2h2v-2zm2-7h-1V2h-2v2H8V2H6v2H5c-1.11 0-1.99.9-1.99 2L3 20c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V9h14v11z"/>
-                                        </svg>
-                                        Dari Tanggal
-                                    </label>
-                                    <input type="date" id="log-start-date" class="log-date-input">
-                                </div>
-                                
-                                <div class="log-filter-group">
-                                    <label for="log-end-date" class="filter-label">
-                                        <svg viewBox="0 0 24 24" aria-hidden="true" class="label-icon">
-                                            <path fill="currentColor" d="M9 11H7v2h2v-2zm4 0h-2v2h2v-2zm4 0h-2v2h2v-2zm2-7h-1V2h-2v2H8V2H6v2H5c-1.11 0-1.99.9-1.99 2L3 20c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V9h14v11z"/>
-                                        </svg>
-                                        Hingga Tanggal
-                                    </label>
-                                    <input type="date" id="log-end-date" class="log-date-input">
-                                </div>
-                                
-                                <div class="log-filter-group">
-                                    <label for="log-sort-by" class="filter-label">
-                                        <svg viewBox="0 0 24 24" aria-hidden="true" class="label-icon">
-                                            <path fill="currentColor" d="M3 18h6v-2H3v2zM3 6v2h18V6H3zm0 7h12v-2H3v2z"/>
-                                        </svg>
-                                        Urutkan
-                                    </label>
-                                    <select id="log-sort-by" class="log-filter-select">
-                                        <option value="timestamp">Waktu</option>
-                                        <option value="action">Aksi</option>
-                                        <option value="target_path">Target Path</option>
-                                        <option value="ip_address">IP Address</option>
-                                    </select>
-                                </div>
-                                
-                                <div class="log-filter-group">
-                                    <label for="log-sort-order" class="filter-label">
-                                        <svg viewBox="0 0 24 24" aria-hidden="true" class="label-icon">
-                                            <path fill="currentColor" d="M3 18h6v-2H3v2zM3 6v2h18V6H3zm0 7h12v-2H3v2z"/>
-                                        </svg>
-                                        Urutan
-                                    </label>
-                                    <select id="log-sort-order" class="log-filter-select">
-                                        <option value="desc">Terbaru ke Terlama</option>
-                                        <option value="asc">Terlama ke Terbaru</option>
-                                    </select>
-                                </div>
-                                
-                                <div class="log-filter-group filter-search-group">
-                                    <label for="log-path-search" class="filter-label">
-                                        <svg viewBox="0 0 24 24" aria-hidden="true" class="label-icon">
-                                            <path fill="currentColor" d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/>
-                                        </svg>
-                                        Cari
-                                    </label>
-                                    <div class="search-input-wrapper">
-                                        <input type="text" id="log-path-search" class="log-search-input" placeholder="Cari path atau nama...">
-                                        <button type="button" id="clear-search" class="clear-search" aria-label="Clear search">
-                                            <svg viewBox="0 0 24 24" aria-hidden="true">
-                                                <path fill="currentColor" d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
-                                            </svg>
-                                        </button>
-                                    </div>
-                                </div>
+                        <div class="filter-quick-actions">
+                            <select id="log-filter" class="filter-select-compact">
+                                <option value="">Semua Aktivitas</option>
+                                <option value="create">Buat</option>
+                                <option value="delete">Hapus</option>
+                                <option value="move">Pindah</option>
+                                <option value="rename">Ubah Nama</option>
+                                <option value="upload">Unggah</option>
+                                <option value="download">Unduh</option>
+                            </select>
+                            
+                            <select id="log-target-type" class="filter-select-compact">
+                                <option value="">Semua Tipe</option>
+                                <option value="file">File</option>
+                                <option value="folder">Folder</option>
+                            </select>
+                            
+                            <button type="button" id="toggle-advanced-filters" class="btn-toggle-advanced" aria-expanded="false">
+                                <svg viewBox="0 0 24 24" aria-hidden="true" class="icon-filter">
+                                    <path fill="currentColor" d="M10 18h4v-2h-4v2zM3 6v2h18V6H3zm3 7h12v-2H6v2z"/>
+                                </svg>
+                                <span>Filter Lanjutan</span>
+                                <svg viewBox="0 0 24 24" aria-hidden="true" class="icon-chevron">
+                                    <path fill="currentColor" d="M7 10l5 5 5-5z"/>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Advanced Filters (Collapsible) -->
+                    <div class="filter-advanced" id="filter-advanced" hidden>
+                        <div class="filter-advanced-grid">
+                            <div class="filter-group-compact">
+                                <label for="log-start-date">Dari Tanggal</label>
+                                <input type="date" id="log-start-date" class="filter-input-compact">
                             </div>
                             
-                            <div class="filter-actions-row">
-                                <div class="log-filter-actions">
-                                    <button type="button" id="apply-filters" class="btn btn-primary">
-                                        <svg viewBox="0 0 24 24" aria-hidden="true" class="btn-icon">
-                                            <path fill="currentColor" d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z"/>
-                                        </svg>
-                                        Terapkan
-                                    </button>
-                                    <button type="button" id="reset-filters" class="btn btn-secondary">
-                                        <svg viewBox="0 0 24 24" aria-hidden="true" class="btn-icon">
-                                            <path fill="currentColor" d="M12 5V1L7 6l5 5V7c3.31 0 6 2.69 6 6s-2.69 6-6 6-6-2.69-6-6H4c0 4.42 3.58 8 8 8s8-3.58 8-8-3.58-8-8-8z"/>
-                                        </svg>
-                                        Reset
-                                    </button>
-                                </div>
-                                
-                                <!-- Active Filters Display -->
-                                <div id="active-filters-display" class="active-filters-container" style="display: none;">
-                                    <div class="active-filters-label">Filter Aktif:</div>
-                                    <div class="active-filters-badges"></div>
-                                </div>
+                            <div class="filter-group-compact">
+                                <label for="log-end-date">Hingga Tanggal</label>
+                                <input type="date" id="log-end-date" class="filter-input-compact">
+                            </div>
+                            
+                            <div class="filter-group-compact">
+                                <label for="log-sort-by">Urutkan</label>
+                                <select id="log-sort-by" class="filter-select-compact">
+                                    <option value="timestamp">Waktu</option>
+                                    <option value="action">Aksi</option>
+                                    <option value="target_path">Path</option>
+                                    <option value="ip_address">IP</option>
+                                </select>
+                            </div>
+                            
+                            <div class="filter-group-compact">
+                                <label for="log-sort-order">Urutan</label>
+                                <select id="log-sort-order" class="filter-select-compact">
+                                    <option value="desc">Terbaru</option>
+                                    <option value="asc">Terlama</option>
+                                </select>
                             </div>
                         </div>
+                        
+                        <div class="filter-advanced-actions">
+                            <button type="button" id="apply-filters" class="btn-apply">
+                                <svg viewBox="0 0 24 24" aria-hidden="true">
+                                    <path fill="currentColor" d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z"/>
+                                </svg>
+                                Terapkan
+                            </button>
+                            <button type="button" id="reset-filters" class="btn-reset">
+                                <svg viewBox="0 0 24 24" aria-hidden="true">
+                                    <path fill="currentColor" d="M12 5V1L7 6l5 5V7c3.31 0 6 2.69 6 6s-2.69 6-6 6-6-2.69-6-6H4c0 4.42 3.58 8 8 8s8-3.58 8-8-3.58-8-8-8z"/>
+                                </svg>
+                                Reset
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Active Filters Display -->
+                    <div id="active-filters-display" class="active-filters-minimal" style="display: none;">
+                        <span class="active-filters-label">Aktif:</span>
+                        <div class="active-filters-tags" id="active-filters-tags"></div>
                     </div>
                 </div>
                 
@@ -472,15 +437,23 @@
                             </label>
                         </div>
                         
-                        <div class="log-export-buttons">
-                            <button type="button" id="log-export-csv" class="log-button outline">
-                                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6z"/><path d="M14 2v6h6M16 13H8M16 17H8M10 9H8"/></svg>
-                                <span>Export CSV</span>
+                        <!-- Export Dropdown -->
+                        <div class="log-export-dropdown">
+                            <button type="button" id="log-export-toggle" class="log-button outline">
+                                <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6z"/><path d="M14 2v6h6M16 13H8M16 17H8M10 9H8"/></svg>
+                                <span>Export</span>
+                                <svg viewBox="0 0 24 24" aria-hidden="true" class="dropdown-arrow"><path fill="currentColor" d="M7 10l5 5 5-5z"/></svg>
                             </button>
-                            <button type="button" id="log-export-json" class="log-button outline">
-                                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 3h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2zm7 4v2h2V7h-2zm0 4v2h2v-2h-2zm0 4v2h2v-2h-2z"/></svg>
-                                <span>Export JSON</span>
-                            </button>
+                            <div class="log-export-menu" id="log-export-menu" aria-hidden="true" hidden>
+                                <button type="button" id="log-export-csv" class="log-export-option">
+                                    <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6z"/></svg>
+                                    <span>Export CSV</span>
+                                </button>
+                                <button type="button" id="log-export-json" class="log-export-option">
+                                    <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M5 3h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2zm7 4v2h2V7h-2zm0 4v2h2v-2h-2zm0 4v2h2v-2h-2z"/></svg>
+                                    <span>Export JSON</span>
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>

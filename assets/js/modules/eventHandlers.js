@@ -267,6 +267,13 @@ export function setupPreviewEditorHandler(
     syncLineNumbersScroll,
     savePreviewContent
 ) {
+    // Setup save button click handler
+    previewSave.addEventListener('click', () => {
+        if (!previewSave.disabled && !state.preview.isSaving) {
+            savePreviewContent();
+        }
+    });
+    
     previewEditor.addEventListener('input', () => {
         if (!state.preview.isOpen) {
             return;
@@ -794,4 +801,89 @@ export function setupSplitActionHandler(
         splitToggle.setAttribute('aria-expanded', expanded ? 'false' : 'true');
         splitMenu.setAttribute('aria-hidden', expanded ? 'true' : 'false');
     }
+}
+
+/**
+ * Mengatur event handler untuk log export dropdown
+ * @param {HTMLElement} exportToggle - Tombol toggle export
+ * @param {HTMLElement} exportMenu - Menu export
+ * @param {HTMLElement} exportCsv - Tombol export CSV
+ * @param {HTMLElement} exportJson - Tombol export JSON
+ * @param {Function} handleExportCsv - Fungsi handle export CSV
+ * @param {Function} handleExportJson - Fungsi handle export JSON
+ */
+export function setupLogExportHandler(
+    exportToggle,
+    exportMenu,
+    exportCsv,
+    exportJson,
+    handleExportCsv,
+    handleExportJson
+) {
+    if (!exportToggle || !exportMenu) {
+        return;
+    }
+
+    const closeMenu = () => {
+        exportToggle.setAttribute('aria-expanded', 'false');
+        exportMenu.setAttribute('aria-hidden', 'true');
+        exportMenu.hidden = true;
+    };
+
+    const openMenu = () => {
+        exportToggle.setAttribute('aria-expanded', 'true');
+        exportMenu.setAttribute('aria-hidden', 'false');
+        exportMenu.hidden = false;
+    };
+
+    const toggleMenu = () => {
+        const isOpen = exportMenu.getAttribute('aria-hidden') === 'false';
+        if (isOpen) {
+            closeMenu();
+        } else {
+            openMenu();
+        }
+    };
+
+    // Toggle dropdown on button click
+    exportToggle.addEventListener('click', (event) => {
+        event.preventDefault();
+        event.stopPropagation();
+        toggleMenu();
+    });
+
+    // Close dropdown when clicking outside
+    document.addEventListener('click', (event) => {
+        if (exportMenu.getAttribute('aria-hidden') === 'false' &&
+            !exportToggle.contains(event.target) &&
+            !exportMenu.contains(event.target)) {
+            closeMenu();
+        }
+    });
+
+    // Handle CSV export
+    if (exportCsv) {
+        exportCsv.addEventListener('click', (event) => {
+            event.preventDefault();
+            handleExportCsv();
+            closeMenu();
+        });
+    }
+
+    // Handle JSON export
+    if (exportJson) {
+        exportJson.addEventListener('click', (event) => {
+            event.preventDefault();
+            handleExportJson();
+            closeMenu();
+        });
+    }
+
+    // Close dropdown on Escape key
+    document.addEventListener('keydown', (event) => {
+        if (event.key === 'Escape' && exportMenu.getAttribute('aria-hidden') === 'false') {
+            closeMenu();
+            exportToggle.focus();
+        }
+    });
 }

@@ -17,6 +17,13 @@ import { actionIcons, config } from './constants.js';
 import { moveItem } from './fileOperations.js';
 import { fetchDirectory } from './apiService.js';
 import { VirtualScrollManager, createSpacer, shouldUseVirtualScroll } from './virtualScroll.js';
+import {
+    initPagination,
+    updatePaginationInfo,
+    getPaginatedItems,
+    renderPaginationControls,
+    resetPagination
+} from './pagination.js';
 
 // Global virtual scroll manager instance
 let virtualScrollManager = null;
@@ -362,15 +369,18 @@ function renderVirtualItems(tableBody, filtered, state, params) {
     
     // Initialize virtual scroll manager if not exists
     if (!virtualScrollManager) {
-        virtualScrollManager = new VirtualScrollManager(
-            tableBody,
-            filtered.length,
-            vsConfig.itemHeight,
-            vsConfig.overscan
-        );
+        virtualScrollManager = new VirtualScrollManager({
+            container: tableBody.parentElement, // Use parent container for scrolling
+            itemHeight: vsConfig.itemHeight,
+            overscan: vsConfig.overscan,
+            onRender: (range) => {
+                console.log('[VirtualScroll] Render triggered for range:', range);
+            }
+        });
+        virtualScrollManager.setTotalItems(filtered.length);
     } else {
         // Update total count
-        virtualScrollManager.updateTotalItems(filtered.length);
+        virtualScrollManager.setTotalItems(filtered.length);
     }
 
     // Get visible range
@@ -487,6 +497,9 @@ export function renderItems(
     flashStatus,
     setError
 ) {
+    // Initialize pagination if not exists
+    initPagination();
+    
     state.items = items;
     state.itemMap = new Map(items.map((item) => [item.path, item]));
     state.selected = synchronizeSelection(items, state.selected);
@@ -496,6 +509,12 @@ export function renderItems(
         ? sortedItems.filter((item) => item.name.toLowerCase().includes(query))
         : sortedItems;
     state.visibleItems = filtered;
+    
+    // Update pagination info with total filtered items
+    updatePaginationInfo(filtered.length);
+    
+    // Get paginated items for current page
+    const paginatedItems = getPaginatedItems(filtered);
 
     const totalFolders = items.filter((item) => item.type === 'folder').length;
     const filteredFolders = filtered.filter((item) => item.type === 'folder').length;
@@ -655,19 +674,25 @@ export function renderItems(
         overscan: 5
     };
     
-    const useVirtual = shouldUseVirtualScroll(
-        filtered.length,
+    // Use pagination instead of virtual scrolling when items > 10
+    // Virtual scrolling is disabled when pagination is active
+    const usePagination = filtered.length > state.pagination.itemsPerPage;
+    const useVirtual = !usePagination && shouldUseVirtualScroll(
+        paginatedItems.length,
         vsConfig.threshold,
         vsConfig.enabled
     );
 
     if (useVirtual) {
-        console.log(`[Virtual Scroll] Rendering ${filtered.length} items with virtual scrolling`);
-        renderVirtualItems(tableBody, filtered, state, renderParams);
+        console.log(`[Virtual Scroll] Rendering ${paginatedItems.length} items with virtual scrolling`);
+        renderVirtualItems(tableBody, paginatedItems, state, renderParams);
     } else {
-        console.log(`[Normal Render] Rendering ${filtered.length} items normally`);
-        renderNormalItems(tableBody, filtered, state, renderParams);
+        console.log(`[Normal Render] Rendering ${paginatedItems.length} items normally (page ${state.pagination.currentPage}/${state.pagination.totalPages})`);
+        renderNormalItems(tableBody, paginatedItems, state, renderParams);
     }
+    
+    // Render pagination controls
+    renderPaginationControls();
 
     const newMap = new Map();
     items.forEach((item) => {
