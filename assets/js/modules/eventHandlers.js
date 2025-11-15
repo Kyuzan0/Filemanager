@@ -206,7 +206,7 @@ export function setupUploadHandler(
     state,
     hasUnsavedChanges,
     confirmDiscardChanges,
-    uploadFiles
+    uploadFilesWrapper
 ) {
     btnUpload.addEventListener('click', () => {
         if (state.isLoading) {
@@ -223,21 +223,14 @@ export function setupUploadHandler(
         }
 
         if (hasUnsavedChanges()) {
-            const proceed = confirmDiscardChanges('Perubahan belum disimpan. Tetap unggah file baru?')
-                .then((proceed) => {
-                    if (!proceed) {
-                        uploadInput.value = '';
-                        return;
-                    }
-                    // Continue with upload logic
-                    uploadFiles(files);
-                    uploadInput.value = '';
-                });
-            uploadInput.value = '';
-            return;
+            const proceed = await confirmDiscardChanges('Perubahan belum disimpan. Tetap unggah file baru?');
+            if (!proceed) {
+                uploadInput.value = '';
+                return;
+            }
         }
 
-        uploadFiles(files);
+        await uploadFilesWrapper(files);
         uploadInput.value = '';
     });
 }
@@ -354,7 +347,7 @@ export function setupConfirmOverlayHandler(
     confirmConfirm,
     state,
     closeConfirmOverlay,
-    deleteItems
+    deleteItemsWrapper
 ) {
     confirmCancel.addEventListener('click', () => {
         if (state.isDeleting) {
@@ -368,7 +361,7 @@ export function setupConfirmOverlayHandler(
             return;
         }
         const { paths } = state.confirm;
-        deleteItems(paths);
+        deleteItemsWrapper(paths);
     });
 
     confirmOverlay.addEventListener('click', (event) => {
@@ -399,7 +392,7 @@ export function setupCreateOverlayHandler(
     createSubmit,
     state,
     closeCreateOverlay,
-    createItem
+    createItemWrapper
 ) {
     createName.addEventListener('input', () => {
         if (createHint.classList.contains('error')) {
@@ -415,7 +408,7 @@ export function setupCreateOverlayHandler(
         if (state.isLoading) {
             return;
         }
-        createItem(state.create.kind, createName.value);
+        createItemWrapper(state.create.kind, createName.value);
     });
 
     createCancel.addEventListener('click', () => {
@@ -453,7 +446,7 @@ export function setupRenameOverlayHandler(
     renameSubmit,
     state,
     closeRenameOverlay,
-    renameItem
+    renameItemWrapper
 ) {
     renameName.addEventListener('input', () => {
         if (renameHint.classList.contains('error')) {
@@ -469,7 +462,7 @@ export function setupRenameOverlayHandler(
         if (state.isLoading) {
             return;
         }
-        renameItem();
+        renameItemWrapper();
     });
 
     renameCancel.addEventListener('click', () => {

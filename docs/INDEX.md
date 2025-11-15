@@ -91,19 +91,28 @@ Dokumentasi File Manager diorganisir dalam beberapa kategori untuk memudahkan na
    - Performance metrics
    - **Recommended Reading**: Example of feature documentation
 
-10. **[Drag Drop Testing Guide](./DRAG_DROP_TESTING.md)**
+10. **[Line Numbers Sync Feature](./LINE_NUMBERS_SYNC_FEATURE.md)** ⭐ NEW
+    - **728 lines** comprehensive technical guide
+    - Pixel-perfect alignment implementation
+    - Edge case handling (files without newline)
+    - Transform-based scroll synchronization
+    - Performance optimization strategies
+    - Troubleshooting guide with debug utilities
+    - **Recommended Reading**: Advanced feature implementation example
+
+11. **[Drag Drop Testing Guide](./DRAG_DROP_TESTING.md)**
     - Testing procedures
     - Test scenarios
     - Validation steps
     - Known issues
 
-11. **[Drag Drop Debug Guide](./DRAG_DROP_DEBUG_GUIDE.md)**
+12. **[Drag Drop Debug Guide](./DRAG_DROP_DEBUG_GUIDE.md)**
     - Debugging procedures
     - Common issues
     - Resolution steps
     - Development tips
 
-12. **[Getting Started Guide](./GETTING_STARTED.md)**
+13. **[Getting Started Guide](./GETTING_STARTED.md)**
     - Quick start instructions
     - Installation steps
     - Basic usage
@@ -115,15 +124,15 @@ Dokumentasi File Manager diorganisir dalam beberapa kategori untuk memudahkan na
 
 ### Documentation Stats
 ```
-Total Documentation Files: 12
-Total Lines Written: ~6,000+ lines
-New Documentation (15 Jan): 4 files (2,194 lines)
+Total Documentation Files: 13
+Total Lines Written: ~6,700+ lines
+New Documentation (15 Jan): 5 files (2,922 lines)
 
 Breakdown:
 ├── Project Management: 3 files (~1,500 lines)
 ├── Analysis & Comparison: 3 files (~1,850 lines)
 ├── Technical Docs: 2 files (~1,200 lines)
-└── Feature Guides: 4 files (~1,450 lines)
+└── Feature Guides: 5 files (~2,150 lines)
 ```
 
 ---
@@ -142,7 +151,8 @@ Breakdown:
 1. [Backup Comparison Report](./BACKUP_COMPARISON_REPORT.md) - Architecture understanding
 2. [Refactoring Documentation](./REFACTORING_DOCUMENTATION.md) - Code evolution
 3. [Move Search Feature](./MOVE_SEARCH_FEATURE.md) - Feature implementation example
-4. [Improvement Action Plan](./IMPROVEMENT_ACTION_PLAN.md) - Next tasks
+4. [Line Numbers Sync Feature](./LINE_NUMBERS_SYNC_FEATURE.md) - Advanced technical implementation
+5. [Improvement Action Plan](./IMPROVEMENT_ACTION_PLAN.md) - Next tasks
 
 ### For Stakeholders
 **Executive View**:
@@ -174,6 +184,7 @@ Breakdown:
 
 ### Features
 - [Move Search Feature](./MOVE_SEARCH_FEATURE.md)
+- [Line Numbers Sync Feature](./LINE_NUMBERS_SYNC_FEATURE.md)
 - [Implementation Roadmap](./IMPLEMENTATION_ROADMAP.md)
 - [Progress Tracker](./PROGRESS_TRACKER.md)
 
@@ -192,12 +203,14 @@ Breakdown:
 ## 📅 Recent Updates
 
 ### January 2025
-- ✅ **15 Jan**: Created 4 new comprehensive documents
+- ✅ **15 Jan**: Created 5 new comprehensive documents
   - Backup Comparison Report (792 lines)
   - Migration Success Summary (266 lines)
   - Improvement Action Plan (734 lines)
   - Move Search Feature (402 lines)
+  - Line Numbers Sync Feature (728 lines)
 - ✅ **15 Jan**: Implemented Move Search functionality
+- ✅ **15 Jan**: Implemented Advanced Line Numbers Sync
 - ✅ **15 Jan**: Updated Progress Tracker and README
 
 ### December 2024

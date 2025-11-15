@@ -113,6 +113,45 @@ function setSelectionForVisible(isSelected) {
     updateSelectionUI();
 }
 
+// Helper function for flash status
+function flashStatus(message) {
+    if (elements.statusInfo) {
+        elements.statusInfo.textContent = message;
+        setTimeout(() => {
+            if (elements.statusInfo && elements.statusInfo.textContent === message) {
+                elements.statusInfo.textContent = `${state.visibleItems.length} item ditampilkan`;
+            }
+        }, 3000);
+    }
+}
+
+// Helper function for set error
+function setError(message) {
+    if (elements.errorBanner) {
+        elements.errorBanner.textContent = message;
+        elements.errorBanner.hidden = !message;
+        if (message) {
+            setTimeout(() => {
+                if (elements.errorBanner) {
+                    elements.errorBanner.hidden = true;
+                    elements.errorBanner.textContent = '';
+                }
+            }, 5000);
+        }
+    }
+}
+
+// Helper function for set loading
+function setLoading(loading) {
+    updateState({ isLoading: loading });
+    if (elements.loaderOverlay) {
+        elements.loaderOverlay.classList.toggle('visible', loading);
+    }
+    if (elements.btnRefresh) {
+        elements.btnRefresh.disabled = loading;
+    }
+}
+
 // Wrapper for renderItems that calls the complex renderer from uiRenderer.js
 function renderItems(items, lastUpdated, highlightNew) {
     console.log('[DEBUG] renderItems wrapper called');
@@ -145,7 +184,9 @@ function renderItems(items, lastUpdated, highlightNew) {
         handleDragEnd,
         handleDragOver,
         handleDrop,
-        handleDragLeave
+        handleDragLeave,
+        flashStatus,  // Add flashStatus helper
+        setError      // Add setError helper
     );
 }
 
@@ -318,33 +359,154 @@ function updatePreviewStatus() {
 }
 
 function updateLineNumbers() {
-    // Basic implementation - can be enhanced
-    const { previewEditor, previewLineNumbers } = elements;
-    if (previewEditor && previewLineNumbers) {
-        const lines = previewEditor.value.split('\n').length;
-        const lineNumbersHtml = Array.from({ length: lines }, (_, i) => i + 1).join('\n');
-        previewLineNumbers.textContent = lineNumbersHtml;
+    const { previewEditor, previewLineNumbersInner } = elements;
+    if (!previewLineNumbersInner || !previewEditor) {
+        return;
     }
+
+    const value = previewEditor.value;
+    const sanitized = value.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
+    let totalLines = sanitized.length === 0 ? 1 : sanitized.split('\n').length;
+
+    // Fix for files ending without newline (e.g., </html> at end)
+    // Add an extra line to ensure last line number is visible when scrolling to bottom
+    if (value.length > 0 && !sanitized.endsWith('\n')) {
+        totalLines += 1;
+        console.log('[LINE_NUMBERS] Added extra line for file without newline ending');
+    }
+
+    // Performance optimization: skip rendering for very large files
+    if (totalLines > 10000) {
+        previewLineNumbersInner.innerHTML = '<span>1</span>';
+        return;
+    }
+
+    // Build line numbers HTML
+    let html = '';
+    for (let i = 1; i <= totalLines; i += 1) {
+        html += `<span>${i}</span>`;
+    }
+
+    previewLineNumbersInner.innerHTML = html || '<span>1</span>';
+    
+    // Debug logging
+    console.log('[LINE_NUMBERS] Updated:', {
+        totalLines,
+        editorScrollTop: previewEditor.scrollTop,
+        editorScrollHeight: previewEditor.scrollHeight,
+        editorClientHeight: previewEditor.clientHeight,
+        endsWithNewline: sanitized.endsWith('\n')
+    });
+    
+    // Force a recalculation of styles to ensure alignment
+    previewLineNumbersInner.style.transform = 'translateY(0px)';
+    
+    // Ensure consistent styling between line numbers and editor
+    ensureConsistentStyling();
+    
+    // Sync scroll position
+    syncLineNumbersScroll();
 }
 
 function ensureConsistentStyling() {
-    // Basic implementation - can be enhanced
-    const { previewEditor, previewLineNumbers } = elements;
-    if (previewEditor && previewLineNumbers) {
-        const editorStyles = getComputedStyle(previewEditor);
-        previewLineNumbers.style.fontFamily = editorStyles.fontFamily;
-        previewLineNumbers.style.fontSize = editorStyles.fontSize;
-        previewLineNumbers.style.lineHeight = editorStyles.lineHeight;
+    const { previewEditor, previewLineNumbersInner } = elements;
+    if (!previewLineNumbersInner || !previewEditor) {
+        return;
     }
+    
+    const editorStyle = window.getComputedStyle(previewEditor);
+    const editorLineHeight = parseFloat(editorStyle.lineHeight);
+    const editorFontSize = parseFloat(editorStyle.fontSize);
+    const calculatedLineHeight = isNaN(editorLineHeight) ? editorFontSize * 1.6 : editorLineHeight;
+    
+    // Apply the same line height to the line numbers spans for consistency
+    const lineSpans = previewLineNumbersInner.querySelectorAll('span');
+    lineSpans.forEach(span => {
+        span.style.height = `${calculatedLineHeight}px`;
+        span.style.lineHeight = `${calculatedLineHeight}px`;
+    });
+    
+    console.log('[LINE_NUMBERS] Ensured consistent styling with line height:', calculatedLineHeight);
 }
 
 function syncLineNumbersScroll() {
-    // Basic implementation - can be enhanced
-    const { previewEditor, previewLineNumbers } = elements;
-    if (previewEditor && previewLineNumbers) {
-        previewLineNumbers.scrollTop = previewEditor.scrollTop;
+    const { previewEditor, previewLineNumbersInner } = elements;
+    if (!previewLineNumbersInner || !previewEditor) {
+        return;
     }
+
+    const scrollTop = previewEditor.scrollTop;
+    const scrollHeight = previewEditor.scrollHeight;
+    const clientHeight = previewEditor.clientHeight;
+    const isAtBottom = scrollTop + clientHeight >= scrollHeight - 5;
+    
+    // Get the computed line height for more accurate alignment
+    const editorStyle = window.getComputedStyle(previewEditor);
+    const lineNumbersStyle = window.getComputedStyle(previewLineNumbersInner);
+    
+    // Calculate the exact line height
+    const editorLineHeight = parseFloat(editorStyle.lineHeight);
+    const editorFontSize = parseFloat(editorStyle.fontSize);
+    const calculatedLineHeight = isNaN(editorLineHeight) ? editorFontSize * 1.6 : editorLineHeight;
+    
+    // Improved scroll synchronization for files ending without newline
+    let transformOffset = -scrollTop;
+    
+    // If at bottom and file doesn't end with newline, adjust offset
+    if (isAtBottom && previewEditor.value && !previewEditor.value.endsWith('\n')) {
+        // Add a small adjustment to ensure the last line number is visible
+        // Use the calculated line height for more precise adjustment
+        transformOffset -= calculatedLineHeight * 0.125; // 1/8 of line height adjustment
+        console.log('[LINE_NUMBERS] Applied bottom adjustment:', calculatedLineHeight * 0.125);
+    }
+    
+    // Debug logging
+    console.log('[LINE_NUMBERS] Scroll sync:', {
+        scrollTop,
+        scrollHeight,
+        clientHeight,
+        isAtBottom,
+        transformOffset,
+        calculatedLineHeight,
+        editorLineHeight,
+        editorFontSize,
+        endsWithNewline: previewEditor.value ? previewEditor.value.endsWith('\n') : 'empty'
+    });
+    
+    previewLineNumbersInner.style.transform = `translateY(${transformOffset}px)`;
 }
+/**
+ * Debug function to compare element styles between editor and line numbers
+ * Useful for troubleshooting alignment issues
+ */
+function debugElementStyles() {
+    const { previewEditor, previewLineNumbersInner } = elements;
+    if (!previewLineNumbersInner || !previewEditor) {
+        console.log('[LINE_NUMBERS] Debug: Elements not found');
+        return;
+    }
+    
+    const editorStyle = window.getComputedStyle(previewEditor);
+    const lineNumbersStyle = window.getComputedStyle(previewLineNumbersInner);
+    
+    console.log('[LINE_NUMBERS] Debug element styles:', {
+        editor: {
+            fontSize: editorStyle.fontSize,
+            lineHeight: editorStyle.lineHeight,
+            fontFamily: editorStyle.fontFamily,
+            paddingTop: editorStyle.paddingTop,
+            paddingBottom: editorStyle.paddingBottom
+        },
+        lineNumbers: {
+            fontSize: lineNumbersStyle.fontSize,
+            lineHeight: lineNumbersStyle.lineHeight,
+            fontFamily: lineNumbersStyle.fontFamily,
+            paddingTop: lineNumbersStyle.paddingTop,
+            paddingBottom: lineNumbersStyle.paddingBottom
+        }
+    });
+}
+
 
 function savePreviewContent() {
     // Basic implementation - can be enhanced
@@ -482,6 +644,126 @@ function closeConfirmOverlayWrapper() {
 }
 
 /**
+ * Wrapper function untuk upload files dengan parameter lengkap
+ * @param {FileList} files - Daftar file yang akan diunggah
+ */
+async function uploadFilesWrapper(files) {
+    console.log('[DEBUG] uploadFilesWrapper called with files:', files);
+    
+    await uploadFiles(
+        files,
+        state,
+        setLoading,
+        setError,
+        fetchDirectoryWrapper,
+        flashStatus,
+        elements.btnUpload
+    );
+}
+
+/**
+ * Wrapper function untuk create item dengan parameter lengkap
+ * @param {string} kind - Jenis item ('file' atau 'folder')
+ * @param {string} name - Nama item
+ */
+async function createItemWrapper(kind, name) {
+    console.log('[DEBUG] createItemWrapper called with kind:', kind, 'name:', name);
+    
+    await createItem(
+        kind,
+        name,
+        state,
+        setLoading,
+        setError,
+        fetchDirectoryWrapper,
+        flashStatus,
+        closeCreateOverlayWrapper,
+        elements.createSubmit,
+        elements.createName,
+        elements.createHint,
+        (path) => path // encodePathSegments - simple passthrough for now
+    );
+}
+
+/**
+ * Wrapper function untuk delete items dengan parameter lengkap
+ * @param {Array} paths - Array path item yang akan dihapus
+ */
+async function deleteItemsWrapper(paths) {
+    console.log('[DEBUG] deleteItemsWrapper called with paths:', paths);
+    
+    await deleteItems(
+        paths,
+        state,
+        setLoading,
+        setError,
+        fetchDirectoryWrapper,
+        closeConfirmOverlayWrapper,
+        updateSelectionUI,
+        closePreviewOverlay,
+        elements.btnDeleteSelected
+    );
+}
+
+/**
+ * Wrapper function untuk rename item dengan parameter lengkap
+ */
+async function renameItemWrapper() {
+    console.log('[DEBUG] renameItemWrapper called');
+    
+    if (!state.rename.targetItem) {
+        console.error('[DEBUG] No target item for rename');
+        return;
+    }
+    
+    const newName = elements.renameName.value.trim();
+    if (!newName) {
+        elements.renameHint.textContent = 'Nama tidak boleh kosong.';
+        elements.renameHint.classList.add('error');
+        return;
+    }
+    
+    await renameItem(
+        state.rename.targetItem,
+        newName,
+        state,
+        setLoading,
+        setError,
+        fetchDirectoryWrapper,
+        flashStatus,
+        closeRenameOverlayWrapper,
+        elements.renameSubmit,
+        elements.renameName,
+        elements.renameHint,
+        elements.previewTitle,
+        elements.previewMeta,
+        elements.previewOpenRaw,
+        buildFileUrl,
+        (path) => path // encodePathSegments - simple passthrough for now
+    );
+}
+/**
+ * Wrapper function untuk closePreviewOverlay - simplified like backup
+ * @param {boolean} force - Force close without checking unsaved changes
+ */
+function closePreviewOverlayWrapper(force = false) {
+    return closePreviewOverlay(
+        state,
+        elements.previewOverlay,
+        elements.previewEditor,
+        elements.previewLineNumbers,
+        elements.previewMeta,
+        elements.previewStatus,
+        elements.previewLoader,
+        elements.previewSave,
+        elements.previewOpenRaw,
+        confirmDiscardChanges,
+        updateLineNumbers
+    );
+}
+
+
+/**
  * Wrapper function untuk membuka text preview
  * @param {Object} item - Item yang akan di-preview
  */
@@ -548,6 +830,11 @@ async function openTextPreview(item) {
         if (elements.previewStatus) {
             elements.previewStatus.textContent = `Karakter: ${data.content.length.toLocaleString('id-ID')}`;
         }
+        
+        // Debug element styles after loading for troubleshooting
+        setTimeout(() => {
+            debugElementStyles();
+        }, 100);
     } catch (error) {
         console.error('[PREVIEW] Error loading file:', error);
         elements.previewEditor.value = `Error: ${error.message}`;
@@ -1092,7 +1379,7 @@ function setupEventHandlers() {
         state,
         hasUnsavedChanges,
         confirmDiscardChanges,
-        uploadFiles
+        uploadFilesWrapper
     );
     
     // Setup preview editor handler
@@ -1112,7 +1399,7 @@ function setupEventHandlers() {
     setupPreviewOverlayHandler(
         elements.previewOverlay,
         elements.previewClose,
-        closePreviewOverlay
+        closePreviewOverlayWrapper
     );
     
     // Setup confirm overlay handler
@@ -1122,7 +1409,7 @@ function setupEventHandlers() {
         elements.confirmConfirm,
         state,
         closeConfirmOverlayWrapper,
-        deleteItems
+        deleteItemsWrapper
     );
     
     // Setup create overlay handler
@@ -1135,7 +1422,7 @@ function setupEventHandlers() {
         elements.createSubmit,
         state,
         closeCreateOverlayWrapper,
-        createItem
+        createItemWrapper
     );
     
     // Setup rename overlay handler
@@ -1148,7 +1435,7 @@ function setupEventHandlers() {
         elements.renameSubmit,
         state,
         closeRenameOverlayWrapper,
-        renameItem
+        renameItemWrapper
     );
     
     // Setup unsaved overlay handler
@@ -1168,7 +1455,7 @@ function setupEventHandlers() {
         closeConfirmOverlayWrapper,
         closeCreateOverlayWrapper,
         closeRenameOverlayWrapper,
-        closePreviewOverlay,
+        closePreviewOverlayWrapper,
         hasUnsavedChanges
     );
     

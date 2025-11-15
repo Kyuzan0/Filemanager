@@ -71,6 +71,8 @@ export function renderBreadcrumbs(breadcrumbsEl, breadcrumbs, navigateTo) {
  * @param {Function} handleDragOver - Fungsi handle drag over
  * @param {Function} handleDrop - Fungsi handle drop
  * @param {Function} handleDragLeave - Fungsi handle drag leave
+ * @param {Function} flashStatus - Fungsi flash status message
+ * @param {Function} setError - Fungsi set error message
  */
 export function renderItems(
     tableBody,
@@ -99,7 +101,9 @@ export function renderItems(
     handleDragEnd,
     handleDragOver,
     handleDrop,
-    handleDragLeave
+    handleDragLeave,
+    flashStatus,
+    setError
 ) {
     state.items = items;
     state.itemMap = new Map(items.map((item) => [item.path, item]));
@@ -464,8 +468,8 @@ export function renderItems(
             actionIcons.delete,
             'Hapus Item',
             () => {
-                if (hasUnsavedChanges()) {
-                    const proceed = confirmDiscardChanges('Perubahan belum disimpan. Tetap hapus item terpilih?')
+                if (hasUnsavedChanges(state.preview)) {
+                    confirmDiscardChanges('Perubahan belum disimpan. Tetap hapus item terpilih?')
                         .then((proceed) => {
                             if (!proceed) {
                                 return;
@@ -717,9 +721,4 @@ function formatDate(timestamp) {
     }
     const date = new Date(timestamp * 1000);
     return date.toLocaleString('id-ID');
-}
-
-function flashStatus(message) {
-    console.log('Flash status:', message);
-    // Implementation would depend on the actual status element
 }
