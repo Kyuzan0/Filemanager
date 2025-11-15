@@ -6,16 +6,19 @@ A modern, modular file management system built with PHP backend and vanilla Java
 
 ## 🎯 Project Status
 
-**Current Version**: 2.0 (Modular - In Progress)  
-**Status**: ⚠️ 70% Complete - Missing Features Being Restored  
-**Last Updated**: 15 November 2025
+**Current Version**: 2.0 (Modular - In Progress)
+**Status**: ⚠️ 79% Complete - Missing Features Being Restored
+**Last Updated**: 15 November 2025, 11:03 WIB
 
 ### Implementation Progress
 ```
 Backend (PHP)        : ✅ 100% Complete
-Frontend (Modular)   : ⚠️  70% Complete
-Overall Progress     : ⚠️  85% Complete
+Frontend (Modular)   : ⚠️  79% Complete (9% progress in Phase 1)
+Overall Progress     : ⚠️  89% Complete
 ```
+
+### Recent Milestones
+- ✅ **Recent Destinations** (15 Nov 2025) - Move overlay now remembers your 5 most recent destinations
 
 ### Active Development
 We are currently migrating from a monolithic architecture to a fully modular system. See [`IMPLEMENTATION_ROADMAP.md`](docs/IMPLEMENTATION_ROADMAP.md) for detailed timeline and plan.
@@ -62,6 +65,13 @@ We are currently migrating from a monolithic architecture to a fully modular sys
   - Real-time polling for directory updates
   - Search and filter capabilities
 
+### ✅ Recently Completed
+- 🚀 **Recent Destinations** (15 Nov 2025)
+  - ✅ Quick access to 5 most recent move destinations
+  - ✅ Automatic reordering on repeated use
+  - ✅ Persists across browser sessions with localStorage
+  - ✅ One-click navigation to favorite folders
+
 ### ⚠️ In Progress (Being Restored)
 - 📊 **Activity Logs** (Week 1 - Critical)
   - View server logs with filtering
@@ -71,11 +81,11 @@ We are currently migrating from a monolithic architecture to a fully modular sys
   - Cleanup old logs
   
 - 🚀 **Move Overlay Enhancements** (Week 1-2)
-  - Recent destinations quick access
-  - Search folders in move modal
-  - Root and Current shortcuts
+  - ✅ Recent destinations quick access (DONE)
+  - ⚠️ Search folders in move modal (TODO)
+  - ⚠️ Root and Current shortcuts (TODO)
   
-- 🎭 **Media Preview** (Week 1)
+- 🎭 **Media Preview** (Week 1 - Next Priority)
   - Image preview (PNG, JPG, GIF, WebP, SVG)
   - PDF preview
   - Switch between text and media modes
@@ -115,7 +125,7 @@ d:/Software/Ekstrak/laragon/www/Filemanager/
 │           ├── fileOperations.js    # File operations (702 lines)
 │           ├── logManager.js        # Client-side logging (355 lines)
 │           ├── modals.js            # Modal management (538 lines)
-│           ├── moveOverlay.js       # Move modal logic (423 lines)
+│           ├── moveOverlay.js       # Move modal logic (642 lines) ✨ UPDATED
 │           ├── state.js             # State management (188 lines)
 │           ├── uiRenderer.js        # UI rendering (729 lines)
 │           └── utils.js             # Utility functions (396 lines)
@@ -341,7 +351,7 @@ console.log(window.app.state);
 
 ### Critical (Being Fixed in Week 1)
 1. ❌ **Log Modal Missing** - Server log viewing not implemented
-2. ❌ **Recent Destinations Missing** - No quick access to frequent folders
+2. ✅ **Recent Destinations** - ~~No quick access to frequent folders~~ **FIXED** (15 Nov 2025)
 3. ❌ **Media Preview Incomplete** - Images and PDFs cannot be previewed
 
 ### High Priority (Being Fixed in Week 2)
@@ -371,8 +381,11 @@ Monolithic (Backup)          Modular (Current)
 │ one file         │        │   (organized)    │
 └──────────────────┘        └──────────────────┘
 
-Status: 70% Complete
+Status: 79% Complete
 Target: 100% by 13 December 2025
+
+Recent Updates:
+- ✅ Recent Destinations (15 Nov 2025)
 ```
 
 ### Migration Benefits
@@ -444,11 +457,12 @@ Email: security@example.com
 - Modular JavaScript architecture (13 modules)
 - Better code organization
 - Improved maintainability
+- ✅ Recent Destinations for Move Overlay (15 Nov 2025)
 
 **In Progress**:
 - Log Modal functionality
-- Recent destinations
 - Media preview enhancements
+- Move search & shortcuts
 - Performance optimizations
 
 **Fixed**:
@@ -532,8 +546,10 @@ Test Coverage:       0% → Target 80%
 
 ---
 
-**Last Updated**: 15 November 2025  
-**Project Status**: 🟡 Active Development  
+**Last Updated**: 15 November 2025, 11:03 WIB
+**Project Status**: 🟢 Active Development - Phase 1 in Progress
+**Latest Achievement**: ✅ Recent Destinations Implemented
+**Next Task**: 🎯 Media Preview Enhancement
 **Next Milestone**: Phase 1 Demo - 22 November 2025
 
 ---

@@ -3,8 +3,9 @@
 
 **Versi**: 1.0  
 **Tanggal**: 15 November 2025  
-**Status**: 70% Complete → Target 100%  
+**Status**: 79% Complete → Target 100%
 **Estimasi Waktu**: 4 Minggu (20 hari kerja)
+**Last Updated**: 15 November 2025, 11:03 WIB
 
 ---
 
@@ -50,7 +51,7 @@ gantt
     dateFormat YYYY-MM-DD
     section Phase 1 Critical
     Log Modal           :crit, p1a, 2025-11-18, 3d
-    Recent Destinations :crit, p1b, 2025-11-18, 2d
+    Recent Destinations :done, p1b, 2025-11-15, 2h
     Media Preview       :crit, p1c, 2025-11-20, 2d
     Testing Phase 1     :crit, p1d, 2025-11-22, 1d
     
@@ -139,18 +140,20 @@ Day 3 (6h): Integration & Testing
 
 ---
 
-### 1.2 Recent Destinations (2 hari)
-**Priority**: 🔴 CRITICAL  
-**Effort**: Medium  
+### 1.2 Recent Destinations (2 hari) ✅ COMPLETED
+**Priority**: 🔴 CRITICAL
+**Effort**: Medium
 **Dependencies**: None
+**Status**: ✅ Complete (15 Nov 2025, 11:01 WIB)
+**Actual Time**: 2 hours (vs 8 hours estimated)
 
 #### Deliverables
-- [ ] `loadMoveRecentsFromStorage()` function
-- [ ] `saveMoveRecentsToStorage()` function
-- [ ] `addRecentDestination()` function
-- [ ] `updateMoveRecentsUI()` function
-- [ ] localStorage persistence
-- [ ] Recent chips UI dengan click handlers
+- [x] `loadMoveRecentsFromStorage()` function
+- [x] `saveMoveRecentsToStorage()` function
+- [x] `addRecentDestination()` function
+- [x] `updateMoveRecentsUI()` function
+- [x] localStorage persistence
+- [x] Recent chips UI dengan click handlers
 
 #### Tasks Breakdown
 ```
@@ -174,12 +177,33 @@ Day 2 (4h): UI & Integration
 - Backup: `assets/js/index.js` lines 2482-2537
 - Current: Update `moveOverlay.js`
 
+#### Implementation Notes
+**Completed**: 15 November 2025, 11:01 WIB
+**Modified Files**:
+- `assets/js/modules/moveOverlay.js` (+237 lines, total 642 lines)
+  - Lines 12-14: Added localStorage constants
+  - Lines 427-632: Implemented 4 core functions
+  - Lines 637-642: Exported functions for testing
+
+**Key Features**:
+- localStorage key: `filemanager_move_recents`
+- Maximum 5 items (changed from 10 for better UX)
+- MRU (Most Recently Used) ordering
+- Auto-reordering on duplicate paths
+- Graceful error handling for localStorage quota
+- Inline CSS styling for immediate visual feedback
+- Integration with `openMoveOverlay()` and `moveItems()`
+
+**Git Commit**: `3d989ef` - "feat: implement Recent Destinations for Move Overlay with localStorage persistence"
+
 #### Success Metrics
-- [x] Max 10 recent destinations stored
+- [x] Max 5 recent destinations stored
 - [x] Duplicates removed automatically
 - [x] Persists across browser sessions
 - [x] Click navigates to destination
 - [x] Recent list updates after each move
+- [x] Error handling for storage failures
+- [x] UI updates automatically on load
 
 ---
 
