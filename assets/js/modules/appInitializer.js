@@ -88,98 +88,55 @@ function setSelectionForVisible(isSelected) {
     updateSelectionUI();
 }
 
-// Create a simple wrapper for renderItems
+// Wrapper for renderItems that calls the complex renderer from uiRenderer.js
 function renderItems(items, lastUpdated, highlightNew) {
-    console.log('[DEBUG] renderItems called with:', { items, lastUpdated, highlightNew });
-    console.log('[DEBUG] Current state:', state);
+    console.log('[DEBUG] renderItems wrapper called');
     
-    // Basic implementation to render files and folders
-    if (elements.tableBody && elements.emptyState) {
-        elements.tableBody.innerHTML = '';
-        
-        if (!items || items.length === 0) {
-            elements.emptyState.hidden = false;
-            elements.emptyState.textContent = 'Tidak ada file atau folder di direktori ini.';
-        } else {
-            elements.emptyState.hidden = true;
-            
-            // Render each item as a table row
-            items.forEach(item => {
-                console.log('[DEBUG] Rendering item:', item);
-                const row = document.createElement('tr');
-                row.className = 'item';
-                row.setAttribute('data-path', item.path);
-                row.setAttribute('data-type', item.type);
-                
-                // Name column
-                const nameCell = document.createElement('td');
-                nameCell.className = 'item-name';
-                
-                const nameSpan = document.createElement('span');
-                nameSpan.className = 'name';
-                nameSpan.textContent = item.name;
-                
-                const iconSpan = document.createElement('span');
-                iconSpan.className = 'icon';
-                iconSpan.textContent = item.type === 'folder' ? '📁' : '📄';
-                
-                nameCell.appendChild(iconSpan);
-                nameCell.appendChild(nameSpan);
-                
-                // Date column
-                const dateCell = document.createElement('td');
-                dateCell.className = 'item-date';
-                dateCell.textContent = item.modified || '';
-                
-                // Action column
-                const actionCell = document.createElement('td');
-                actionCell.className = 'item-actions';
-                
-                const actionButton = document.createElement('button');
-                actionButton.className = 'action-btn';
-                actionButton.textContent = '⋮';
-                actionButton.setAttribute('aria-label', 'More actions');
-                
-                actionCell.appendChild(actionButton);
-                
-                // Simple double-click handler without conflicts
-                row.ondblclick = function(e) {
-                    e.preventDefault();
-                    console.log('[DEBUG] Double-clicked item (ondblclick):', item);
-                    console.log('[DEBUG] Item type:', item.type, 'Item path:', item.path, 'Item name:', item.name);
-                    if (item.type === 'folder') {
-                        console.log('[DEBUG] Navigating to folder:', item.path);
-                        navigateTo(item.path);
-                    } else {
-                        console.log('[DEBUG] Opening file:', item.path);
-                        window.open(`file.php?path=${encodeURIComponent(item.path)}`, '_blank');
-                    }
-                };
-                
-                // Simple click handler for selection
-                row.onclick = function(e) {
-                    // Only handle single clicks (not part of double-click)
-                    setTimeout(() => {
-                        console.log('[DEBUG] Single-clicked item:', item.name);
-                    }, 10);
-                };
-                
-                row.appendChild(nameCell);
-                row.appendChild(dateCell);
-                row.appendChild(actionCell);
-                
-                elements.tableBody.appendChild(row);
-            });
-        }
+    // Call the complex renderer with all required parameters
+    renderItemsComplex(
+        elements.tableBody,
+        elements.emptyState,
+        state,
+        items,
+        lastUpdated,
+        highlightNew,
+        openTextPreview,
+        openMediaPreview,
+        navigateTo,
+        null, // openInWord - not implemented yet
+        copyPathToClipboard,
+        openRenameOverlayWrapper,
+        null, // openMoveOverlay - not implemented yet
+        openConfirmOverlayWrapper,
+        toggleSelection,
+        openContextMenu,
+        null, // handleDragStart
+        null, // handleDragEnd
+        null, // handleDragOver
+        null, // handleDrop
+        null, // handleDragLeave
+        isWordDocument,
+        buildFileUrl,
+        hasUnsavedChanges,
+        confirmDiscardChanges,
+        previewableExtensions,
+        mediaPreviewableExtensions
+    );
+}
+
+// Helper functions for renderItems
+function toggleSelection(path, isSelected) {
+    if (isSelected) {
+        state.selected.add(path);
+    } else {
+        state.selected.delete(path);
     }
-    
-    // Update status
-    if (elements.statusInfo) {
-        const itemCount = items ? items.length : 0;
-        elements.statusInfo.textContent = itemCount > 0 ?
-            `${itemCount} item ditampilkan` :
-            'Tidak ada data';
-    }
+    updateSelectionUI();
+}
+
+function openContextMenu(x, y, item) {
+    console.log('[DEBUG] openContextMenu called for:', item.name);
+    // Context menu implementation would go here
 }
 
 function changeSort(key) {
