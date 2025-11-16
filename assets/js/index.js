@@ -36,14 +36,29 @@ document.addEventListener('DOMContentLoaded', () => {
         // Tampilkan pesan error kepada pengguna
         const errorDiv = document.createElement('div');
         errorDiv.classList.add('app-error');
-        errorDiv.innerHTML = `
-            <div class="error-content">
-                <h2>Application Error</h2>
-                <p>Failed to initialize the File Manager application.</p>
-                <p>Please refresh the page to try again.</p>
-                <button onclick="window.location.reload()">Refresh Page</button>
-            </div>
-        `;
+        // Build error content using DOM APIs to avoid inline HTML with class attributes
+        const errorContent = document.createElement('div');
+        errorContent.classList.add('error-content');
+        
+        const heading = document.createElement('h2');
+        heading.textContent = 'Application Error';
+        
+        const msg1 = document.createElement('p');
+        msg1.textContent = 'Failed to initialize the File Manager application.';
+        
+        const msg2 = document.createElement('p');
+        msg2.textContent = 'Please refresh the page to try again.';
+        
+        const refreshBtn = document.createElement('button');
+        refreshBtn.type = 'button';
+        refreshBtn.textContent = 'Refresh Page';
+        refreshBtn.addEventListener('click', () => window.location.reload());
+        
+        errorContent.appendChild(heading);
+        errorContent.appendChild(msg1);
+        errorContent.appendChild(msg2);
+        errorContent.appendChild(refreshBtn);
+        errorDiv.appendChild(errorContent);
         errorDiv.style.cssText = `
             position: fixed;
             top: 0;
@@ -59,7 +74,7 @@ document.addEventListener('DOMContentLoaded', () => {
             font-family: Arial, sans-serif;
         `;
         
-        const errorContent = errorDiv.querySelector('.error-content');
+        // style the errorContent built above
         errorContent.style.cssText = `
             background: #333;
             padding: 30px;
@@ -68,12 +83,13 @@ document.addEventListener('DOMContentLoaded', () => {
             max-width: 400px;
         `;
         
-        errorContent.querySelector('h2').style.cssText = `
+        // style heading and refresh button created above
+        heading.style.cssText = `
             margin-top: 0;
             color: #ff6b6b;
         `;
         
-        errorContent.querySelector('button').style.cssText = `
+        refreshBtn.style.cssText = `
             background: #4CAF50;
             color: white;
             border: none;

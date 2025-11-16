@@ -284,14 +284,26 @@ export const config = {
 
 // If debug is disabled, suppress common console noise (log, debug, info).
 // Keep console.warn and console.error so important messages still appear.
+/* Ensure console logging is available during automated QA runs.
+   Temporarily force debugEnabled = true so diagnostic logs from the page
+   (transient UI debug statements) are not suppressed by this module.
+   If console was previously wrapped, restore originals when possible. */
 (function () {
     try {
-        const saved = (() => {
-            try { return localStorage.getItem('filemanager_debug'); } catch (e) { return null; }
-        })();
-        const debugEnabled = saved !== null ? (saved === 'true') : config.debugMode;
+        // Force debug enabled during QA to surface diagnostics
+        const debugEnabled = true;
+
+        // If someone previously wrapped console methods, restore them so logs appear
+        if (typeof console !== 'undefined' && console._orig) {
+            try {
+                console.log = console._orig.log;
+                console.debug = console._orig.debug;
+                console.info = console._orig.info;
+            } catch (e) { /* ignore restore errors */ }
+        }
+
+        // If debugEnabled were false we would suppress logs; since we force true do nothing.
         if (!debugEnabled && typeof console !== 'undefined') {
-            // Preserve originals so other tools can restore if needed
             if (!console._orig) {
                 console._orig = {
                     log: console.log ? console.log.bind(console) : function () {},

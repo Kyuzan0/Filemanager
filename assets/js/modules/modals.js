@@ -83,6 +83,14 @@ export function openPreviewOverlay(state, previewOverlay, previewClose) {
         }
     });
     previewOverlay.setAttribute('aria-hidden', 'false');
+    try {
+        const dialogEl = previewOverlay.querySelector('.modal, .dialog, .overlay-dialog');
+        console.log('[modals] openPreviewOverlay ->', {
+            overlayId: previewOverlay.id || null,
+            overlayClasses: previewOverlay.className,
+            dialogClasses: dialogEl ? dialogEl.className : null
+        });
+    } catch (e) { /* ignore */ }
     markOverlayOpen();
     // Attach accessibility hooks (focus trap + Escape) using close via provided close button
     try {
@@ -311,6 +319,15 @@ export function openConfirmOverlay(
         } catch (e) {}
     });
     confirmOverlay.setAttribute('aria-hidden', 'false');
+    try {
+        const dialogEl = confirmOverlay.querySelector('.modal, .dialog, .confirm-dialog');
+        console.log('[modals] openConfirmOverlay ->', {
+            overlayId: confirmOverlay.id || null,
+            overlayClasses: confirmOverlay.className,
+            dialogClasses: dialogEl ? dialogEl.className : null,
+            pathsSample: (Array.isArray(paths) ? paths.slice(0,3) : null)
+        });
+    } catch (e) { /* ignore */ }
     markOverlayOpen();
     // Attach accessibility hooks: use closeConfirmOverlay (bind state+overlay)
     try {
@@ -387,6 +404,15 @@ export function openUnsavedOverlay(state, unsavedOverlay, unsavedMessage, unsave
         unsavedCancel.focus();
     });
     unsavedOverlay.setAttribute('aria-hidden', 'false');
+    try {
+        const dialogEl = unsavedOverlay.querySelector('.modal, .dialog, .unsaved-dialog');
+        console.log('[modals] openUnsavedOverlay ->', {
+            overlayId: unsavedOverlay.id || null,
+            overlayClasses: unsavedOverlay.className,
+            dialogClasses: dialogEl ? dialogEl.className : null,
+            messagePreview: (message || '').slice(0,140)
+        });
+    } catch (e) { /* ignore */ }
     markOverlayOpen();
     // Attach accessibility hooks using unsaved close handler
     try {
@@ -481,6 +507,15 @@ export function openCreateOverlay(
         } catch (e) {}
     });
     createOverlay.setAttribute('aria-hidden', 'false');
+    try {
+        const dialogEl = createOverlay.querySelector('.modal, .dialog, .create-dialog');
+        console.log('[modals] openCreateOverlay ->', {
+            overlayId: createOverlay.id || null,
+            overlayClasses: createOverlay.className,
+            dialogClasses: dialogEl ? dialogEl.className : null,
+            kind
+        });
+    } catch (e) { /* ignore */ }
     markOverlayOpen();
     
     createName.value = '';
@@ -589,6 +624,15 @@ export function openRenameOverlay(
         } catch (e) {}
     });
     renameOverlay.setAttribute('aria-hidden', 'false');
+    try {
+        const dialogEl = renameOverlay.querySelector('.modal, .dialog, .rename-dialog');
+        console.log('[modals] openRenameOverlay ->', {
+            overlayId: renameOverlay.id || null,
+            overlayClasses: renameOverlay.className,
+            dialogClasses: dialogEl ? dialogEl.className : null,
+            targetName: item && item.name ? item.name : null
+        });
+    } catch (e) { /* ignore */ }
     markOverlayOpen();
     
     // Select filename without extension for files
@@ -807,7 +851,14 @@ export async function openMediaPreview(
             // Optimization 8: Progressive PDF loading with loading indicator
             const loadingMsg = document.createElement('div');
             loadingMsg.style.cssText = 'text-align: center; padding: 40px; color: var(--text-secondary);';
-            loadingMsg.innerHTML = '<div class="spinner"></div><p>Loading PDF...</p>';
+            // Build spinner + message using DOM APIs to avoid inline class attributes in HTML strings
+            loadingMsg.innerHTML = '';
+            const pdfSpinner = document.createElement('div');
+            pdfSpinner.classList.add('spinner');
+            const pdfMsg = document.createElement('p');
+            pdfMsg.textContent = 'Loading PDF...';
+            loadingMsg.appendChild(pdfSpinner);
+            loadingMsg.appendChild(pdfMsg);
             viewer.appendChild(loadingMsg);
             
             el = document.createElement('iframe');
@@ -827,7 +878,14 @@ export async function openMediaPreview(
             // Optimization 8: Progressive image loading with placeholder
             const loadingMsg = document.createElement('div');
             loadingMsg.style.cssText = 'text-align: center; padding: 40px; color: var(--text-secondary);';
-            loadingMsg.innerHTML = '<div class="spinner"></div><p>Loading image...</p>';
+            // Build spinner + message using DOM APIs
+            loadingMsg.innerHTML = '';
+            const imgSpinner = document.createElement('div');
+            imgSpinner.classList.add('spinner');
+            const imgMsg = document.createElement('p');
+            imgMsg.textContent = 'Loading image...';
+            loadingMsg.appendChild(imgSpinner);
+            loadingMsg.appendChild(imgMsg);
             viewer.appendChild(loadingMsg);
             
             el = document.createElement('img');
@@ -917,6 +975,14 @@ export function openLogModal(state, logOverlay, logClose) {
         } catch (e) {}
     });
     logOverlay.setAttribute('aria-hidden', 'false');
+    try {
+        const dialogEl = logOverlay.querySelector('.modal, .dialog, .log-dialog');
+        console.log('[modals] openLogModal ->', {
+            overlayId: logOverlay.id || null,
+            overlayClasses: logOverlay.className,
+            dialogClasses: dialogEl ? dialogEl.className : null
+        });
+    } catch (e) { /* ignore */ }
     markOverlayOpen();
     
     if (logClose) {
@@ -981,14 +1047,21 @@ export function setLogLoading(state, logTableBody, isLoading) {
     if (isLoading) {
         // SHOW loading - both table and global overlay
         if (logTableBody) {
-            logTableBody.innerHTML = `
-                <tr>
-                    <td colspan="5" style="text-align: center; padding: 20px;">
-                        <div class="spinner"></div>
-                        <p>Loading logs...</p>
-                    </td>
-                </tr>
-            `;
+            // Build loading row using DOM APIs instead of template innerHTML
+            logTableBody.innerHTML = '';
+            const tr = document.createElement('tr');
+            const td = document.createElement('td');
+            td.colSpan = 5;
+            td.style.textAlign = 'center';
+            td.style.padding = '20px';
+            const spinnerDiv = document.createElement('div');
+            spinnerDiv.classList.add('spinner');
+            const p = document.createElement('p');
+            p.textContent = 'Loading logs...';
+            td.appendChild(spinnerDiv);
+            td.appendChild(p);
+            tr.appendChild(td);
+            logTableBody.appendChild(tr);
         } else {
             console.warn('[LOG_LOADING] logTableBody element not found');
         }

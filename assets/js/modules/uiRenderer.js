@@ -84,7 +84,10 @@ export function rollbackMove(originalPosition) {
  * @param {Function} navigateTo - Fungsi navigasi
  */
 export function renderBreadcrumbs(breadcrumbsEl, breadcrumbs, navigateTo) {
-    breadcrumbsEl.innerHTML = '';
+    // Clear children safely to avoid HTML parsing side-effects during Tailwind migration
+    while (breadcrumbsEl.firstChild) {
+        breadcrumbsEl.removeChild(breadcrumbsEl.firstChild);
+    }
     breadcrumbs.forEach((crumb, index) => {
         const isLast = index === breadcrumbs.length - 1;
         const element = document.createElement(isLast ? 'span' : 'a');
@@ -260,7 +263,23 @@ function renderItemRow(item, state, params) {
         iconInfo.className.trim().split(/\s+/).forEach(c => icon.classList.add(c));
     }
     icon.classList.add('inline-flex','items-center','justify-center','w-8','h-8','rounded-md');
-    icon.innerHTML = iconInfo.svg;
+    // Insert SVG safely: support both legacy string SVGs and Element nodes returned by the icons module.
+    // Prefer Element nodes (created via createElementNS) to avoid relying on innerHTML parsing.
+    if (iconInfo && iconInfo.svg) {
+        try {
+            // DOM Element (preferred)
+            if (typeof iconInfo.svg === 'object' && iconInfo.svg.nodeType === 1) {
+                // Clone to avoid moving the canonical node out of the cache
+                icon.appendChild(iconInfo.svg.cloneNode(true));
+            } else if (typeof iconInfo.svg === 'string') {
+                // Legacy: trusted SVG string from this module — set as innerHTML
+                icon.innerHTML = iconInfo.svg;
+            }
+        } catch (e) {
+            // Fallback: if anything goes wrong, gracefully degrade to empty icon
+            console.warn('[uiRenderer] Failed to render icon for', item && item.path, e);
+        }
+    }
     icon.style.cursor = 'pointer';
     
     // Add click handler to icon
@@ -462,6 +481,15 @@ function renderItemRow(item, state, params) {
         }, 5000);
     }
 
+    // Debug log: show computed classes and (if measurable) height to validate migration
+    try {
+        console.log('[uiRenderer] renderItemRow ->', {
+            path: key,
+            classes: row.className,
+            height: (typeof row.getBoundingClientRect === 'function') ? Math.round(row.getBoundingClientRect().height) : null
+        });
+    } catch (e) { /* ignore */ }
+
     return row;
 }
 
@@ -502,7 +530,10 @@ function renderVirtualItems(tableBody, filtered, state, params) {
     
     // Clear existing rows (keep up-row if exists)
     const upRow = tableBody.querySelector('.up-row');
-    tableBody.innerHTML = '';
+    // Clear existing rows without parsing HTML (preserve a previously-found up-row)
+    while (tableBody.firstChild) {
+        tableBody.removeChild(tableBody.firstChild);
+    }
     if (upRow) {
         tableBody.appendChild(upRow);
     }
@@ -676,7 +707,10 @@ export function renderItems(
         filteredFiles: filtered.length - filteredFolders,
     };
 
-    tableBody.innerHTML = '';
+    // Clear table body children safely (avoid innerHTML assignment)
+    while (tableBody.firstChild) {
+        tableBody.removeChild(tableBody.firstChild);
+    }
 
     // Insert "Up (..)" row at the top when not at root
     if (state.parentPath !== null) {

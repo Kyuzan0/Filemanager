@@ -411,7 +411,8 @@ export function renderLogTable(logs, logTableBody, logEmpty) {
     }
     
     if (!logs || logs.length === 0) {
-        logTableBody.innerHTML = '';
+        // Clear rows safely without parsing HTML
+        logTableBody.textContent = '';
         if (logEmpty) {
             logEmpty.hidden = false;
         }
@@ -422,7 +423,8 @@ export function renderLogTable(logs, logTableBody, logEmpty) {
         logEmpty.hidden = true;
     }
     
-    logTableBody.innerHTML = '';
+    // Clear existing rows using textContent for safety
+    logTableBody.textContent = '';
     
     logs.forEach(log => {
         const formattedLog = formatLogEntry(log);
@@ -647,7 +649,8 @@ export function updateActiveFiltersDisplay(filters) {
         removeBtn.classList.add('remove-filter');
         removeBtn.type = 'button';
         removeBtn.classList.add('btn');
-        removeBtn.innerHTML = '&times;';
+        // Use textContent instead of innerHTML for a single character to avoid HTML parsing
+        removeBtn.textContent = '×';
         removeBtn.setAttribute('aria-label', `Remove ${label} filter`);
         removeBtn.addEventListener('click', () => {
             // Remove this specific filter

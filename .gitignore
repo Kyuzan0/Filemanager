@@ -11,7 +11,3 @@ tests
 logs/*
 
 bak/
-
-node_modules/
-
-screens/

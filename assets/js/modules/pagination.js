@@ -180,79 +180,122 @@ export function renderPaginationControls() {
     // Generate page numbers to show
     const pageNumbers = generatePageNumbers(currentPage, totalPages);
     
-    // Build pagination HTML (Tailwind-compatible utilities added while preserving original classes)
-    const paginationHTML = `
-        <div class="pagination-info text-sm text-gray-600">
-            Menampilkan ${((currentPage - 1) * itemsPerPage) + 1}-${Math.min(currentPage * itemsPerPage, totalItems)} dari ${totalItems} item
-        </div>
-        <div class="pagination-controls flex items-center gap-2">
-            <button
-                class="pagination-btn pagination-first inline-flex items-center justify-center w-9 h-9 rounded-md border bg-transparent text-gray-700 hover:bg-blue-600 hover:text-white focus:outline-none focus:ring-2 focus:ring-blue-200"
-                ${currentPage === 1 ? 'disabled' : ''}
-                aria-label="Halaman pertama"
-                data-page="first">
-                <svg viewBox="0 0 24 24" aria-hidden="true" class="w-4 h-4">
-                    <path fill="currentColor" d="M18.41 16.59L13.82 12l4.59-4.59L17 6l-6 6 6 6zM6 6h2v12H6z"/>
-                </svg>
-            </button>
-            <button
-                class="pagination-btn pagination-prev inline-flex items-center justify-center w-9 h-9 rounded-md border bg-transparent text-gray-700 hover:bg-blue-600 hover:text-white focus:outline-none focus:ring-2 focus:ring-blue-200"
-                ${currentPage === 1 ? 'disabled' : ''}
-                aria-label="Halaman sebelumnya"
-                data-page="prev">
-                <svg viewBox="0 0 24 24" aria-hidden="true" class="w-4 h-4">
-                    <path fill="currentColor" d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/>
-                </svg>
-            </button>
-            
-            <div class="pagination-numbers flex items-center gap-1">
-                ${pageNumbers.map(pageNum => {
-                    if (pageNum === '...') {
-                        return '<span class="pagination-ellipsis px-2 text-gray-500">...</span>';
-                    }
-                    return `
-                        <button
-                            class="pagination-btn pagination-number inline-flex items-center justify-center min-w-[36px] h-9 px-2 rounded-md ${pageNum === currentPage ? 'active bg-blue-600 text-white font-semibold border-blue-600' : 'bg-transparent text-gray-700 hover:bg-blue-50 hover:text-blue-700'}"
-                            data-page="${pageNum}"
-                            aria-label="Halaman ${pageNum}"
-                            ${pageNum === currentPage ? 'aria-current="page"' : ''}>
-                            ${pageNum}
-                        </button>
-                    `;
-                }).join('')}
-            </div>
-            
-            <button
-                class="pagination-btn pagination-next inline-flex items-center justify-center w-9 h-9 rounded-md border bg-transparent text-gray-700 hover:bg-blue-600 hover:text-white focus:outline-none focus:ring-2 focus:ring-blue-200"
-                ${currentPage === totalPages ? 'disabled' : ''}
-                aria-label="Halaman berikutnya"
-                data-page="next">
-                <svg viewBox="0 0 24 24" aria-hidden="true" class="w-4 h-4">
-                    <path fill="currentColor" d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/>
-                </svg>
-            </button>
-            <button
-                class="pagination-btn pagination-last inline-flex items-center justify-center w-9 h-9 rounded-md border bg-transparent text-gray-700 hover:bg-blue-600 hover:text-white focus:outline-none focus:ring-2 focus:ring-blue-200"
-                ${currentPage === totalPages ? 'disabled' : ''}
-                aria-label="Halaman terakhir"
-                data-page="last">
-                <svg viewBox="0 0 24 24" aria-hidden="true" class="w-4 h-4">
-                    <path fill="currentColor" d="M5.59 7.41L10.18 12l-4.59 4.59L7 18l6-6-6-6zM16 6h2v12h-2z"/>
-                </svg>
-            </button>
-        </div>
-        <div class="pagination-per-page flex items-center gap-2 mt-2 sm:mt-0">
-            <label for="items-per-page" class="text-sm text-gray-600">Item per halaman:</label>
-            <select id="items-per-page" class="items-per-page-select form-select px-2 py-1 rounded-md border bg-white text-gray-700">
-                <option value="10" ${itemsPerPage === 10 ? 'selected' : ''}>10</option>
-                <option value="25" ${itemsPerPage === 25 ? 'selected' : ''}>25</option>
-                <option value="50" ${itemsPerPage === 50 ? 'selected' : ''}>50</option>
-                <option value="100" ${itemsPerPage === 100 ? 'selected' : ''}>100</option>
-            </select>
-        </div>
-    `;
-    
-    paginationContainer.innerHTML = paginationHTML;
+    // Build pagination DOM (avoid innerHTML with class attributes to be safer during Tailwind migration)
+    // Clear existing content first
+    paginationContainer.innerHTML = '';
+
+    // Info
+    const infoDiv = document.createElement('div');
+    infoDiv.classList.add('pagination-info', 'text-sm', 'text-gray-600');
+    infoDiv.textContent = `Menampilkan ${((currentPage - 1) * itemsPerPage) + 1}-${Math.min(currentPage * itemsPerPage, totalItems)} dari ${totalItems} item`;
+    paginationContainer.appendChild(infoDiv);
+
+    // Controls wrapper
+    const controlsDiv = document.createElement('div');
+    controlsDiv.classList.add('pagination-controls', 'flex', 'items-center', 'gap-2');
+
+    // Helper to create an SVG icon node from a path string and optional classes
+    const createIcon = (viewBox, pathD, classes = []) => {
+        const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+        svg.setAttribute('viewBox', viewBox);
+        svg.setAttribute('aria-hidden', 'true');
+        classes.forEach(c => svg.classList.add(c));
+        const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+        path.setAttribute('fill', 'currentColor');
+        path.setAttribute('d', pathD);
+        svg.appendChild(path);
+        return svg;
+    };
+
+    // Helper to create button with common utilities
+    const createNavButton = (dataPage, ariaLabel, svgNode, isDisabled = false) => {
+        const btn = document.createElement('button');
+        btn.classList.add('pagination-btn', `pagination-${dataPage}`, 'inline-flex', 'items-center', 'justify-center', 'w-9', 'h-9', 'rounded-md', 'border', 'bg-transparent', 'text-gray-700', 'focus:outline-none', 'focus:ring-2', 'focus:ring-blue-200');
+        // Hover utilities (kept as classes for Tailwind)
+        btn.classList.add('hover:bg-blue-600', 'hover:text-white');
+        if (isDisabled) {
+            btn.setAttribute('disabled', '');
+        }
+        if (ariaLabel) btn.setAttribute('aria-label', ariaLabel);
+        btn.dataset.page = dataPage;
+        if (svgNode) btn.appendChild(svgNode);
+        return btn;
+    };
+
+    // First button
+    controlsDiv.appendChild(createNavButton('first', 'Halaman pertama', createIcon('0 0 24 24', 'M18.41 16.59L13.82 12l4.59-4.59L17 6l-6 6 6 6zM6 6h2v12H6z', ['w-4','h-4']), currentPage === 1));
+
+    // Prev button
+    controlsDiv.appendChild(createNavButton('prev', 'Halaman sebelumnya', createIcon('0 0 24 24', 'M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z', ['w-4','h-4']), currentPage === 1));
+
+    // Page numbers container
+    const numbersDiv = document.createElement('div');
+    numbersDiv.classList.add('pagination-numbers', 'flex', 'items-center', 'gap-1');
+
+    pageNumbers.forEach(pageNum => {
+        if (pageNum === '...') {
+            const span = document.createElement('span');
+            span.classList.add('pagination-ellipsis', 'px-2', 'text-gray-500');
+            span.textContent = '...';
+            numbersDiv.appendChild(span);
+            return;
+        }
+
+        const btn = document.createElement('button');
+        btn.classList.add('pagination-btn', 'pagination-number', 'inline-flex', 'items-center', 'justify-center', 'min-w-[36px]', 'h-9', 'px-2', 'rounded-md');
+        btn.dataset.page = String(pageNum);
+        btn.setAttribute('aria-label', `Halaman ${pageNum}`);
+        if (pageNum === currentPage) {
+            btn.setAttribute('aria-current', 'page');
+            // active classes
+            btn.classList.add('active', 'bg-blue-600', 'text-white', 'font-semibold', 'border-blue-600');
+        } else {
+            btn.classList.add('bg-transparent', 'text-gray-700', 'hover:bg-blue-50', 'hover:text-blue-700');
+        }
+        btn.textContent = String(pageNum);
+        numbersDiv.appendChild(btn);
+    });
+
+    controlsDiv.appendChild(numbersDiv);
+
+    // Next button
+    controlsDiv.appendChild(createNavButton('next', 'Halaman berikutnya', createIcon('0 0 24 24', 'M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z', ['w-4','h-4']), currentPage === totalPages));
+
+    // Last button
+    controlsDiv.appendChild(createNavButton('last', 'Halaman terakhir', createIcon('0 0 24 24', 'M5.59 7.41L10.18 12l-4.59 4.59L7 18l6-6-6-6zM16 6h2v12h-2z', ['w-4','h-4']), currentPage === totalPages));
+
+    paginationContainer.appendChild(controlsDiv);
+
+    // Per-page controls
+    const perPageDiv = document.createElement('div');
+    perPageDiv.classList.add('pagination-per-page', 'flex', 'items-center', 'gap-2', 'mt-2', 'sm:mt-0');
+
+    const perLabel = document.createElement('label');
+    perLabel.setAttribute('for', 'items-per-page');
+    perLabel.classList.add('text-sm', 'text-gray-600');
+    perLabel.textContent = 'Item per halaman:';
+    perPageDiv.appendChild(perLabel);
+
+    const select = document.createElement('select');
+    select.id = 'items-per-page';
+    select.classList.add('items-per-page-select', 'form-select', 'px-2', 'py-1', 'rounded-md', 'border', 'bg-white', 'text-gray-700');
+
+    const options = [10, 25, 50, 100];
+    options.forEach(optVal => {
+        const opt = document.createElement('option');
+        opt.value = String(optVal);
+        opt.textContent = String(optVal);
+        if (itemsPerPage === optVal) {
+            opt.setAttribute('selected', '');
+        }
+        select.appendChild(opt);
+    });
+
+    perPageDiv.appendChild(select);
+    paginationContainer.appendChild(perPageDiv);
+
+    // Attach event listeners to newly created DOM
+    attachPaginationEventListeners(paginationContainer);
     
     // Attach event listeners
     attachPaginationEventListeners(paginationContainer);
