@@ -4765,3 +4765,175 @@ body.dragging {
                     color 0.15s ease;
     }
 }
+
+/* Settings overlay (modal) - styled to match app design system */
+.settings-overlay {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(12, 18, 36, 0.45);
+  backdrop-filter: blur(4px);
+  z-index: 1100;
+  padding: 24px;
+  box-sizing: border-box;
+}
+.settings-overlay[hidden],
+.settings-overlay.hidden {
+  display: none;
+}
+
+.settings-dialog {
+  width: min(560px, calc(100% - 48px));
+  background: var(--surface);
+  color: var(--text);
+  border-radius: 18px;
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Header uses the same visual treatment as other dialogs (create/rename) */
+.settings-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 20px 24px;
+  background: var(--surface-soft);
+  border-bottom: 1px solid var(--border);
+}
+.settings-header h2 {
+  margin: 0;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--text);
+}
+
+/* Close button consistent with other dialog controls */
+.settings-close {
+  background: transparent;
+  border: none;
+  padding: 8px;
+  cursor: pointer;
+  color: var(--text-muted);
+  border-radius: 8px;
+}
+.settings-close:hover {
+  background: var(--surface-hover);
+  color: var(--primary);
+}
+
+/* Body mirrors spacing and type scale used across dialogs */
+.settings-body {
+  padding: 20px 24px;
+  font-size: 0.95rem;
+  color: var(--text);
+}
+.setting-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+.setting-hint {
+  margin: 6px 0 0;
+  color: var(--text-muted);
+  font-size: 0.88rem;
+}
+
+/* Toggle (custom switch) */
+.toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+  user-select: none;
+}
+.toggle-input {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+  pointer-events: none;
+}
+.toggle-switch {
+  position: relative;
+  width: 48px;
+  height: 34px;
+  background: var(--border);
+  border-radius: 999px;
+  transition: background 0.18s ease;
+  flex-shrink: 0;
+  box-shadow: inset 0 0 0 1px rgba(0,0,0,0.02);
+}
+.toggle-switch::before {
+  content: "";
+  position: absolute;
+  left: 4px;
+  top: 4px;
+  width: 26px;
+  height: 26px;
+  background: var(--surface);
+  border-radius: 50%;
+  transition: transform 0.18s cubic-bezier(.2,.9,.3,1), box-shadow 0.18s;
+  box-shadow: 0 2px 6px rgba(17, 139, 238, 0.08);
+}
+.toggle.is-on .toggle-switch {
+  background: var(--primary);
+}
+.toggle.is-on .toggle-switch::before {
+  transform: translateX(14px);
+}
+.toggle:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 3px;
+}
+.toggle-label {
+  font-weight: 600;
+  color: var(--text);
+}
+
+/* Footer matches create/confirm dialog action area */
+.settings-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  padding: 16px 20px;
+  border-top: 1px solid var(--border);
+  background: var(--surface-soft);
+}
+.settings-footer .primary,
+.settings-footer .outline {
+  padding: 10px 14px;
+  border-radius: 10px;
+  cursor: pointer;
+  border: 1px solid transparent;
+  font-weight: 600;
+}
+.settings-footer .primary {
+  background: var(--primary);
+  color: #fff;
+  border-color: var(--primary);
+  box-shadow: 0 8px 20px rgba(17, 139, 238, 0.18);
+}
+.settings-footer .outline {
+  background: transparent;
+  color: var(--text);
+  border-color: var(--border);
+}
+.settings-footer .outline:hover {
+  border-color: var(--primary);
+  color: var(--primary);
+}
+
+/* Responsive adjustments */
+@media (max-width: 420px) {
+  .settings-dialog { max-width: 100%; border-radius: 8px; }
+  .settings-body { padding: 12px; }
+  .settings-header, .settings-footer { padding: 10px; }
+}

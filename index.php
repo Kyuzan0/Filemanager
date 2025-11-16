@@ -19,6 +19,11 @@
             <section class="meta-bar">
                 <div class="breadcrumbs" id="breadcrumbs"></div>
                 <div class="meta-actions">
+                    <!-- Settings button -->
+                    <button id="btn-settings" type="button" class="action-pill" title="Pengaturan" aria-haspopup="dialog" aria-controls="settings-overlay">
+                        <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 8.59A3.41 3.41 0 1 0 15.41 12 3.41 3.41 0 0 0 12 8.59zm8.94 2.06l1.02-1.77-2.12-3.67-2.01.35a7.9 7.9 0 0 0-1.3-.76L16 2h-4l-.53 2.79c-.45.18-.88.42-1.3.7L7.62 5.3 5.5 8l1.02 1.77c-.05.33-.07.67-.07 1.03s.02.7.07 1.03L5.5 13l2.12 2.7 2.01-.35c.41.28.85.52 1.3.7L12 22h4l.53-2.79c.45-.18.88-.42 1.3-.7l2.01.35L21.96 14.65l-1.02-1.77c.05-.33.07-.67.07-1.03s-.02-.7-.07-1.03z"/></svg>
+                        <span>Pengaturan</span>
+                    </button>
                 </div>
             </section>
 
@@ -450,6 +455,30 @@
                 <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M6 7h12v11a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2zm3 2v9h2V9H9zm4 0v9h2V9h-2z"/><path fill="currentColor" d="M15.5 4l-1-1h-5l-1 1H5v2h14V4z"/></svg>
                 <span>Hapus</span>
             </button>
+        </div>
+    </div>
+
+    <!-- Settings overlay -->
+    <div class="settings-overlay" id="settings-overlay" aria-hidden="true" hidden>
+        <div class="settings-dialog" role="dialog" aria-modal="true" aria-labelledby="settings-title">
+            <header class="settings-header">
+                <h2 id="settings-title">Pengaturan</h2>
+                <button type="button" id="settings-close" aria-label="Tutup pengaturan">✕</button>
+            </header>
+            <div class="settings-body">
+                <div class="setting-row">
+                    <label for="toggle-debug" class="toggle" aria-hidden="false">
+                        <input type="checkbox" id="toggle-debug" class="toggle-input" role="switch" aria-checked="true">
+                        <span class="toggle-switch" aria-hidden="true"></span>
+                        <span class="toggle-label">Aktifkan debug logging (console)</span>
+                    </label>
+                    <p class="setting-hint">Matikan untuk menghilangkan pesan debug dari konsol.</p>
+                </div>
+            </div>
+            <footer class="settings-footer">
+                <button type="button" id="settings-save" class="primary">Simpan</button>
+                <button type="button" id="settings-cancel" class="outline">Batal</button>
+            </footer>
         </div>
     </div>
 

@@ -212,9 +212,20 @@ export const actionIcons = {
 };
 
 // Application configuration
+// Read saved debug preference from localStorage (safe access)
+const _stored_debug = (() => {
+    try {
+        return localStorage.getItem('filemanager_debug');
+    } catch (e) {
+        return null;
+    }
+})();
+
 export const config = {
-    // Debug mode - set to false in production to disable console logging
-    debugMode: true,
+    // Debug mode - uses saved preference when available, otherwise defaults to true
+    debugMode: _stored_debug !== null ? _stored_debug === 'true' : true,
+    // Backwards compatibility: some modules check `config.debug`
+    debug: _stored_debug !== null ? _stored_debug === 'true' : true,
     
     // API base URL
     apiBaseUrl: 'api.php',
@@ -270,6 +281,32 @@ export const config = {
         bufferMultiplier: 1.5,   // Multiplier for buffer zone calculation
     },
 };
+
+// If debug is disabled, suppress common console noise (log, debug, info).
+// Keep console.warn and console.error so important messages still appear.
+(function () {
+    try {
+        const saved = (() => {
+            try { return localStorage.getItem('filemanager_debug'); } catch (e) { return null; }
+        })();
+        const debugEnabled = saved !== null ? (saved === 'true') : config.debugMode;
+        if (!debugEnabled && typeof console !== 'undefined') {
+            // Preserve originals so other tools can restore if needed
+            if (!console._orig) {
+                console._orig = {
+                    log: console.log ? console.log.bind(console) : function () {},
+                    debug: console.debug ? console.debug.bind(console) : (console.log ? console.log.bind(console) : function () {}),
+                    info: console.info ? console.info.bind(console) : (console.log ? console.log.bind(console) : function () {}),
+                };
+            }
+            console.log = function () {};
+            console.debug = function () {};
+            console.info = function () {};
+        }
+    } catch (e) {
+        // swallow errors to avoid breaking app when localStorage or console is restricted
+    }
+})();
 
 // Error messages
 export const errorMessages = {

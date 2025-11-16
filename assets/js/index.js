@@ -23,6 +23,7 @@
 
 // Import modul-modul yang diperlukan
 import { initializeApp } from './modules/appInitializer.js';
+import { config } from './modules/constants.js';
 
 /**
  * Inisialisasi aplikasi saat DOM dimuat
@@ -85,6 +86,128 @@ document.addEventListener('DOMContentLoaded', () => {
         
         document.body.appendChild(errorDiv);
     });
+
+    // -------- Settings UI wiring (toggle debug) --------
+    try {
+        const btnSettings = document.getElementById('btn-settings');
+        const settingsOverlay = document.getElementById('settings-overlay');
+        const settingsClose = document.getElementById('settings-close');
+        const settingsSave = document.getElementById('settings-save');
+        const settingsCancel = document.getElementById('settings-cancel');
+        const toggleDebug = document.getElementById('toggle-debug');
+        const toggleLabel = document.querySelector('label[for="toggle-debug"].toggle');
+
+        // Read saved preference (localStorage key: filemanager_debug)
+        const saved = (() => {
+            try {
+                return localStorage.getItem('filemanager_debug');
+            } catch (e) { return null; }
+        })();
+
+        const initialDebug = (saved !== null) ? (saved === 'true') : (typeof config !== 'undefined' ? !!config.debugMode : true);
+
+        // Ensure config mirrors saved value
+        if (typeof config !== 'undefined') {
+            config.debugMode = initialDebug;
+            // Backwards compatibility: some modules check config.debug
+            config.debug = initialDebug;
+        }
+
+        // Helper to update visual state of the custom toggle
+        function setToggleState(enabled) {
+            if (toggleDebug) {
+                toggleDebug.checked = !!enabled;
+            }
+            if (toggleLabel) {
+                toggleLabel.setAttribute('aria-checked', !!enabled);
+                toggleLabel.classList.toggle('is-on', !!enabled);
+                // make it focusable for keyboard users
+                toggleLabel.tabIndex = 0;
+            }
+        }
+
+        // Initialize UI state
+        setToggleState(initialDebug);
+
+        // Make label clickable / keyboard operable to behave like a switch
+        if (toggleLabel) {
+            // Click toggles the switch
+            toggleLabel.addEventListener('click', (ev) => {
+                ev.preventDefault();
+                const newVal = !(toggleDebug && toggleDebug.checked);
+                setToggleState(newVal);
+            });
+
+            // Keyboard support (Space / Enter)
+            toggleLabel.addEventListener('keydown', (ev) => {
+                if (ev.key === ' ' || ev.key === 'Enter') {
+                    ev.preventDefault();
+                    const newVal = !(toggleDebug && toggleDebug.checked);
+                    setToggleState(newVal);
+                }
+            });
+        }
+
+        const openSettings = () => {
+            if (settingsOverlay) {
+                settingsOverlay.hidden = false;
+                settingsOverlay.setAttribute('aria-hidden', 'false');
+                // focus first interactive control for accessibility
+                (toggleLabel || settingsClose)?.focus();
+                document.body.classList.add('modal-open');
+            }
+        };
+
+        const closeSettings = () => {
+            if (settingsOverlay) {
+                settingsOverlay.hidden = true;
+                settingsOverlay.setAttribute('aria-hidden', 'true');
+                document.body.classList.remove('modal-open');
+            }
+        };
+
+        if (btnSettings) btnSettings.addEventListener('click', openSettings);
+        if (settingsClose) settingsClose.addEventListener('click', closeSettings);
+        if (settingsCancel) settingsCancel.addEventListener('click', closeSettings);
+
+        if (settingsSave) {
+            settingsSave.addEventListener('click', () => {
+                const enabled = !!(toggleDebug && toggleDebug.checked);
+                try {
+                    localStorage.setItem('filemanager_debug', enabled ? 'true' : 'false');
+                } catch (e) { /* ignore */ }
+
+                if (typeof config !== 'undefined') {
+                    config.debugMode = enabled;
+                    config.debug = enabled;
+                }
+
+                // Immediate feedback to console (will respect new setting)
+                if (!enabled) {
+                    // Clear development debug lines that still log directly (best-effort)
+                    if (console && console.clear) {
+                        console.clear();
+                    }
+                } else {
+                    console.log('Debug logging enabled');
+                }
+
+                closeSettings();
+            });
+        }
+
+        // Close overlay when clicking outside dialog
+        if (settingsOverlay) {
+            settingsOverlay.addEventListener('click', (e) => {
+                if (e.target === settingsOverlay) {
+                    closeSettings();
+                }
+            });
+        }
+    } catch (e) {
+        // Non-fatal: settings UI failed to initialize
+        console.warn('Settings UI initialization failed:', e);
+    }
 });
 
 /**
