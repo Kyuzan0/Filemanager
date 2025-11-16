@@ -963,8 +963,28 @@ export function updateStatus(statusInfo, statusTime, statusFilter, totalCount, f
  * @param {boolean} isLoading - Status loading
  */
 export function setLoading(loaderOverlay, btnRefresh, isLoading) {
-    loaderOverlay.classList.toggle('visible', isLoading);
-    btnRefresh.disabled = isLoading;
+    // Defensive: guard against missing elements to avoid Uncaught TypeErrors
+    if (loaderOverlay && loaderOverlay.classList) {
+        loaderOverlay.classList.toggle('visible', !!isLoading);
+    } else {
+        // Fallback: try common selectors if passed element is null
+        const overlay = document.getElementById('loader-overlay') || document.querySelector('.loader-overlay');
+        if (overlay && overlay.classList) overlay.classList.toggle('visible', !!isLoading);
+    }
+
+    if (btnRefresh) {
+        try {
+            btnRefresh.disabled = !!isLoading;
+        } catch (e) {
+            // Element exists but cannot be disabled — ignore safely
+        }
+    } else {
+        // Fallback: query by id if button not provided
+        const btn = document.getElementById('btn-refresh') || document.querySelector('#btn-refresh');
+        if (btn) {
+            try { btn.disabled = !!isLoading; } catch (e) { /* ignore */ }
+        }
+    }
 }
 
 /**

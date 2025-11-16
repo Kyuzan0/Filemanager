@@ -149,6 +149,8 @@ export async function moveItem(
     
     let rollbackFn = null;
     let domRollback = null;
+    let optimisticStart = null;
+    let optimisticEnd = null;
     
     try {
         debugLog('[PERF] Move operation started:', sourcePath, '->', targetPath);
@@ -157,7 +159,7 @@ export async function moveItem(
         if (optimistic) {
             // OPTIMISTIC UPDATE: Immediately update UI before API call
             debugLog('[PERF] Applying optimistic UI update');
-            const optimisticStart = performance.now();
+            optimisticStart = performance.now();
             
             // Remove row from DOM immediately
             domRollback = moveRowInDOM(sourcePath);
@@ -181,7 +183,7 @@ export async function moveItem(
                 }
             );
             
-            const optimisticEnd = performance.now();
+            optimisticEnd = performance.now();
             debugPerf('Optimistic UI update completed in', optimisticEnd - optimisticStart);
         }
         
@@ -216,7 +218,9 @@ export async function moveItem(
         
         const perfEnd = performance.now();
         debugPerf('Total move operation time', perfEnd - perfStart);
-        debugPerf('User perceived time', optimistic ? (optimisticEnd - optimisticStart) : (perfEnd - perfStart));
+        debugPerf('User perceived time', (optimistic && optimisticStart !== null && optimisticEnd !== null)
+            ? (optimisticEnd - optimisticStart)
+            : (perfEnd - perfStart));
         
     } catch (error) {
         debugError('[ERROR] Move operation failed:', error);
