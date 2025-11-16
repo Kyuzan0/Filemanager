@@ -574,6 +574,210 @@ function upload_files(string $root, string $relativePath, array $files): array
     ];
 }
 
+/**
+ * Handle a single uploaded chunk and assemble when all chunks are present.
+ *
+ * Protocol (client must follow):
+ * - POST a single file field named "file" containing the chunk bytes
+ * - POST fields:
+ *     - originalName: original filename (required to assemble)
+ *     - chunkIndex: 0-based index of this chunk (required)
+ *     - totalChunks: total number of chunks for this file (required)
+ *
+ * Returns array:
+ *  - uploaded: [] when not finished, or array with assembled item when finished
+ *  - errors: [] on success or with error objects
+ *  - finished: boolean whether assembly is complete
+ */
+function upload_chunk(string $root, string $relativePath, array $fileEntry, string $originalName, int $chunkIndex, int $totalChunks): array
+{
+    $result = [
+        'uploaded' => [],
+        'errors' => [],
+        'finished' => false,
+    ];
+
+    try {
+        [$normalizedRoot, $sanitizedRelativeUrl, $realTargetPath] = resolve_path($root, $relativePath);
+
+        if (!is_dir($realTargetPath)) {
+            throw new RuntimeException('Direktori tujuan tidak valid.');
+        }
+
+        assert_writable_directory($realTargetPath);
+
+        if ($originalName === '') {
+            throw new RuntimeException('Nama file asli wajib diisi.');
+        }
+
+        $basename = basename($originalName);
+        if ($basename === '' || preg_match('/[\\\\\/]/', $basename)) {
+            throw new RuntimeException('Nama file tidak valid.');
+        }
+
+        if ($chunkIndex < 0 || $totalChunks < 1) {
+            throw new RuntimeException('Indeks chunk atau total chunk tidak valid.');
+        }
+
+        if (!is_uploaded_file($fileEntry['tmp_name'] ?? '')) {
+            $result['errors'][] = [
+                'name' => $originalName,
+                'error' => 'File chunk tidak valid.'
+            ];
+            return $result;
+        }
+
+        // Prepare temp storage for chunks
+        $tempBase = sys_get_temp_dir() . DIRECTORY_SEPARATOR . 'filemanager_uploads';
+        if (!is_dir($tempBase)) {
+            @mkdir($tempBase, 0755, true);
+        }
+
+        // Use a deterministic upload id to allow resumed uploads from same file+path
+        $uploadId = sha1($normalizedRoot . '|' . $sanitizedRelativeUrl . '|' . $basename);
+        $chunkDir = $tempBase . DIRECTORY_SEPARATOR . $uploadId;
+
+        if (!is_dir($chunkDir)) {
+            @mkdir($chunkDir, 0755, true);
+        }
+
+        $chunkPath = $chunkDir . DIRECTORY_SEPARATOR . 'chunk_' . (int)$chunkIndex . '.part';
+
+        if (!@move_uploaded_file($fileEntry['tmp_name'], $chunkPath)) {
+            $err = error_get_last();
+            $message = $err['message'] ?? 'Gagal menyimpan chunk.';
+            $result['errors'][] = [
+                'name' => $originalName,
+                'error' => $message,
+            ];
+            return $result;
+        }
+
+        // Check how many chunk files exist
+        $found = glob($chunkDir . DIRECTORY_SEPARATOR . 'chunk_*.part') ?: [];
+        $received = count($found);
+
+        // If not all chunks received yet, return partial status
+        if ($received < $totalChunks) {
+            return $result; // uploaded empty, finished false
+        }
+
+        // All chunks present -> assemble final file
+        $targetPath = $realTargetPath . DIRECTORY_SEPARATOR . $basename;
+
+        if (file_exists($targetPath)) {
+            $result['errors'][] = [
+                'name' => $originalName,
+                'error' => 'File dengan nama sama sudah ada.'
+            ];
+            return $result;
+        }
+
+        $outHandle = @fopen($targetPath, 'c');
+        if ($outHandle === false) {
+            $result['errors'][] = [
+                'name' => $originalName,
+                'error' => 'Gagal membuat berkas akhir.'
+            ];
+            return $result;
+        }
+
+        // Lock final file while assembling
+        if (!@flock($outHandle, LOCK_EX)) {
+            fclose($outHandle);
+            $result['errors'][] = [
+                'name' => $originalName,
+                'error' => 'Gagal mendapatkan kunci untuk menulis berkas akhir.'
+            ];
+            return $result;
+        }
+
+        // Append chunks in order
+        for ($i = 0; $i < $totalChunks; $i++) {
+            $part = $chunkDir . DIRECTORY_SEPARATOR . 'chunk_' . $i . '.part';
+            if (!is_file($part)) {
+                // Missing part - abort
+                flock($outHandle, LOCK_UN);
+                fclose($outHandle);
+                $result['errors'][] = [
+                    'name' => $originalName,
+                    'error' => "Chunk ke-{$i} hilang saat merakit file."
+                ];
+                return $result;
+            }
+
+            $in = @fopen($part, 'rb');
+            if ($in === false) {
+                flock($outHandle, LOCK_UN);
+                fclose($outHandle);
+                $result['errors'][] = [
+                    'name' => $originalName,
+                    'error' => "Gagal membaca chunk ke-{$i}."
+                ];
+                return $result;
+            }
+
+            while (!feof($in)) {
+                $buffer = fread($in, 8192);
+                if ($buffer === false) {
+                    fclose($in);
+                    flock($outHandle, LOCK_UN);
+                    fclose($outHandle);
+                    $result['errors'][] = [
+                        'name' => $originalName,
+                        'error' => "Gagal membaca chunk ke-{$i} saat menulis."
+                    ];
+                    return $result;
+                }
+                $written = fwrite($outHandle, $buffer);
+                if ($written === false) {
+                    fclose($in);
+                    flock($outHandle, LOCK_UN);
+                    fclose($outHandle);
+                    $result['errors'][] = [
+                        'name' => $originalName,
+                        'error' => 'Gagal menulis ke berkas akhir.'
+                    ];
+                    return $result;
+                }
+            }
+            fclose($in);
+        }
+
+        // Assembly complete
+        fflush($outHandle);
+        flock($outHandle, LOCK_UN);
+        fclose($outHandle);
+
+        // Cleanup chunk files
+        foreach (glob($chunkDir . DIRECTORY_SEPARATOR . 'chunk_*.part') as $p) {
+            @unlink($p);
+        }
+        @rmdir($chunkDir);
+
+        clearstatcache(true, $targetPath);
+        $relativeItemPath = $sanitizedRelativeUrl === ''
+            ? $basename
+            : $sanitizedRelativeUrl . '/' . $basename;
+
+        $result['uploaded'][] = [
+            'name' => $basename,
+            'path' => $relativeItemPath,
+            'type' => 'file',
+            'modified' => filemtime($targetPath) ?: time(),
+        ];
+        $result['finished'] = true;
+
+        return $result;
+    } catch (Throwable $e) {
+        $result['errors'][] = [
+            'name' => $originalName,
+            'error' => $e->getMessage(),
+        ];
+        return $result;
+    }
+}
+
 function upload_code_to_message(int $code): string
 {
     return match ($code) {

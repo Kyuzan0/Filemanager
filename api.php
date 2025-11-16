@@ -72,13 +72,55 @@ try {
             throw new RuntimeException('Metode HTTP tidak diizinkan.');
         }
 
-        if (!isset($_FILES['files'])) {
-            throw new RuntimeException('Tidak ada file yang diunggah.');
-        }
-
         $targetPath = $sanitizedPath;
         if (isset($_POST['path']) && is_string($_POST['path'])) {
             $targetPath = sanitize_relative_path(rawurldecode($_POST['path']));
+        }
+
+        // Support chunked uploads: client sends field 'file' (single chunk), plus
+        // 'chunkIndex' (0-based) and 'totalChunks'. 'originalName' must contain the original filename.
+        if (isset($_FILES['file']) && isset($_POST['chunkIndex'])) {
+            $originalName = '';
+            if (isset($_POST['originalName']) && is_string($_POST['originalName'])) {
+                $originalName = $_POST['originalName'];
+            } elseif (isset($_POST['name']) && is_string($_POST['name'])) {
+                $originalName = $_POST['name'];
+            }
+
+            $chunkIndex = isset($_POST['chunkIndex']) ? (int) $_POST['chunkIndex'] : 0;
+            $totalChunks = isset($_POST['totalChunks']) ? (int) $_POST['totalChunks'] : 1;
+            $fileEntry = $_FILES['file'];
+
+            $result = upload_chunk($root, $targetPath, $fileEntry, $originalName, $chunkIndex, $totalChunks);
+
+            $hasErrors = !empty($result['errors'] ?? []);
+            if ($hasErrors) {
+                http_response_code(400);
+                echo json_encode([
+                    'success' => false,
+                    'type' => 'upload',
+                    'uploaded' => $result['uploaded'] ?? [],
+                    'errors' => $result['errors'],
+                    'finished' => $result['finished'] ?? false,
+                    'generated_at' => time(),
+                ], JSON_UNESCAPED_UNICODE);
+                exit;
+            }
+
+            echo json_encode([
+                'success' => true,
+                'type' => 'upload',
+                'uploaded' => $result['uploaded'] ?? [],
+                'errors' => $result['errors'] ?? [],
+                'finished' => $result['finished'] ?? false,
+                'generated_at' => time(),
+            ], JSON_UNESCAPED_UNICODE);
+            exit;
+        }
+
+        // Legacy / non-chunked upload (multiple files)
+        if (!isset($_FILES['files'])) {
+            throw new RuntimeException('Tidak ada file yang diunggah.');
         }
 
         $result = upload_files($root, $targetPath, $_FILES['files']);
