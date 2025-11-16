@@ -306,7 +306,7 @@ export function createSpacer(height) {
     if (height <= 0) return null;
     
     const spacer = document.createElement('tr');
-    spacer.className = 'virtual-scroll-spacer';
+    spacer.classList.add('virtual-scroll-spacer');
     spacer.style.height = `${height}px`;
     spacer.setAttribute('aria-hidden', 'true');
     

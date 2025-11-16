@@ -328,7 +328,7 @@ export function createRowActionButton(icon, label, handler, variant = '') {
     btn.type = 'button';
 
     // Base tokens: keep legacy row-action and add the new .btn compatibility token
-    btn.className = 'row-action';
+    btn.classList.add('row-action');
     btn.classList.add('btn');
 
     // Preserve any variant tokens passed (e.g. 'primary', 'outline', 'danger')

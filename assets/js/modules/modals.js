@@ -702,10 +702,10 @@ export function ensurePreviewViewer(previewBody) {
     if (!wrapper) {
         wrapper = document.createElement('div');
         wrapper.id = 'preview-viewer-wrapper';
-        wrapper.className = 'preview-viewer-wrapper';
+        wrapper.classList.add('preview-viewer-wrapper');
         const viewer = document.createElement('div');
         viewer.id = 'preview-viewer';
-        viewer.className = 'preview-viewer';
+        viewer.classList.add('preview-viewer');
         wrapper.appendChild(viewer);
         if (previewBody) {
             previewBody.appendChild(wrapper);

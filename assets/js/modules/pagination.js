@@ -160,7 +160,7 @@ export function renderPaginationControls() {
         // Buat container baru jika belum ada
         paginationContainer = document.createElement('div');
         // Add Tailwind utility classes alongside existing class for a gradual migration
-        paginationContainer.className = 'pagination-container flex flex-wrap items-center justify-between gap-4 p-3 bg-transparent';
+        paginationContainer.classList.add('pagination-container','flex','flex-wrap','items-center','justify-between','gap-4','p-3','bg-transparent');
         
         // Insert setelah table-wrapper
         const tableWrapper = document.querySelector('.table-wrapper');

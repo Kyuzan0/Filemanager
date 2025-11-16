@@ -1935,7 +1935,7 @@ async function loadInitialDirectory() {
 function showError(message) {
     // Create error notification
     const errorDiv = document.createElement('div');
-    errorDiv.className = 'error-notification';
+    errorDiv.classList.add('error-notification');
     errorDiv.textContent = message;
     errorDiv.style.cssText = `
         position: fixed;
@@ -1993,7 +1993,7 @@ function setupPWA() {
     function showInstallButton() {
         const installButton = document.createElement('button');
         installButton.textContent = 'Install App';
-        installButton.className = 'install-button';
+        installButton.classList.add('install-button');
         installButton.classList.add('btn');
         installButton.style.cssText = `
             position: fixed;
@@ -2050,7 +2050,7 @@ function setupTheme() {
     // Add theme toggle button if needed
     const themeToggle = document.createElement('button');
     themeToggle.innerHTML = savedTheme === 'dark' ? '🌙' : '☀️';
-    themeToggle.className = 'theme-toggle';
+    themeToggle.classList.add('theme-toggle');
     themeToggle.classList.add('btn');
     themeToggle.style.cssText = `
         position: fixed;
