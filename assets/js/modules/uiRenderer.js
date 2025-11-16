@@ -152,6 +152,11 @@ function renderItemRow(item, state, params) {
     row.dataset.itemPath = key;
     row.dataset.itemType = item.type;
     row.tabIndex = 0;
+    // Accessibility: explicit role for assistive tech when headers are visually hidden
+    try { row.setAttribute('role', 'row'); } catch (e) {}
+    // Tailwind utility classes added progressively (migration): hover + group support
+    // Keep table semantics but add a conservative visual layer so rows get subtle hover/appearance
+    row.className = 'tw-row group hover:bg-gray-50 cursor-default';
     const extension = item.type === 'file' ? getFileExtension(item.name) : '';
     const isPreviewable = item.type === 'file' && previewableExtensions.has(extension);
     const isMediaPreviewable = item.type === 'file' && mediaPreviewableExtensions.has(extension);
@@ -166,10 +171,11 @@ function renderItemRow(item, state, params) {
 
     // Selection cell
     const selectionCell = document.createElement('td');
-    selectionCell.className = 'selection-cell';
+    selectionCell.className = 'selection-cell px-3 w-12';
+    try { selectionCell.setAttribute('role', 'gridcell'); } catch (e) {}
     const checkbox = document.createElement('input');
     checkbox.type = 'checkbox';
-    checkbox.className = 'item-select';
+    checkbox.className = 'item-select form-checkbox h-4 w-4 text-primary';
     checkbox.dataset.path = key;
     checkbox.checked = state.selected.has(key);
     checkbox.setAttribute('aria-label', `Pilih ${item.name}`);
@@ -242,10 +248,11 @@ function renderItemRow(item, state, params) {
 
     // Name cell with icon
     const cellName = document.createElement('td');
-    cellName.className = 'name-cell item-name';
+    cellName.className = 'name-cell item-name flex items-center gap-4 min-w-0';
+    try { cellName.setAttribute('role', 'gridcell'); } catch (e) {}
     const iconInfo = getItemIcon(item);
     const icon = document.createElement('span');
-    icon.className = `item-icon ${iconInfo.className}`;
+    icon.className = `item-icon ${iconInfo.className} inline-flex items-center justify-center w-8 h-8 rounded-md`;
     icon.innerHTML = iconInfo.svg;
     icon.style.cursor = 'pointer';
     
@@ -327,21 +334,23 @@ function renderItemRow(item, state, params) {
     let badge = null;
     if (!previouslySeen && highlightNew) {
         badge = document.createElement('span');
-        badge.className = 'badge badge-new';
+        badge.className = 'badge badge-new inline-flex items-center px-2 py-0.5 text-xs font-semibold bg-green-100 text-green-700 rounded-full';
         badge.textContent = 'Baru';
         cellName.appendChild(badge);
     }
 
     // Modified date cell
     const cellModified = document.createElement('td');
-    cellModified.className = 'modified-cell';
+    cellModified.className = 'modified-cell text-sm text-gray-500 w-36 text-right';
+    try { cellModified.setAttribute('role', 'gridcell'); } catch (e) {}
     cellModified.textContent = formatDate(item.modified);
 
     // Actions cell
     const actionCell = document.createElement('td');
-    actionCell.className = 'actions-cell';
+    actionCell.className = 'actions-cell w-36 pr-2 text-right';
+    try { actionCell.setAttribute('role', 'gridcell'); } catch (e) {}
     const actionGroup = document.createElement('div');
-    actionGroup.className = 'row-actions';
+    actionGroup.className = 'row-actions inline-flex items-center gap-2 justify-end';
 
     if (item.type === 'folder') {
         actionGroup.appendChild(createRowActionButton(
@@ -391,7 +400,7 @@ function renderItemRow(item, state, params) {
                 .catch(() => setError('Gagal menyalin path.'));
         },
     ));
-
+    
     actionGroup.appendChild(createRowActionButton(
         actionIcons.delete,
         'Hapus Item',
@@ -410,7 +419,7 @@ function renderItemRow(item, state, params) {
                     });
                 return;
             }
-
+    
             openConfirmOverlay({
                 message: `Hapus "${item.name}"?`,
                 description: 'Item yang dihapus tidak dapat dikembalikan.',
@@ -421,7 +430,18 @@ function renderItemRow(item, state, params) {
         },
         'danger',
     ));
-
+    
+    // Add Tailwind utility classes to action buttons produced by createRowActionButton
+    try {
+        Array.from(actionGroup.querySelectorAll('.row-action')).forEach((btn) => {
+            // conservative set of utilities — keeps behaviour while transitioning styles
+            btn.classList.add('inline-flex','items-center','justify-center','w-8','h-8','rounded-md','border','border-transparent','bg-blue-50','text-blue-600','transition','hover:bg-blue-600','hover:text-white');
+        });
+    } catch (e) {
+        // defensive: if querySelectorAll fails in some environments, ignore
+        debugLog('[uiRenderer] Failed to apply Tailwind classes to action buttons', e);
+    }
+    
     actionCell.appendChild(actionGroup);
     row.appendChild(cellName);
     row.appendChild(cellModified);
@@ -628,12 +648,12 @@ export function renderItems(
     // Insert "Up (..)" row at the top when not at root
     if (state.parentPath !== null) {
         const upRow = document.createElement('tr');
-        upRow.className = 'up-row';
+        upRow.className = 'up-row cursor-pointer';
         upRow.tabIndex = 0;
-
+    
         // Empty selection cell (no checkbox)
         const upSel = document.createElement('td');
-        upSel.className = 'selection-cell';
+        upSel.className = 'selection-cell w-12';
         upRow.appendChild(upSel);
 
         // Name cell with "↑ .." label (no icon)
@@ -657,7 +677,7 @@ export function renderItems(
 
         // Empty actions cell (no actions)
         const upActions = document.createElement('td');
-        upActions.className = 'actions-cell';
+        upActions.className = 'actions-cell w-36 pr-2';
         upRow.appendChild(upActions);
 
         // Keyboard and mouse interactions
