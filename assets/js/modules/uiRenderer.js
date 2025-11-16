@@ -102,7 +102,7 @@ export function renderBreadcrumbs(breadcrumbsEl, breadcrumbs, navigateTo) {
 
         if (!isLast) {
             const separator = document.createElement('span');
-            separator.className = 'breadcrumb-separator';
+            separator.classList.add('breadcrumb-separator');
             separator.textContent = '\u203A';
             separator.setAttribute('aria-hidden', 'true');
             breadcrumbsEl.appendChild(separator);
@@ -157,7 +157,8 @@ function renderItemRow(item, state, params) {
     // Tailwind utility classes added progressively (migration): hover + group support
     // Keep table semantics but add a conservative visual layer so rows get subtle hover/appearance
     // transition-colors included to smooth hover changes during migration
-    row.className = 'tw-row group hover:bg-gray-50 cursor-default transition-colors';
+    // Preserve existing classes and add Tailwind utilities conservatively
+    row.classList.add('tw-row','group','hover:bg-gray-50','cursor-default','transition-colors');
     const extension = item.type === 'file' ? getFileExtension(item.name) : '';
     const isPreviewable = item.type === 'file' && previewableExtensions.has(extension);
     const isMediaPreviewable = item.type === 'file' && mediaPreviewableExtensions.has(extension);
@@ -172,11 +173,11 @@ function renderItemRow(item, state, params) {
 
     // Selection cell
     const selectionCell = document.createElement('td');
-    selectionCell.className = 'selection-cell px-3 w-12 text-center';
+    selectionCell.classList.add('selection-cell','px-3','w-12','text-center','align-middle');
     try { selectionCell.setAttribute('role', 'gridcell'); } catch (e) {}
     const checkbox = document.createElement('input');
     checkbox.type = 'checkbox';
-    checkbox.className = 'item-select form-checkbox h-4 w-4 text-primary';
+    checkbox.classList.add('item-select','form-checkbox','h-4','w-4','text-primary');
     checkbox.dataset.path = key;
     checkbox.checked = state.selected.has(key);
     checkbox.setAttribute('aria-label', `Pilih ${item.name}`);
@@ -249,11 +250,16 @@ function renderItemRow(item, state, params) {
 
     // Name cell with icon
     const cellName = document.createElement('td');
-    cellName.className = 'name-cell item-name flex items-center gap-4 min-w-0 flex-1';
+    cellName.classList.add('name-cell','item-name','flex','items-center','gap-4','min-w-0','flex-1');
     try { cellName.setAttribute('role', 'gridcell'); } catch (e) {}
     const iconInfo = getItemIcon(item);
     const icon = document.createElement('span');
-    icon.className = `item-icon ${iconInfo.className} inline-flex items-center justify-center w-8 h-8 rounded-md`;
+    // Preserve any classes provided by iconInfo but avoid overwriting existing classes.
+    icon.classList.add('item-icon');
+    if (iconInfo.className && iconInfo.className.trim()) {
+        iconInfo.className.trim().split(/\s+/).forEach(c => icon.classList.add(c));
+    }
+    icon.classList.add('inline-flex','items-center','justify-center','w-8','h-8','rounded-md');
     icon.innerHTML = iconInfo.svg;
     icon.style.cursor = 'pointer';
     
@@ -295,7 +301,7 @@ function renderItemRow(item, state, params) {
     cellName.appendChild(icon);
 
     const link = document.createElement('a');
-    link.className = 'item-link truncate block text-sm text-gray-800';
+    link.classList.add('item-link','truncate','block','text-sm','text-gray-800');
     link.textContent = item.name;
 
     if (item.type === 'folder') {
@@ -335,23 +341,23 @@ function renderItemRow(item, state, params) {
     let badge = null;
     if (!previouslySeen && highlightNew) {
         badge = document.createElement('span');
-        badge.className = 'badge badge-new inline-flex items-center px-2 py-0.5 text-xs font-semibold bg-green-100 text-green-700 rounded-full ml-2';
+        badge.classList.add('badge','badge-new','inline-flex','items-center','px-2','py-0.5','text-xs','font-semibold','bg-green-100','text-green-700','rounded-full','ml-2');
         badge.textContent = 'Baru';
         cellName.appendChild(badge);
     }
 
     // Modified date cell
     const cellModified = document.createElement('td');
-    cellModified.className = 'modified-cell text-sm text-gray-500 w-36 text-right whitespace-nowrap';
+    cellModified.classList.add('modified-cell','text-sm','text-gray-500','w-36','text-right','whitespace-nowrap');
     try { cellModified.setAttribute('role', 'gridcell'); } catch (e) {}
     cellModified.textContent = formatDate(item.modified);
 
     // Actions cell
     const actionCell = document.createElement('td');
-    actionCell.className = 'actions-cell w-36 pr-2 text-right';
+    actionCell.classList.add('actions-cell','w-36','pr-2','text-right');
     try { actionCell.setAttribute('role', 'gridcell'); } catch (e) {}
     const actionGroup = document.createElement('div');
-    actionGroup.className = 'row-actions inline-flex items-center gap-2 justify-end';
+    actionGroup.classList.add('row-actions','inline-flex','items-center','gap-2','justify-end');
 
     if (item.type === 'folder') {
         actionGroup.appendChild(createRowActionButton(
@@ -501,9 +507,10 @@ function renderVirtualItems(tableBody, filtered, state, params) {
         tableBody.appendChild(upRow);
     }
 
-    // Create top spacer
-    const topSpacer = createSpacer((start * vsConfig.itemHeight) + 'px');
-    tableBody.appendChild(topSpacer);
+    // Create top spacer (use numeric height and guard against null spacer)
+    const topSpaceHeight = start * vsConfig.itemHeight;
+    const topSpacer = createSpacer(topSpaceHeight);
+    if (topSpacer) tableBody.appendChild(topSpacer);
 
     // Render visible items
     const fragment = document.createDocumentFragment();
@@ -515,13 +522,38 @@ function renderVirtualItems(tableBody, filtered, state, params) {
     }
     tableBody.appendChild(fragment);
 
-    // Create bottom spacer
-    const remainingItems = Math.max(0, filtered.length - end);
-    const bottomSpacer = createSpacer((remainingItems * vsConfig.itemHeight) + 'px');
-    tableBody.appendChild(bottomSpacer);
+    // Reconcile computed row height with virtual scroll configuration.
+    // This helps keep config.virtualScroll.itemHeight in sync with actual CSS during migration.
+    try {
+        const firstRow = tableBody.querySelector('tr:not(.up-row)');
+        if (firstRow) {
+            const actualHeight = Math.round(firstRow.getBoundingClientRect().height);
+            if (actualHeight > 0 && actualHeight !== vsConfig.itemHeight) {
+                vsConfig.itemHeight = actualHeight;
+                if (virtualScrollManager) {
+                    // Best-effort: update manager's itemHeight and call optional updater if available
+                    virtualScrollManager.itemHeight = actualHeight;
+                    if (typeof virtualScrollManager.updateItemHeight === 'function') {
+                        virtualScrollManager.updateItemHeight(actualHeight);
+                    }
+                }
+            }
+        }
+    } catch (e) {
+        // Ignore measurement errors in older browsers/environments
+        debugLog('[VirtualScroll] Failed to reconcile itemHeight', e);
+    }
 
-    // Track performance
-    virtualScrollManager.trackRender(end - start);
+    // Create bottom spacer (use numeric height and guard against null spacer)
+    const remainingItems = Math.max(0, filtered.length - end);
+    const bottomSpaceHeight = remainingItems * vsConfig.itemHeight;
+    const bottomSpacer = createSpacer(bottomSpaceHeight);
+    if (bottomSpacer) tableBody.appendChild(bottomSpacer);
+
+    // Track performance (call trackRender if available)
+    if (virtualScrollManager && typeof virtualScrollManager.trackRender === 'function') {
+        virtualScrollManager.trackRender(end - start);
+    }
 }
 
 /**
@@ -649,20 +681,20 @@ export function renderItems(
     // Insert "Up (..)" row at the top when not at root
     if (state.parentPath !== null) {
         const upRow = document.createElement('tr');
-        upRow.className = 'up-row cursor-pointer hover:bg-gray-50';
+        upRow.classList.add('up-row','cursor-pointer','hover:bg-gray-50','transition-colors');
         upRow.tabIndex = 0;
         try { upRow.setAttribute('role', 'row'); } catch (e) {}
     
         // Empty selection cell (no checkbox)
         const upSel = document.createElement('td');
-        upSel.className = 'selection-cell w-12';
+        upSel.classList.add('selection-cell','w-12','px-3','text-center','align-middle');
         upRow.appendChild(upSel);
-
+    
         // Name cell with "↑ .." label (no icon)
         const upName = document.createElement('td');
-        upName.className = 'item-name';
+        upName.classList.add('item-name','px-3','text-sm');
         const upLink = document.createElement('a');
-        upLink.className = 'item-link';
+        upLink.classList.add('item-link');
         upLink.href = '#';
         upLink.textContent = '↑ ..';
         upLink.addEventListener('click', (event) => {
@@ -671,15 +703,16 @@ export function renderItems(
         });
         upName.appendChild(upLink);
         upRow.appendChild(upName);
-
+    
         // Modified column shows "-"
         const upModified = document.createElement('td');
+        upModified.classList.add('modified-cell','text-sm','text-gray-500','w-36','text-right','whitespace-nowrap','px-3');
         upModified.textContent = '-';
         upRow.appendChild(upModified);
-
+    
         // Empty actions cell (no actions)
         const upActions = document.createElement('td');
-        upActions.className = 'actions-cell w-36 pr-2';
+        upActions.classList.add('actions-cell','w-36','pr-2','px-3','text-right');
         upRow.appendChild(upActions);
 
         // Keyboard and mouse interactions
