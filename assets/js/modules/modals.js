@@ -8,6 +8,35 @@ import { config } from './constants.js';
 import { hasUnsavedChanges } from './utils.js';
 
 /**
+ * Overlay open-count guard to avoid removing body.modal-open while other overlays remain open.
+ * We use a simple counter so individual open/close flows can call markOverlayOpen/markOverlayClosed
+ * without needing to coordinate with other modules.
+ */
+let _openOverlayCount = 0;
+export function markOverlayOpen() {
+    try {
+        _openOverlayCount = Math.max(0, _openOverlayCount) + 1;
+        if (_openOverlayCount === 1) {
+            document.body.classList.add('modal-open');
+        }
+    } catch (e) {
+        // defensive: if DOM not available, fallback to direct add
+        try { document.body.classList.add('modal-open'); } catch (_) {}
+    }
+}
+export function markOverlayClosed() {
+    try {
+        _openOverlayCount = Math.max(0, _openOverlayCount - 1);
+        if (_openOverlayCount === 0) {
+            document.body.classList.remove('modal-open');
+        }
+    } catch (e) {
+        // defensive fallback
+        try { document.body.classList.remove('modal-open'); } catch (_) {}
+    }
+}
+
+/**
  * Membuka overlay preview
  * @param {Object} state - State aplikasi
  * @param {HTMLElement} previewOverlay - Elemen preview overlay
@@ -24,11 +53,43 @@ export function openPreviewOverlay(state, previewOverlay, previewClose) {
         : null;
 
     previewOverlay.hidden = false;
+    // Add Tailwind utilities for overlay + dialog (non-destructive, keeps existing classes)
+    previewOverlay.classList.add(
+        'tw-overlay',
+        'fixed',
+        'inset-0',
+        'flex',
+        'items-center',
+        'justify-center',
+        'bg-black/50',
+        'z-50'
+    );
     requestAnimationFrame(() => {
         previewOverlay.classList.add('visible');
+        // Enhance inner dialog (if present) with Tailwind utilities; keep try/catch defensive
+        try {
+            const dialog = previewOverlay.querySelector('.modal') || previewOverlay.querySelector('.dialog') || previewOverlay.querySelector('.overlay-dialog');
+            if (dialog) {
+                dialog.classList.add('bg-white', 'rounded-lg', 'shadow-lg', 'p-4', 'max-w-3xl', 'w-full');
+                // Accessibility: mark dialog semantics and make it programmatically focusable
+                try {
+                    dialog.setAttribute('role', 'dialog');
+                    dialog.setAttribute('aria-modal', 'true');
+                    dialog.tabIndex = -1;
+                } catch (e) {}
+            }
+        } catch (e) {
+            // intentionally silent to avoid breaking if DOM shape differs
+        }
     });
     previewOverlay.setAttribute('aria-hidden', 'false');
-    document.body.classList.add('modal-open');
+    markOverlayOpen();
+    // Attach accessibility hooks (focus trap + Escape) using close via provided close button
+    try {
+        attachOverlayA11y(previewOverlay, () => {
+            if (previewClose && typeof previewClose.click === 'function') previewClose.click();
+        });
+    } catch (e) {}
     previewClose.focus();
 }
 
@@ -126,7 +187,7 @@ function doClosePreviewOverlay(
     state.preview.isOpen = false;
     previewOverlay.classList.remove('visible');
     previewOverlay.setAttribute('aria-hidden', 'true');
-    document.body.classList.remove('modal-open');
+    markOverlayClosed();
     previewOpenRaw.href = '#';
     previewEditor.value = '';
     updateLineNumbers();
@@ -223,13 +284,38 @@ export function openConfirmOverlay(
     confirmConfirm.textContent = confirmLabel;
 
     confirmOverlay.hidden = false;
+    // Add Tailwind utilities for confirm overlay/dialog (additive)
+    confirmOverlay.classList.add(
+        'tw-overlay',
+        'fixed',
+        'inset-0',
+        'flex',
+        'items-center',
+        'justify-center',
+        'bg-black/50',
+        'z-50'
+    );
     requestAnimationFrame(() => {
         confirmOverlay.classList.add('visible');
+        try {
+            const dialog = confirmOverlay.querySelector('.modal') || confirmOverlay.querySelector('.dialog') || confirmOverlay.querySelector('.confirm-dialog');
+            if (dialog) {
+                dialog.classList.add('bg-white', 'rounded-lg', 'shadow-lg', 'p-4', 'max-w-lg', 'w-full');
+                // Accessibility semantics
+                try {
+                    dialog.setAttribute('role', 'dialog');
+                    dialog.setAttribute('aria-modal', 'true');
+                    dialog.tabIndex = -1;
+                } catch (e) {}
+            }
+        } catch (e) {}
     });
     confirmOverlay.setAttribute('aria-hidden', 'false');
-    if (!state.preview.isOpen) {
-        document.body.classList.add('modal-open');
-    }
+    markOverlayOpen();
+    // Attach accessibility hooks: use closeConfirmOverlay (bind state+overlay)
+    try {
+        attachOverlayA11y(confirmOverlay, () => closeConfirmOverlay(state, confirmOverlay));
+    } catch (e) {}
     confirmConfirm.focus();
 }
 
@@ -246,9 +332,7 @@ export function closeConfirmOverlay(state, confirmOverlay) {
     state.confirm.paths = [];
     confirmOverlay.classList.remove('visible');
     confirmOverlay.setAttribute('aria-hidden', 'true');
-    if (!state.preview.isOpen) {
-        document.body.classList.remove('modal-open');
-    }
+    markOverlayClosed();
     setTimeout(() => {
         if (!state.confirm.isOpen) {
             confirmOverlay.hidden = true;
@@ -273,13 +357,41 @@ export function openUnsavedOverlay(state, unsavedOverlay, unsavedMessage, unsave
     unsavedMessage.textContent = message || 'Anda memiliki perubahan yang belum disimpan. Apa yang ingin Anda lakukan?';
 
     unsavedOverlay.hidden = false;
+    // Tailwind utilities for unsaved overlay
+    unsavedOverlay.classList.add(
+        'tw-overlay',
+        'fixed',
+        'inset-0',
+        'flex',
+        'items-center',
+        'justify-center',
+        'bg-black/50',
+        'z-50'
+    );
     requestAnimationFrame(() => {
         unsavedOverlay.classList.add('visible');
+        // Enhance inner dialog if available
+        try {
+            const dialog = unsavedOverlay.querySelector('.modal') || unsavedOverlay.querySelector('.dialog') || unsavedOverlay.querySelector('.unsaved-dialog');
+            if (dialog) {
+                dialog.classList.add('bg-white', 'rounded-lg', 'shadow-lg', 'p-4', 'max-w-md', 'w-full');
+                // Accessibility semantics
+                try {
+                    dialog.setAttribute('role', 'dialog');
+                    dialog.setAttribute('aria-modal', 'true');
+                    dialog.tabIndex = -1;
+                } catch (e) {}
+            }
+        } catch (e) {}
         // Focus after the modal is visible to avoid aria-hidden warning
         unsavedCancel.focus();
     });
     unsavedOverlay.setAttribute('aria-hidden', 'false');
-    document.body.classList.add('modal-open');
+    markOverlayOpen();
+    // Attach accessibility hooks using unsaved close handler
+    try {
+        attachOverlayA11y(unsavedOverlay, () => closeUnsavedOverlay(state, unsavedOverlay));
+    } catch (e) {}
 }
 
 /**
@@ -295,7 +407,7 @@ export function closeUnsavedOverlay(state, unsavedOverlay) {
     state.unsaved.callback = null;
     unsavedOverlay.classList.remove('visible');
     unsavedOverlay.setAttribute('aria-hidden', 'true');
-    document.body.classList.remove('modal-open');
+    markOverlayClosed();
     setTimeout(() => {
         if (!state.unsaved.isOpen) {
             unsavedOverlay.hidden = true;
@@ -342,12 +454,35 @@ export function openCreateOverlay(
     createSubmit.textContent = 'Buat';
 
     createOverlay.hidden = false;
+    // Tailwind utilities for create overlay + dialog
+    createOverlay.classList.add(
+        'tw-overlay',
+        'fixed',
+        'inset-0',
+        'flex',
+        'items-center',
+        'justify-center',
+        'bg-black/50',
+        'z-50'
+    );
     requestAnimationFrame(() => {
         createOverlay.classList.add('visible');
+        try {
+            const dialog = createOverlay.querySelector('.modal') || createOverlay.querySelector('.dialog') || createOverlay.querySelector('.create-dialog');
+            if (dialog) {
+                dialog.classList.add('bg-white', 'rounded-lg', 'shadow-lg', 'p-4', 'max-w-md', 'w-full');
+                // Accessibility semantics
+                try {
+                    dialog.setAttribute('role', 'dialog');
+                    dialog.setAttribute('aria-modal', 'true');
+                    dialog.tabIndex = -1;
+                } catch (e) {}
+            }
+        } catch (e) {}
     });
     createOverlay.setAttribute('aria-hidden', 'false');
-    document.body.classList.add('modal-open');
-
+    markOverlayOpen();
+    
     createName.value = '';
     createName.focus();
 }
@@ -380,9 +515,7 @@ export function closeCreateOverlay(
     createHint.textContent = '';
     createSubmit.disabled = false;
     createName.disabled = false;
-    if (!state.preview.isOpen && !state.confirm.isOpen) {
-        document.body.classList.remove('modal-open');
-    }
+    markOverlayClosed();
     setTimeout(() => {
         if (!state.create.isOpen) {
             createOverlay.hidden = true;
@@ -429,12 +562,35 @@ export function openRenameOverlay(
     renameSubmit.textContent = 'Rename';
 
     renameOverlay.hidden = false;
+    // Tailwind utilities for rename overlay/dialog
+    renameOverlay.classList.add(
+        'tw-overlay',
+        'fixed',
+        'inset-0',
+        'flex',
+        'items-center',
+        'justify-center',
+        'bg-black/50',
+        'z-50'
+    );
     requestAnimationFrame(() => {
         renameOverlay.classList.add('visible');
+        try {
+            const dialog = renameOverlay.querySelector('.modal') || renameOverlay.querySelector('.dialog') || renameOverlay.querySelector('.rename-dialog');
+            if (dialog) {
+                dialog.classList.add('bg-white', 'rounded-lg', 'shadow-lg', 'p-4', 'max-w-md', 'w-full');
+                // Accessibility semantics
+                try {
+                    dialog.setAttribute('role', 'dialog');
+                    dialog.setAttribute('aria-modal', 'true');
+                    dialog.tabIndex = -1;
+                } catch (e) {}
+            }
+        } catch (e) {}
     });
     renameOverlay.setAttribute('aria-hidden', 'false');
-    document.body.classList.add('modal-open');
-
+    markOverlayOpen();
+    
     // Select filename without extension for files
     if (!isFolder) {
         const dotIndex = item.name.lastIndexOf('.');
@@ -459,11 +615,11 @@ export function openRenameOverlay(
  * @param {HTMLElement} renameName - Elemen input nama
  */
 export function closeRenameOverlay(
-    state, 
-    renameOverlay, 
-    renameForm, 
-    renameHint, 
-    renameSubmit, 
+    state,
+    renameOverlay,
+    renameForm,
+    renameHint,
+    renameSubmit,
     renameName
 ) {
     if (!state.rename.isOpen) {
@@ -478,9 +634,7 @@ export function closeRenameOverlay(
     renameHint.textContent = '';
     renameSubmit.disabled = false;
     renameName.disabled = false;
-    if (!state.preview.isOpen && !state.confirm.isOpen && !state.create.isOpen) {
-        document.body.classList.remove('modal-open');
-    }
+    markOverlayClosed();
     setTimeout(() => {
         if (!state.rename.isOpen) {
             renameOverlay.hidden = true;
@@ -736,11 +890,34 @@ export function openLogModal(state, logOverlay, logClose) {
     state.logs.activeFilters = {};
     
     logOverlay.hidden = false;
+    // Tailwind utilities for log modal overlay/dialog
+    logOverlay.classList.add(
+        'tw-overlay',
+        'fixed',
+        'inset-0',
+        'flex',
+        'items-center',
+        'justify-center',
+        'bg-black/50',
+        'z-50'
+    );
     requestAnimationFrame(() => {
         logOverlay.classList.add('visible');
+        try {
+            const dialog = logOverlay.querySelector('.modal') || logOverlay.querySelector('.dialog') || logOverlay.querySelector('.log-dialog');
+            if (dialog) {
+                dialog.classList.add('bg-white', 'rounded-lg', 'shadow-lg', 'p-4', 'max-w-4xl', 'w-full', 'overflow-hidden');
+                // Accessibility semantics
+                try {
+                    dialog.setAttribute('role', 'dialog');
+                    dialog.setAttribute('aria-modal', 'true');
+                    dialog.tabIndex = -1;
+                } catch (e) {}
+            }
+        } catch (e) {}
     });
     logOverlay.setAttribute('aria-hidden', 'false');
-    document.body.classList.add('modal-open');
+    markOverlayOpen();
     
     if (logClose) {
         logClose.focus();
@@ -760,7 +937,7 @@ export function closeLogModal(state, logOverlay) {
     state.logs.isOpen = false;
     logOverlay.classList.remove('visible');
     logOverlay.setAttribute('aria-hidden', 'true');
-    document.body.classList.remove('modal-open');
+    markOverlayClosed();
     
     setTimeout(() => {
         if (!state.logs.isOpen) {
@@ -883,5 +1060,99 @@ export function updateLogPagination(state, logPrev, logNext, logPageInfo) {
     }
     if (logPageInfo) {
         logPageInfo.textContent = `Halaman ${state.logs.currentPage} dari ${state.logs.totalPages}`;
+    }
+}
+
+/**
+ * Accessibility helpers for overlays/modals
+ * - attachOverlayA11y(overlay, closeCallback): sets up Escape-to-close and a basic focus-trap
+ * - detachOverlayA11y(overlay): removes listeners set by attachOverlayA11y
+ *
+ * These are intentionally defensive and non-invasive: they won't throw if the overlay
+ * structure differs. They only register a single document-level keydown handler per overlay.
+ */
+const overlayA11yMap = new WeakMap();
+
+export function attachOverlayA11y(overlay, closeCallback) {
+    if (!overlay || overlayA11yMap.has(overlay)) return;
+    const keydownHandler = (e) => {
+        // Close on Escape
+        if (e.key === 'Escape') {
+            e.preventDefault();
+            try { if (closeCallback) closeCallback(); } catch (err) {}
+            return;
+        }
+
+        // Basic focus trap for Tab and Shift+Tab
+        if (e.key === 'Tab') {
+            try {
+                const focusable = Array.from(
+                    overlay.querySelectorAll(
+                        'a[href], area[href], button:not([disabled]), input:not([disabled]), textarea:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])'
+                    )
+                ).filter((el) => el.offsetParent !== null); // visible only
+
+                if (focusable.length === 0) return;
+
+                const first = focusable[0];
+                const last = focusable[focusable.length - 1];
+
+                if (e.shiftKey && document.activeElement === first) {
+                    e.preventDefault();
+                    last.focus();
+                } else if (!e.shiftKey && document.activeElement === last) {
+                    e.preventDefault();
+                    first.focus();
+                }
+            } catch (err) {
+                // swallow errors to avoid breaking the app
+            }
+        }
+    };
+
+    const initialFocus = () => {
+        try {
+            const focusable = Array.from(
+                overlay.querySelectorAll(
+                    'a[href], area[href], button:not([disabled]), input:not([disabled]), textarea:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])'
+                )
+            ).filter((el) => el.offsetParent !== null);
+            if (focusable.length > 0) {
+                focusable[0].focus();
+            } else if (overlay && typeof overlay.focus === 'function') {
+                // Make overlay focusable then focus it
+                overlay.tabIndex = -1;
+                overlay.focus();
+            }
+        } catch (err) {
+            // ignore
+        }
+    };
+
+    // Register handler and store detach
+    document.addEventListener('keydown', keydownHandler);
+    const detach = () => {
+        try {
+            document.removeEventListener('keydown', keydownHandler);
+        } catch (e) {}
+        overlayA11yMap.delete(overlay);
+        try { delete overlay._a11yDetach; } catch (e) {}
+    };
+
+    overlay._a11yDetach = detach;
+    overlayA11yMap.set(overlay, { detach, initialFocus });
+
+    // Run initial focus asynchronously so the overlay DOM has a chance to settle
+    setTimeout(initialFocus, 0);
+}
+
+export function detachOverlayA11y(overlay) {
+    if (!overlay) return;
+    const entry = overlayA11yMap.get(overlay);
+    if (entry && typeof entry.detach === 'function') {
+        try { entry.detach(); } catch (e) {}
+    }
+    if (overlay && overlay._a11yDetach) {
+        try { overlay._a11yDetach(); } catch (e) {}
     }
 }
