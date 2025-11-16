@@ -35,7 +35,7 @@ document.addEventListener('DOMContentLoaded', () => {
         
         // Tampilkan pesan error kepada pengguna
         const errorDiv = document.createElement('div');
-        errorDiv.className = 'app-error';
+        errorDiv.classList.add('app-error');
         errorDiv.innerHTML = `
             <div class="error-content">
                 <h2>Application Error</h2>
@@ -311,4 +311,212 @@ if (typeof window !== 'undefined' && window.location.hostname === 'localhost') {
     
     console.log('Debug modules available at window.debugModules');
     console.log('Storage module included for testing');
-}
+
+    // Test helper for automated visual QA.
+    // Usage (from tools/screenshot.js or console): await window.__testOpenOverlay('create-overlay', { kind: 'file' });
+    // Enhanced: accepts overlay-specific params to open overlays that require context (item, kind, paths, message).
+    window.__testOpenOverlay = async function(id, params = {}) {
+        try {
+            const fnMap = {
+                'preview-overlay': 'openPreviewOverlay',
+                'confirm-overlay': 'openConfirmOverlay',
+                'create-overlay': 'openCreateOverlay',
+                'rename-overlay': 'openRenameOverlay',
+                'log-overlay': 'openLogOverlay',
+                'unsaved-overlay': 'openUnsavedOverlay',
+                'settings-overlay': 'openSettings'
+            };
+
+            // 0) If there's an explicit helper defined elsewhere prefer it
+            if (typeof window.__testOpenOverlayCustom === 'function') {
+                try {
+                    const ok = await window.__testOpenOverlayCustom(id, params);
+                    if (ok) return true;
+                } catch (e) { /* ignore */ }
+            }
+
+            // Overlay-specific, parameterized attempts (most deterministic)
+            if (id === 'preview-overlay') {
+                // prefer passing an item when available
+                const item = params.item || params || { name: 'example.txt', path: '/example.txt' };
+                const tryFns = ['openPreviewOverlay', 'openMediaPreview', 'openPreview'];
+                for (const name of tryFns) {
+                    if (typeof window[name] === 'function') {
+                        try {
+                            const res = window[name](item);
+                            if (res && typeof res.then === 'function') await res;
+                            await new Promise((r) => setTimeout(r, 250));
+                            if (document.getElementById(id)) return true;
+                        } catch (e) { /* ignore */ }
+                    }
+                }
+            }
+
+            if (id === 'rename-overlay') {
+                const item = params.item || { name: 'example.txt', path: '/example.txt' };
+                if (typeof window.openRenameOverlay === 'function') {
+                    try {
+                        const res = window.openRenameOverlay(item);
+                        if (res && typeof res.then === 'function') await res;
+                        await new Promise((r) => setTimeout(r, 200));
+                        if (document.getElementById(id)) return true;
+                    } catch (e) { /* ignore */ }
+                }
+            }
+
+            if (id === 'create-overlay') {
+                const kind = params.kind || 'file';
+                if (typeof window.openCreateOverlay === 'function') {
+                    try {
+                        const res = window.openCreateOverlay(kind);
+                        if (res && typeof res.then === 'function') await res;
+                        await new Promise((r) => setTimeout(r, 200));
+                        if (document.getElementById(id)) return true;
+                    } catch (e) { /* ignore */ }
+                }
+            }
+
+            if (id === 'confirm-overlay') {
+                // confirm overlay often accepts an options object
+                const opts = params.options || params || { message: 'Confirm action', paths: ['/example.txt'], confirmLabel: 'OK' };
+                if (typeof window.openConfirmOverlay === 'function') {
+                    try {
+                        const res = window.openConfirmOverlay(opts);
+                        if (res && typeof res.then === 'function') await res;
+                        await new Promise((r) => setTimeout(r, 200));
+                        if (document.getElementById(id)) return true;
+                    } catch (e) { /* ignore */ }
+                }
+            }
+
+            if (id === 'log-overlay') {
+                const tryNames = ['openLogOverlay', 'openLogModal', 'openLogs'];
+                for (const name of tryNames) {
+                    if (typeof window[name] === 'function') {
+                        try {
+                            const res = window[name](params);
+                            if (res && typeof res.then === 'function') await res;
+                            await new Promise((r) => setTimeout(r, 200));
+                            if (document.getElementById(id)) return true;
+                        } catch (e) { /* ignore */ }
+                    }
+                }
+            }
+
+            if (id === 'unsaved-overlay') {
+                const opts = params.options || params || { message: 'You have unsaved changes' };
+                if (typeof window.openUnsavedOverlay === 'function') {
+                    try {
+                        const res = window.openUnsavedOverlay(opts);
+                        if (res && typeof res.then === 'function') await res;
+                        await new Promise((r) => setTimeout(r, 200));
+                        if (document.getElementById(id)) return true;
+                    } catch (e) { /* ignore */ }
+                }
+            }
+
+            if (id === 'settings-overlay') {
+                // settings uses safeOpenSettings in index; try that too
+                if (typeof window.openSettings === 'function') {
+                    try {
+                        const res = window.openSettings();
+                        if (res && typeof res.then === 'function') await res;
+                        await new Promise((r) => setTimeout(r, 150));
+                        if (document.getElementById(id)) return true;
+                    } catch (e) { /* ignore */ }
+                }
+                if (typeof window.safeOpenSettings === 'function') {
+                    try {
+                        window.safeOpenSettings();
+                        await new Promise((r) => setTimeout(r, 150));
+                        if (document.getElementById(id)) return true;
+                    } catch (e) { /* ignore */ }
+                }
+            }
+
+            // 1) Try calling a global open function if available (generic)
+            const fnName = fnMap[id];
+            if (fnName && typeof window[fnName] === 'function') {
+                try {
+                    const res = window[fnName](params);
+                    if (res && typeof res.then === 'function') await res;
+                    await new Promise((r) => setTimeout(r, 200));
+                    if (document.getElementById(id)) return true;
+                } catch (e) { /* ignore */ }
+            }
+
+            // 2) Try to reveal element by id (visual reveal)
+            const ov = document.getElementById(id);
+            if (ov) {
+                try {
+                    ov.hidden = false;
+                    ov.setAttribute('aria-hidden', 'false');
+                    ov.classList.add('visible', 'tw-overlay');
+                    document.body.classList.add('modal-open');
+                    const focusable = ov.querySelector('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])');
+                    if (focusable) focusable.focus();
+                    return true;
+                } catch (e) {
+                    try { ov.style.display = 'block'; return true; } catch (_) { /* ignore */ }
+                }
+            }
+
+            // 3) Dataset triggers and common selectors (best-effort)
+            try {
+                const short = id.replace('-overlay', '');
+                const dataEl = document.querySelector(`[data-action="${short}"], [data-trigger="${short}"], [data-open="${short}"]`);
+                if (dataEl) {
+                    dataEl.click();
+                    await new Promise((r) => setTimeout(r, 300));
+                    if (document.getElementById(id)) return true;
+                }
+            } catch (e) { /* ignore */ }
+
+            const commonTriggers = ['#btn-create', '#trigger-create', '#btn-settings', '#btn-logs', '#btn-preview', '.btn-preview', '.btn-rename', '#btn-rename', '#btn-delete-selected', '.btn-add', '.split-action', '.splitAction'];
+            for (const sel of commonTriggers) {
+                try {
+                    const el = document.querySelector(sel);
+                    if (el) {
+                        el.click();
+                        await new Promise((r) => setTimeout(r, 300));
+                        if (document.getElementById(id)) return true;
+                    }
+                } catch (e) { /* ignore */ }
+            }
+
+            // 4) Try interacting with the first file row (select + click actions + context menu)
+            try {
+                const firstRow = document.querySelector('tr[data-path], .file-row, .item-row');
+                if (firstRow) {
+                    try { firstRow.click(); } catch (_) { /* ignore */ }
+                    await new Promise((r) => setTimeout(r, 150));
+                    const cb = firstRow.querySelector('input[type="checkbox"], .select-checkbox');
+                    if (cb && !cb.checked) {
+                        try { cb.click(); } catch (_) { /* ignore */ }
+                        await new Promise((r) => setTimeout(r, 120));
+                    }
+                    const actionBtn = firstRow.querySelector('button[aria-label*="preview"], button[aria-label*="rename"], .row-actions button, .row-actions a');
+                    if (actionBtn) {
+                        try { actionBtn.click(); } catch (_) { /* ignore */ }
+                        await new Promise((r) => setTimeout(r, 250));
+                        if (document.getElementById(id)) return true;
+                    }
+                    const evt = new MouseEvent('contextmenu', { bubbles: true, cancelable: true, view: window });
+                    firstRow.dispatchEvent(evt);
+                    await new Promise((r) => setTimeout(r, 200));
+                    const cmItem = document.querySelector('.context-menu [data-action], .context-menu button, .context-menu a, [role="menu"] [data-action]');
+                    if (cmItem) {
+                        try { cmItem.click(); } catch (_) { /* ignore */ }
+                        await new Promise((r) => setTimeout(r, 250));
+                        if (document.getElementById(id)) return true;
+                    }
+                }
+            } catch (e) { /* ignore */ }
+
+            return false;
+        } catch (err) {
+            console.error('Test overlay helper error:', err);
+            return false;
+        }
+    };
+ }

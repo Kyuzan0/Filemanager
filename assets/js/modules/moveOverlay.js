@@ -220,21 +220,26 @@ function renderMoveFolderList(folders, currentPath) {
  * @returns {HTMLElement} Elemen folder item
  */
 function createMoveFolderItem(name, path, className) {
-    const item = document.createElement('div');
-    item.className = `move-folder-item ${className}`;
-    item.dataset.path = path;
-    
-    const icon = document.createElement('div');
-    icon.className = 'move-folder-icon';
-    icon.innerHTML = `
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
-        </svg>
-    `;
-    
-    const label = document.createElement('div');
-    label.className = 'move-folder-label';
-    label.textContent = name;
+const item = document.createElement('div');
+item.classList.add('move-folder-item');
+if (className && className.trim()) {
+    className.trim().split(/\s+/).forEach(c => {
+        if (c) item.classList.add(c);
+    });
+}
+item.dataset.path = path;
+
+const icon = document.createElement('div');
+icon.classList.add('move-folder-icon');
+icon.innerHTML = `
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
+    </svg>
+`;
+
+const label = document.createElement('div');
+label.classList.add('move-folder-label');
+label.textContent = name;
     
     item.appendChild(icon);
     item.appendChild(label);
@@ -510,7 +515,7 @@ function handleMoveSearch(query) {
     const folderList = elements.moveFolderList;
     if (folderList && currentSearchQuery && filteredFolders.length === 0) {
         const noResultsMsg = document.createElement('div');
-        noResultsMsg.className = 'move-no-results';
+        noResultsMsg.classList.add('move-no-results');
         noResultsMsg.textContent = `No folders found matching "${query}"`;
         noResultsMsg.style.cssText = `
             padding: 20px;
@@ -643,7 +648,7 @@ function updateMoveRecentsUI() {
     
     // Create title
     const title = document.createElement('div');
-    title.className = 'move-recents-title';
+    title.classList.add('move-recents-title');
     title.textContent = 'Recent Destinations:';
     title.style.cssText = `
         font-size: 12px;
@@ -657,7 +662,7 @@ function updateMoveRecentsUI() {
     
     // Create list container
     const listContainer = document.createElement('div');
-    listContainer.className = 'move-recents-list';
+    listContainer.classList.add('move-recents-list');
     listContainer.style.cssText = `
         display: flex;
         flex-direction: column;
@@ -668,7 +673,8 @@ function updateMoveRecentsUI() {
     recents.forEach((path, index) => {
         const item = document.createElement('button');
         item.type = 'button';
-        item.className = 'move-recent-item';
+        item.classList.add('move-recent-item');
+        item.classList.add('btn');
         item.dataset.path = path;
         item.style.cssText = `
             display: flex;
@@ -686,7 +692,7 @@ function updateMoveRecentsUI() {
         
         // Icon
         const icon = document.createElement('span');
-        icon.className = 'move-recent-icon';
+        icon.classList.add('move-recent-icon');
         icon.innerHTML = `
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
@@ -701,7 +707,7 @@ function updateMoveRecentsUI() {
         
         // Label
         const label = document.createElement('span');
-        label.className = 'move-recent-label';
+        label.classList.add('move-recent-label');
         label.textContent = path === '' ? '/ (Root)' : path;
         label.style.cssText = `
             flex: 1;

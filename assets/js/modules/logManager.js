@@ -438,7 +438,7 @@ export function renderLogTable(logs, logTableBody, logEmpty) {
         const actionCell = document.createElement('td');
         actionCell.textContent = formattedLog.actionLabel;
         actionCell.setAttribute('data-label', 'Aksi');
-        actionCell.className = `log-action log-action-${log.action}`;
+        actionCell.classList.add('log-action', `log-action-${log.action}`);
         row.appendChild(actionCell);
         
         // Type cell
@@ -451,14 +451,14 @@ export function renderLogTable(logs, logTableBody, logEmpty) {
         const pathCell = document.createElement('td');
         pathCell.textContent = log.target_path || '-';
         pathCell.setAttribute('data-label', 'Path');
-        pathCell.className = 'log-path';
+        pathCell.classList.add('log-path');
         row.appendChild(pathCell);
         
         // Details cell
         const detailsCell = document.createElement('td');
         detailsCell.textContent = log.details || '-';
         detailsCell.setAttribute('data-label', 'Detail');
-        detailsCell.className = 'log-details';
+        detailsCell.classList.add('log-details');
         row.appendChild(detailsCell);
         
         logTableBody.appendChild(row);
@@ -610,7 +610,7 @@ export function updateActiveFiltersDisplay(filters) {
         if (!value) return;
         
         const badge = document.createElement('div');
-        badge.className = 'active-filter-badge';
+        badge.classList.add('active-filter-badge');
         
         // Get readable label for the filter
         let label = '';
@@ -644,7 +644,9 @@ export function updateActiveFiltersDisplay(filters) {
         
         // Add remove button
         const removeBtn = document.createElement('button');
-        removeBtn.className = 'remove-filter';
+        removeBtn.classList.add('remove-filter');
+        removeBtn.type = 'button';
+        removeBtn.classList.add('btn');
         removeBtn.innerHTML = '&times;';
         removeBtn.setAttribute('aria-label', `Remove ${label} filter`);
         removeBtn.addEventListener('click', () => {

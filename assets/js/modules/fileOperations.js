@@ -687,19 +687,22 @@ export function openInWord(
 
                 const copyBtn = document.createElement('button');
                 copyBtn.type = 'button';
+                copyBtn.classList.add('btn');
                 copyBtn.textContent = 'Salin UNC';
                 copyBtn.style.padding = '8px 12px';
-
+                
                 const tryHttpBtn = document.createElement('button');
                 tryHttpBtn.type = 'button';
+                tryHttpBtn.classList.add('btn');
                 tryHttpBtn.textContent = 'Coba via HTTP';
                 tryHttpBtn.style.padding = '8px 12px';
-
+                
                 const closeBtn = document.createElement('button');
                 closeBtn.type = 'button';
+                closeBtn.classList.add('btn');
                 closeBtn.textContent = 'Tutup';
                 closeBtn.style.padding = '8px 12px';
-
+                
                 buttons.append(copyBtn, tryHttpBtn, closeBtn);
 
                 panel.append(h, p, steps, label, input, buttons);

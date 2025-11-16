@@ -159,7 +159,8 @@ export function renderPaginationControls() {
     if (!paginationContainer) {
         // Buat container baru jika belum ada
         paginationContainer = document.createElement('div');
-        paginationContainer.className = 'pagination-container';
+        // Add Tailwind utility classes alongside existing class for a gradual migration
+        paginationContainer.classList.add('pagination-container','flex','flex-wrap','items-center','justify-between','gap-4','p-3','bg-transparent');
         
         // Insert setelah table-wrapper
         const tableWrapper = document.querySelector('.table-wrapper');
@@ -179,39 +180,39 @@ export function renderPaginationControls() {
     // Generate page numbers to show
     const pageNumbers = generatePageNumbers(currentPage, totalPages);
     
-    // Build pagination HTML
+    // Build pagination HTML (Tailwind-compatible utilities added while preserving original classes)
     const paginationHTML = `
-        <div class="pagination-info">
+        <div class="pagination-info text-sm text-gray-600">
             Menampilkan ${((currentPage - 1) * itemsPerPage) + 1}-${Math.min(currentPage * itemsPerPage, totalItems)} dari ${totalItems} item
         </div>
-        <div class="pagination-controls">
-            <button 
-                class="pagination-btn pagination-first" 
+        <div class="pagination-controls flex items-center gap-2">
+            <button
+                class="pagination-btn pagination-first inline-flex items-center justify-center w-9 h-9 rounded-md border bg-transparent text-gray-700 hover:bg-blue-600 hover:text-white focus:outline-none focus:ring-2 focus:ring-blue-200"
                 ${currentPage === 1 ? 'disabled' : ''}
                 aria-label="Halaman pertama"
                 data-page="first">
-                <svg viewBox="0 0 24 24" aria-hidden="true">
+                <svg viewBox="0 0 24 24" aria-hidden="true" class="w-4 h-4">
                     <path fill="currentColor" d="M18.41 16.59L13.82 12l4.59-4.59L17 6l-6 6 6 6zM6 6h2v12H6z"/>
                 </svg>
             </button>
-            <button 
-                class="pagination-btn pagination-prev" 
+            <button
+                class="pagination-btn pagination-prev inline-flex items-center justify-center w-9 h-9 rounded-md border bg-transparent text-gray-700 hover:bg-blue-600 hover:text-white focus:outline-none focus:ring-2 focus:ring-blue-200"
                 ${currentPage === 1 ? 'disabled' : ''}
                 aria-label="Halaman sebelumnya"
                 data-page="prev">
-                <svg viewBox="0 0 24 24" aria-hidden="true">
+                <svg viewBox="0 0 24 24" aria-hidden="true" class="w-4 h-4">
                     <path fill="currentColor" d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/>
                 </svg>
             </button>
             
-            <div class="pagination-numbers">
+            <div class="pagination-numbers flex items-center gap-1">
                 ${pageNumbers.map(pageNum => {
                     if (pageNum === '...') {
-                        return '<span class="pagination-ellipsis">...</span>';
+                        return '<span class="pagination-ellipsis px-2 text-gray-500">...</span>';
                     }
                     return `
-                        <button 
-                            class="pagination-btn pagination-number ${pageNum === currentPage ? 'active' : ''}"
+                        <button
+                            class="pagination-btn pagination-number inline-flex items-center justify-center min-w-[36px] h-9 px-2 rounded-md ${pageNum === currentPage ? 'active bg-blue-600 text-white font-semibold border-blue-600' : 'bg-transparent text-gray-700 hover:bg-blue-50 hover:text-blue-700'}"
                             data-page="${pageNum}"
                             aria-label="Halaman ${pageNum}"
                             ${pageNum === currentPage ? 'aria-current="page"' : ''}>
@@ -221,28 +222,28 @@ export function renderPaginationControls() {
                 }).join('')}
             </div>
             
-            <button 
-                class="pagination-btn pagination-next" 
+            <button
+                class="pagination-btn pagination-next inline-flex items-center justify-center w-9 h-9 rounded-md border bg-transparent text-gray-700 hover:bg-blue-600 hover:text-white focus:outline-none focus:ring-2 focus:ring-blue-200"
                 ${currentPage === totalPages ? 'disabled' : ''}
                 aria-label="Halaman berikutnya"
                 data-page="next">
-                <svg viewBox="0 0 24 24" aria-hidden="true">
+                <svg viewBox="0 0 24 24" aria-hidden="true" class="w-4 h-4">
                     <path fill="currentColor" d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/>
                 </svg>
             </button>
-            <button 
-                class="pagination-btn pagination-last" 
+            <button
+                class="pagination-btn pagination-last inline-flex items-center justify-center w-9 h-9 rounded-md border bg-transparent text-gray-700 hover:bg-blue-600 hover:text-white focus:outline-none focus:ring-2 focus:ring-blue-200"
                 ${currentPage === totalPages ? 'disabled' : ''}
                 aria-label="Halaman terakhir"
                 data-page="last">
-                <svg viewBox="0 0 24 24" aria-hidden="true">
+                <svg viewBox="0 0 24 24" aria-hidden="true" class="w-4 h-4">
                     <path fill="currentColor" d="M5.59 7.41L10.18 12l-4.59 4.59L7 18l6-6-6-6zM16 6h2v12h-2z"/>
                 </svg>
             </button>
         </div>
-        <div class="pagination-per-page">
-            <label for="items-per-page">Item per halaman:</label>
-            <select id="items-per-page" class="items-per-page-select">
+        <div class="pagination-per-page flex items-center gap-2 mt-2 sm:mt-0">
+            <label for="items-per-page" class="text-sm text-gray-600">Item per halaman:</label>
+            <select id="items-per-page" class="items-per-page-select form-select px-2 py-1 rounded-md border bg-white text-gray-700">
                 <option value="10" ${itemsPerPage === 10 ? 'selected' : ''}>10</option>
                 <option value="25" ${itemsPerPage === 25 ? 'selected' : ''}>25</option>
                 <option value="50" ${itemsPerPage === 50 ? 'selected' : ''}>50</option>

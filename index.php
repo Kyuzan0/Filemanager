@@ -1,26 +1,35 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
+    <!-- Tailwind CDN added for migration (branch: tw-mig). Compatibility CSS to follow in assets/css/style.css if needed. -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            corePlugins: { preflight: true }
+            // Add minimal theme overrides here if required during migration.
+        };
+    </script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>File Manager</title>
+    <link rel="stylesheet" href="assets/css/tailwind-compat.css">
     <link rel="stylesheet" href="assets/css/style.css">
 </head>
 <body>
     <div class="app-shell">
-        <header class="app-header" id="debug-app-header">
+        <header class="app-header container mx-auto px-4" id="debug-app-header">
             <div class="brand">
                 <h1>File Manager</h1>
                 <p>Pantau dan kelola direktori kerja Anda dengan cepat dan nyaman.</p>
             </div>
         </header>
 
-        <main class="app-main">
+        <main class="app-main container mx-auto px-4">
             <section class="meta-bar">
                 <div class="breadcrumbs" id="breadcrumbs"></div>
                 <div class="meta-actions">
                     <!-- Settings button -->
-                    <button id="btn-settings" type="button" class="action-pill" title="Pengaturan" aria-haspopup="dialog" aria-controls="settings-overlay">
+                    <button id="btn-settings" type="button" class="action-pill inline-flex items-center gap-2 px-3 py-2 rounded-md border bg-white text-sm shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500" title="Pengaturan" aria-haspopup="dialog" aria-controls="settings-overlay">
                         <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 8.59A3.41 3.41 0 1 0 15.41 12 3.41 3.41 0 0 0 12 8.59zm8.94 2.06l1.02-1.77-2.12-3.67-2.01.35a7.9 7.9 0 0 0-1.3-.76L16 2h-4l-.53 2.79c-.45.18-.88.42-1.3.7L7.62 5.3 5.5 8l1.02 1.77c-.05.33-.07.67-.07 1.03s.02.7.07 1.03L5.5 13l2.12 2.7 2.01-.35c.41.28.85.52 1.3.7L12 22h4l.53-2.79c.45-.18.88-.42 1.3-.7l2.01.35L21.96 14.65l-1.02-1.77c.05-.33.07-.67.07-1.03s-.02-.7-.07-1.03z"/></svg>
                         <span>Pengaturan</span>
                     </button>
@@ -29,17 +38,17 @@
 
             <section class="action-bar">
                 <div class="action-group">
-                    <button id="btn-up" type="button" class="action-pill">
+                    <button id="btn-up" type="button" class="action-pill inline-flex items-center gap-2 px-3 py-2 rounded-md text-sm bg-white border shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500">
                         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5l7 7-1.41 1.41L13 9.83V19h-2V9.83l-4.59 4.58L5 12z"/></svg>
                         <span>Naik Level</span>
                     </button>
-                    <button id="btn-refresh" type="button" class="action-pill">
+                    <button id="btn-refresh" type="button" class="action-pill inline-flex items-center gap-2 px-3 py-2 rounded-md text-sm bg-white border shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500">
                         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 6V3L8 7l4 4V8c2.76 0 5 2.24 5 5a5 5 0 0 1-5 5 5 5 0 0 1-4.33-2.5h-2.3A7 7 0 0 0 12 20a7 7 0 0 0 7-7c0-3.87-3.13-7-7-7z"/></svg>
                         <span>Muat Ulang</span>
                     </button>
                 </div>
                 <div class="action-group">
-                    <button id="btn-upload" type="button" class="action-pill" title="Unggah file">
+                    <button id="btn-upload" type="button" class="action-pill inline-flex items-center gap-2 px-3 py-2 rounded-md text-sm bg-white border shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500" title="Unggah file">
                         <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M9 16h6v-6h4l-7-7-7 7h4v6zm-4 2h14v2H5v-2z"/></svg>
                         <span>Upload</span>
                     </button>
@@ -49,7 +58,7 @@
                     </button>
                     <input id="upload-input" type="file" hidden multiple>
                     <div class="split-action" role="group" aria-label="Tambah">
-                        <button type="button" class="action-pill split-main" title="Tambah File" data-action="add-file">
+                        <button type="button" class="action-pill split-main inline-flex items-center gap-2 px-3 py-2 rounded-full text-sm bg-white border shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500" title="Tambah File" data-action="add-file">
                             <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14m-7-7h14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
                             <span>Tambah</span>
                         </button>
@@ -67,15 +76,15 @@
                             </button>
                         </div>
                     </div>
-                    <button type="button" class="action-pill" disabled title="Fitur segera hadir">
+                    <button type="button" class="action-pill inline-flex items-center gap-2 px-3 py-2 rounded-md text-sm bg-white border shadow-sm cursor-not-allowed opacity-60" disabled title="Fitur segera hadir">
                         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 20h14v-2H5zm7-16l5 5h-3v4h-4v-4H7z"/></svg>
                         <span>Download</span>
                     </button>
-                    <button id="btn-move-selected" type="button" class="action-pill" disabled title="Pindahkan item terpilih">
+                    <button id="btn-move-selected" type="button" class="action-pill inline-flex items-center gap-2 px-3 py-2 rounded-md text-sm bg-white border shadow-sm disabled:opacity-60" disabled title="Pindahkan item terpilih">
                         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 9h2v6H5zm12-4h2v14h-2zm-6 8h2v6h-2z"/></svg>
                         <span>Pindah</span>
                     </button>
-                    <button id="btn-delete-selected" type="button" class="action-pill danger" disabled>
+                    <button id="btn-delete-selected" type="button" class="action-pill danger inline-flex items-center gap-2 px-3 py-2 rounded-md text-sm bg-red-600 text-white hover:bg-red-700 disabled:opacity-60" disabled>
                         <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg>
                         <span>Hapus</span>
                     </button>
