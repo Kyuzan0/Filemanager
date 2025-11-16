@@ -156,7 +156,8 @@ function renderItemRow(item, state, params) {
     try { row.setAttribute('role', 'row'); } catch (e) {}
     // Tailwind utility classes added progressively (migration): hover + group support
     // Keep table semantics but add a conservative visual layer so rows get subtle hover/appearance
-    row.className = 'tw-row group hover:bg-gray-50 cursor-default';
+    // transition-colors included to smooth hover changes during migration
+    row.className = 'tw-row group hover:bg-gray-50 cursor-default transition-colors';
     const extension = item.type === 'file' ? getFileExtension(item.name) : '';
     const isPreviewable = item.type === 'file' && previewableExtensions.has(extension);
     const isMediaPreviewable = item.type === 'file' && mediaPreviewableExtensions.has(extension);
@@ -171,7 +172,7 @@ function renderItemRow(item, state, params) {
 
     // Selection cell
     const selectionCell = document.createElement('td');
-    selectionCell.className = 'selection-cell px-3 w-12';
+    selectionCell.className = 'selection-cell px-3 w-12 text-center';
     try { selectionCell.setAttribute('role', 'gridcell'); } catch (e) {}
     const checkbox = document.createElement('input');
     checkbox.type = 'checkbox';
@@ -648,8 +649,9 @@ export function renderItems(
     // Insert "Up (..)" row at the top when not at root
     if (state.parentPath !== null) {
         const upRow = document.createElement('tr');
-        upRow.className = 'up-row cursor-pointer';
+        upRow.className = 'up-row cursor-pointer hover:bg-gray-50';
         upRow.tabIndex = 0;
+        try { upRow.setAttribute('role', 'row'); } catch (e) {}
     
         // Empty selection cell (no checkbox)
         const upSel = document.createElement('td');
