@@ -468,7 +468,7 @@
             <div class="settings-body">
                 <div class="setting-row">
                     <label for="toggle-debug" class="toggle" aria-hidden="false">
-                        <input type="checkbox" id="toggle-debug" class="toggle-input" role="switch" aria-checked="true">
+                        <input type="checkbox" id="toggle-debug" class="toggle-input" role="switch" aria-checked="false">
                         <span class="toggle-switch" aria-hidden="true"></span>
                         <span class="toggle-label">Aktifkan debug logging (console)</span>
                     </label>

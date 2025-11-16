@@ -208,6 +208,60 @@ document.addEventListener('DOMContentLoaded', () => {
         // Non-fatal: settings UI failed to initialize
         console.warn('Settings UI initialization failed:', e);
     }
+
+    // Fallback: ensure settings button opens overlay even if initialization partially failed
+    // Use a small, robust helper and attach both click and keyboard handlers directly to the button.
+    function safeOpenSettings() {
+        const settingsOverlay = document.getElementById('settings-overlay');
+        if (!settingsOverlay) return;
+
+        // Ensure the toggle UI reflects the saved preference (or config) so ARIA state is correct
+        const toggleDebug = document.getElementById('toggle-debug');
+        const toggleLabel = document.querySelector('label[for="toggle-debug"].toggle');
+        const saved = (() => {
+            try { return localStorage.getItem('filemanager_debug'); } catch (e) { return null; }
+        })();
+        const enabled = (saved !== null) ? (saved === 'true') : (typeof config !== 'undefined' ? !!config.debugMode : false);
+
+        if (toggleDebug) {
+            toggleDebug.checked = !!enabled;
+        }
+        if (toggleLabel) {
+            toggleLabel.setAttribute('aria-checked', !!enabled);
+            toggleLabel.classList.toggle('is-on', !!enabled);
+        }
+
+        settingsOverlay.hidden = false;
+        settingsOverlay.setAttribute('aria-hidden', 'false');
+        // focus first interactive control for accessibility
+        (toggleLabel || document.getElementById('settings-close'))?.focus();
+        document.body.classList.add('modal-open');
+    }
+
+    // Click anywhere inside the settings button (including SVG/span) will open the overlay
+    document.addEventListener('click', (event) => {
+        const btn = event.target && event.target.closest && event.target.closest('#btn-settings');
+        if (btn) {
+            safeOpenSettings();
+        }
+    });
+
+    // Keyboard support: open with Enter or Space when the button is focused
+    const btnFallback = document.getElementById('btn-settings');
+    if (btnFallback) {
+        btnFallback.addEventListener('keydown', (ev) => {
+            if (ev.key === 'Enter' || ev.key === ' ') {
+                ev.preventDefault();
+                safeOpenSettings();
+            }
+        });
+
+        // Defensive click attach in case initial setup failed earlier
+        btnFallback.addEventListener('click', (ev) => {
+            ev.preventDefault();
+            safeOpenSettings();
+        });
+    }
 });
 
 /**

@@ -222,10 +222,10 @@ const _stored_debug = (() => {
 })();
 
 export const config = {
-    // Debug mode - uses saved preference when available, otherwise defaults to true
-    debugMode: _stored_debug !== null ? _stored_debug === 'true' : true,
+    // Debug mode - uses saved preference when available, otherwise defaults to false
+    debugMode: _stored_debug !== null ? _stored_debug === 'true' : false,
     // Backwards compatibility: some modules check `config.debug`
-    debug: _stored_debug !== null ? _stored_debug === 'true' : true,
+    debug: _stored_debug !== null ? _stored_debug === 'true' : false,
     
     // API base URL
     apiBaseUrl: 'api.php',
