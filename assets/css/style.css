@@ -897,9 +897,12 @@ table {
     display: inline-flex;
     gap: 10px;
     align-items: center;
-    justify-content: flex-start;
+    /* Anchor action buttons to the right side of the cell */
+    justify-content: flex-end;
+    /* Prevent buttons from wrapping into multiple lines */
+    flex-wrap: nowrap;
 }
-
+ 
 .row-action {
     width: 34px;
     height: 34px;
@@ -913,32 +916,38 @@ table {
     cursor: pointer;
     transition: all 0.2s ease;
     padding: 0;
+    /* Prevent action buttons from growing/shrinking unexpectedly */
+    flex: 0 0 auto;
+    box-sizing: border-box;
 }
-
+ 
 .row-action svg {
     width: 16px;
     height: 16px;
     display: block;
     fill: currentColor;
+    max-width: 100%;
+    max-height: 100%;
 }
-
+ 
 .row-action:hover {
     background: var(--primary);
     color: #fff;
 }
-
+ 
 .row-action.danger {
     background: var(--danger-soft);
     color: var(--danger);
 }
-
+ 
 .row-action.danger:hover {
     background: var(--danger);
     color: #fff;
 }
-
+ 
 .actions-cell {
-    text-align: left;
+    /* Keep actions visually separated from the name column and anchored to the right */
+    text-align: right;
     padding-left: 8px;
 }
 
