@@ -669,6 +669,7 @@ function updateMoveRecentsUI() {
         const item = document.createElement('button');
         item.type = 'button';
         item.className = 'move-recent-item';
+        item.classList.add('btn');
         item.dataset.path = path;
         item.style.cssText = `
             display: flex;

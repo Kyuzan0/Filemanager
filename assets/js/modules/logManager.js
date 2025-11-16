@@ -645,6 +645,8 @@ export function updateActiveFiltersDisplay(filters) {
         // Add remove button
         const removeBtn = document.createElement('button');
         removeBtn.className = 'remove-filter';
+        removeBtn.type = 'button';
+        removeBtn.classList.add('btn');
         removeBtn.innerHTML = '&times;';
         removeBtn.setAttribute('aria-label', `Remove ${label} filter`);
         removeBtn.addEventListener('click', () => {

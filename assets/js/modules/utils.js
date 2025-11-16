@@ -326,7 +326,18 @@ export function isSubPath(parent, child) {
 export function createRowActionButton(icon, label, handler, variant = '') {
     const btn = document.createElement('button');
     btn.type = 'button';
-    btn.className = `row-action ${variant}`.trim();
+
+    // Base tokens: keep legacy row-action and add the new .btn compatibility token
+    btn.className = 'row-action';
+    btn.classList.add('btn');
+
+    // Preserve any variant tokens passed (e.g. 'primary', 'outline', 'danger')
+    if (variant && variant.trim()) {
+        variant.trim().split(/\s+/).forEach(v => {
+            if (v) btn.classList.add(v);
+        });
+    }
+
     btn.innerHTML = icon;
     btn.title = label;
     btn.setAttribute('aria-label', label);

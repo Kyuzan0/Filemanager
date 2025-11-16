@@ -1994,6 +1994,7 @@ function setupPWA() {
         const installButton = document.createElement('button');
         installButton.textContent = 'Install App';
         installButton.className = 'install-button';
+        installButton.classList.add('btn');
         installButton.style.cssText = `
             position: fixed;
             bottom: 20px;
@@ -2050,6 +2051,7 @@ function setupTheme() {
     const themeToggle = document.createElement('button');
     themeToggle.innerHTML = savedTheme === 'dark' ? '🌙' : '☀️';
     themeToggle.className = 'theme-toggle';
+    themeToggle.classList.add('btn');
     themeToggle.style.cssText = `
         position: fixed;
         top: 20px;

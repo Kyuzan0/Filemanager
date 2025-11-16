@@ -248,7 +248,7 @@ function renderItemRow(item, state, params) {
 
     // Name cell with icon
     const cellName = document.createElement('td');
-    cellName.className = 'name-cell item-name flex items-center gap-4 min-w-0';
+    cellName.className = 'name-cell item-name flex items-center gap-4 min-w-0 flex-1';
     try { cellName.setAttribute('role', 'gridcell'); } catch (e) {}
     const iconInfo = getItemIcon(item);
     const icon = document.createElement('span');
@@ -294,7 +294,7 @@ function renderItemRow(item, state, params) {
     cellName.appendChild(icon);
 
     const link = document.createElement('a');
-    link.className = 'item-link';
+    link.className = 'item-link truncate block text-sm text-gray-800';
     link.textContent = item.name;
 
     if (item.type === 'folder') {
@@ -334,14 +334,14 @@ function renderItemRow(item, state, params) {
     let badge = null;
     if (!previouslySeen && highlightNew) {
         badge = document.createElement('span');
-        badge.className = 'badge badge-new inline-flex items-center px-2 py-0.5 text-xs font-semibold bg-green-100 text-green-700 rounded-full';
+        badge.className = 'badge badge-new inline-flex items-center px-2 py-0.5 text-xs font-semibold bg-green-100 text-green-700 rounded-full ml-2';
         badge.textContent = 'Baru';
         cellName.appendChild(badge);
     }
 
     // Modified date cell
     const cellModified = document.createElement('td');
-    cellModified.className = 'modified-cell text-sm text-gray-500 w-36 text-right';
+    cellModified.className = 'modified-cell text-sm text-gray-500 w-36 text-right whitespace-nowrap';
     try { cellModified.setAttribute('role', 'gridcell'); } catch (e) {}
     cellModified.textContent = formatDate(item.modified);
 
