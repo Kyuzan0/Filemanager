@@ -126,21 +126,25 @@
   max-height: 90vh;
   overflow: auto;
   /* responsive width cap and a fluid width to avoid overflow on small screens */
-  max-width: 64rem; /* ~1024px */
-  width: min(64rem, calc(100% - 2rem));
+  max-width: 48rem; /* reduce default cap to avoid mobile overflow */
+  width: min(48rem, calc(100% - 2rem));
   margin: 1rem;
   box-sizing: border-box;
+  word-wrap: break-word;
 }
 
 /* Backdrop/backdrop transition smoothing for a nicer reveal */
 .tw-overlay {
-  transition: background-color .15s ease-in-out;
+  transition: background-color .15s ease-in-out, opacity .12s ease, visibility 0s linear .12s;
   pointer-events: none; /* default: do not allow pointer events until explicitly visible */
+  touch-action: none; /* prevent touch gesture propagation when hidden */
+  will-change: opacity, visibility;
 }
 /* Visible overlays should accept interactions */
 .tw-overlay.visible,
 .tw-overlay[aria-hidden="false"] {
   pointer-events: auto;
+  touch-action: auto;
 }
 
 /* Guard dialog pointer-events & provide a subtle entrance transform while overlay is hidden */
@@ -202,3 +206,70 @@ a:focus-visible {
 /* Keep this section small — expand only when specific Bootstrap classes are encountered.
    Note: These are plain CSS fallbacks (not using @apply) so they will work with Tailwind CDN.
 */
+/* ===== Additional compat tweaks (post-screenshots) =====
+   1) Prevent brief pointer/keyboard leaks by hiding non-visible overlays
+   2) Stronger focus-visible for form controls inside dialogs
+   3) Allow larger preview/log dialogs on wide screens while keeping them fluid
+*/
+.tw-overlay:not(.visible),
+.tw-overlay[aria-hidden="true"] {
+  visibility: hidden;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .12s ease, visibility 0s linear .12s;
+}
+.tw-overlay.visible,
+.tw-overlay[aria-hidden="false"] {
+  visibility: visible;
+  opacity: 1;
+  pointer-events: auto;
+  transition-delay: 0s;
+}
+
+/* Strengthen focus-visible for inputs and controls inside dialogs (accessibility fallback) */
+.modal input:focus,
+.modal textarea:focus,
+.modal select:focus,
+.dialog input:focus,
+.dialog textarea:focus,
+.dialog select:focus,
+.create-dialog input:focus,
+.rename-dialog input:focus,
+.preview-dialog input:focus,
+.preview-dialog textarea:focus,
+.preview-dialog select:focus,
+.log-dialog input:focus,
+.log-dialog textarea:focus,
+.log-dialog select:focus,
+button:focus,
+button:focus-visible,
+a:focus,
+a:focus-visible {
+  outline: 4px solid rgba(30,64,175,0.95); /* stronger, more saturated blue */
+  outline-offset: 2px;
+  box-shadow: 0 0 0 6px rgba(30,64,175,0.12);
+  /* Ensure visible under high-contrast modes */
+  -ms-high-contrast-adjust: none;
+  transition: box-shadow .12s ease;
+}
+
+/* Make preview/log dialogs slightly wider on very large screens while remaining fluid */
+.tw-overlay .preview-dialog,
+.preview-dialog,
+.tw-overlay .log-dialog,
+.log-dialog {
+  max-width: 72rem; /* ~1152px */
+  width: min(72rem, calc(100% - 2rem));
+  box-sizing: border-box;
+}
+
+/* Ensure dialog internal scrolling remains bounded and usable */
+.tw-overlay .preview-dialog .preview-editor,
+.tw-overlay .log-dialog .log-table-wrapper,
+.preview-dialog .preview-editor,
+.log-dialog .log-table-wrapper {
+  max-height: calc(100vh - 220px);
+  overflow: auto;
+}
+
+/* Keep this small and specific — expand only when a concrete regression is observed */
