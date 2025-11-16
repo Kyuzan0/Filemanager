@@ -67,6 +67,35 @@ const { chromium } = require('playwright');
               cb.click();
               await new Promise((r) => setTimeout(r, 150));
             }
+
+            // Also attempt to set the application selection state (debug helper) so overlay
+            // openers that rely on state.selected / state.itemMap work deterministically.
+            try {
+              const pathAttr = firstRow.getAttribute && firstRow.getAttribute('data-path');
+              const selectedPath = pathAttr || '/example.txt';
+
+              // If debugModules is available, import state module and set selection using its API
+              if (window.debugModules && typeof window.debugModules.getState === 'function') {
+                try {
+                  const mod = await window.debugModules.getState();
+                  // mod may export functions or the state object; try common APIs
+                  if (mod && typeof mod.updateState === 'function') {
+                    try { mod.updateState({ selected: new Set([selectedPath]) }); } catch (_) { /* ignore */ }
+                  } else if (mod && typeof mod.setStateValue === 'function') {
+                    try { mod.setStateValue('selected', new Set([selectedPath])); } catch (_) { /* ignore */ }
+                  } else if (mod && mod.state) {
+                    try { mod.state.selected = new Set([selectedPath]); } catch (_) { /* ignore */ }
+                  }
+                } catch (e) {
+                  /* ignore errors from dynamic import */
+                }
+              } else if (window.state && typeof window.state === 'object') {
+                // Fallback: directly mutate global state if exposed
+                try { window.state.selected = new Set([ selectedPath ]); } catch (e) { /* ignore */ }
+              }
+            } catch (e) {
+              /* ignore debug state set errors */
+            }
           } catch (e) {
             /* ignore row selection errors */
           }
