@@ -1680,163 +1680,192 @@ export async function initializeApp() {
  */
 function setupEventHandlers() {
     logger.info('Setting up event handlers...');
-    
+
+    // Defensive helper to log skipped handlers
+    const warnIfMissing = (name, el) => {
+        if (!el) {
+            logger.warn(`Skipping handler: ${name} - element not found`);
+            return true;
+        }
+        return false;
+    };
+
     // Setup refresh handler
-    setupRefreshHandler(
-        elements.btnRefresh,
-        state,
-        () => hasUnsavedChanges(state.preview),  // Wrap hasUnsavedChanges with state.preview
-        confirmDiscardChanges,
-        fetchDirectoryWrapper
-    );
-    
+    if (!warnIfMissing('refresh', elements.btnRefresh)) {
+        setupRefreshHandler(
+            elements.btnRefresh,
+            state,
+            () => hasUnsavedChanges(state.preview),
+            confirmDiscardChanges,
+            fetchDirectoryWrapper
+        );
+    }
+
     // Setup up handler
-    setupUpHandler(
-        elements.btnUp,
-        state,
-        navigateTo
-    );
-    
+    if (!warnIfMissing('up', elements.btnUp)) {
+        setupUpHandler(elements.btnUp, state, navigateTo);
+    }
+
     // Setup filter handler
-    setupFilterHandler(
-        elements.filterInput,
-        elements.clearSearch,
-        state,
-        renderItems
-    );
-    
-    // Setup sort handlers
-    setupSortHandlers(
-        elements.sortHeaders,
-        state,
-        changeSort
-    );
-    
+    if (!warnIfMissing('filter', elements.filterInput) && !warnIfMissing('clearSearch', elements.clearSearch)) {
+        setupFilterHandler(elements.filterInput, elements.clearSearch, state, renderItems);
+    }
+
+    // Setup sort handlers (sortHeaders is a NodeList; call only when it exists and has items)
+    if (elements.sortHeaders && elements.sortHeaders.length > 0) {
+        setupSortHandlers(elements.sortHeaders, state, changeSort);
+    } else {
+        logger.warn('Skipping sort handlers - sortHeaders not found or empty');
+    }
+
     // Setup select all handler
-    setupSelectAllHandler(
-        elements.selectAllCheckbox,
-        state,
-        setSelectionForVisible
-    );
-    
+    if (!warnIfMissing('selectAll', elements.selectAllCheckbox)) {
+        setupSelectAllHandler(elements.selectAllCheckbox, state, setSelectionForVisible);
+    }
+
     // Setup delete selected handler
-    setupDeleteSelectedHandler(
-        elements.btnDeleteSelected,
-        state,
-        () => hasUnsavedChanges(state.preview),  // Wrap hasUnsavedChanges with state.preview
-        confirmDiscardChanges,
-        openConfirmOverlayWrapper
-    );
-    
+    if (!warnIfMissing('deleteSelected', elements.btnDeleteSelected)) {
+        setupDeleteSelectedHandler(
+            elements.btnDeleteSelected,
+            state,
+            () => hasUnsavedChanges(state.preview),
+            confirmDiscardChanges,
+            openConfirmOverlayWrapper
+        );
+    }
+
     // Setup upload handler
-    setupUploadHandler(
-        elements.btnUpload,
-        elements.uploadInput,
-        state,
-        () => hasUnsavedChanges(state.preview),  // Wrap hasUnsavedChanges with state.preview
-        confirmDiscardChanges,
-        uploadFilesWrapper
-    );
-    
+    if (!warnIfMissing('upload', elements.btnUpload) && !warnIfMissing('uploadInput', elements.uploadInput)) {
+        setupUploadHandler(
+            elements.btnUpload,
+            elements.uploadInput,
+            state,
+            () => hasUnsavedChanges(state.preview),
+            confirmDiscardChanges,
+            uploadFilesWrapper
+        );
+    }
+
     // Setup preview editor handler
-    setupPreviewEditorHandler(
-        elements.previewEditor,
-        elements.previewSave,
-        elements.previewStatus,
-        state,
-        updatePreviewStatus,
-        updateLineNumbers,
-        ensureConsistentStyling,
-        syncLineNumbersScroll,
-        savePreviewContent
-    );
-    
+    if (!warnIfMissing('previewEditor', elements.previewEditor) &&
+        !warnIfMissing('previewSave', elements.previewSave) &&
+        !warnIfMissing('previewStatus', elements.previewStatus)) {
+        setupPreviewEditorHandler(
+            elements.previewEditor,
+            elements.previewSave,
+            elements.previewStatus,
+            state,
+            updatePreviewStatus,
+            updateLineNumbers,
+            ensureConsistentStyling,
+            syncLineNumbersScroll,
+            savePreviewContent
+        );
+    }
+
     // Setup throttled scroll sync for line numbers (60fps = ~16ms)
     if (elements.previewEditor) {
         const throttledScrollSync = throttle(() => {
             syncLineNumbersScroll();
         }, 16);
-        
+
         elements.previewEditor.addEventListener('scroll', throttledScrollSync, { passive: true });
     }
-    
+
     // Setup scroll listener for virtual scrolling on table
     if (elements.tableBody && elements.tableBody.parentElement) {
         const tableContainer = elements.tableBody.parentElement;
         const throttledVirtualScroll = throttle(() => {
-            // Virtual scroll manager will handle this if active
-            // The manager updates visible range on scroll
             if (window.virtualScrollManager && window.virtualScrollManager.isActive) {
                 renderItems(state.items, state.lastUpdated, false);
             }
         }, 16);
-        
+
         tableContainer.addEventListener('scroll', throttledVirtualScroll, { passive: true });
     }
-    
+
     // Setup pagination change event listener with optimization
     document.addEventListener('pagination-change', () => {
         console.log('[DEBUG] Pagination changed, re-rendering items');
-        
-        // Use requestAnimationFrame for smoother rendering
         requestAnimationFrame(() => {
             renderItems(state.items, state.lastUpdated, false);
         });
     });
-    
+
     // Setup preview overlay handler
-    setupPreviewOverlayHandler(
-        elements.previewOverlay,
-        elements.previewClose,
-        closePreviewOverlayWrapper
-    );
-    
+    if (!warnIfMissing('previewOverlay', elements.previewOverlay) && !warnIfMissing('previewClose', elements.previewClose)) {
+        setupPreviewOverlayHandler(elements.previewOverlay, elements.previewClose, closePreviewOverlayWrapper);
+    }
+
     // Setup confirm overlay handler
-    setupConfirmOverlayHandler(
-        elements.confirmOverlay,
-        elements.confirmCancel,
-        elements.confirmConfirm,
-        state,
-        closeConfirmOverlayWrapper,
-        deleteItemsWrapper
-    );
-    
+    if (!warnIfMissing('confirmOverlay', elements.confirmOverlay) &&
+        !warnIfMissing('confirmCancel', elements.confirmCancel) &&
+        !warnIfMissing('confirmConfirm', elements.confirmConfirm)) {
+        setupConfirmOverlayHandler(
+            elements.confirmOverlay,
+            elements.confirmCancel,
+            elements.confirmConfirm,
+            state,
+            closeConfirmOverlayWrapper,
+            deleteItemsWrapper
+        );
+    }
+
     // Setup create overlay handler
-    setupCreateOverlayHandler(
-        elements.createOverlay,
-        elements.createForm,
-        elements.createName,
-        elements.createHint,
-        elements.createCancel,
-        elements.createSubmit,
-        state,
-        closeCreateOverlayWrapper,
-        createItemWrapper
-    );
-    
+    if (!warnIfMissing('createOverlay', elements.createOverlay) &&
+        !warnIfMissing('createForm', elements.createForm) &&
+        !warnIfMissing('createName', elements.createName) &&
+        !warnIfMissing('createHint', elements.createHint) &&
+        !warnIfMissing('createCancel', elements.createCancel) &&
+        !warnIfMissing('createSubmit', elements.createSubmit)) {
+        setupCreateOverlayHandler(
+            elements.createOverlay,
+            elements.createForm,
+            elements.createName,
+            elements.createHint,
+            elements.createCancel,
+            elements.createSubmit,
+            state,
+            closeCreateOverlayWrapper,
+            createItemWrapper
+        );
+    }
+
     // Setup rename overlay handler
-    setupRenameOverlayHandler(
-        elements.renameOverlay,
-        elements.renameForm,
-        elements.renameName,
-        elements.renameHint,
-        elements.renameCancel,
-        elements.renameSubmit,
-        state,
-        closeRenameOverlayWrapper,
-        renameItemWrapper
-    );
-    
+    if (!warnIfMissing('renameOverlay', elements.renameOverlay) &&
+        !warnIfMissing('renameForm', elements.renameForm) &&
+        !warnIfMissing('renameName', elements.renameName) &&
+        !warnIfMissing('renameHint', elements.renameHint) &&
+        !warnIfMissing('renameCancel', elements.renameCancel) &&
+        !warnIfMissing('renameSubmit', elements.renameSubmit)) {
+        setupRenameOverlayHandler(
+            elements.renameOverlay,
+            elements.renameForm,
+            elements.renameName,
+            elements.renameHint,
+            elements.renameCancel,
+            elements.renameSubmit,
+            state,
+            closeRenameOverlayWrapper,
+            renameItemWrapper
+        );
+    }
+
     // Setup unsaved overlay handler
-    setupUnsavedOverlayHandler(
-        elements.unsavedOverlay,
-        elements.unsavedSave,
-        elements.unsavedDiscard,
-        elements.unsavedCancel,
-        state,
-        closeUnsavedOverlay
-    );
-    
+    if (!warnIfMissing('unsavedOverlay', elements.unsavedOverlay) &&
+        !warnIfMissing('unsavedSave', elements.unsavedSave) &&
+        !warnIfMissing('unsavedDiscard', elements.unsavedDiscard) &&
+        !warnIfMissing('unsavedCancel', elements.unsavedCancel)) {
+        setupUnsavedOverlayHandler(
+            elements.unsavedOverlay,
+            elements.unsavedSave,
+            elements.unsavedDiscard,
+            elements.unsavedCancel,
+            state,
+            closeUnsavedOverlay
+        );
+    }
+
     // Setup keyboard handler
     setupKeyboardHandler(
         state,
@@ -1845,52 +1874,47 @@ function setupEventHandlers() {
         closeCreateOverlayWrapper,
         closeRenameOverlayWrapper,
         closePreviewOverlayWrapper,
-        () => hasUnsavedChanges(state.preview)  // Wrap hasUnsavedChanges with state.preview
+        () => hasUnsavedChanges(state.preview)
     );
-    
+
     // Setup visibility handler
-    setupVisibilityHandler(
-        state,
-        fetchDirectoryWrapper,
-        startPolling
-    );
-    
-    // Setup context menu handler
-    setupContextMenuHandler(
-        elements.contextMenuItems,
-        elements.contextMenu,
-        state,
-        handleContextMenuAction,
-        closeContextMenu
-    );
-    
-    // Setup split action handler
-    setupSplitActionHandler(
-        elements.splitAction,
-        elements.splitToggle,
-        elements.splitMenu,
-        elements.splitOptions,
-        elements.splitMain,
-        openCreateOverlayWrapper
-    );
-    
-    // Setup log modal handlers
-    
+    setupVisibilityHandler(state, fetchDirectoryWrapper, startPolling);
+
+    // Setup context menu handler (ensure items nodeList exists)
+    if (elements.contextMenuItems && elements.contextMenu) {
+        setupContextMenuHandler(
+            elements.contextMenuItems,
+            elements.contextMenu,
+            state,
+            handleContextMenuAction,
+            closeContextMenu
+        );
+    } else {
+        logger.warn('Skipping context menu handler - elements.contextMenu or contextMenuItems missing');
+    }
+
+    // Setup split action handler (guard all related elements)
+    if (elements.splitAction && elements.splitToggle && elements.splitMenu && elements.splitOptions && elements.splitMain) {
+        setupSplitActionHandler(
+            elements.splitAction,
+            elements.splitToggle,
+            elements.splitMenu,
+            elements.splitOptions,
+            elements.splitMain,
+            openCreateOverlayWrapper
+        );
+    } else {
+        logger.warn('Skipping split action handler - missing split action elements');
+    }
+
     // Setup move selected button handler (lazy-load moveOverlay module)
     if (elements.btnMoveSelected) {
         elements.btnMoveSelected.addEventListener('click', async () => {
             if (state.selected.size === 0) return;
-            
+
             try {
-                // Lazy load the moveOverlay module
                 const module = await loadMoveOverlay();
-                
-                // Setup handlers if not already done
-                if (module.setupMoveOverlayHandlers) {
-                    module.setupMoveOverlayHandlers();
-                }
-                
-                // Open the move overlay
+                if (module.setupMoveOverlayHandlers) module.setupMoveOverlayHandlers();
                 if (module.openMoveOverlay) {
                     const selectedPaths = Array.from(state.selected);
                     module.openMoveOverlay(selectedPaths, state, fetchDirectoryWrapper);
@@ -1901,8 +1925,14 @@ function setupEventHandlers() {
             }
         });
     }
-    setupLogModalHandlers();
-    
+
+    // Setup log modal handlers (always attempt; internal function will guard)
+    try {
+        setupLogModalHandlers();
+    } catch (e) {
+        logger.warn('setupLogModalHandlers failed or partially unavailable', e);
+    }
+
     logger.info('Event handlers setup completed');
 }
 

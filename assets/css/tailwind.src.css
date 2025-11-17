@@ -1,0 +1,7 @@
+/* REMOVED: Tailwind build input no longer used.
+   Project reverted to Tailwind CDN workflow — keep this file as a marker.
+   If you later want to re-enable a local build, recreate this file with:
+     @tailwind base;
+     @tailwind components;
+     @tailwind utilities;
+*/
