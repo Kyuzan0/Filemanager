@@ -1,449 +1,411 @@
 /**
- * Pagination Module
- * Mengelola pagination untuk file list
+ * Hybrid Pagination Module
+ * Mengintegrasikan virtual scrolling dengan page navigation/indicator
+ * Memberikan UX yang smooth dengan kemampuan navigasi halaman
  */
 
-import { state, updateState } from './state.js';
-import { elements } from './constants.js';
-
-// Global flag to prevent multiple simultaneous renders
-let isRendering = false;
-let lastRenderTime = 0;
-const RENDER_DEBOUNCE = 50; // Reduced from 100ms to 50ms for faster response
-let renderTimeout = null;
+import { config } from './constants.js';
+import { debugLog } from './debug.js';
 
 /**
- * Inisialisasi pagination state
+ * Pagination state
  */
-export function initPagination() {
-    if (!state.pagination) {
-        updateState({
-            pagination: {
-                currentPage: 1,
-                itemsPerPage: 10,
-                totalItems: 0,
-                totalPages: 1,
-            }
-        });
-    }
-}
+let paginationState = {
+    currentPage: 1,
+    totalPages: 1,
+    itemsPerPage: 50, // Items per "virtual page"
+    totalItems: 0,
+    isNavigating: false, // Flag untuk mencegah loop event
+};
 
 /**
- * Hitung total halaman berdasarkan jumlah item
- * @param {number} totalItems - Total jumlah item
- * @returns {number} Total halaman
+ * Calculate pagination info based on total items
+ * @param {number} totalItems - Total number of items
+ * @param {number} itemsPerPage - Items per page (default from config)
+ * @returns {Object} Pagination info
  */
-export function calculateTotalPages(totalItems) {
-    const itemsPerPage = state.pagination?.itemsPerPage || 10;
-    return Math.max(1, Math.ceil(totalItems / itemsPerPage));
-}
-
-/**
- * Update pagination info
- * @param {number} totalItems - Total jumlah item
- */
-export function updatePaginationInfo(totalItems) {
-    const totalPages = calculateTotalPages(totalItems);
-    const currentPage = Math.min(state.pagination?.currentPage || 1, totalPages);
+export function calculatePagination(totalItems, itemsPerPage = paginationState.itemsPerPage) {
+    const totalPages = Math.ceil(totalItems / itemsPerPage) || 1;
     
-    updateState({
-        pagination: {
-            ...state.pagination,
-            totalItems,
-            totalPages,
-            currentPage,
-        }
-    });
+    return {
+        totalItems,
+        itemsPerPage,
+        totalPages,
+        currentPage: Math.min(paginationState.currentPage, totalPages),
+    };
 }
 
 /**
- * Dapatkan item untuk halaman saat ini
- * @param {Array} items - Array semua item
- * @returns {Array} Array item untuk halaman saat ini
+ * Get items for current page (slice items array)
+ * @param {Array} items - All items array
+ * @param {number} currentPage - Current page number (optional, uses state if not provided)
+ * @param {number} itemsPerPage - Items per page (optional, uses state if not provided)
+ * @returns {Array} Items for the current page
  */
-export function getPaginatedItems(items) {
-    if (!state.pagination) {
-        initPagination();
+export function getItemsForPage(items, currentPage = null, itemsPerPage = null) {
+    if (!items || !Array.isArray(items)) {
+        return [];
     }
     
-    const { currentPage, itemsPerPage } = state.pagination;
-    const startIndex = (currentPage - 1) * itemsPerPage;
-    const endIndex = startIndex + itemsPerPage;
+    const page = currentPage || paginationState.currentPage;
+    const perPage = itemsPerPage || paginationState.itemsPerPage;
+    
+    const startIndex = (page - 1) * perPage;
+    const endIndex = startIndex + perPage;
     
     return items.slice(startIndex, endIndex);
 }
 
 /**
- * Pindah ke halaman tertentu
- * @param {number} pageNumber - Nomor halaman tujuan
+ * Get current page based on scroll position
+ * @param {HTMLElement} container - Scroll container
+ * @param {number} totalItems - Total number of items
+ * @param {number} itemHeight - Height of each item
+ * @returns {number} Current page number
  */
-export function goToPage(pageNumber) {
-    const { totalPages } = state.pagination;
-    const newPage = Math.max(1, Math.min(pageNumber, totalPages));
+export function getCurrentPageFromScroll(container, totalItems, itemHeight) {
+    if (!container) return 1;
     
-    updateState({
-        pagination: {
-            ...state.pagination,
-            currentPage: newPage,
-        }
+    // NOT USED in true pagination mode
+    // This function was for scroll-based virtual pagination
+    // Keeping for backward compatibility
+    return paginationState.currentPage;
+}
+
+/**
+ * Scroll to specific page
+ * @param {HTMLElement} container - Scroll container
+ * @param {number} pageNumber - Target page number
+ * @param {number} itemHeight - Height of each item
+ * @param {boolean} smooth - Use smooth scrolling
+ */
+export function scrollToPage(container, pageNumber, itemHeight, smooth = false) {
+    // Update page state first for immediate response
+    const pagination = calculatePagination(paginationState.totalItems);
+    const validPage = Math.max(1, Math.min(pageNumber, pagination.totalPages));
+    
+    paginationState.currentPage = validPage;
+    paginationState.isNavigating = true;
+    
+    // Dispatch event to trigger re-render immediately
+    updatePaginationState(validPage, pagination.totalPages, paginationState.totalItems);
+    
+    // Scroll to top after state update (optional, only if container exists)
+    if (container) {
+        requestAnimationFrame(() => {
+            container.scrollTo({
+                top: 0,
+                behavior: smooth ? 'smooth' : 'auto',
+            });
+        });
+    }
+    
+    // Reset navigating flag quickly
+    requestAnimationFrame(() => {
+        paginationState.isNavigating = false;
     });
 }
 
 /**
- * Pindah ke halaman berikutnya
- */
-export function goToNextPage() {
-    const { currentPage, totalPages } = state.pagination;
-    if (currentPage < totalPages) {
-        goToPage(currentPage + 1);
-    }
-}
-
-/**
- * Pindah ke halaman sebelumnya
- */
-export function goToPreviousPage() {
-    const { currentPage } = state.pagination;
-    if (currentPage > 1) {
-        goToPage(currentPage - 1);
-    }
-}
-
-/**
- * Pindah ke halaman pertama
- */
-export function goToFirstPage() {
-    goToPage(1);
-}
-
-/**
- * Pindah ke halaman terakhir
- */
-export function goToLastPage() {
-    const { totalPages } = state.pagination;
-    goToPage(totalPages);
-}
-
-/**
- * Ubah jumlah item per halaman
- * @param {number} itemsPerPage - Jumlah item per halaman baru
- */
-export function changeItemsPerPage(itemsPerPage) {
-    const validItemsPerPage = Math.max(1, itemsPerPage);
-    
-    updateState({
-        pagination: {
-            ...state.pagination,
-            itemsPerPage: validItemsPerPage,
-            currentPage: 1, // Reset ke halaman pertama
-        }
-    });
-    
-    // Recalculate total pages
-    updatePaginationInfo(state.pagination.totalItems);
-}
-
-/**
- * Render pagination controls
- */
-export function renderPaginationControls() {
-    if (!state.pagination) {
-        initPagination();
-    }
-    
-    const { currentPage, totalPages, totalItems, itemsPerPage } = state.pagination;
-    
-    // Cari atau buat pagination container
-    let paginationContainer = document.querySelector('.pagination-container');
-    
-    if (!paginationContainer) {
-        // Buat container baru jika belum ada
-        paginationContainer = document.createElement('div');
-        // Add Tailwind utility classes alongside existing class for a gradual migration
-        paginationContainer.classList.add('pagination-container','flex','flex-wrap','items-center','justify-between','gap-4','p-3','bg-transparent');
-        
-        // Insert setelah table-wrapper
-        const tableWrapper = document.querySelector('.table-wrapper');
-        if (tableWrapper && tableWrapper.parentNode) {
-            tableWrapper.parentNode.insertBefore(paginationContainer, tableWrapper.nextSibling);
-        }
-    }
-    
-    // Jika totalItems <= itemsPerPage, sembunyikan pagination
-    if (totalItems <= itemsPerPage) {
-        paginationContainer.style.display = 'none';
-        return;
-    }
-    
-    paginationContainer.style.display = 'flex';
-    
-    // Generate page numbers to show
-    const pageNumbers = generatePageNumbers(currentPage, totalPages);
-    
-    // Build pagination DOM (avoid innerHTML with class attributes to be safer during Tailwind migration)
-    // Clear existing content first
-    paginationContainer.innerHTML = '';
-
-    // Info
-    const infoDiv = document.createElement('div');
-    infoDiv.classList.add('pagination-info', 'text-sm', 'text-gray-600');
-    infoDiv.textContent = `Menampilkan ${((currentPage - 1) * itemsPerPage) + 1}-${Math.min(currentPage * itemsPerPage, totalItems)} dari ${totalItems} item`;
-    paginationContainer.appendChild(infoDiv);
-
-    // Controls wrapper
-    const controlsDiv = document.createElement('div');
-    controlsDiv.classList.add('pagination-controls', 'flex', 'items-center', 'gap-2');
-
-    // Helper to create an SVG icon node from a path string and optional classes
-    const createIcon = (viewBox, pathD, classes = []) => {
-        const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-        svg.setAttribute('viewBox', viewBox);
-        svg.setAttribute('aria-hidden', 'true');
-        classes.forEach(c => svg.classList.add(c));
-        const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-        path.setAttribute('fill', 'currentColor');
-        path.setAttribute('d', pathD);
-        svg.appendChild(path);
-        return svg;
-    };
-
-    // Helper to create button with common utilities
-    const createNavButton = (dataPage, ariaLabel, svgNode, isDisabled = false) => {
-        const btn = document.createElement('button');
-        btn.classList.add('pagination-btn', `pagination-${dataPage}`, 'inline-flex', 'items-center', 'justify-center', 'w-9', 'h-9', 'rounded-md', 'border', 'bg-transparent', 'text-gray-700', 'focus:outline-none', 'focus:ring-2', 'focus:ring-blue-200');
-        // Hover utilities (kept as classes for Tailwind)
-        btn.classList.add('hover:bg-blue-600', 'hover:text-white');
-        if (isDisabled) {
-            btn.setAttribute('disabled', '');
-        }
-        if (ariaLabel) btn.setAttribute('aria-label', ariaLabel);
-        btn.dataset.page = dataPage;
-        if (svgNode) btn.appendChild(svgNode);
-        return btn;
-    };
-
-    // First button
-    controlsDiv.appendChild(createNavButton('first', 'Halaman pertama', createIcon('0 0 24 24', 'M18.41 16.59L13.82 12l4.59-4.59L17 6l-6 6 6 6zM6 6h2v12H6z', ['w-4','h-4']), currentPage === 1));
-
-    // Prev button
-    controlsDiv.appendChild(createNavButton('prev', 'Halaman sebelumnya', createIcon('0 0 24 24', 'M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z', ['w-4','h-4']), currentPage === 1));
-
-    // Page numbers container
-    const numbersDiv = document.createElement('div');
-    numbersDiv.classList.add('pagination-numbers', 'flex', 'items-center', 'gap-1');
-
-    pageNumbers.forEach(pageNum => {
-        if (pageNum === '...') {
-            const span = document.createElement('span');
-            span.classList.add('pagination-ellipsis', 'px-2', 'text-gray-500');
-            span.textContent = '...';
-            numbersDiv.appendChild(span);
-            return;
-        }
-
-        const btn = document.createElement('button');
-        btn.classList.add('pagination-btn', 'pagination-number', 'inline-flex', 'items-center', 'justify-center', 'min-w-[36px]', 'h-9', 'px-2', 'rounded-md');
-        btn.dataset.page = String(pageNum);
-        btn.setAttribute('aria-label', `Halaman ${pageNum}`);
-        if (pageNum === currentPage) {
-            btn.setAttribute('aria-current', 'page');
-            // active classes
-            btn.classList.add('active', 'bg-blue-600', 'text-white', 'font-semibold', 'border-blue-600');
-        } else {
-            btn.classList.add('bg-transparent', 'text-gray-700', 'hover:bg-blue-50', 'hover:text-blue-700');
-        }
-        btn.textContent = String(pageNum);
-        numbersDiv.appendChild(btn);
-    });
-
-    controlsDiv.appendChild(numbersDiv);
-
-    // Next button
-    controlsDiv.appendChild(createNavButton('next', 'Halaman berikutnya', createIcon('0 0 24 24', 'M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z', ['w-4','h-4']), currentPage === totalPages));
-
-    // Last button
-    controlsDiv.appendChild(createNavButton('last', 'Halaman terakhir', createIcon('0 0 24 24', 'M5.59 7.41L10.18 12l-4.59 4.59L7 18l6-6-6-6zM16 6h2v12h-2z', ['w-4','h-4']), currentPage === totalPages));
-
-    paginationContainer.appendChild(controlsDiv);
-
-    // Per-page controls
-    const perPageDiv = document.createElement('div');
-    perPageDiv.classList.add('pagination-per-page', 'flex', 'items-center', 'gap-2', 'mt-2', 'sm:mt-0');
-
-    const perLabel = document.createElement('label');
-    perLabel.setAttribute('for', 'items-per-page');
-    perLabel.classList.add('text-sm', 'text-gray-600');
-    perLabel.textContent = 'Item per halaman:';
-    perPageDiv.appendChild(perLabel);
-
-    const select = document.createElement('select');
-    select.id = 'items-per-page';
-    select.classList.add('items-per-page-select', 'form-select', 'px-2', 'py-1', 'rounded-md', 'border', 'bg-white', 'text-gray-700');
-
-    const options = [10, 25, 50, 100];
-    options.forEach(optVal => {
-        const opt = document.createElement('option');
-        opt.value = String(optVal);
-        opt.textContent = String(optVal);
-        if (itemsPerPage === optVal) {
-            opt.setAttribute('selected', '');
-        }
-        select.appendChild(opt);
-    });
-
-    perPageDiv.appendChild(select);
-    paginationContainer.appendChild(perPageDiv);
-
-    // Attach event listeners to newly created DOM
-    attachPaginationEventListeners(paginationContainer);
-    
-    // Attach event listeners
-    attachPaginationEventListeners(paginationContainer);
-}
-
-/**
- * Generate array of page numbers to display
+ * Update pagination state
  * @param {number} currentPage - Current page number
  * @param {number} totalPages - Total number of pages
+ * @param {number} totalItems - Total number of items
+ */
+export function updatePaginationState(currentPage, totalPages, totalItems) {
+    const changed = 
+        paginationState.currentPage !== currentPage ||
+        paginationState.totalPages !== totalPages ||
+        paginationState.totalItems !== totalItems;
+    
+    paginationState.currentPage = currentPage;
+    paginationState.totalPages = totalPages;
+    paginationState.totalItems = totalItems;
+    
+    if (changed) {
+        debugLog('[Pagination] State updated:', paginationState);
+        
+        // Dispatch custom event for UI updates
+        document.dispatchEvent(new CustomEvent('pagination-updated', {
+            detail: { ...paginationState }
+        }));
+    }
+}
+
+/**
+ * Get current pagination state
+ * @returns {Object} Current pagination state
+ */
+export function getPaginationState() {
+    return { ...paginationState };
+}
+
+/**
+ * Set items per page
+ * @param {number} itemsPerPage - New items per page value
+ */
+export function setItemsPerPage(itemsPerPage) {
+    if (itemsPerPage > 0 && itemsPerPage !== paginationState.itemsPerPage) {
+        paginationState.itemsPerPage = itemsPerPage;
+        debugLog('[Pagination] Items per page changed to:', itemsPerPage);
+        
+        // Recalculate pagination
+        const newPagination = calculatePagination(paginationState.totalItems, itemsPerPage);
+        updatePaginationState(newPagination.currentPage, newPagination.totalPages, paginationState.totalItems);
+    }
+}
+
+/**
+ * Reset pagination to first page
+ */
+export function resetPagination() {
+    paginationState.currentPage = 1;
+    debugLog('[Pagination] Reset to page 1');
+}
+
+/**
+ * Navigate to next page
+ * @param {HTMLElement} container - Scroll container
+ * @param {number} itemHeight - Height of each item
+ */
+export function goToNextPage(container, itemHeight) {
+    if (paginationState.currentPage < paginationState.totalPages) {
+        const nextPage = paginationState.currentPage + 1;
+        scrollToPage(container, nextPage, itemHeight, false); // Instant navigation
+    }
+}
+
+/**
+ * Navigate to previous page
+ * @param {HTMLElement} container - Scroll container
+ * @param {number} itemHeight - Height of each item
+ */
+export function goToPreviousPage(container, itemHeight) {
+    if (paginationState.currentPage > 1) {
+        const prevPage = paginationState.currentPage - 1;
+        scrollToPage(container, prevPage, itemHeight, false); // Instant navigation
+    }
+}
+
+/**
+ * Navigate to first page
+ * @param {HTMLElement} container - Scroll container
+ * @param {number} itemHeight - Height of each item
+ */
+export function goToFirstPage(container, itemHeight) {
+    if (paginationState.currentPage !== 1) {
+        scrollToPage(container, 1, itemHeight, false); // Instant navigation
+    }
+}
+
+/**
+ * Navigate to last page
+ * @param {HTMLElement} container - Scroll container
+ * @param {number} itemHeight - Height of each item
+ */
+export function goToLastPage(container, itemHeight) {
+    if (paginationState.currentPage !== paginationState.totalPages) {
+        scrollToPage(container, paginationState.totalPages, itemHeight, false); // Instant navigation
+    }
+}
+
+/**
+ * Format pagination info string
+ * @param {number} currentPage - Current page
+ * @param {number} totalPages - Total pages
+ * @param {number} totalItems - Total items
+ * @returns {string} Formatted pagination info
+ */
+export function formatPaginationInfo(currentPage, totalPages, totalItems) {
+    const itemsPerPage = paginationState.itemsPerPage;
+    const startItem = ((currentPage - 1) * itemsPerPage) + 1;
+    const endItem = Math.min(currentPage * itemsPerPage, totalItems);
+    
+    if (totalItems === 0) {
+        return 'Tidak ada item';
+    }
+    
+    if (totalPages === 1) {
+        return `${totalItems.toLocaleString('id-ID')} item`;
+    }
+    
+    return `Halaman ${currentPage} dari ${totalPages} • Item ${startItem}-${endItem} dari ${totalItems.toLocaleString('id-ID')}`;
+}
+
+/**
+ * Initialize scroll-based pagination tracking
+ * @param {HTMLElement} container - Scroll container
+ * @param {number} totalItems - Total items
+ * @param {number} itemHeight - Height per item
+ */
+export function initScrollTracking(container, totalItems, itemHeight) {
+    if (!container) return;
+    
+    // Calculate initial pagination
+    const pagination = calculatePagination(totalItems);
+    updatePaginationState(paginationState.currentPage, pagination.totalPages, totalItems);
+    
+    // NO SCROLL TRACKING in true pagination mode
+    // We use button clicks for navigation instead
+    
+    // Return cleanup function (no-op in this mode)
+    return () => {
+        // Nothing to clean up
+    };
+}
+
+/**
+ * Render pagination controls UI
+ * @param {Object} options - Render options
+ * @returns {HTMLElement} Pagination controls element
+ */
+export function renderPaginationControls({ 
+    currentPage, 
+    totalPages, 
+    totalItems,
+    onPrevious,
+    onNext,
+    onFirst,
+    onLast,
+    onPageSelect
+}) {
+    const container = document.createElement('div');
+    container.className = 'pagination-controls flex items-center justify-between gap-4 px-4 py-3 bg-white border-t border-gray-200';
+    
+    // Info section
+    const info = document.createElement('div');
+    info.className = 'pagination-info text-sm text-gray-600';
+    info.textContent = formatPaginationInfo(currentPage, totalPages, totalItems);
+    
+    // Controls section
+    const controls = document.createElement('div');
+    controls.className = 'pagination-buttons flex items-center gap-2';
+    
+    // First page button
+    const firstBtn = document.createElement('button');
+    firstBtn.className = 'pagination-btn px-3 py-1.5 text-sm rounded border border-gray-300 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors';
+    firstBtn.innerHTML = '<i class="ri-skip-back-mini-line"></i>';
+    firstBtn.disabled = currentPage === 1;
+    firstBtn.title = 'Halaman Pertama';
+    firstBtn.addEventListener('click', onFirst);
+    
+    // Previous page button
+    const prevBtn = document.createElement('button');
+    prevBtn.className = 'pagination-btn px-3 py-1.5 text-sm rounded border border-gray-300 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors';
+    prevBtn.innerHTML = '<i class="ri-arrow-left-s-line"></i> Prev';
+    prevBtn.disabled = currentPage === 1;
+    prevBtn.title = 'Halaman Sebelumnya';
+    prevBtn.addEventListener('click', onPrevious);
+    
+    // Page selector (show nearby pages)
+    const pageSelector = document.createElement('div');
+    pageSelector.className = 'flex items-center gap-1';
+    
+    const pagesToShow = getPageRange(currentPage, totalPages);
+    pagesToShow.forEach((page, index) => {
+        if (page === '...') {
+            const ellipsis = document.createElement('span');
+            ellipsis.className = 'px-2 text-gray-400';
+            ellipsis.textContent = '...';
+            pageSelector.appendChild(ellipsis);
+        } else {
+            const pageBtn = document.createElement('button');
+            pageBtn.className = page === currentPage
+                ? 'pagination-page-btn px-3 py-1.5 text-sm rounded bg-blue-600 text-white font-medium'
+                : 'pagination-page-btn px-3 py-1.5 text-sm rounded border border-gray-300 hover:bg-gray-50 active:bg-gray-100 transition-all duration-100';
+            pageBtn.textContent = page;
+            pageBtn.disabled = page === currentPage;
+            
+            // Add instant visual feedback on click
+            pageBtn.addEventListener('click', () => {
+                // Add loading state
+                pageBtn.classList.add('opacity-50', 'pointer-events-none');
+                onPageSelect(page);
+                // Remove loading state after navigation starts
+                setTimeout(() => {
+                    pageBtn.classList.remove('opacity-50', 'pointer-events-none');
+                }, 100);
+            });
+            pageSelector.appendChild(pageBtn);
+        }
+    });
+    
+    // Next page button
+    const nextBtn = document.createElement('button');
+    nextBtn.className = 'pagination-btn px-3 py-1.5 text-sm rounded border border-gray-300 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors';
+    nextBtn.innerHTML = 'Next <i class="ri-arrow-right-s-line"></i>';
+    nextBtn.disabled = currentPage === totalPages;
+    nextBtn.title = 'Halaman Selanjutnya';
+    nextBtn.addEventListener('click', onNext);
+    
+    // Last page button
+    const lastBtn = document.createElement('button');
+    lastBtn.className = 'pagination-btn px-3 py-1.5 text-sm rounded border border-gray-300 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors';
+    lastBtn.innerHTML = '<i class="ri-skip-forward-mini-line"></i>';
+    lastBtn.disabled = currentPage === totalPages;
+    lastBtn.title = 'Halaman Terakhir';
+    lastBtn.addEventListener('click', onLast);
+    
+    controls.appendChild(firstBtn);
+    controls.appendChild(prevBtn);
+    controls.appendChild(pageSelector);
+    controls.appendChild(nextBtn);
+    controls.appendChild(lastBtn);
+    
+    container.appendChild(info);
+    container.appendChild(controls);
+    
+    return container;
+}
+
+/**
+ * Get page range for pagination UI (with ellipsis)
+ * @param {number} currentPage - Current page
+ * @param {number} totalPages - Total pages
  * @returns {Array} Array of page numbers and ellipsis
  */
-function generatePageNumbers(currentPage, totalPages) {
-    const delta = 2; // Number of pages to show on each side of current page
-    const range = [];
-    const rangeWithDots = [];
-    let l;
+function getPageRange(currentPage, totalPages) {
+    if (totalPages <= 7) {
+        // Show all pages if 7 or less
+        return Array.from({ length: totalPages }, (_, i) => i + 1);
+    }
+    
+    const pages = [];
     
     // Always show first page
-    range.push(1);
+    pages.push(1);
     
-    // Calculate range around current page
-    for (let i = currentPage - delta; i <= currentPage + delta; i++) {
-        if (i > 1 && i < totalPages) {
-            range.push(i);
-        }
+    if (currentPage > 3) {
+        pages.push('...');
+    }
+    
+    // Show current page and neighbors
+    const start = Math.max(2, currentPage - 1);
+    const end = Math.min(totalPages - 1, currentPage + 1);
+    
+    for (let i = start; i <= end; i++) {
+        pages.push(i);
+    }
+    
+    if (currentPage < totalPages - 2) {
+        pages.push('...');
     }
     
     // Always show last page
     if (totalPages > 1) {
-        range.push(totalPages);
+        pages.push(totalPages);
     }
     
-    // Add ellipsis where needed
-    for (let i of range) {
-        if (l) {
-            if (i - l === 2) {
-                rangeWithDots.push(l + 1);
-            } else if (i - l !== 1) {
-                rangeWithDots.push('...');
-            }
-        }
-        rangeWithDots.push(i);
-        l = i;
-    }
-    
-    return rangeWithDots;
+    return pages;
 }
 
 /**
- * Attach event listeners to pagination controls
- * @param {HTMLElement} container - Pagination container element
+ * Simple pagination info (for status bar)
+ * @param {number} currentPage - Current page
+ * @param {number} totalPages - Total pages
+ * @returns {string} Simple info string
  */
-function attachPaginationEventListeners(container) {
-    // Page number buttons
-    const pageButtons = container.querySelectorAll('.pagination-btn[data-page]');
-    pageButtons.forEach(button => {
-        button.addEventListener('click', (e) => {
-            // Prevent multiple rapid clicks
-            if (isRendering) return;
-            
-            const page = e.currentTarget.getAttribute('data-page');
-            let pageChanged = false;
-            
-            switch(page) {
-                case 'first':
-                    if (state.pagination.currentPage > 1) {
-                        goToFirstPage();
-                        pageChanged = true;
-                    }
-                    break;
-                case 'prev':
-                    if (state.pagination.currentPage > 1) {
-                        goToPreviousPage();
-                        pageChanged = true;
-                    }
-                    break;
-                case 'next':
-                    if (state.pagination.currentPage < state.pagination.totalPages) {
-                        goToNextPage();
-                        pageChanged = true;
-                    }
-                    break;
-                case 'last':
-                    if (state.pagination.currentPage < state.pagination.totalPages) {
-                        goToLastPage();
-                        pageChanged = true;
-                    }
-                    break;
-                default:
-                    const pageNum = parseInt(page);
-                    if (!isNaN(pageNum) && pageNum !== state.pagination.currentPage) {
-                        goToPage(pageNum);
-                        pageChanged = true;
-                    }
-            }
-            
-            // Only trigger re-render if page actually changed
-            if (pageChanged) {
-                // Clear any existing timeout
-                if (renderTimeout) {
-                    clearTimeout(renderTimeout);
-                }
-                
-                // Use a shorter debounce for immediate feedback
-                renderTimeout = setTimeout(() => {
-                    const renderEvent = new CustomEvent('pagination-change');
-                    window.dispatchEvent(renderEvent);
-                }, RENDER_DEBOUNCE);
-            }
-        });
-    });
-    
-    // Items per page selector
-    const itemsPerPageSelect = container.querySelector('#items-per-page');
-    if (itemsPerPageSelect) {
-        itemsPerPageSelect.addEventListener('change', (e) => {
-            // Prevent multiple rapid changes
-            if (isRendering) return;
-            
-            const newItemsPerPage = parseInt(e.target.value);
-            if (newItemsPerPage !== state.pagination.itemsPerPage) {
-                changeItemsPerPage(newItemsPerPage);
-                
-                // Clear any existing timeout
-                if (renderTimeout) {
-                    clearTimeout(renderTimeout);
-                }
-                
-                // Use a slightly longer debounce for items per page changes
-                renderTimeout = setTimeout(() => {
-                    const renderEvent = new CustomEvent('pagination-change');
-                    window.dispatchEvent(renderEvent);
-                }, RENDER_DEBOUNCE * 2);
-            }
-        });
-    }
-}
-
-/**
- * Reset pagination ke halaman pertama
- */
-export function resetPagination() {
-    if (state.pagination) {
-        updateState({
-            pagination: {
-                ...state.pagination,
-                currentPage: 1,
-            }
-        });
-    }
+export function getSimplePaginationInfo(currentPage, totalPages) {
+    if (totalPages <= 1) return '';
+    return `Hal. ${currentPage}/${totalPages}`;
 }

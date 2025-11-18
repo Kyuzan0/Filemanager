@@ -11,7 +11,9 @@ import {
     loadSortPreferences,
     saveLastPath,
     loadLastPath,
-    isLocalStorageAvailable
+    isLocalStorageAvailable,
+    savePaginationPageSize,
+    loadPaginationPageSize
 } from './storage.js';
 import {
     setupRefreshHandler,
@@ -31,7 +33,9 @@ import {
     setupVisibilityHandler,
     setupContextMenuHandler,
     setupSplitActionHandler,
-    setupLogExportHandler
+    setupLogExportHandler,
+    setupUploadDesktopHandler,
+    setupDeleteSelectedDesktopHandler
 } from './eventHandlers.js';
 import {
     handleDragStart,
@@ -47,6 +51,242 @@ import { renderItems as renderItemsComplex, updateSortUI } from './uiRenderer.js
 // Lazy-loaded modules (loaded on-demand for better performance)
 let moveOverlayModule = null;
 let logManagerModule = null;
+
+// ---------------------------------------------------------------------------
+// Pagination state (inlined from pagination-simple to reduce module latency)
+// ---------------------------------------------------------------------------
+
+const paginationConfig = {
+    currentPage: 1,
+    itemsPerPage: 50,
+    totalPages: 0,
+    totalItems: 0
+};
+
+const PAGE_SIZE_OPTIONS = [10, 25, 50, 100];
+
+const storedItemsPerPage = loadPaginationPageSize(paginationConfig.itemsPerPage);
+if (PAGE_SIZE_OPTIONS.includes(storedItemsPerPage)) {
+    paginationConfig.itemsPerPage = storedItemsPerPage;
+} else if (storedItemsPerPage !== paginationConfig.itemsPerPage) {
+    savePaginationPageSize(paginationConfig.itemsPerPage);
+}
+
+function updatePaginationInfo(totalItems) {
+    paginationConfig.totalItems = totalItems;
+    paginationConfig.totalPages = Math.max(1, Math.ceil(totalItems / paginationConfig.itemsPerPage));
+
+    if (paginationConfig.currentPage > paginationConfig.totalPages) {
+        paginationConfig.currentPage = Math.max(1, paginationConfig.totalPages);
+    }
+}
+
+function getCurrentPageItems(items) {
+    const startIdx = (paginationConfig.currentPage - 1) * paginationConfig.itemsPerPage;
+    const endIdx = startIdx + paginationConfig.itemsPerPage;
+    return items.slice(startIdx, endIdx);
+}
+
+function goToPage(page, allItems) {
+    if (page < 1 || page > paginationConfig.totalPages || page === paginationConfig.currentPage) {
+        return getCurrentPageItems(allItems);
+    }
+
+    paginationConfig.currentPage = page;
+    return getCurrentPageItems(allItems);
+}
+
+function renderSimplePagination(container, onPageChange) {
+    if (!container) {
+        return;
+    }
+
+    const { currentPage, totalPages, totalItems, itemsPerPage } = paginationConfig;
+    const hasItems = totalItems > 0;
+    const showNavigation = totalPages > 1;
+
+    container.innerHTML = '';
+    container.classList.toggle('hidden', !hasItems);
+
+    if (!hasItems) {
+        return;
+    }
+
+    const wrapper = document.createElement('div');
+    wrapper.className = 'pagination-controls flex flex-col gap-3 border-t border-gray-200 bg-white px-4 py-3 md:flex-row md:items-center md:justify-between';
+
+    const info = document.createElement('div');
+    info.className = 'text-sm text-gray-700';
+    const startItem = (currentPage - 1) * itemsPerPage + 1;
+    const endItem = Math.min(currentPage * itemsPerPage, totalItems);
+    info.textContent = `Menampilkan ${startItem}-${endItem} dari ${totalItems.toLocaleString('id-ID')} items`;
+
+    const controlsWrapper = document.createElement('div');
+    controlsWrapper.className = 'flex flex-col gap-3 md:flex-row md:items-center md:justify-end md:gap-4';
+
+    const navigationWrapper = document.createElement('div');
+    navigationWrapper.className = 'pagination-buttons flex items-center gap-2';
+    if (!showNavigation) {
+        navigationWrapper.classList.add('hidden');
+    }
+
+    if (showNavigation) {
+        const prevBtn = createPaginationButton('&laquo; Prev', currentPage > 1, () => {
+            goToPageAndUpdate(currentPage - 1, onPageChange);
+        });
+        navigationWrapper.appendChild(prevBtn);
+
+        const pageRange = getPageRange(currentPage, totalPages);
+        pageRange.forEach(page => {
+            if (page === '...') {
+                const dots = document.createElement('span');
+                dots.className = 'px-2 text-gray-400';
+                dots.textContent = '...';
+                navigationWrapper.appendChild(dots);
+            } else {
+                const pageBtn = createPaginationButton(
+                    page.toString(),
+                    true,
+                    () => goToPageAndUpdate(page, onPageChange),
+                    page === currentPage
+                );
+                navigationWrapper.appendChild(pageBtn);
+            }
+        });
+
+        const nextBtn = createPaginationButton('Next &raquo;', currentPage < totalPages, () => {
+            goToPageAndUpdate(currentPage + 1, onPageChange);
+        });
+        navigationWrapper.appendChild(nextBtn);
+    }
+
+    const perPageWrapper = document.createElement('div');
+    perPageWrapper.className = 'pagination-page-size flex items-center gap-2 text-sm text-gray-600';
+
+    const perPageLabel = document.createElement('span');
+    perPageLabel.className = 'hidden sm:inline text-gray-500';
+    perPageLabel.textContent = 'Item per halaman';
+
+    const perPageSelect = document.createElement('select');
+    perPageSelect.className = 'pagination-page-size-select px-3 py-1.5 text-sm rounded border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/60 focus:border-blue-500';
+    perPageSelect.setAttribute('aria-label', 'Item per halaman');
+
+    PAGE_SIZE_OPTIONS.forEach((size) => {
+        const option = document.createElement('option');
+        option.value = size;
+        option.textContent = size;
+        if (size === itemsPerPage) {
+            option.selected = true;
+        }
+        perPageSelect.appendChild(option);
+    });
+
+    perPageSelect.addEventListener('change', (event) => {
+        const selectedValue = Number(event.target.value);
+        if (!Number.isNaN(selectedValue)) {
+            changeItemsPerPage(selectedValue);
+        }
+    });
+
+    perPageWrapper.appendChild(perPageLabel);
+    perPageWrapper.appendChild(perPageSelect);
+
+    controlsWrapper.appendChild(navigationWrapper);
+    controlsWrapper.appendChild(perPageWrapper);
+
+    wrapper.appendChild(info);
+    wrapper.appendChild(controlsWrapper);
+    container.appendChild(wrapper);
+}
+
+function createPaginationButton(text, enabled, onClick, isActive = false) {
+    const btn = document.createElement('button');
+    btn.className = isActive
+        ? 'px-3 py-1.5 text-sm rounded bg-blue-600 text-white font-medium'
+        : 'px-3 py-1.5 text-sm rounded border border-gray-300 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors';
+    btn.innerHTML = text;
+    btn.disabled = !enabled || isActive;
+
+    if (enabled && !isActive) {
+        btn.addEventListener('click', (e) => {
+            e.preventDefault();
+            onClick();
+        });
+    }
+
+    return btn;
+}
+
+function getPageRange(currentPage, totalPages) {
+    const maxVisible = 5;
+
+    if (totalPages <= maxVisible) {
+        return Array.from({ length: totalPages }, (_, i) => i + 1);
+    }
+
+    const pages = [1];
+
+    if (currentPage > 3) {
+        pages.push('...');
+    }
+
+    const start = Math.max(2, currentPage - 1);
+    const end = Math.min(totalPages - 1, currentPage + 1);
+
+    for (let i = start; i <= end; i += 1) {
+        pages.push(i);
+    }
+
+    if (currentPage < totalPages - 2) {
+        pages.push('...');
+    }
+
+    if (totalPages > 1) {
+        pages.push(totalPages);
+    }
+
+    return pages;
+}
+
+function goToPageAndUpdate(page, callback) {
+    if (page < 1 || page > paginationConfig.totalPages || page === paginationConfig.currentPage) {
+        return;
+    }
+
+    paginationConfig.currentPage = page;
+
+    if (callback) {
+        callback(page);
+    }
+}
+
+function resetPagination() {
+    paginationConfig.currentPage = 1;
+}
+
+function changeItemsPerPage(newItemsPerPage) {
+    const parsedValue = Number(newItemsPerPage);
+    if (!Number.isFinite(parsedValue) || parsedValue <= 0) {
+        return;
+    }
+
+    const normalizedValue = PAGE_SIZE_OPTIONS.includes(parsedValue)
+        ? parsedValue
+        : PAGE_SIZE_OPTIONS[0];
+
+    if (paginationConfig.itemsPerPage === normalizedValue) {
+        return;
+    }
+
+    paginationConfig.itemsPerPage = normalizedValue;
+    paginationConfig.currentPage = 1;
+
+    savePaginationPageSize(normalizedValue);
+    updatePaginationInfo(paginationConfig.totalItems);
+
+    const items = Array.isArray(state.items) ? state.items : [];
+    renderItems(items, state.lastUpdated, false);
+}
 let moveOverlayLoading = null;
 let logManagerLoading = null;
 
@@ -322,12 +562,17 @@ window.clearAllLoadingStates = clearAllLoadingStates;
 function renderItems(items, lastUpdated, highlightNew) {
     console.log('[DEBUG] renderItems wrapper called');
     
-    // Call the complex renderer with all required parameters
+    // Get items for current page using pagination-simple
+    const pageItems = getCurrentPageItems(items);
+    
+    console.log('[DEBUG] Total items:', items.length, 'Page items:', pageItems.length);
+    
+    // Call the complex renderer with paginated items
     renderItemsComplex(
         elements.tableBody,
         elements.emptyState,
         state,
-        items,
+        pageItems,  // Use paginated items instead of all items
         lastUpdated,
         highlightNew,
         openTextPreview,
@@ -354,6 +599,42 @@ function renderItems(items, lastUpdated, highlightNew) {
         flashStatus,  // Add flashStatus helper
         setError      // Add setError helper
     );
+    
+    // Render pagination UI
+    renderPaginationUI();
+}
+
+/**
+ * Render pagination UI controls
+ */
+function renderPaginationUI() {
+    const container = elements.paginationContainer || document.getElementById('pagination-container');
+    if (!container) {
+        console.warn('[Pagination] Container not found');
+        return;
+    }
+    
+    // Render pagination with callback
+    renderSimplePagination(container, handlePageChange);
+}
+
+/**
+ * Handle page change (called when user clicks pagination button)
+ * @param {number} newPage - New page number
+ */
+function handlePageChange(newPage) {
+    console.log('[Pagination] Page changed to:', newPage);
+    console.log('[Pagination] Current path:', state.currentPath);
+    console.log('[Pagination] Total items:', state.items.length);
+    
+    // Re-render items for new page (synchronous)
+    renderItems(state.items, state.lastUpdated, false);
+    
+    // Optional: Scroll to top
+    const tableWrapper = document.querySelector('.table-wrapper');
+    if (tableWrapper) {
+        tableWrapper.scrollTo({ top: 0, behavior: 'auto' });
+    }
 }
 
 // Helper functions for renderItems
@@ -381,13 +662,23 @@ function changeSort(key) {
     // Save sort preferences to localStorage
     saveSortPreferences(key, newDirection);
     
+    // Reset pagination to page 1 when sorting changes
+    resetPagination();
+    
     renderItems(state.items, state.lastUpdated, false);
     updateSortUI(elements.sortHeaders, elements.statusSort, state);
 }
 
 function navigateTo(path) {
     console.log('[DEBUG] navigateTo called with path:', path);
+    console.log('[DEBUG] Path type:', typeof path);
     console.log('[DEBUG] Current state path before navigation:', state.currentPath);
+    
+    // Validate path is string
+    if (typeof path !== 'string') {
+        console.error('[ERROR] Invalid path type:', typeof path, path);
+        return;
+    }
     
     // Save last visited path to localStorage
     saveLastPath(path);
@@ -403,6 +694,8 @@ function navigateTo(path) {
 async function fetchDirectoryWrapper(path = '', options = {}) {
     try {
         console.log('[DEBUG] fetchDirectoryWrapper called with path:', path);
+        console.log('[DEBUG] Path length:', path ? path.length : 0);
+        console.log('[DEBUG] Path characters:', path ? Array.from(path).map(c => c.charCodeAt(0)) : []);
         
         // Update loading state
         updateState({ isLoading: true });
@@ -442,7 +735,10 @@ async function fetchDirectoryWrapper(path = '', options = {}) {
             });
             updateState({ visibleItems });
             
-            // Render the items
+            // Update pagination info with total items
+            updatePaginationInfo(state.items.length);
+            
+            // Render the items (will use pagination)
             renderItems(state.items, state.lastUpdated, false);
             
             // Update UI elements
@@ -1708,7 +2004,7 @@ function setupEventHandlers() {
 
     // Setup filter handler
     if (!warnIfMissing('filter', elements.filterInput) && !warnIfMissing('clearSearch', elements.clearSearch)) {
-        setupFilterHandler(elements.filterInput, elements.clearSearch, state, renderItems);
+    setupFilterHandler(elements.filterInput, elements.clearSearch, state, renderItems, resetPagination);
     }
 
     // Setup sort handlers (sortHeaders is a NodeList; call only when it exists and has items)
@@ -1743,6 +2039,29 @@ function setupEventHandlers() {
             () => hasUnsavedChanges(state.preview),
             confirmDiscardChanges,
             uploadFilesWrapper
+        );
+    }
+
+    // Setup desktop upload handler
+    if (!warnIfMissing('uploadDesktop', elements.btnUploadDesktop) && !warnIfMissing('uploadInputDesktop', elements.uploadInputDesktop)) {
+        setupUploadDesktopHandler(
+            elements.btnUploadDesktop,
+            elements.uploadInputDesktop,
+            state,
+            () => hasUnsavedChanges(state.preview),
+            confirmDiscardChanges,
+            uploadFilesWrapper
+        );
+    }
+
+    // Setup desktop delete selected handler
+    if (!warnIfMissing('deleteSelectedDesktop', elements.btnDeleteSelectedDesktop)) {
+        setupDeleteSelectedDesktopHandler(
+            elements.btnDeleteSelectedDesktop,
+            state,
+            () => hasUnsavedChanges(state.preview),
+            confirmDiscardChanges,
+            openConfirmOverlayWrapper
         );
     }
 
@@ -1783,14 +2102,6 @@ function setupEventHandlers() {
 
         tableContainer.addEventListener('scroll', throttledVirtualScroll, { passive: true });
     }
-
-    // Setup pagination change event listener with optimization
-    document.addEventListener('pagination-change', () => {
-        console.log('[DEBUG] Pagination changed, re-rendering items');
-        requestAnimationFrame(() => {
-            renderItems(state.items, state.lastUpdated, false);
-        });
-    });
 
     // Setup preview overlay handler
     if (!warnIfMissing('previewOverlay', elements.previewOverlay) && !warnIfMissing('previewClose', elements.previewClose)) {

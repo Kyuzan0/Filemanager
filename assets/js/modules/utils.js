@@ -185,16 +185,22 @@ function getItemCache(item) {
  * @returns {number} Hasil perbandingan
  */
 export function compareItems(a, b, sortKey, sortDirection) {
+    const startTime = performance.now();
+    
     // Create cache key for this comparison
     const cacheKey = `${b.path}-${sortKey}-${sortDirection}`;
     
     // Check cache first
+    const cacheTime = performance.now();
     const cache = getItemCache(a);
     if (cache.has(cacheKey)) {
+        console.log('[PAGINATION DEBUG] compareItems cache HIT for:', a.name, 'vs', b.name, 'at:', cacheTime, 'delta:', cacheTime - startTime);
         return cache.get(cacheKey);
     }
+    console.log('[PAGINATION DEBUG] compareItems cache MISS for:', a.name, 'vs', b.name, 'at:', cacheTime, 'delta:', cacheTime - startTime);
     
     // Perform comparison
+    const comparisonTime = performance.now();
     const direction = sortDirection === 'asc' ? 1 : -1;
     const typeOrder = { folder: 0, file: 1 };
     const compareName = () => a.name.localeCompare(b.name, 'id', { sensitivity: 'base', numeric: true });
@@ -230,9 +236,15 @@ export function compareItems(a, b, sortKey, sortDirection) {
             break;
         }
     }
+    console.log('[PAGINATION DEBUG] compareItems comparison completed at:', comparisonTime, 'delta:', comparisonTime - cacheTime);
     
     // Cache the result
+    const cacheSetTime = performance.now();
     cache.set(cacheKey, result);
+    console.log('[PAGINATION DEBUG] compareItems cached at:', cacheSetTime, 'delta:', cacheSetTime - comparisonTime);
+    
+    const endTime = performance.now();
+    console.log('[PAGINATION DEBUG] compareItems completed at:', endTime, 'total delta:', endTime - startTime, 'result:', result);
     
     return result;
 }
@@ -283,13 +295,25 @@ export function getSortDescription(key, direction) {
  * @returns {Set} Set selection yang sudah disinkronkan
  */
 export function synchronizeSelection(items, selected) {
+    const startTime = performance.now();
+    console.log('[PAGINATION DEBUG] synchronizeSelection called at:', startTime, 'with items:', items.length, 'selected:', selected.size);
+    
+    const validPathsTime = performance.now();
     const validPaths = new Set(items.map((item) => item.path));
+    console.log('[PAGINATION DEBUG] Valid paths created at:', validPathsTime, 'delta:', validPathsTime - startTime);
+    
+    const nextSelectedTime = performance.now();
     const nextSelected = new Set();
     selected.forEach((path) => {
         if (validPaths.has(path)) {
             nextSelected.add(path);
         }
     });
+    console.log('[PAGINATION DEBUG] Selection synchronized at:', nextSelectedTime, 'delta:', nextSelectedTime - validPathsTime, 'result:', nextSelected.size);
+    
+    const endTime = performance.now();
+    console.log('[PAGINATION DEBUG] synchronizeSelection completed at:', endTime, 'total delta:', endTime - startTime);
+    
     return nextSelected;
 }
 

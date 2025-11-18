@@ -13,7 +13,8 @@ const STORAGE_KEYS = {
     LAST_PATH: 'filemanager_last_path',
     VIEW_MODE: 'filemanager_view_mode',
     EDITOR_PREFS: 'filemanager_editor_prefs',
-    MOVE_RECENTS: 'filemanager_move_recents'
+    MOVE_RECENTS: 'filemanager_move_recents',
+    PAGE_SIZE: 'filemanager_page_size'
 };
 
 /**
@@ -153,6 +154,37 @@ export function saveLastPath(path) {
  */
 export function loadLastPath() {
     return loadFromStorage(STORAGE_KEYS.LAST_PATH, null);
+}
+
+/**
+ * Save pagination items-per-page preference
+ * @param {number} pageSize - Items per page value
+ * @returns {boolean} Success status
+ */
+export function savePaginationPageSize(pageSize) {
+    return saveToStorage(STORAGE_KEYS.PAGE_SIZE, pageSize);
+}
+
+/**
+ * Load pagination items-per-page preference
+ * @param {number} [defaultValue=50] - Default items per page
+ * @returns {number} Stored page size or default value
+ */
+export function loadPaginationPageSize(defaultValue = 50) {
+    const storedValue = loadFromStorage(STORAGE_KEYS.PAGE_SIZE, defaultValue);
+
+    if (typeof storedValue === 'number' && !Number.isNaN(storedValue)) {
+        return storedValue;
+    }
+
+    if (typeof storedValue === 'string') {
+        const parsed = Number(storedValue);
+        if (!Number.isNaN(parsed)) {
+            return parsed;
+        }
+    }
+
+    return defaultValue;
 }
 
 /**

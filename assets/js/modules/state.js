@@ -137,7 +137,11 @@ export function commitOptimisticUpdate() {
  * @param {Object} updates - Objek berisi properti yang akan diupdate
  */
 export function updateState(updates) {
+    const startTime = performance.now();
+    console.log('[PAGINATION DEBUG] updateState called at:', startTime, 'with keys:', Object.keys(updates));
+    
     // Deep merge untuk nested objects
+    const mergeTime = performance.now();
     Object.keys(updates).forEach(key => {
         if (typeof updates[key] === 'object' && updates[key] !== null && !Array.isArray(updates[key])) {
             if (typeof state[key] === 'object' && state[key] !== null && !Array.isArray(state[key])) {
@@ -149,6 +153,10 @@ export function updateState(updates) {
             state[key] = updates[key];
         }
     });
+    console.log('[PAGINATION DEBUG] State merged at:', mergeTime, 'delta:', mergeTime - startTime);
+    
+    const endTime = performance.now();
+    console.log('[PAGINATION DEBUG] updateState completed at:', endTime, 'total delta:', endTime - startTime);
 }
 
 /**

@@ -46,9 +46,15 @@ function getCachedDropTargets() {
  * Invalidates the DOM cache (call after DOM changes)
  */
 export function invalidateDOMCache() {
+    const startTime = performance.now();
+    console.log('[PAGINATION DEBUG] invalidateDOMCache called at:', startTime);
+    
     domCache.folderRows = null;
     domCache.dropTargets = null;
     domCache.lastCacheTime = 0;
+    
+    const endTime = performance.now();
+    console.log('[PAGINATION DEBUG] invalidateDOMCache completed at:', endTime, 'delta:', endTime - startTime);
 }
 
 /**

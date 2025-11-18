@@ -7,6 +7,7 @@
 export const elements = {
     // Main elements
     tableBody: document.getElementById('file-table'),
+    mobileFileList: document.getElementById('mobile-file-list'),
     emptyState: document.getElementById('empty-state'),
     breadcrumbsEl: document.getElementById('breadcrumbs'),
     statusInfo: document.getElementById('status-info'),
@@ -21,6 +22,11 @@ export const elements = {
     btnDeleteSelected: document.getElementById('btn-delete-selected'),
     btnMoveSelected: document.getElementById('btn-move-selected'),
     btnLogs: document.getElementById('btn-logs'),
+    
+    // Desktop buttons
+    btnUploadDesktop: document.getElementById('btn-upload-desktop'),
+    uploadInputDesktop: document.getElementById('upload-input-desktop'),
+    btnDeleteSelectedDesktop: document.getElementById('btn-delete-selected-desktop'),
     
     // Split action
     splitAction: document.querySelector('.split-action'),
@@ -124,6 +130,9 @@ export const elements = {
     moveCurrentShortcut: document.getElementById('move-current-shortcut'),
     moveSearchInput: document.getElementById('move-search'),
     moveRecents: document.getElementById('move-recents'),
+    
+    // Pagination elements
+    paginationContainer: document.getElementById('pagination-container'),
     
     // Log modal elements
     logOverlay: document.getElementById('log-overlay'),
@@ -279,6 +288,14 @@ export const config = {
         overscan: 5,             // Number of extra items to render above/below viewport
         threshold: 100,          // Minimum number of items to activate virtual scrolling
         bufferMultiplier: 1.5,   // Multiplier for buffer zone calculation
+    },
+    
+    // Hybrid pagination configuration (for scroll-based pagination)
+    pagination: {
+        enabled: true,           // Enable pagination indicator
+        itemsPerPage: 50,        // Items per "virtual page"
+        showControls: true,      // Show pagination controls
+        showInStatusBar: true,   // Show page info in status bar
     },
 };
 

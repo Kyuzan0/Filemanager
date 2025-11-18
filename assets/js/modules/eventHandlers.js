@@ -59,13 +59,19 @@ export function setupUpHandler(btnUp, state, navigateTo) {
  * @param {Object} state - State aplikasi
  * @param {Function} renderItems - Fungsi render items
  */
-export function setupFilterHandler(filterInput, clearSearch, state, renderItems) {
+export function setupFilterHandler(filterInput, clearSearch, state, renderItems, resetPagination) {
     clearSearch.hidden = true;
 
     // Debounced filter for better performance
     const debouncedFilter = debounce((value, items, lastUpdated) => {
         state.filter = value.trim();
         clearSearch.hidden = state.filter === '';
+        
+        // Reset pagination to page 1 when filter changes
+        if (resetPagination) {
+            resetPagination();
+        }
+        
         renderItems(items, lastUpdated, false);
     }, 300); // 300ms delay
 
@@ -83,6 +89,12 @@ export function setupFilterHandler(filterInput, clearSearch, state, renderItems)
             filterInput.value = '';
             state.filter = '';
             clearSearch.hidden = true;
+            
+            // Reset pagination when clearing filter
+            if (resetPagination) {
+                resetPagination();
+            }
+            
             renderItems(state.items, state.lastUpdated, false);
         }
     });
@@ -91,6 +103,12 @@ export function setupFilterHandler(filterInput, clearSearch, state, renderItems)
         filterInput.value = '';
         state.filter = '';
         clearSearch.hidden = true;
+        
+        // Reset pagination when clearing filter
+        if (resetPagination) {
+            resetPagination();
+        }
+        
         renderItems(state.items, state.lastUpdated, false);
         filterInput.focus();
     });
@@ -241,6 +259,118 @@ export function setupUploadHandler(
 
         await uploadFilesWrapper(files);
         uploadInput.value = '';
+    });
+}
+
+/**
+ * Mengatur event handler untuk tombol upload desktop
+ * @param {HTMLElement} btnUploadDesktop - Tombol upload desktop
+ * @param {HTMLElement} uploadInputDesktop - Input upload desktop
+ * @param {Object} state - State aplikasi
+ * @param {Function} hasUnsavedChanges - Fungsi cek perubahan belum disimpan
+ * @param {Function} confirmDiscardChanges - Fungsi konfirmasi perubahan
+ * @param {Function} uploadFilesWrapper - Fungsi upload files
+ */
+export function setupUploadDesktopHandler(
+    btnUploadDesktop,
+    uploadInputDesktop,
+    state,
+    hasUnsavedChanges,
+    confirmDiscardChanges,
+    uploadFilesWrapper
+) {
+    btnUploadDesktop.addEventListener('click', () => {
+        if (state.isLoading) {
+            return;
+        }
+        uploadInputDesktop.value = '';
+        uploadInputDesktop.click();
+    });
+
+    uploadInputDesktop.addEventListener('change', async (event) => {
+        const { files } = event.target;
+        if (!files || files.length === 0) {
+            return;
+        }
+
+        if (hasUnsavedChanges()) {
+            const proceed = await confirmDiscardChanges('Perubahan belum disimpan. Tetap unggah file baru?');
+            if (!proceed) {
+                uploadInputDesktop.value = '';
+                return;
+            }
+        }
+
+        await uploadFilesWrapper(files);
+        uploadInputDesktop.value = '';
+    });
+}
+
+/**
+ * Mengatur event handler untuk tombol delete selected desktop
+ * @param {HTMLElement} btnDeleteSelectedDesktop - Tombol delete selected desktop
+ * @param {Object} state - State aplikasi
+ * @param {Function} hasUnsavedChanges - Fungsi cek perubahan belum disimpan
+ * @param {Function} confirmDiscardChanges - Fungsi konfirmasi perubahan
+ * @param {Function} openConfirmOverlay - Fungsi buka confirm overlay
+ */
+export function setupDeleteSelectedDesktopHandler(
+    btnDeleteSelectedDesktop,
+    state,
+    hasUnsavedChanges,
+    confirmDiscardChanges,
+    openConfirmOverlay
+) {
+    btnDeleteSelectedDesktop.addEventListener('click', () => {
+        if (state.isLoading || state.isDeleting || state.selected.size === 0) {
+            return;
+        }
+
+        const paths = Array.from(state.selected);
+        const labels = paths.map((path) => {
+            const item = state.itemMap.get(path);
+            return item ? item.name : path;
+        });
+
+        if (hasUnsavedChanges()) {
+            const proceed = confirmDiscardChanges('Perubahan belum disimpan. Tetap hapus item terpilih?')
+                .then((proceed) => {
+                    if (!proceed) {
+                        return;
+                    }
+                    const paths = Array.from(state.selected);
+                    const labels = paths.map((path) => {
+                        const item = state.itemMap.get(path);
+                        return item ? item.name : path;
+                    });
+                    const message = paths.length === 1
+                        ? `Hapus "${labels[0]}"?`
+                        : `Hapus ${paths.length.toLocaleString('id-ID')} item terpilih?`;
+                    const description = 'Item yang dihapus tidak dapat dikembalikan.';
+                    openConfirmOverlay({
+                        message,
+                        description,
+                        paths,
+                        showList: paths.length > 1,
+                        confirmLabel: 'Hapus',
+                    });
+                });
+            return;
+        }
+
+        const message = paths.length === 1
+            ? `Hapus "${labels[0]}"?`
+            : `Hapus ${paths.length.toLocaleString('id-ID')} item terpilih?`;
+
+        const description = 'Item yang dihapus tidak dapat dikembalikan.';
+
+        openConfirmOverlay({
+            message,
+            description,
+            paths,
+            showList: paths.length > 1,
+            confirmLabel: 'Hapus',
+        });
     });
 }
 

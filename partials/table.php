@@ -14,7 +14,8 @@
         </div>
     </div>
 
-    <div class="table-wrapper overflow-auto bg-white rounded-md shadow-sm p-2 -mx-4 px-4 md:mx-0 md:px-2">
+    <!-- DESKTOP TABLE -->
+    <div class="table-wrapper hidden md:block overflow-auto bg-white rounded-md shadow-sm p-2 -mx-4 px-4 md:mx-0 md:px-2">
         <table class="w-full min-w-[600px] md:min-w-full divide-y divide-gray-200">
             <thead class="bg-gray-50 sticky top-0">
                 <tr>
@@ -22,10 +23,10 @@
                         <input type="checkbox" id="select-all" aria-label="Pilih semua item" disabled>
                     </th>
                     <th scope="col" class="sortable px-2 md:px-4 py-2 text-left text-sm font-medium text-gray-700 min-w-[200px]" data-sort-key="name" aria-sort="none">
-                        <span class="column-header">Nama</span>
+                        <span class="column-header">Name</span>
                     </th>
-                    <th scope="col" class="sortable px-2 md:px-4 py-2 text-left text-sm font-medium text-gray-700 min-w-[120px] hidden sm:table-cell" data-sort-key="modified" aria-sort="none">
-                        <span class="column-header">Diubah</span>
+                    <th scope="col" class="sortable px-2 md:px-4 py-2 text-left text-sm font-medium text-gray-700 min-w-[120px]" data-sort-key="modified" aria-sort="none">
+                        <span class="column-header">Date</span>
                     </th>
                     <th scope="col" class="actions-column px-2 md:px-4 py-2 text-left text-sm font-medium text-gray-700 w-[120px] md:w-auto">Aksi</th>
                 </tr>
@@ -33,6 +34,12 @@
             <tbody id="file-table" class="bg-white divide-y divide-gray-100"></tbody>
         </table>
     </div>
+    
+    <!-- PAGINATION CONTROLS (will be populated by JS) -->
+    <div id="pagination-container" class="pagination-container hidden md:block"></div>
+
+    <!-- MOBILE VIEW -->
+    <div id="mobile-file-list" class="md:hidden divide-y bg-white rounded-md shadow-sm -mx-4 px-4 md:mx-0 md:px-2"></div>
 
     <div class="empty-state py-8 text-center text-sm text-gray-500" id="empty-state" hidden>Tidak ada file atau folder di direktori ini.</div>
 
@@ -51,7 +58,8 @@
     * filter input: #filter-input
     * clear button: #clear-search
     * select all checkbox: #select-all
-    * file rows container: #file-table
+    * file rows container: #file-table (desktop)
+    * mobile file list container: #mobile-file-list (mobile)
  - Event handlers live in [`assets/js/modules/eventHandlers.js`](assets/js/modules/eventHandlers.js:1)
- - Pagination module inserts `.pagination-container` after `.table-wrapper` (see [`assets/js/modules/pagination.js`](assets/js/modules/pagination.js:1))
+ - Pagination module inserts `.pagination-container` after `.table-wrapper` (see [`assets/js/modules/pagination.js`](assets/js/modules/pagination.js:1)
 -->

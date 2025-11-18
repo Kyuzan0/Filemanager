@@ -17,23 +17,38 @@ import { actionIcons, config } from './constants.js';
 import { moveItem } from './fileOperations.js';
 import { fetchDirectory } from './apiService.js';
 import { VirtualScrollManager, createSpacer, shouldUseVirtualScroll } from './virtualScroll.js';
-import {
-    initPagination,
-    updatePaginationInfo,
-    getPaginatedItems,
-    renderPaginationControls,
-    resetPagination
-} from './pagination.js';
 import { invalidateDOMCache } from './dragDrop.js';
 import { debugLog } from './debug.js';
+import { 
+    calculatePagination, 
+    updatePaginationState, 
+    initScrollTracking,
+    getSimplePaginationInfo,
+    getItemsForPage,
+    getPaginationState
+} from './pagination.js';
 
 // Global virtual scroll manager instance
 let virtualScrollManager = null;
+
+// Global scroll tracking cleanup function
+let scrollTrackingCleanup = null;
 
 // Global flag to prevent multiple simultaneous renders
 let isRendering = false;
 let lastRenderTime = 0;
 const RENDER_DEBOUNCE = 16; // ~60fps for smooth UI
+
+// Cache for sorted and filtered items to avoid re-processing
+let renderCache = {
+    items: null,
+    sortKey: null,
+    sortDirection: null,
+    filter: null,
+    sortedItems: null,
+    filteredItems: null,
+    lastCacheTime: 0
+};
 
 /**
  * Moves a row in the DOM immediately for optimistic UI update
@@ -121,6 +136,8 @@ export function renderBreadcrumbs(breadcrumbsEl, breadcrumbs, navigateTo) {
  * @returns {HTMLElement} - The created row element
  */
 function renderItemRow(item, state, params) {
+    const rowStartTime = performance.now();
+    
     const {
         previewableExtensions,
         mediaPreviewableExtensions,
@@ -378,95 +395,73 @@ function renderItemRow(item, state, params) {
     const actionGroup = document.createElement('div');
     actionGroup.classList.add('row-actions','inline-flex','items-center','gap-2','justify-end');
 
-    if (item.type === 'folder') {
-        actionGroup.appendChild(createRowActionButton(
-            actionIcons.open,
-            'Buka',
-            () => navigateTo(item.path),
-        ));
-    } else if (isPreviewable || isMediaPreviewable) {
-        actionGroup.appendChild(createRowActionButton(
-            actionIcons.preview,
-            'Pratinjau',
-            () => {
-                if (isPreviewable) {
-                    openTextPreview(item);
-                } else {
-                    openMediaPreview(item);
-                }
-            },
-        ));
-    } else {
-        const extForAction = getFileExtension(item.name);
-        if (isWordDocument(extForAction)) {
-            actionGroup.appendChild(createRowActionButton(
-                actionIcons.open,
-                'Buka di Word',
-                () => openInWord(item),
-            ));
+    // View button
+    const viewBtn = document.createElement('button');
+    viewBtn.classList.add('p-1', 'text-blue-600');
+    viewBtn.innerHTML = '<i class="ri-eye-line"></i>';
+    viewBtn.addEventListener('click', (event) => {
+        event.stopPropagation();
+        if (isPreviewable) {
+            openTextPreview(item);
+        } else if (isMediaPreviewable) {
+            openMediaPreview(item);
         } else {
-            actionGroup.appendChild(createRowActionButton(
-                actionIcons.view,
-                'Lihat File',
-                () => {
-                    const url = buildFileUrl(item.path);
-                    const newWindow = window.open(url, '_blank');
-                    if (newWindow) newWindow.opener = null;
-                },
-            ));
-        }
-    }
-
-    actionGroup.appendChild(createRowActionButton(
-        actionIcons.copy,
-        'Salin Path',
-        () => {
-            copyPathToClipboard(item.path)
-                .then(() => flashStatus(`Path "${item.name}" tersalin.`))
-                .catch(() => setError('Gagal menyalin path.'));
-        },
-    ));
-    
-    actionGroup.appendChild(createRowActionButton(
-        actionIcons.delete,
-        'Hapus Item',
-        () => {
-            if (hasUnsavedChanges(state.preview)) {
-                confirmDiscardChanges('Perubahan belum disimpan. Tetap hapus item terpilih?')
-                    .then((proceed) => {
-                        if (!proceed) return;
-                        openConfirmOverlay({
-                            message: `Hapus "${item.name}"?`,
-                            description: 'Item yang dihapus tidak dapat dikembalikan.',
-                            paths: [item.path],
-                            showList: false,
-                            confirmLabel: 'Hapus',
-                        });
-                    });
-                return;
+            const ext = getFileExtension(item.name);
+            if (isWordDocument(ext)) {
+                openInWord(item);
+            } else {
+                const url = buildFileUrl(item.path);
+                const newWindow = window.open(url, '_blank');
+                if (newWindow) newWindow.opener = null;
             }
-    
-            openConfirmOverlay({
-                message: `Hapus "${item.name}"?`,
-                description: 'Item yang dihapus tidak dapat dikembalikan.',
-                paths: [item.path],
-                showList: false,
-                confirmLabel: 'Hapus',
-            });
-        },
-        'danger',
-    ));
-    
-    // Add Tailwind utility classes to action buttons produced by createRowActionButton
-    try {
-        Array.from(actionGroup.querySelectorAll('.row-action')).forEach((btn) => {
-            // conservative set of utilities — keeps behaviour while transitioning styles
-            btn.classList.add('inline-flex','items-center','justify-center','w-8','h-8','rounded-md','border','border-transparent','bg-blue-50','text-blue-600','transition','hover:bg-blue-600','hover:text-white');
+        }
+    });
+    actionGroup.appendChild(viewBtn);
+
+    // Edit button
+    const editBtn = document.createElement('button');
+    editBtn.classList.add('p-1', 'text-blue-600');
+    editBtn.innerHTML = '<i class="ri-edit-line"></i>';
+    editBtn.addEventListener('click', (event) => {
+        event.stopPropagation();
+        if (isPreviewable) {
+            openTextPreview(item);
+        } else {
+            openRenameOverlay(item);
+        }
+    });
+    actionGroup.appendChild(editBtn);
+
+    // Delete button
+    const deleteBtn = document.createElement('button');
+    deleteBtn.classList.add('p-1', 'text-red-500');
+    deleteBtn.innerHTML = '<i class="ri-delete-bin-line"></i>';
+    deleteBtn.addEventListener('click', (event) => {
+        event.stopPropagation();
+        if (hasUnsavedChanges(state.preview)) {
+            confirmDiscardChanges('Perubahan belum disimpan. Tetap hapus item terpilih?')
+                .then((proceed) => {
+                    if (!proceed) return;
+                    openConfirmOverlay({
+                        message: `Hapus "${item.name}"?`,
+                        description: 'Item yang dihapus tidak dapat dikembalikan.',
+                        paths: [item.path],
+                        showList: false,
+                        confirmLabel: 'Hapus',
+                    });
+                });
+            return;
+        }
+
+        openConfirmOverlay({
+            message: `Hapus "${item.name}"?`,
+            description: 'Item yang dihapus tidak dapat dikembalikan.',
+            paths: [item.path],
+            showList: false,
+            confirmLabel: 'Hapus',
         });
-    } catch (e) {
-        // defensive: if querySelectorAll fails in some environments, ignore
-        debugLog('[uiRenderer] Failed to apply Tailwind classes to action buttons', e);
-    }
+    });
+    actionGroup.appendChild(deleteBtn);
     
     actionCell.appendChild(actionGroup);
     row.appendChild(cellName);
@@ -483,10 +478,12 @@ function renderItemRow(item, state, params) {
 
     // Debug log: show computed classes and (if measurable) height to validate migration
     try {
-        console.log('[uiRenderer] renderItemRow ->', {
+        const rowEndTime = performance.now();
+        console.log('[PAGINATION DEBUG] renderItemRow ->', {
             path: key,
             classes: row.className,
-            height: (typeof row.getBoundingClientRect === 'function') ? Math.round(row.getBoundingClientRect().height) : null
+            height: (typeof row.getBoundingClientRect === 'function') ? Math.round(row.getBoundingClientRect().height) : null,
+            renderTime: rowEndTime - rowStartTime
         });
     } catch (e) { /* ignore */ }
 
@@ -501,6 +498,13 @@ function renderItemRow(item, state, params) {
  * @param {Object} params - Rendering parameters
  */
 function renderVirtualItems(tableBody, filtered, state, params) {
+    const renderStartTime = performance.now();
+    console.log('[PAGINATION DEBUG] renderVirtualItems called at:', renderStartTime, 'with', filtered.length, 'items');
+    
+    // Get items for current page FIRST
+    const paginatedItems = getItemsForPage(filtered);
+    console.log('[PAGINATION DEBUG] Showing', paginatedItems.length, 'items for current page');
+    
     const vsConfig = config.virtualScroll || {
         enabled: true,
         threshold: 100,
@@ -509,6 +513,7 @@ function renderVirtualItems(tableBody, filtered, state, params) {
     };
     
     // Initialize virtual scroll manager if not exists
+    const managerInitTime = performance.now();
     if (!virtualScrollManager) {
         virtualScrollManager = new VirtualScrollManager({
             container: tableBody.parentElement, // Use parent container for scrolling
@@ -518,17 +523,21 @@ function renderVirtualItems(tableBody, filtered, state, params) {
                 console.log('[VirtualScroll] Render triggered for range:', range);
             }
         });
-        virtualScrollManager.setTotalItems(filtered.length);
+        virtualScrollManager.setTotalItems(paginatedItems.length);
     } else {
-        // Update total count
-        virtualScrollManager.setTotalItems(filtered.length);
+        // Update total count for current page items
+        virtualScrollManager.setTotalItems(paginatedItems.length);
     }
+    console.log('[PAGINATION DEBUG] Virtual scroll manager initialized at:', managerInitTime, 'delta:', managerInitTime - renderStartTime);
 
     // Get visible range
+    const rangeTime = performance.now();
     const { start, end } = virtualScrollManager.getVisibleRange();
     debugLog('[VirtualScroll] Rendering range:', start, '-', end);
+    console.log('[PAGINATION DEBUG] Visible range calculated at:', rangeTime, 'delta:', rangeTime - managerInitTime);
     
     // Clear existing rows (keep up-row if exists)
+    const clearTime = performance.now();
     const upRow = tableBody.querySelector('.up-row');
     // Clear existing rows without parsing HTML (preserve a previously-found up-row)
     while (tableBody.firstChild) {
@@ -537,25 +546,31 @@ function renderVirtualItems(tableBody, filtered, state, params) {
     if (upRow) {
         tableBody.appendChild(upRow);
     }
+    console.log('[PAGINATION DEBUG] DOM cleared at:', clearTime, 'delta:', clearTime - rangeTime);
 
     // Create top spacer (use numeric height and guard against null spacer)
+    const spacerTime = performance.now();
     const topSpaceHeight = start * vsConfig.itemHeight;
     const topSpacer = createSpacer(topSpaceHeight);
     if (topSpacer) tableBody.appendChild(topSpacer);
+    console.log('[PAGINATION DEBUG] Top spacer created at:', spacerTime, 'delta:', spacerTime - clearTime);
 
-    // Render visible items
+    // Render visible items FROM CURRENT PAGE
+    const itemRenderTime = performance.now();
     const fragment = document.createDocumentFragment();
     for (let i = start; i < end; i++) {
-        if (i >= filtered.length) break;
-        const item = filtered[i];
+        if (i >= paginatedItems.length) break;
+        const item = paginatedItems[i];
         const row = renderItemRow(item, state, params);
         fragment.appendChild(row);
     }
     tableBody.appendChild(fragment);
+    console.log('[PAGINATION DEBUG] Visible items rendered at:', itemRenderTime, 'delta:', itemRenderTime - spacerTime, 'items:', end - start);
 
     // Reconcile computed row height with virtual scroll configuration.
     // This helps keep config.virtualScroll.itemHeight in sync with actual CSS during migration.
     try {
+        const heightReconcileTime = performance.now();
         const firstRow = tableBody.querySelector('tr:not(.up-row)');
         if (firstRow) {
             const actualHeight = Math.round(firstRow.getBoundingClientRect().height);
@@ -570,21 +585,43 @@ function renderVirtualItems(tableBody, filtered, state, params) {
                 }
             }
         }
+        console.log('[PAGINATION DEBUG] Height reconciled at:', heightReconcileTime, 'delta:', heightReconcileTime - itemRenderTime);
     } catch (e) {
         // Ignore measurement errors in older browsers/environments
         debugLog('[VirtualScroll] Failed to reconcile itemHeight', e);
     }
 
     // Create bottom spacer (use numeric height and guard against null spacer)
-    const remainingItems = Math.max(0, filtered.length - end);
+    const bottomSpacerTime = performance.now();
+    const remainingItems = Math.max(0, paginatedItems.length - end);
     const bottomSpaceHeight = remainingItems * vsConfig.itemHeight;
     const bottomSpacer = createSpacer(bottomSpaceHeight);
     if (bottomSpacer) tableBody.appendChild(bottomSpacer);
+    console.log('[PAGINATION DEBUG] Bottom spacer created at:', bottomSpacerTime, 'delta:', bottomSpacerTime - itemRenderTime);
 
     // Track performance (call trackRender if available)
     if (virtualScrollManager && typeof virtualScrollManager.trackRender === 'function') {
         virtualScrollManager.trackRender(end - start);
     }
+    
+    // Initialize pagination tracking (but don't track scroll in true pagination mode)
+    const container = tableBody.parentElement;
+    if (container && filtered.length > 0) {
+        // Cleanup previous scroll tracking
+        if (scrollTrackingCleanup) {
+            scrollTrackingCleanup();
+        }
+        
+        // Initialize new scroll tracking
+        scrollTrackingCleanup = initScrollTracking(container, filtered.length, vsConfig.itemHeight);
+        
+        // Calculate and update pagination state
+        const pagination = calculatePagination(filtered.length);
+        updatePaginationState(pagination.currentPage, pagination.totalPages, filtered.length);
+    }
+    
+    const renderEndTime = performance.now();
+    console.log('[PAGINATION DEBUG] renderVirtualItems completed at:', renderEndTime, 'total delta:', renderEndTime - renderStartTime);
 }
 
 /**
@@ -595,14 +632,288 @@ function renderVirtualItems(tableBody, filtered, state, params) {
  * @param {Object} params - Rendering parameters
  */
 function renderNormalItems(tableBody, filtered, state, params) {
+    const renderStartTime = performance.now();
+    console.log('[PAGINATION DEBUG] renderNormalItems called at:', renderStartTime, 'with', filtered.length, 'items');
+    
+    // Get items for current page FIRST
+    const paginatedItems = getItemsForPage(filtered);
+    console.log('[PAGINATION DEBUG] Showing', paginatedItems.length, 'items for current page');
+    
     const fragment = document.createDocumentFragment();
     
-    filtered.forEach((item) => {
+    const itemRenderTime = performance.now();
+    // Render items for current page only
+    paginatedItems.forEach((item, index) => {
         const row = renderItemRow(item, state, params);
         fragment.appendChild(row);
     });
+    console.log('[PAGINATION DEBUG] Items rendered at:', itemRenderTime, 'delta:', itemRenderTime - renderStartTime);
     
+    const domAppendTime = performance.now();
     tableBody.appendChild(fragment);
+    console.log('[PAGINATION DEBUG] DOM appended at:', domAppendTime, 'total delta:', domAppendTime - renderStartTime);
+    
+    // Update pagination state
+    const pagination = calculatePagination(filtered.length);
+    updatePaginationState(pagination.currentPage, pagination.totalPages, filtered.length);
+}
+
+/**
+ * Render mobile view items
+ * @param {HTMLElement} mobileList - Mobile list element
+ * @param {Array} items - Items to render
+ * @param {Object} state - Application state
+ * @param {Object} params - Rendering parameters
+ */
+function renderMobileItems(mobileList, items, state, params) {
+    const renderStartTime = performance.now();
+    console.log('[PAGINATION DEBUG] renderMobileItems called at:', renderStartTime, 'with', items.length, 'items');
+    
+    if (!mobileList) {
+        console.log('[PAGINATION DEBUG] Mobile list not found, skipping');
+        return;
+    }
+    
+    const fragment = document.createDocumentFragment();
+    
+    const itemRenderTime = performance.now();
+    items.forEach((item) => {
+        const mobileItem = createMobileItem(item, state, params);
+        fragment.appendChild(mobileItem);
+    });
+    console.log('[PAGINATION DEBUG] Mobile items rendered at:', itemRenderTime, 'delta:', itemRenderTime - renderStartTime);
+    
+    const domAppendTime = performance.now();
+    mobileList.appendChild(fragment);
+    console.log('[PAGINATION DEBUG] Mobile DOM appended at:', domAppendTime, 'total delta:', domAppendTime - renderStartTime);
+}
+
+/**
+ * Create mobile item element
+ * @param {Object} item - Item data
+ * @param {Object} state - Application state
+ * @param {Object} params - Rendering parameters
+ * @returns {HTMLElement} - Mobile item element
+ */
+function createMobileItem(item, state, params) {
+    const itemStartTime = performance.now();
+    
+    const {
+        previewableExtensions,
+        mediaPreviewableExtensions,
+        openTextPreview,
+        openMediaPreview,
+        navigateTo,
+        openInWord,
+        copyPathToClipboard,
+        openRenameOverlay,
+        openMoveOverlay,
+        openConfirmOverlay,
+        toggleSelection,
+        openContextMenu,
+        isWordDocument,
+        buildFileUrl,
+        hasUnsavedChanges,
+        confirmDiscardChanges,
+        handleDragStart,
+        handleDragEnd,
+        handleDragOver,
+        handleDrop,
+        handleDragLeave,
+        flashStatus,
+        setError
+    } = params;
+
+    const key = item.path;
+    const extension = item.type === 'file' ? getFileExtension(item.name) : '';
+    const isPreviewable = item.type === 'file' && previewableExtensions.has(extension);
+    const isMediaPreviewable = item.type === 'file' && mediaPreviewableExtensions.has(extension);
+    
+    const mobileItem = document.createElement('div');
+    mobileItem.classList.add('flex', 'items-center', 'justify-between', 'p-3');
+    mobileItem.dataset.itemPath = key;
+    mobileItem.dataset.itemType = item.type;
+    
+    // Left side: checkbox + icon + name + date
+    const leftSide = document.createElement('div');
+    leftSide.classList.add('flex', 'items-center', 'gap-3');
+    
+    // Checkbox
+    const checkbox = document.createElement('input');
+    checkbox.type = 'checkbox';
+    checkbox.classList.add('w-5', 'h-5');
+    checkbox.dataset.path = key;
+    checkbox.checked = state.selected.has(key);
+    checkbox.setAttribute('aria-label', `Pilih ${item.name}`);
+    checkbox.addEventListener('click', (event) => event.stopPropagation());
+    checkbox.addEventListener('change', (event) => toggleSelection(key, event.target.checked));
+    leftSide.appendChild(checkbox);
+    
+    // Icon
+    const iconContainer = document.createElement('div');
+    iconContainer.classList.add('text-blue-500', 'text-2xl');
+    
+    // Use the same icon system as desktop
+    const iconInfo = getItemIcon(item);
+    const icon = document.createElement('span');
+    icon.classList.add('item-icon');
+    if (iconInfo.className && iconInfo.className.trim()) {
+        iconInfo.className.trim().split(/\s+/).forEach(c => icon.classList.add(c));
+    }
+    icon.classList.add('inline-flex', 'items-center', 'justify-center', 'w-8', 'h-8', 'rounded-md');
+    
+    // Insert SVG safely
+    if (iconInfo && iconInfo.svg) {
+        try {
+            if (typeof iconInfo.svg === 'object' && iconInfo.svg.nodeType === 1) {
+                icon.appendChild(iconInfo.svg.cloneNode(true));
+            } else if (typeof iconInfo.svg === 'string') {
+                icon.innerHTML = iconInfo.svg;
+            }
+        } catch (e) {
+            console.warn('[uiRenderer] Failed to render icon for', item && item.path, e);
+        }
+    }
+    
+    iconContainer.appendChild(icon);
+    leftSide.appendChild(iconContainer);
+    
+    // Name + date
+    const nameDateContainer = document.createElement('div');
+    nameDateContainer.classList.add('flex', 'flex-col');
+    
+    const nameSpan = document.createElement('span');
+    nameSpan.classList.add('font-medium', 'text-gray-800');
+    nameSpan.textContent = item.name;
+    nameDateContainer.appendChild(nameSpan);
+    
+    const dateSpan = document.createElement('span');
+    dateSpan.classList.add('text-xs', 'text-gray-500');
+    dateSpan.textContent = formatDate(item.modified);
+    nameDateContainer.appendChild(dateSpan);
+    
+    leftSide.appendChild(nameDateContainer);
+    mobileItem.appendChild(leftSide);
+    
+    // Right side: action buttons
+    const rightSide = document.createElement('div');
+    rightSide.classList.add('flex', 'items-center', 'gap-2');
+    
+    // View button
+    const viewBtn = document.createElement('button');
+    viewBtn.classList.add('p-2', 'rounded-full', 'bg-blue-100', 'text-blue-600');
+    viewBtn.innerHTML = '<i class="ri-eye-line"></i>';
+    viewBtn.addEventListener('click', (event) => {
+        event.stopPropagation();
+        if (isPreviewable) {
+            openTextPreview(item);
+        } else if (isMediaPreviewable) {
+            openMediaPreview(item);
+        } else {
+            const ext = getFileExtension(item.name);
+            if (isWordDocument(ext)) {
+                openInWord(item);
+            } else {
+                const url = buildFileUrl(item.path);
+                const newWindow = window.open(url, '_blank');
+                if (newWindow) newWindow.opener = null;
+            }
+        }
+    });
+    rightSide.appendChild(viewBtn);
+    
+    // Edit button
+    const editBtn = document.createElement('button');
+    editBtn.classList.add('p-2', 'rounded-full', 'bg-blue-100', 'text-blue-600');
+    editBtn.innerHTML = '<i class="ri-edit-line"></i>';
+    editBtn.addEventListener('click', (event) => {
+        event.stopPropagation();
+        if (isPreviewable) {
+            openTextPreview(item);
+        } else {
+            openRenameOverlay(item);
+        }
+    });
+    rightSide.appendChild(editBtn);
+    
+    // Delete button
+    const deleteBtn = document.createElement('button');
+    deleteBtn.classList.add('p-2', 'rounded-full', 'bg-red-100', 'text-red-500');
+    deleteBtn.innerHTML = '<i class="ri-delete-bin-line"></i>';
+    deleteBtn.addEventListener('click', (event) => {
+        event.stopPropagation();
+        if (hasUnsavedChanges(state.preview)) {
+            confirmDiscardChanges('Perubahan belum disimpan. Tetap hapus item terpilih?')
+                .then((proceed) => {
+                    if (!proceed) return;
+                    openConfirmOverlay({
+                        message: `Hapus "${item.name}"?`,
+                        description: 'Item yang dihapus tidak dapat dikembalikan.',
+                        paths: [item.path],
+                        showList: false,
+                        confirmLabel: 'Hapus',
+                    });
+                });
+            return;
+        }
+        
+        openConfirmOverlay({
+            message: `Hapus "${item.name}"?`,
+            description: 'Item yang dihapus tidak dapat dikembalikan.',
+            paths: [item.path],
+            showList: false,
+            confirmLabel: 'Hapus',
+        });
+    });
+    rightSide.appendChild(deleteBtn);
+    
+    mobileItem.appendChild(rightSide);
+    
+    // Add click handlers for the entire item
+    mobileItem.addEventListener('click', (event) => {
+        if (event.target.closest('button') || event.target.closest('input')) return;
+        
+        if (item.type === 'folder') {
+            navigateTo(item.path);
+        } else if (isPreviewable || isMediaPreviewable) {
+            if (isPreviewable) {
+                openTextPreview(item);
+            } else {
+                openMediaPreview(item);
+            }
+        } else {
+            const ext = getFileExtension(item.name);
+            if (isWordDocument(ext)) {
+                openInWord(item);
+            } else {
+                const url = buildFileUrl(item.path);
+                const newWindow = window.open(url, '_blank');
+                if (newWindow) newWindow.opener = null;
+            }
+        }
+    });
+    
+    // Context menu
+    mobileItem.addEventListener('contextmenu', (event) => {
+        event.preventDefault();
+        openContextMenu(event.clientX, event.clientY, item);
+    });
+    
+    // Drag and drop
+    mobileItem.draggable = true;
+    mobileItem.addEventListener('dragstart', (event) => handleDragStart(event, item));
+    mobileItem.addEventListener('dragend', (event) => handleDragEnd(event));
+    
+    if (item.type === 'folder') {
+        mobileItem.addEventListener('dragover', (event) => handleDragOver(event, item));
+        mobileItem.addEventListener('drop', (event) => handleDrop(event, item));
+        mobileItem.addEventListener('dragleave', (event) => handleDragLeave(event));
+    }
+    
+    const itemEndTime = performance.now();
+    console.log('[PAGINATION DEBUG] createMobileItem completed for:', item.name, 'at:', itemEndTime, 'delta:', itemEndTime - itemStartTime);
+    
+    return mobileItem;
 }
 
 /**
@@ -668,35 +979,89 @@ export function renderItems(
     flashStatus,
     setError
 ) {
-    // Prevent multiple simultaneous renders
-    const now = performance.now();
-    if (isRendering || (now - lastRenderTime) < RENDER_DEBOUNCE) {
-        console.log('[DEBUG] Skipping render - too soon or already rendering');
+    const renderStartTime = performance.now();
+    console.log('[PAGINATION DEBUG] renderItems called at:', renderStartTime);
+    
+    // PERFORMANCE FIX: Only prevent concurrent renders, no debounce delay
+    // Pagination already has its own protection via isRendering flag
+    if (isRendering) {
+        console.log('[PAGINATION DEBUG] Skipping render - already rendering');
         return { items, filtered: state.visibleItems || [], meta: {} };
     }
     
     isRendering = true;
-    lastRenderTime = now;
+    lastRenderTime = performance.now();
     
     try {
-    // Initialize pagination if not exists
-    initPagination();
+    // Clear render cache when items change significantly
+    const cacheClearTime = performance.now();
+    if (renderCache.items !== items || renderCache.items.length !== items.length) {
+        console.log('[RENDER DEBUG] Clearing render cache due to items change');
+        renderCache = {
+            items: null,
+            sortKey: null,
+            sortDirection: null,
+            filter: null,
+            sortedItems: null,
+            filteredItems: null,
+            lastCacheTime: 0
+        };
+    }
+    console.log('[RENDER DEBUG] Cache check completed at:', cacheClearTime, 'delta:', cacheClearTime - renderStartTime);
     
+    const stateUpdateTime = performance.now();
     state.items = items;
     state.itemMap = new Map(items.map((item) => [item.path, item]));
     state.selected = synchronizeSelection(items, state.selected);
+    console.log('[RENDER DEBUG] State updated at:', stateUpdateTime, 'delta:', stateUpdateTime - cacheClearTime);
+    
+    const sortingTime = performance.now();
     const query = state.filter.toLowerCase();
-    const sortedItems = [...items].sort((a, b) => compareItems(a, b, state.sortKey, state.sortDirection));
-    const filtered = query
-        ? sortedItems.filter((item) => item.name.toLowerCase().includes(query))
-        : sortedItems;
+    
+    // Check cache validity
+    const cacheKey = `${items.length}-${state.sortKey}-${state.sortDirection}-${query}`;
+    const canUseCache = renderCache.items === items &&
+                        renderCache.sortKey === state.sortKey &&
+                        renderCache.sortDirection === state.sortDirection &&
+                        renderCache.filter === query;
+    
+    let sortedItems, filtered;
+    
+    if (canUseCache) {
+        console.log('[PAGINATION DEBUG] Using cached sorted/filtered items');
+        sortedItems = renderCache.sortedItems;
+        filtered = renderCache.filteredItems;
+    } else {
+        console.log('[PAGINATION DEBUG] Cache miss - processing items');
+        
+        const arrayCreationTime = performance.now();
+        const itemsCopy = [...items];
+        console.log('[PAGINATION DEBUG] Array copy created at:', arrayCreationTime, 'delta:', arrayCreationTime - sortingTime);
+        
+        const sortStartTime = performance.now();
+        sortedItems = itemsCopy.sort((a, b) => compareItems(a, b, state.sortKey, state.sortDirection));
+        console.log('[PAGINATION DEBUG] Sorting completed at:', sortStartTime, 'delta:', sortStartTime - arrayCreationTime, 'items:', sortedItems.length);
+        
+        const filterStartTime = performance.now();
+        filtered = query
+            ? sortedItems.filter((item) => item.name.toLowerCase().includes(query))
+            : sortedItems;
+        console.log('[PAGINATION DEBUG] Filtering completed at:', filterStartTime, 'delta:', filterStartTime - sortStartTime, 'query:', query, 'filtered:', filtered.length);
+        
+        // Update cache
+        renderCache = {
+            items,
+            sortKey: state.sortKey,
+            sortDirection: state.sortDirection,
+            filter: query,
+            sortedItems,
+            filteredItems: filtered,
+            lastCacheTime: performance.now()
+        };
+    }
+    
     state.visibleItems = filtered;
-    
-    // Update pagination info with total filtered items
-    updatePaginationInfo(filtered.length);
-    
-    // Get paginated items for current page
-    const paginatedItems = getPaginatedItems(filtered);
+    console.log('[RENDER DEBUG] Sorting/filtering completed at:', sortingTime, 'delta:', sortingTime - stateUpdateTime, 'items:', items.length, 'filtered:', filtered.length);
 
     const totalFolders = items.filter((item) => item.type === 'folder').length;
     const filteredFolders = filtered.filter((item) => item.type === 'folder').length;
@@ -707,9 +1072,15 @@ export function renderItems(
         filteredFiles: filtered.length - filteredFolders,
     };
 
-    // Clear table body children safely (avoid innerHTML assignment)
-    while (tableBody.firstChild) {
-        tableBody.removeChild(tableBody.firstChild);
+    // PERFORMANCE FIX: Use innerHTML = '' instead of removeChild loop for faster clearing
+    const clearStartTime = performance.now();
+    tableBody.innerHTML = '';
+    console.log('[RENDER DEBUG] Table cleared at:', clearStartTime, 'delta:', clearStartTime - sortingTime);
+    
+    // Clear mobile list
+    const mobileList = document.getElementById('mobile-file-list');
+    if (mobileList) {
+        mobileList.innerHTML = '';
     }
 
     // Insert "Up (..)" row at the top when not at root
@@ -864,34 +1235,49 @@ export function renderItems(
         overscan: 5
     };
     
-    // Use pagination instead of virtual scrolling when items > 10
-    // Virtual scrolling is disabled when pagination is active
-    const usePagination = filtered.length > state.pagination.itemsPerPage;
-    const useVirtual = !usePagination && shouldUseVirtualScroll(
-        paginatedItems.length,
+    // Show all filtered items without pagination
+    const useVirtual = shouldUseVirtualScroll(
+        filtered.length,
         vsConfig.threshold,
         vsConfig.enabled
     );
 
     if (useVirtual) {
-        debugLog(`[Virtual Scroll] Rendering ${paginatedItems.length} items with virtual scrolling`);
-        renderVirtualItems(tableBody, paginatedItems, state, renderParams);
+        debugLog(`[Virtual Scroll] Rendering ${filtered.length} items with virtual scrolling`);
+        renderVirtualItems(tableBody, filtered, state, renderParams);
     } else {
-        debugLog(`[Normal Render] Rendering ${paginatedItems.length} items normally (page ${state.pagination.currentPage}/${state.pagination.totalPages})`);
-        renderNormalItems(tableBody, paginatedItems, state, renderParams);
+        debugLog(`[Normal Render] Rendering ${filtered.length} items normally`);
+        renderNormalItems(tableBody, filtered, state, renderParams);
     }
     
-    // Render pagination controls
-    renderPaginationControls();
+    // PERFORMANCE FIX: Skip mobile render on desktop for better performance
+    const mobileRenderTime = performance.now();
+    if (window.innerWidth < 768) {
+        // Only render mobile view on mobile devices
+        renderMobileItems(mobileList, filtered, state, renderParams);
+        console.log('[RENDER DEBUG] Mobile items rendered at:', mobileRenderTime, 'delta:', mobileRenderTime - clearStartTime);
+    } else {
+        console.log('[RENDER DEBUG] Skipped mobile render on desktop');
+    }
     
     // Invalidate DOM cache after rendering to force fresh queries on next drag operation
     invalidateDOMCache();
 
+    // Update pagination state after render (for both virtual and normal renders)
+    const pagination = calculatePagination(filtered.length);
+    updatePaginationState(pagination.currentPage, pagination.totalPages, filtered.length);
+    console.log('[PAGINATION DEBUG] Final pagination state:', pagination);
+
+    const finalStateTime = performance.now();
     const newMap = new Map();
     items.forEach((item) => {
         newMap.set(item.path, generatedAt);
     });
     state.knownItems = newMap;
+    console.log('[RENDER DEBUG] Final state updated at:', finalStateTime, 'delta:', finalStateTime - mobileRenderTime);
+
+    const renderEndTime = performance.now();
+    console.log('[RENDER DEBUG] renderItems completed at:', renderEndTime, 'total delta:', renderEndTime - renderStartTime);
 
         return { items, filtered, meta };
     } finally {
@@ -1007,8 +1393,9 @@ export function syncRowSelection(tableBody, state) {
  * @param {number} generatedAt - Timestamp pembuatan data
  * @param {Object} meta - Metadata tambahan
  * @param {string} filter - Filter yang diterapkan
+ * @param {Object} paginationState - Pagination state (optional)
  */
-export function updateStatus(statusInfo, statusTime, statusFilter, totalCount, filteredCount, generatedAt, meta = {}, filter) {
+export function updateStatus(statusInfo, statusTime, statusFilter, totalCount, filteredCount, generatedAt, meta = {}, filter, paginationState = null) {
     const {
         totalFolders = 0,
         totalFiles = 0,
@@ -1026,7 +1413,13 @@ export function updateStatus(statusInfo, statusTime, statusFilter, totalCount, f
         ? `${formattedDisplay} dari ${formattedTotal} item ditampilkan`
         : `${formattedDisplay} item ditampilkan`;
 
-    statusInfo.textContent = `${infoPrefix} • ${folderDisplay.toLocaleString('id-ID')} folder • ${fileDisplay.toLocaleString('id-ID')} file`;
+    // Add pagination info if available
+    let paginationInfo = '';
+    if (paginationState && paginationState.currentPage && paginationState.totalPages > 1) {
+        paginationInfo = ` • ${getSimplePaginationInfo(paginationState.currentPage, paginationState.totalPages)}`;
+    }
+
+    statusInfo.textContent = `${infoPrefix} • ${folderDisplay.toLocaleString('id-ID')} folder • ${fileDisplay.toLocaleString('id-ID')} file${paginationInfo}`;
 
     if (filter) {
         statusFilter.hidden = false;
@@ -1052,7 +1445,11 @@ export function updateStatus(statusInfo, statusTime, statusFilter, totalCount, f
  * @param {boolean} isLoading - Status loading
  */
 export function setLoading(loaderOverlay, btnRefresh, isLoading) {
+    const startTime = performance.now();
+    console.log('[PAGINATION DEBUG] setLoading called at:', startTime, 'with isLoading:', isLoading);
+    
     // Defensive: guard against missing elements to avoid Uncaught TypeErrors
+    const overlayTime = performance.now();
     if (loaderOverlay && loaderOverlay.classList) {
         loaderOverlay.classList.toggle('visible', !!isLoading);
     } else {
@@ -1060,7 +1457,9 @@ export function setLoading(loaderOverlay, btnRefresh, isLoading) {
         const overlay = document.getElementById('loader-overlay') || document.querySelector('.loader-overlay');
         if (overlay && overlay.classList) overlay.classList.toggle('visible', !!isLoading);
     }
-
+    console.log('[PAGINATION DEBUG] Loader overlay updated at:', overlayTime, 'delta:', overlayTime - startTime);
+    
+    const buttonTime = performance.now();
     if (btnRefresh) {
         try {
             btnRefresh.disabled = !!isLoading;
@@ -1074,6 +1473,10 @@ export function setLoading(loaderOverlay, btnRefresh, isLoading) {
             try { btn.disabled = !!isLoading; } catch (e) { /* ignore */ }
         }
     }
+    console.log('[PAGINATION DEBUG] Refresh button updated at:', buttonTime, 'delta:', buttonTime - overlayTime);
+    
+    const endTime = performance.now();
+    console.log('[PAGINATION DEBUG] setLoading completed at:', endTime, 'total delta:', endTime - startTime);
 }
 
 /**
