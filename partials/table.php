@@ -7,7 +7,7 @@
         <div class="alert error" id="error-banner" role="alert"></div>
         <div class="search-field relative">
             <svg viewBox="0 0 24 24" aria-hidden="true" class="w-5 h-5 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"><path d="M15.5 14h-.79l-.28-.27a6 6 0 1 0-.71.71l.27.28v.79l4.5 4.5a1 1 0 0 0 1.41-1.41L15.5 14zm-6 0a4 4 0 1 1 0-8 4 4 0 0 1 0 8z"/></svg>
-            <input id="filter-input" type="search" placeholder="Cari file atau folder" autocomplete="off" class="pl-10 pr-8 py-2 w-full rounded-md border bg-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 text-base md:text-sm" />
+            <input id="filter-input" type="search" placeholder="Cari file atau folder" autocomplete="off" class="pl-10 pr-8 py-2 w-full rounded-md border bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 text-base md:text-sm" />
             <button type="button" class="clear-search absolute right-2 top-1/2 -translate-y-1/2 text-lg" id="clear-search" aria-label="Bersihkan pencarian" hidden>
                 <span aria-hidden="true">&times;</span>
             </button>

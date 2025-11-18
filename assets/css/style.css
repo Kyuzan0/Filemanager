@@ -705,6 +705,71 @@ body.modal-open { overflow: hidden; }
   }
 }
 
+/* Compact pagination adjustments for 10-item pages */
+body.compact-pagination {
+  overflow-y: hidden;
+}
+
+body.compact-pagination .app-shell {
+  padding-top: 0.75rem;
+  padding-bottom: 0.75rem;
+}
+
+@media (min-width: 768px) {
+  body.compact-pagination header.app-header {
+    padding-top: 1rem;
+    padding-bottom: 1rem;
+  }
+
+  body.compact-pagination header.app-header .brand p {
+    display: none;
+  }
+
+  body.compact-pagination main.app-main {
+    padding-top: 1rem;
+    padding-bottom: 1rem;
+  }
+
+  body.compact-pagination section.meta-bar {
+    margin-bottom: 0.75rem;
+  }
+
+  body.compact-pagination section.action-bar {
+    padding-top: 0.75rem;
+    padding-bottom: 0.75rem;
+  }
+
+  body.compact-pagination .action-bar button {
+    min-height: 2.25rem;
+    padding-top: 0.35rem;
+    padding-bottom: 0.35rem;
+  }
+
+  body.compact-pagination .file-card-header {
+    margin-bottom: 0.75rem;
+  }
+
+  body.compact-pagination .file-card .search-field input {
+    padding-top: 0.5rem;
+    padding-bottom: 0.5rem;
+  }
+
+  body.compact-pagination .pagination-controls {
+    padding-top: 0.5rem;
+    padding-bottom: 0.5rem;
+  }
+
+  body.compact-pagination .status-bar {
+    margin-top: 0.75rem;
+  }
+}
+
+.table-wrapper.compact-pagination-table {
+  overflow-y: hidden;
+  padding-top: 0.75rem;
+  padding-bottom: 0.75rem;
+}
+
 /* Hide file details on desktop - only show on mobile - universal across user agents */
 @media (min-width: 768px) {
   .file-table .file-details-container {
@@ -747,7 +812,8 @@ body.modal-open { overflow: hidden; }
     .file-table .file-details-container {
       /* Optimize for Safari iOS */
       -webkit-overflow-scrolling: touch;
-      -webkit-transform: translateZ(0);
+  -webkit-transform: translateZ(0);
+  transform: translateZ(0);
     }
     
     .file-table .file-details-value {

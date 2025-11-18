@@ -15,8 +15,6 @@
 </head>
 <body class="bg-slate-50 text-slate-900">
     <div class="app-shell min-h-screen">
-        <?php include 'partials/header.php'; ?>
-
         <main class="app-main container mx-auto px-4 py-4 md:py-6">
             <section class="meta-bar mb-4 flex flex-col md:flex-row md:items-center md:justify-between gap-2">
                 <div class="breadcrumbs" id="breadcrumbs"></div>

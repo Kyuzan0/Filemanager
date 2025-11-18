@@ -65,6 +65,11 @@ const paginationConfig = {
 
 const PAGE_SIZE_OPTIONS = [10, 25, 50, 100];
 
+const compactLayoutState = {
+    active: false,
+    resizeListenerAttached: false
+};
+
 const storedItemsPerPage = loadPaginationPageSize(paginationConfig.itemsPerPage);
 if (PAGE_SIZE_OPTIONS.includes(storedItemsPerPage)) {
     paginationConfig.itemsPerPage = storedItemsPerPage;
@@ -558,6 +563,97 @@ function clearAllLoadingStates(source = 'unknown') {
 // Make clearAllLoadingStates available globally for emergency use
 window.clearAllLoadingStates = clearAllLoadingStates;
 
+function deactivateCompactLayout() {
+    const body = document.body;
+    const tableWrapper = document.querySelector('.table-wrapper');
+
+    if (body) {
+        body.classList.remove('compact-pagination');
+    }
+
+    if (tableWrapper) {
+        tableWrapper.classList.remove('compact-pagination-table');
+        tableWrapper.style.maxHeight = '';
+        tableWrapper.style.overflowY = '';
+    }
+
+    compactLayoutState.active = false;
+}
+
+function setCompactTableHeight(tableWrapper) {
+    if (!tableWrapper) {
+        return;
+    }
+
+    // Reset before measuring to avoid compounding styles
+    tableWrapper.style.maxHeight = '';
+    tableWrapper.style.overflowY = '';
+
+    const paginationEl = document.getElementById('pagination-container');
+    const statusBar = document.querySelector('.status-bar');
+    const rect = tableWrapper.getBoundingClientRect();
+    const paginationHeight = paginationEl ? paginationEl.getBoundingClientRect().height : 0;
+    const statusHeight = statusBar ? statusBar.getBoundingClientRect().height : 0;
+    const bottomSpacing = 24;
+
+    const available = window.innerHeight - rect.top - paginationHeight - statusHeight - bottomSpacing;
+
+    if (available > 0) {
+        tableWrapper.style.maxHeight = `${Math.floor(available)}px`;
+        tableWrapper.style.overflowY = 'hidden';
+    }
+}
+
+function handleCompactResize() {
+    if (window.innerWidth < 768) {
+        if (compactLayoutState.active) {
+            deactivateCompactLayout();
+        }
+        return;
+    }
+
+    if (!compactLayoutState.active) {
+        return;
+    }
+
+    const tableWrapper = document.querySelector('.table-wrapper');
+    if (tableWrapper) {
+        requestAnimationFrame(() => setCompactTableHeight(tableWrapper));
+    }
+}
+
+function updateCompactPaginationLayout(pageItemsLength) {
+    const tableWrapper = document.querySelector('.table-wrapper');
+    const body = document.body;
+
+    if (!body || !tableWrapper) {
+        return;
+    }
+
+    const shouldActivate = window.innerWidth >= 768
+        && paginationConfig.itemsPerPage === 10
+        && pageItemsLength > 0
+        && pageItemsLength <= 10;
+
+    if (!shouldActivate) {
+        if (compactLayoutState.active) {
+            deactivateCompactLayout();
+        }
+        return;
+    }
+
+    body.classList.add('compact-pagination');
+    tableWrapper.classList.add('compact-pagination-table');
+    compactLayoutState.active = true;
+
+    requestAnimationFrame(() => setCompactTableHeight(tableWrapper));
+
+    if (!compactLayoutState.resizeListenerAttached) {
+        window.addEventListener('resize', handleCompactResize);
+        compactLayoutState.resizeListenerAttached = true;
+    }
+}
+
 // Wrapper for renderItems that calls the complex renderer from uiRenderer.js
 function renderItems(items, lastUpdated, highlightNew) {
     console.log('[DEBUG] renderItems wrapper called');
@@ -602,6 +698,8 @@ function renderItems(items, lastUpdated, highlightNew) {
     
     // Render pagination UI
     renderPaginationUI();
+
+    updateCompactPaginationLayout(pageItems.length);
 }
 
 /**
