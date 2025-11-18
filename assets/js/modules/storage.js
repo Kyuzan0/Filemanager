@@ -170,7 +170,7 @@ export function savePaginationPageSize(pageSize) {
  * @param {number} [defaultValue=50] - Default items per page
  * @returns {number} Stored page size or default value
  */
-export function loadPaginationPageSize(defaultValue = 50) {
+export function loadPaginationPageSize(defaultValue = 10) {
     const storedValue = loadFromStorage(STORAGE_KEYS.PAGE_SIZE, defaultValue);
 
     if (typeof storedValue === 'number' && !Number.isNaN(storedValue)) {

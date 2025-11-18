@@ -293,7 +293,7 @@ export const config = {
     // Hybrid pagination configuration (for scroll-based pagination)
     pagination: {
         enabled: true,           // Enable pagination indicator
-        itemsPerPage: 50,        // Items per "virtual page"
+        itemsPerPage: 10,        // Items per "virtual page"
         showControls: true,      // Show pagination controls
         showInStatusBar: true,   // Show page info in status bar
     },

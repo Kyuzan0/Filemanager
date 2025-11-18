@@ -38,10 +38,11 @@ export async function fetchDirectory(path = '', options = {}) {
     
     try {
         const encodedPath = encodePathSegments(path);
-        const response = await fetch(`api.php?path=${encodedPath}`, { signal });
+        // Add timestamp to prevent caching on mobile devices
+        const response = await fetch(`api.php?path=${encodedPath}&_=${Date.now()}`, { signal });
         
         if (!response.ok) {
-            throw new Error(errorMessages.fetchFailed);
+            throw new Error(`${errorMessages.fetchFailed} (HTTP ${response.status})`);
         }
 
         const data = await response.json();
@@ -245,7 +246,7 @@ export async function uploadFiles(formData) {
  */
 export async function fetchFileContent(path) {
     try {
-        const response = await fetch(`api.php?action=content&path=${encodePathSegments(path)}`);
+        const response = await fetch(`api.php?action=content&path=${encodePathSegments(path)}&_=${Date.now()}`);
         if (!response.ok) {
             throw new Error('Gagal memuat file.');
         }
@@ -329,6 +330,9 @@ export async function fetchLogData(filters = {}, page = 1, limit = 50) {
             }
         });
 
+        // Add timestamp to prevent caching
+        params.append('_', Date.now());
+
         const url = `api.php?${params.toString()}`;
         const response = await fetch(url);
         
@@ -356,7 +360,7 @@ export async function fetchLogData(filters = {}, page = 1, limit = 50) {
  */
 export async function cleanupLogs(days) {
     try {
-        const response = await fetch(`api.php?action=cleanup_logs&days=${days}`);
+        const response = await fetch(`api.php?action=cleanup_logs&days=${days}&_=${Date.now()}`);
         if (!response.ok) {
             throw new Error(errorMessages.logCleanupFailed);
         }

@@ -59,7 +59,7 @@ let logManagerModule = null;
 
 const paginationConfig = {
     currentPage: 1,
-    itemsPerPage: 50,
+    itemsPerPage: 10,
     totalPages: 0,
     totalItems: 0
 };
