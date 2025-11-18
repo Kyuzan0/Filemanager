@@ -56,7 +56,7 @@ let renderCache = {
  * @returns {Object|null} - Object with row element and original position for rollback, or null if not found
  */
 export function moveRowInDOM(itemPath) {
-    const tableBody = document.querySelector('#file-table tbody');
+    const tableBody = document.getElementById('file-table');
     if (!tableBody) return null;
     
     const row = tableBody.querySelector(`tr[data-item-path="${CSS.escape(itemPath)}"]`);
