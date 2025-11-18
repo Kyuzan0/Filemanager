@@ -143,14 +143,23 @@ export function updateState(updates) {
     // Deep merge untuk nested objects
     const mergeTime = performance.now();
     Object.keys(updates).forEach(key => {
-        if (typeof updates[key] === 'object' && updates[key] !== null && !Array.isArray(updates[key])) {
-            if (typeof state[key] === 'object' && state[key] !== null && !Array.isArray(state[key])) {
-                state[key] = { ...state[key], ...updates[key] };
+        const value = updates[key];
+        // Check if value is a plain object (not null, not array, not Set, not Map)
+        // We must treat Set and Map as atomic values, otherwise { ...set } becomes {}
+        const isPlainObject = typeof value === 'object' && 
+                              value !== null && 
+                              !Array.isArray(value) && 
+                              !(value instanceof Set) && 
+                              !(value instanceof Map);
+
+        if (isPlainObject) {
+            if (typeof state[key] === 'object' && state[key] !== null && !Array.isArray(state[key]) && !(state[key] instanceof Set) && !(state[key] instanceof Map)) {
+                state[key] = { ...state[key], ...value };
             } else {
-                state[key] = { ...updates[key] };
+                state[key] = { ...value };
             }
         } else {
-            state[key] = updates[key];
+            state[key] = value;
         }
     });
     console.log('[PAGINATION DEBUG] State merged at:', mergeTime, 'delta:', mergeTime - startTime);

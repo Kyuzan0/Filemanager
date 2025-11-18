@@ -1009,10 +1009,18 @@ export function renderItems(
     }
     console.log('[RENDER DEBUG] Cache check completed at:', cacheClearTime, 'delta:', cacheClearTime - renderStartTime);
     
+    // PERFORMANCE FIX: Do not mutate global state.items here.
+    // state.items should be the source of truth managed by the caller (appInitializer).
+    // renderItems should only render what it is given.
+    // state.items = items; 
+    // state.itemMap = new Map(items.map((item) => [item.path, item]));
+    // state.selected = synchronizeSelection(items, state.selected);
+    
     const stateUpdateTime = performance.now();
-    state.items = items;
-    state.itemMap = new Map(items.map((item) => [item.path, item]));
-    state.selected = synchronizeSelection(items, state.selected);
+    // We still need to update visibleItems for other modules to know what's shown
+    // But we should be careful if items is just a page slice.
+    // For now, we assume items passed here IS what should be visible (paginated slice).
+    
     console.log('[RENDER DEBUG] State updated at:', stateUpdateTime, 'delta:', stateUpdateTime - cacheClearTime);
     
     const sortingTime = performance.now();

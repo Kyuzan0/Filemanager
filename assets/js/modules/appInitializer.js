@@ -47,6 +47,7 @@ import {
 } from './dragDrop.js';
 import { fetchDirectory, fetchLogData, cleanupLogs } from './apiService.js';
 import { renderItems as renderItemsComplex, updateSortUI } from './uiRenderer.js';
+import { updatePaginationState } from './pagination.js';
 
 // Lazy-loaded modules (loaded on-demand for better performance)
 let moveOverlayModule = null;
@@ -663,6 +664,11 @@ function renderItems(items, lastUpdated, highlightNew) {
     
     console.log('[DEBUG] Total items:', items.length, 'Page items:', pageItems.length);
     
+    // Sync pagination.js state to prevent double-pagination in uiRenderer
+    // We tell uiRenderer that we are on page 1 of 1, with all items shown
+    // This ensures uiRenderer renders the slice as-is without trying to paginate it again
+    updatePaginationState(1, 1, pageItems.length);
+
     // Call the complex renderer with paginated items
     renderItemsComplex(
         elements.tableBody,
@@ -825,6 +831,11 @@ async function fetchDirectoryWrapper(path = '', options = {}) {
                 });
             }
             updateState({ itemMap });
+            
+            // Synchronize selection (remove selected items that no longer exist)
+            // This was previously done in uiRenderer, but we moved it here to avoid state corruption
+            const newSelected = synchronizeSelection(data.items || [], state.selected);
+            updateState({ selected: newSelected });
             
             // Update visibleItems based on filter
             const visibleItems = state.items.filter(item => {
