@@ -3,10 +3,6 @@ file/*
 
 # Keep the file folder itself but ignore all contents
 # This ensures the folder structure is preserved
-!file/
-.gitignore
-
-tests
 
 logs/*
 
