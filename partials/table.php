@@ -43,7 +43,7 @@
 
     <div class="empty-state py-8 text-center text-sm text-gray-500" id="empty-state" hidden>Tidak ada file atau folder di direktori ini.</div>
 
-    <div class="status-bar mt-3 text-sm text-gray-600 flex flex-col md:flex-row md:items-center md:justify-between gap-2">
+    <div class="status-bar mt-3 text-sm text-gray-600 flex flex-col md:flex-row md:items-center md:justify-between gap-2" hidden>
         <span id="status-info">Menunggu data...</span>
         <div class="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-2">
             <span id="status-filter" hidden></span>

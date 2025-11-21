@@ -557,6 +557,21 @@ export function setupCreateOverlayHandler(
         createItemWrapper(state.create.kind, createName.value);
     });
 
+    // Handler untuk tombol submit di mockup modal
+    createSubmit.addEventListener('click', () => {
+        if (state.isLoading) {
+            return;
+        }
+        // Baca nilai dari radio button yang dipilih
+        const createTypeRadio = document.querySelector('input[name="create-type"]:checked');
+        const kind = createTypeRadio ? createTypeRadio.value : 'folder';
+        const name = createName.value;
+        
+        // Update state dan panggil create wrapper
+        state.create.kind = kind;
+        createItemWrapper(kind, name);
+    });
+
     createCancel.addEventListener('click', () => {
         if (state.isLoading) {
             return;

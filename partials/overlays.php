@@ -78,7 +78,7 @@
     <div class="form-group-mockup">
       <label for="create-type-select" class="label-mockup">Item Type</label>
       <div class="radio-slide-container-mockup">
-        <input type="radio" id="file-option" name="create-type" value="file" checked class="radio-input-mockup">
+        <input type="radio" id="file-option" name="create-type" value="file" class="radio-input-mockup">
         <label for="file-option" class="radio-label-mockup">File</label>
 
         <input type="radio" id="folder-option" name="create-type" value="folder" class="radio-input-mockup">
@@ -88,9 +88,9 @@
       </div>
     </div>
 
-    <div class="form-group-mockup">
+    <div class="form-group-mockup" id="create-name-group" style="display: none;">
       <label for="create-name" class="label-mockup">Name</label>
-      <input type="text" id="create-name" name="create-name" placeholder="Enter file or folder name" class="input-text-mockup" autocomplete="off" required>
+      <input type="text" id="create-name" name="create-name" placeholder="Misal: catatan.txt" class="input-text-mockup" autocomplete="off" required>
     </div>
 
     <div class="modal-actions-mockup">

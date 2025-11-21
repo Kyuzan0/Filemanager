@@ -465,9 +465,31 @@ export function openCreateOverlay(
     kind
 ) {
     state.create.isOpen = true;
-    state.create.kind = kind;
+    state.create.kind = kind || 'file'; // Default ke 'file' jika tidak ada kind
 
-    const isFolder = kind === 'folder';
+    // Reset radio buttons - unchecked semua
+    const radioButtons = createOverlay.querySelectorAll('input[name="create-type"]');
+    radioButtons.forEach(radio => radio.checked = false);
+    
+    // Hide input name group secara default
+    const createNameGroup = createOverlay.querySelector('#create-name-group');
+    if (createNameGroup) {
+        createNameGroup.style.display = 'none';
+    }
+
+    // Hanya set radio jika kind diberikan (dari split action buttons)
+    if (kind) {
+        const radioToCheck = createOverlay.querySelector(`input[name="create-type"][value="${kind}"]`);
+        if (radioToCheck) {
+            radioToCheck.checked = true;
+        }
+        // Tampilkan input name jika ada kind yang diberikan
+        if (createNameGroup) {
+            createNameGroup.style.display = 'block';
+        }
+    }
+
+    const isFolder = state.create.kind === 'folder';
     createTitle.textContent = isFolder ? 'Tambah Folder' : 'Tambah File';
     createSubtitle.textContent = isFolder
         ? 'Buat folder baru pada lokasi saat ini.'
@@ -520,7 +542,20 @@ export function openCreateOverlay(
     markOverlayOpen();
     
     createName.value = '';
-    createName.focus();
+    
+    // Add event listeners untuk perubahan pilihan file/folder
+    radioButtons.forEach(radio => {
+        radio.addEventListener('change', () => {
+            const isFolder = radio.value === 'folder';
+            createName.placeholder = isFolder ? 'Misal: dokumen' : 'Misal: catatan.txt';
+            // Tampilkan input name ketika ada pilihan
+            if (createNameGroup) {
+                createNameGroup.style.display = 'block';
+            }
+            // Set fokus ke input name
+            createName.focus();
+        });
+    });
 }
 
 /**
@@ -551,6 +586,15 @@ export function closeCreateOverlay(
     createHint.textContent = '';
     createSubmit.disabled = false;
     createName.disabled = false;
+    
+    // Sembunyikan input name group dan reset radio buttons
+    const createNameGroup = createOverlay.querySelector('#create-name-group');
+    if (createNameGroup) {
+        createNameGroup.style.display = 'none';
+    }
+    const radioButtons = createOverlay.querySelectorAll('input[name="create-type"]');
+    radioButtons.forEach(radio => radio.checked = false);
+    
     markOverlayClosed();
     setTimeout(() => {
         if (!state.create.isOpen) {

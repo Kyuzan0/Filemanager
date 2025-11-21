@@ -764,6 +764,10 @@ body.compact-pagination .app-shell {
   }
 }
 
+.status-bar {
+  display: none !important;
+}
+
 .table-wrapper.compact-pagination-table {
   overflow-y: hidden;
   padding-top: 0.75rem;
