@@ -2327,6 +2327,39 @@ function setupEventHandlers() {
         logger.warn('Skipping split action handler - missing split action elements');
     }
 
+    // Setup standalone Add Item buttons (both mobile & desktop)
+    // Exclude buttons inside the `.split-action` menu to avoid duplicate triggers
+    try {
+        const addButtons = Array.from(document.querySelectorAll('[data-action="add-modal"]'));
+        addButtons.forEach((btn) => {
+            if (btn.closest && btn.closest('.split-action')) return; // skip split-action items
+            btn.addEventListener('click', (ev) => {
+                ev.preventDefault();
+                // If button has a kind (file/folder), set the radio inside the modal before opening
+                try {
+                    const kind = (btn.dataset && btn.dataset.kind) ? btn.dataset.kind : null;
+                    if (kind) {
+                        const target = document.querySelector(`input[name="create-type"][value="${kind}"]`);
+                        if (target) {
+                            target.checked = true;
+                        }
+                    }
+                } catch (err) { /* ignore */ }
+                // Use wrapper to keep API consistent
+                try { openCreateOverlayWrapper(); } catch (err) { console.error('openCreateOverlayWrapper failed', err); }
+            });
+            // Keyboard support: Enter / Space
+            btn.addEventListener('keydown', (ev) => {
+                if (ev.key === 'Enter' || ev.key === ' ') {
+                    ev.preventDefault();
+                    try { openCreateOverlayWrapper(); } catch (err) { console.error('openCreateOverlayWrapper failed', err); }
+                }
+            });
+        });
+    } catch (err) {
+        logger.warn('Failed to attach Add Item button handlers', err);
+    }
+
     // Setup move selected button handler (lazy-load moveOverlay module)
     if (elements.btnMoveSelected) {
         elements.btnMoveSelected.addEventListener('click', async () => {

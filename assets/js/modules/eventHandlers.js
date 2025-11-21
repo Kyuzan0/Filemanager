@@ -885,8 +885,7 @@ export function setupSplitActionHandler(
             }
 
             if (action === 'add-modal') {
-                const kind = button.dataset.kind === 'folder' ? 'folder' : 'file';
-                openCreateOverlay(kind);
+                openCreateOverlay();
             }
 
             closeMenu();
@@ -902,7 +901,7 @@ export function setupSplitActionHandler(
 
     if (splitMain) {
         splitMain.addEventListener('click', () => {
-            openCreateOverlay('file');
+            openCreateOverlay();
         });
     }
 
@@ -910,7 +909,7 @@ export function setupSplitActionHandler(
         splitAction.addEventListener('keydown', (event) => {
             if ((event.key === 'Enter' || event.key === ' ') && splitMain && event.target === splitMain) {
                 event.preventDefault();
-                openCreateOverlay('file');
+                openCreateOverlay();
             }
             if (event.key === 'ArrowDown' && splitToggle) {
                 event.preventDefault();

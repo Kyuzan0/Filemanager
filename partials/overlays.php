@@ -59,30 +59,235 @@
     </div>
 </div>
 
-<div class="create-overlay fixed inset-0 flex items-center justify-center bg-black/45 p-2 md:p-4 z-50 hidden" id="create-overlay" aria-hidden="true" data-action="create" data-open="create">
-    <div class="create-dialog bg-white rounded-lg p-4 md:p-6 w-full max-w-md shadow-lg" role="dialog" aria-modal="true" aria-labelledby="create-title">
-        <header class="create-header mb-4">
-            <div class="create-icon mx-auto mb-3 w-12 h-12 text-blue-600" aria-hidden="true">
-                <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 5v14m-7-7h14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
-            </div>
-            <div class="create-title-group text-center">
-                <h2 class="create-title text-lg md:text-xl font-semibold" id="create-title">Tambah Item</h2>
-                <p class="create-subtitle text-sm text-gray-600 mt-1" id="create-subtitle"></p>
-            </div>
-        </header>
-        <form class="create-form" id="create-form">
-            <div class="form-field mb-4">
-                <label for="create-name" id="create-label" class="text-sm font-medium text-slate-700 block mb-1">Nama</label>
-                <input type="text" id="create-name" name="create-name" autocomplete="off" required class="border rounded-md px-3 py-2 w-full focus:outline-none focus:ring-2 focus:ring-blue-500 text-base" />
-                <p class="form-hint text-sm text-slate-500 mt-1" id="create-hint"></p>
-            </div>
-        </form>
-        <footer class="create-actions flex flex-col sm:flex-row items-stretch sm:items-end gap-2">
-            <button type="button" class="create-button outline inline-flex items-center justify-center gap-2 px-3 py-2 rounded-md text-sm bg-white border border-gray-200 text-slate-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500" id="create-cancel" data-action="create-cancel">Batal</button>
-            <button type="submit" form="create-form" class="create-button primary inline-flex items-center justify-center gap-2 px-3 py-2 rounded-md text-sm bg-blue-600 text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500" id="create-submit" data-action="create-submit">Simpan</button>
-        </footer>
+<!-- Mockup Modal Add Item -->
+<div class="modal-backdrop-mockup hidden" id="create-overlay" aria-hidden="true" data-action="create" data-open="create">
+  <div class="modal-content-mockup" role="dialog" aria-modal="true" aria-labelledby="create-title">
+    <div class="modal-header-mockup">
+      <button type="button" class="close-button-mockup" id="create-cancel" data-action="create-cancel" aria-label="Tutup">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-x"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+      </button>
+      <h3 class="modal-title-mockup" id="create-title">Add New Item</h3>
     </div>
+
+    <!-- Hidden elements for JavaScript compatibility -->
+    <div id="create-subtitle" style="display: none;"></div>
+    <div id="create-label" style="display: none;"></div>
+    <div id="create-hint" style="display: none;"></div>
+    <form id="create-form" style="display: none;"></form>
+
+    <div class="form-group-mockup">
+      <label for="create-type-select" class="label-mockup">Item Type</label>
+      <div class="radio-slide-container-mockup">
+        <input type="radio" id="file-option" name="create-type" value="file" checked class="radio-input-mockup">
+        <label for="file-option" class="radio-label-mockup">File</label>
+
+        <input type="radio" id="folder-option" name="create-type" value="folder" class="radio-input-mockup">
+        <label for="folder-option" class="radio-label-mockup">Folder</label>
+
+        <span class="radio-slider-mockup"></span>
+      </div>
+    </div>
+
+    <div class="form-group-mockup">
+      <label for="create-name" class="label-mockup">Name</label>
+      <input type="text" id="create-name" name="create-name" placeholder="Enter file or folder name" class="input-text-mockup" autocomplete="off" required>
+    </div>
+
+    <div class="modal-actions-mockup">
+      <button type="button" class="button-secondary-mockup" id="create-cancel-alt" data-action="create-cancel">Cancel</button>
+      <button type="button" class="button-primary-mockup" id="create-submit" data-action="create-submit">Save</button>
+    </div>
+  </div>
 </div>
+
+<style>
+  /* Base Mockup Styling */
+  .modal-backdrop-mockup {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.4); /* Darker, slightly blurred backdrop */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; /* Modern sans-serif font */
+  }
+
+  .modal-backdrop-mockup.hidden {
+    display: none !important;
+  }
+
+  .modal-content-mockup {
+    background-color: #ffffff;
+    border-radius: 12px; /* Rounded corners */
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15); /* Softer, larger shadow */
+    padding: 30px;
+    width: 380px;
+    max-width: 90%;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    position: relative;
+  }
+
+  .modal-header-mockup {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    margin-bottom: 10px;
+  }
+
+  .close-button-mockup {
+    position: absolute;
+    left: 0; /* Align to the left */
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 5px;
+    color: #666;
+    transition: color 0.2s ease;
+  }
+
+  .close-button-mockup:hover {
+    color: #333;
+  }
+
+  .modal-title-mockup {
+    margin: 0;
+    font-size: 1.4em;
+    font-weight: 600; /* Slightly bolder */
+    color: #333;
+    flex-grow: 1;
+    text-align: center;
+  }
+
+  .form-group-mockup {
+    margin-bottom: 0; /* Adjusted for overall gap */
+  }
+
+  .label-mockup {
+    display: block;
+    font-size: 0.9em;
+    font-weight: 500;
+    color: #555;
+    margin-bottom: 8px;
+  }
+
+  /* Radio Button Slide Mockup */
+  .radio-slide-container-mockup {
+    position: relative;
+    display: flex;
+    background-color: #f0f2f5; /* Light gray background */
+    border-radius: 8px;
+    overflow: hidden;
+    height: 44px;
+    width: 100%;
+    padding: 4px; /* Internal padding for the slide effect */
+    box-sizing: border-box;
+  }
+
+  .radio-input-mockup {
+    display: none;
+  }
+
+  .radio-label-mockup {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 0 15px;
+    cursor: pointer;
+    z-index: 1;
+    transition: color 0.3s ease;
+    font-weight: 500;
+    font-size: 0.9em;
+    color: #666;
+    user-select: none;
+  }
+
+  .radio-input-mockup:checked + .radio-label-mockup {
+    color: #333; /* Darker text when selected */
+  }
+
+  .radio-slider-mockup {
+    position: absolute;
+    top: 4px; /* Match padding */
+    left: 4px; /* Match padding */
+    width: calc(50% - 4px); /* Half width minus padding */
+    height: calc(100% - 8px); /* Full height minus padding */
+    background-color: #e2eafc; /* Light blue accent */
+    border-radius: 6px; /* Slightly less rounded than container */
+    transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1); /* Smooth animation */
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.08); /* Subtle shadow for depth */
+  }
+
+  .radio-input-mockup:nth-child(3):checked ~ .radio-slider-mockup { /* For the second radio button (folder) */
+    left: calc(50% + 4px);
+  }
+
+  .input-text-mockup {
+    width: 100%;
+    padding: 12px 15px;
+    border: 1px solid #dde1e6; /* Light gray border */
+    border-radius: 8px;
+    font-size: 1em;
+    color: #333;
+    background-color: #fcfcfc;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    box-sizing: border-box; /* Include padding in width */
+  }
+
+  .input-text-mockup::placeholder {
+    color: #999;
+  }
+
+  .input-text-mockup:focus {
+    outline: none;
+    border-color: #007bff; /* Blue focus indicator */
+    box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.2);
+  }
+
+  .modal-actions-mockup {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    margin-top: 10px;
+  }
+
+  .button-primary-mockup,
+  .button-secondary-mockup {
+    padding: 12px 25px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 1em;
+    font-weight: 600;
+    transition: background-color 0.2s ease, box-shadow 0.2s ease;
+  }
+
+  .button-primary-mockup {
+    background-color: #007bff; /* Primary blue */
+    color: white;
+  }
+
+  .button-primary-mockup:hover {
+    background-color: #0056b3;
+    box-shadow: 0 4px 10px rgba(0, 123, 255, 0.2);
+  }
+
+  .button-secondary-mockup {
+    background-color: #e9ecef; /* Light gray */
+    color: #495057;
+  }
+
+  .button-secondary-mockup:hover {
+    background-color: #dae0e5;
+  }
+</style>
 
 <div class="rename-overlay fixed inset-0 flex items-center justify-center bg-black/45 p-2 md:p-4 z-50 hidden" id="rename-overlay" aria-hidden="true" data-action="rename" data-open="rename">
     <div class="rename-dialog bg-white rounded-lg p-4 md:p-6 w-full max-w-md shadow-lg" role="dialog" aria-modal="true" aria-labelledby="rename-title">

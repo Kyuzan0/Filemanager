@@ -480,6 +480,7 @@ export function openCreateOverlay(
     createSubmit.textContent = 'Buat';
 
     createOverlay.hidden = false;
+    createOverlay.classList.remove('hidden');
     // Tailwind utilities for create overlay + dialog
     createOverlay.classList.add(
         'tw-overlay',
@@ -554,6 +555,7 @@ export function closeCreateOverlay(
     setTimeout(() => {
         if (!state.create.isOpen) {
             createOverlay.hidden = true;
+            createOverlay.classList.add('hidden');
         }
     }, config.animationDuration);
 }
