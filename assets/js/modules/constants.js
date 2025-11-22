@@ -41,6 +41,14 @@ export const elements = {
     // Filter
     filterInput: document.getElementById('filter-input'),
     clearSearch: document.getElementById('clear-search'),
+    btnSearchMobile: document.getElementById('btn-search-mobile'),
+    
+    // Search modal
+    searchModal: document.getElementById('search-modal'),
+    searchModalInput: document.getElementById('search-modal-input'),
+    searchClose: document.getElementById('search-close'),
+    searchClear: document.getElementById('search-clear'),
+    searchApply: document.getElementById('search-apply'),
     
     // Loading and error
     loaderOverlay: document.getElementById('loader-overlay'),
@@ -54,6 +62,7 @@ export const elements = {
     
     // Selection
     selectAllCheckbox: document.getElementById('select-all'),
+    selectAllCheckboxMobile: document.getElementById('select-all-mobile'),
     
     // Preview elements
     previewOverlay: document.getElementById('preview-overlay'),

@@ -1031,3 +1031,85 @@ export function setupLogExportHandler(
         }
     });
 }
+
+/**
+ * Mengatur event handler untuk mobile search modal
+ * @param {HTMLElement} btnSearchMobile - Tombol search mobile
+ * @param {HTMLElement} searchModal - Modal search
+ * @param {HTMLElement} searchModalInput - Input search di modal
+ * @param {HTMLElement} searchClose - Tombol close modal
+ * @param {HTMLElement} searchClear - Tombol clear input
+ * @param {HTMLElement} searchApply - Tombol apply search
+ * @param {HTMLElement} filterInput - Input filter yang sebenarnya
+ */
+export function setupSearchModalHandler(
+    btnSearchMobile,
+    searchModal,
+    searchModalInput,
+    searchClose,
+    searchClear,
+    searchApply,
+    filterInput
+) {
+    if (!btnSearchMobile || !searchModal || !searchModalInput) {
+        return;
+    }
+
+    // Open modal
+    btnSearchMobile.addEventListener('click', () => {
+        searchModal.classList.remove('hidden');
+        searchModal.setAttribute('aria-hidden', 'false');
+        searchModalInput.value = filterInput.value;
+        searchModalInput.focus();
+    });
+
+    // Close modal
+    const closeModal = () => {
+        searchModal.classList.add('hidden');
+        searchModal.setAttribute('aria-hidden', 'true');
+    };
+
+    searchClose.addEventListener('click', closeModal);
+    
+    // Close on backdrop click
+    searchModal.addEventListener('click', (event) => {
+        if (event.target === searchModal) {
+            closeModal();
+        }
+    });
+
+    // Clear input
+    if (searchClear) {
+        searchClear.addEventListener('click', () => {
+            searchModalInput.value = '';
+            searchModalInput.focus();
+        });
+    }
+
+    // Apply search
+    if (searchApply) {
+        searchApply.addEventListener('click', () => {
+            filterInput.value = searchModalInput.value;
+            filterInput.dispatchEvent(new Event('input', { bubbles: true }));
+            closeModal();
+        });
+    }
+
+    // Allow Enter key to apply
+    searchModalInput.addEventListener('keydown', (event) => {
+        if (event.key === 'Enter') {
+            event.preventDefault();
+            filterInput.value = searchModalInput.value;
+            filterInput.dispatchEvent(new Event('input', { bubbles: true }));
+            closeModal();
+        }
+    });
+
+    // Allow Escape to close
+    searchModalInput.addEventListener('keydown', (event) => {
+        if (event.key === 'Escape') {
+            event.preventDefault();
+            closeModal();
+        }
+    });
+}

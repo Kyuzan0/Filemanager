@@ -1483,6 +1483,26 @@ export function syncRowSelection(tableBody, state) {
 }
 
 /**
+ * Sinkronisasi selection pada mobile list
+ * @param {HTMLElement} mobileList - Elemen mobile list
+ * @param {Object} state - State aplikasi
+ */
+export function syncMobileSelection(mobileList, state) {
+    if (!mobileList) return;
+    
+    // Mobile items are divs with data-item-path attribute and contain checkboxes
+    mobileList.querySelectorAll('[data-item-path]').forEach((item) => {
+        const checkbox = item.querySelector('input[type="checkbox"]');
+        if (checkbox) {
+            const path = checkbox.dataset.path;
+            if (path) {
+                checkbox.checked = state.selected.has(path);
+            }
+        }
+    });
+}
+
+/**
  * Mengupdate status informasi
  * @param {HTMLElement} statusInfo - Elemen status info
  * @param {HTMLElement} statusTime - Elemen status time

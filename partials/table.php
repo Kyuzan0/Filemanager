@@ -5,7 +5,8 @@
 <section class="file-card container mx-auto px-4 md:px-4">
     <div class="file-card-header mb-3">
         <div class="alert error" id="error-banner" role="alert"></div>
-        <div class="search-field relative">
+        <!-- Desktop Search (hidden on mobile) -->
+        <div class="search-field relative hidden md:block">
             <svg viewBox="0 0 24 24" aria-hidden="true" class="w-5 h-5 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"><path d="M15.5 14h-.79l-.28-.27a6 6 0 1 0-.71.71l.27.28v.79l4.5 4.5a1 1 0 0 0 1.41-1.41L15.5 14zm-6 0a4 4 0 1 1 0-8 4 4 0 0 1 0 8z"/></svg>
             <input id="filter-input" type="search" placeholder="Cari file atau folder" autocomplete="off" class="pl-10 pr-8 py-2 w-full rounded-md border bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 text-base md:text-sm" />
             <button type="button" class="clear-search absolute right-2 top-1/2 -translate-y-1/2 text-lg" id="clear-search" aria-label="Bersihkan pencarian" hidden>
@@ -20,7 +21,7 @@
             <thead class="bg-gray-50 sticky top-0">
                 <tr>
                     <th scope="col" class="selection-column px-2 md:px-4 py-2 w-12">
-                        <input type="checkbox" id="select-all" aria-label="Pilih semua item" disabled>
+                        <input type="checkbox" id="select-all" aria-label="Pilih semua item">
                     </th>
                     <th scope="col" class="sortable px-2 md:px-4 py-2 text-left text-sm font-medium text-gray-700 min-w-[200px]" data-sort-key="name" aria-sort="none">
                         <span class="column-header">Name</span>
@@ -38,8 +39,16 @@
     <!-- PAGINATION CONTROLS (will be populated by JS) -->
     <div id="pagination-container" class="pagination-container hidden md:block"></div>
 
+    <!-- MOBILE VIEW HEADER -->
+    <div class="md:hidden bg-gray-50 sticky top-0 rounded-t-md -mx-4 px-4 md:mx-0 md:px-2 py-2 flex items-center justify-between border-b border-gray-200">
+        <div class="flex items-center gap-2">
+            <input type="checkbox" id="select-all-mobile" aria-label="Pilih semua item" class="w-5 h-5">
+            <span class="text-sm font-medium text-gray-700">Pilih</span>
+        </div>
+    </div>
+
     <!-- MOBILE VIEW -->
-    <div id="mobile-file-list" class="md:hidden divide-y bg-white rounded-md shadow-sm -mx-4 px-4 md:mx-0 md:px-2"></div>
+    <div id="mobile-file-list" class="md:hidden divide-y bg-white rounded-b-md shadow-sm -mx-4 px-4 md:mx-0 md:px-2"></div>
 
     <div class="empty-state py-8 text-center text-sm text-gray-500" id="empty-state" hidden>Tidak ada file atau folder di direktori ini.</div>
 

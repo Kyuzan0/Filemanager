@@ -530,6 +530,23 @@
     </div>
 </div>
 
+<!-- Mobile Search Modal -->
+<div class="search-modal fixed inset-0 flex items-center justify-center bg-black/45 p-2 md:p-4 z-50 hidden" id="search-modal" aria-hidden="true">
+    <div class="search-dialog bg-white rounded-lg p-4 md:p-6 w-full max-w-md shadow-lg" role="dialog" aria-modal="true" aria-labelledby="search-title">
+        <header class="search-header mb-4 flex items-center justify-between">
+            <h2 id="search-title" class="text-lg md:text-xl font-semibold">Cari File atau Folder</h2>
+            <button type="button" id="search-close" aria-label="Tutup pencarian" class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">✕</button>
+        </header>
+        <div class="search-body mb-4">
+            <input id="search-modal-input" type="search" placeholder="Masukkan nama file atau folder" autocomplete="off" class="w-full px-4 py-2 rounded-md border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 text-base" />
+        </div>
+        <footer class="search-footer flex flex-col sm:flex-row gap-2 justify-end">
+            <button type="button" id="search-clear" class="search-button outline px-4 py-2 rounded-md text-sm bg-white border border-gray-200 text-slate-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">Hapus</button>
+            <button type="button" id="search-apply" class="search-button primary px-4 py-2 rounded-md text-sm bg-blue-600 text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">Cari</button>
+        </footer>
+    </div>
+</div>
+
 <!-- Settings overlay -->
 <div class="settings-overlay fixed inset-0 flex items-center justify-center bg-black/45 p-2 md:p-4 z-50 hidden" id="settings-overlay" aria-hidden="true" data-action="settings" data-open="settings">
     <div class="settings-dialog bg-white rounded-lg p-4 md:p-6 w-full max-w-xl shadow-lg" role="dialog" aria-modal="true" aria-labelledby="settings-title">

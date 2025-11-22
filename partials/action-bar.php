@@ -26,6 +26,10 @@
             <i class="ri-folder-add-line text-lg"></i>
         </button>
 
+        <button id="btn-search-mobile" type="button" class="p-2 bg-purple-500 text-white rounded flex items-center" title="Cari file atau folder">
+            <i class="ri-search-line text-lg"></i>
+        </button>
+
         <button id="btn-delete-selected" data-action="delete-selected" type="button" class="p-2 bg-red-500 text-white rounded flex items-center disabled:opacity-60" disabled title="Hapus Terpilih">
             <i class="ri-delete-bin-line text-lg"></i>
         </button>

@@ -35,7 +35,8 @@ import {
     setupSplitActionHandler,
     setupLogExportHandler,
     setupUploadDesktopHandler,
-    setupDeleteSelectedDesktopHandler
+    setupDeleteSelectedDesktopHandler,
+    setupSearchModalHandler
 } from './eventHandlers.js';
 import {
     handleDragStart,
@@ -46,7 +47,7 @@ import {
     setupFileCardDropZone
 } from './dragDrop.js';
 import { fetchDirectory, fetchLogData, cleanupLogs } from './apiService.js';
-import { renderItems as renderItemsComplex, updateSortUI } from './uiRenderer.js';
+import { renderItems as renderItemsComplex, updateSortUI, syncRowSelection, syncMobileSelection } from './uiRenderer.js';
 import { updatePaginationState } from './pagination.js';
 
 // Lazy-loaded modules (loaded on-demand for better performance)
@@ -1167,7 +1168,7 @@ async function savePreviewContent() {
 }
 
 function updateSelectionUI() {
-    const { btnDeleteSelected, btnMoveSelected, selectAllCheckbox } = elements;
+    const { btnDeleteSelected, btnDeleteSelectedDesktop, btnMoveSelected, selectAllCheckbox, selectAllCheckboxMobile, tableBody, mobileFileList } = elements;
     const selectedCount = state.selected.size;
     
     if (btnDeleteSelected) {
@@ -1175,6 +1176,17 @@ function updateSelectionUI() {
         btnDeleteSelected.textContent = selectedCount > 0
             ? `Hapus (${selectedCount})`
             : 'Hapus';
+    }
+    
+    // Update desktop delete button as well
+    if (btnDeleteSelectedDesktop) {
+        btnDeleteSelectedDesktop.disabled = selectedCount === 0 || state.isLoading;
+        const span = btnDeleteSelectedDesktop.querySelector('span');
+        if (span) {
+            span.textContent = selectedCount > 0
+                ? `Hapus Terpilih (${selectedCount})`
+                : 'Hapus Terpilih';
+        }
     }
     
     if (btnMoveSelected) {
@@ -1186,6 +1198,24 @@ function updateSelectionUI() {
         const selectedVisible = state.visibleItems.filter(item => state.selected.has(item.path)).length;
         selectAllCheckbox.checked = totalVisible > 0 && selectedVisible === totalVisible;
         selectAllCheckbox.indeterminate = selectedVisible > 0 && selectedVisible < totalVisible;
+    }
+    
+    // Sync mobile select-all checkbox
+    if (selectAllCheckboxMobile) {
+        const totalVisible = state.visibleItems.length;
+        const selectedVisible = state.visibleItems.filter(item => state.selected.has(item.path)).length;
+        selectAllCheckboxMobile.checked = totalVisible > 0 && selectedVisible === totalVisible;
+        selectAllCheckboxMobile.indeterminate = selectedVisible > 0 && selectedVisible < totalVisible;
+    }
+    
+    // Sync checkbox visual state in desktop table
+    if (tableBody) {
+        syncRowSelection(tableBody, state);
+    }
+    
+    // Sync checkbox visual state in mobile list
+    if (mobileFileList) {
+        syncMobileSelection(mobileFileList, state);
     }
 }
 
@@ -2116,6 +2146,19 @@ function setupEventHandlers() {
     setupFilterHandler(elements.filterInput, elements.clearSearch, state, renderItems, resetPagination);
     }
 
+    // Setup mobile search modal handler
+    if (!warnIfMissing('searchMobile', elements.btnSearchMobile)) {
+        setupSearchModalHandler(
+            elements.btnSearchMobile,
+            elements.searchModal,
+            elements.searchModalInput,
+            elements.searchClose,
+            elements.searchClear,
+            elements.searchApply,
+            elements.filterInput
+        );
+    }
+
     // Setup sort handlers (sortHeaders is a NodeList; call only when it exists and has items)
     if (elements.sortHeaders && elements.sortHeaders.length > 0) {
         setupSortHandlers(elements.sortHeaders, state, changeSort);
@@ -2126,6 +2169,11 @@ function setupEventHandlers() {
     // Setup select all handler
     if (!warnIfMissing('selectAll', elements.selectAllCheckbox)) {
         setupSelectAllHandler(elements.selectAllCheckbox, state, setSelectionForVisible);
+    }
+
+    // Setup select all handler for mobile
+    if (!warnIfMissing('selectAllMobile', elements.selectAllCheckboxMobile)) {
+        setupSelectAllHandler(elements.selectAllCheckboxMobile, state, setSelectionForVisible);
     }
 
     // Setup delete selected handler
