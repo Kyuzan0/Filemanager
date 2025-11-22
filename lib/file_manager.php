@@ -436,6 +436,7 @@ function create_folder(string $root, string $relativePath): array
         'path' => $info['sanitized'],
         'type' => 'folder',
         'modified' => $modified,
+        'size' => 0,
     ];
 }
 
@@ -458,6 +459,7 @@ function create_file(string $root, string $relativePath, string $content = ''): 
         'path' => $info['sanitized'],
         'type' => 'file',
         'modified' => $modified,
+        'size' => $bytes,
     ];
 }
 
@@ -565,6 +567,7 @@ function upload_files(string $root, string $relativePath, array $files): array
             'path' => $relativeItemPath,
             'type' => 'file',
             'modified' => filemtime($targetPath) ?: time(),
+            'size' => filesize($targetPath) ?: 0,
         ];
     }
 
@@ -765,6 +768,7 @@ function upload_chunk(string $root, string $relativePath, array $fileEntry, stri
             'path' => $relativeItemPath,
             'type' => 'file',
             'modified' => filemtime($targetPath) ?: time(),
+            'size' => filesize($targetPath) ?: 0,
         ];
         $result['finished'] = true;
 
@@ -820,6 +824,7 @@ function list_directory(string $root, string $relativePath = ''): array
             'type' => $fileInfo->isDir() ? 'folder' : 'file',
             'modified' => $fileInfo->getMTime(),
             'path' => $relativeItemPath,
+            'size' => $fileInfo->getSize(),
         ];
     }
 
@@ -921,11 +926,17 @@ function rename_item(string $root, string $oldRelativePath, string $newRelativeP
             'new_path' => $sanitizedNewPath
         ]);
         
+        $size = 0;
+        if ($targetType === 'file') {
+            $size = filesize($newRealPath) ?: 0;
+        }
+        
         return [
             'name' => $newName,
             'path' => $sanitizedNewPath,
             'type' => $targetType,
             'modified' => $modified,
+            'size' => $size,
         ];
     } catch (Exception $e) {
         // Log failed rename if not already logged
@@ -1035,11 +1046,17 @@ function move_item(string $root, string $oldRelativePath, string $newRelativePat
             'new_path' => $sanitizedNewPath
         ]);
         
+        $size = 0;
+        if ($targetType === 'file') {
+            $size = filesize($newRealPath) ?: 0;
+        }
+        
         return [
             'name' => $newName,
             'path' => $sanitizedNewPath,
             'type' => $targetType,
             'modified' => $modified,
+            'size' => $size,
         ];
     } catch (Exception $e) {
         // Log failed move if not already logged

@@ -401,6 +401,20 @@ function renderItemRow(item, state, params) {
     cellModified.classList.add('modified-cell','text-sm','text-gray-500','w-36','text-right','whitespace-nowrap');
     try { cellModified.setAttribute('role', 'gridcell'); } catch (e) {}
     cellModified.textContent = formatDate(item.modified);
+    row.appendChild(cellModified);
+
+    // Size cell
+    const cellSize = document.createElement('td');
+    cellSize.classList.add('size-cell','text-sm','text-gray-500','w-[100px]','text-right','whitespace-nowrap','px-2');
+    try { cellSize.setAttribute('role', 'gridcell'); } catch (e) {}
+    if (item.type === 'folder') {
+        cellSize.textContent = '-';
+    } else {
+        // Format file size
+        const size = item.size || 0;
+        cellSize.textContent = formatBytes(size);
+    }
+    row.appendChild(cellSize);
 
     // Actions cell
     const actionCell = document.createElement('td');
@@ -480,6 +494,7 @@ function renderItemRow(item, state, params) {
     actionCell.appendChild(actionGroup);
     row.appendChild(cellName);
     row.appendChild(cellModified);
+    row.appendChild(cellSize);
     row.appendChild(actionCell);
 
     // Auto-remove highlight after 5s
@@ -1118,6 +1133,12 @@ export function renderItems(
         upModified.classList.add('modified-cell','text-sm','text-gray-500','w-36','text-right','whitespace-nowrap','px-3');
         upModified.textContent = '-';
         upRow.appendChild(upModified);
+    
+        // Size column shows "-"
+        const upSize = document.createElement('td');
+        upSize.classList.add('size-cell','text-sm','text-gray-500','w-[100px]','text-right','whitespace-nowrap','px-2');
+        upSize.textContent = '-';
+        upRow.appendChild(upSize);
     
         // Empty actions cell (no actions)
         const upActions = document.createElement('td');

@@ -29,6 +29,9 @@
                     <th scope="col" class="sortable px-2 md:px-4 py-2 text-left text-sm font-medium text-gray-700 min-w-[120px]" data-sort-key="modified" aria-sort="none">
                         <span class="column-header">Date</span>
                     </th>
+                    <th scope="col" class="sortable px-2 md:px-4 py-2 text-right text-sm font-medium text-gray-700 w-[100px]" data-sort-key="size" aria-sort="none">
+                        <span class="column-header">Size</span>
+                    </th>
                     <th scope="col" class="actions-column px-2 md:px-4 py-2 text-left text-sm font-medium text-gray-700 w-[120px] md:w-auto">Aksi</th>
                 </tr>
             </thead>
