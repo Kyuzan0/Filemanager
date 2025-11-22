@@ -4,28 +4,28 @@
 ?>
 
 <div class="preview-overlay fixed inset-0 flex items-center justify-center bg-black/45 p-2 md:p-4 z-50 hidden" id="preview-overlay" aria-hidden="true" data-action="preview" data-open="preview">
-    <div class="preview-dialog bg-white rounded-lg p-4 md:p-6 w-full max-w-3xl shadow-lg max-h-[90vh] md:max-h-[85vh]" role="dialog" aria-modal="true" aria-labelledby="preview-title">
-        <header class="preview-header mb-4">
+    <div class="preview-dialog bg-white rounded-lg p-4 md:p-8 w-full max-w-3xl md:max-w-6xl shadow-lg max-h-[90vh] md:max-h-[92vh] flex flex-col" role="dialog" aria-modal="true" aria-labelledby="preview-title">
+        <header class="preview-header mb-4 flex-shrink-0">
             <div class="preview-title-group">
                 <span class="preview-label text-sm text-gray-600">Editor</span>
                 <h2 class="preview-title text-lg md:text-xl font-semibold" id="preview-title">Pratinjau</h2>
             </div>
             <p class="preview-meta text-sm text-gray-500" id="preview-meta"></p>
         </header>
-        <div class="preview-body mb-4">
-            <div class="preview-editor-wrapper flex flex-col md:flex-row">
-                <div class="preview-line-numbers hidden md:block" id="preview-line-numbers">
+        <div class="preview-body mb-0 flex-1">
+            <div class="preview-editor-wrapper flex flex-row">
+                <div class="preview-line-numbers block sm:block" id="preview-line-numbers">
                     <div class="preview-line-numbers-inner" id="preview-line-numbers-inner"><span>1</span></div>
                 </div>
-                <textarea class="preview-editor block w-full bg-slate-50 border rounded-md p-3 text-sm md:text-base" id="preview-editor" spellcheck="false"></textarea>
+                <textarea class="preview-editor block bg-white border-0 rounded-md text-sm md:text-base" id="preview-editor" spellcheck="false"></textarea>
             </div>
         </div>
-        <footer class="preview-footer">
+        <footer class="preview-footer flex-shrink-0">
             <div class="preview-footer-status mb-3">
                 <span class="preview-status text-sm text-gray-600" id="preview-status"></span>
                 <span class="preview-loader text-sm text-blue-600" id="preview-loader" hidden>Memuat konten...</span>
             </div>
-            <div class="preview-footer-actions flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+            <div class="preview-footer-actions flex flex-col sm:flex-row md:flex-row items-stretch md:items-center gap-2 md:gap-3">
                 <a id="preview-open-raw" href="#" target="_blank" rel="noopener" class="inline-flex items-center justify-center gap-2 text-sm text-blue-600 hover:underline focus:outline-none px-3 py-2 border border-blue-200 rounded-md">Buka Asli</a>
                 <button type="button" id="preview-copy" data-action="preview-copy" class="inline-flex items-center justify-center gap-2 px-3 py-2 rounded-md text-sm bg-white border border-gray-200 text-slate-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">Salin</button>
                 <button type="button" id="preview-save" data-action="preview-save" disabled class="inline-flex items-center justify-center gap-2 px-3 py-2 rounded-md text-sm bg-blue-600 text-white opacity-60 cursor-not-allowed" aria-disabled="true">Simpan</button>

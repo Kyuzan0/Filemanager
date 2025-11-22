@@ -458,6 +458,58 @@ export function setupPreviewEditorHandler(
             }
         }
     });
+
+    // MOBILE: Monitor scroll position continuously to keep line numbers stable
+    // This ensures line numbers stay synchronized even when keyboard appears
+    const isMobile = navigator.maxTouchPoints > 0 || /mobile/i.test(navigator.userAgent);
+    if (isMobile) {
+        let scrollMonitorInterval = null;
+        let isKeyboardVisible = false;
+        
+        previewEditor.addEventListener('focusin', () => {
+            if (!isKeyboardVisible) {
+                isKeyboardVisible = true;
+                console.log('[PREVIEW] Mobile: Focus detected, keyboard likely visible');
+                // Start aggressive monitoring while keyboard is visible
+                scrollMonitorInterval = setInterval(() => {
+                    syncLineNumbersScroll();
+                }, 25); // ~40fps for very smooth monitoring
+            }
+        });
+
+        previewEditor.addEventListener('focusout', () => {
+            console.log('[PREVIEW] Mobile: Blur detected, stopping scroll monitor');
+            if (scrollMonitorInterval) {
+                clearInterval(scrollMonitorInterval);
+                scrollMonitorInterval = null;
+            }
+            isKeyboardVisible = false;
+            // Final sync
+            syncLineNumbersScroll();
+        });
+
+        // Also monitor on input event (typing)
+        previewEditor.addEventListener('input', () => {
+            syncLineNumbersScroll();
+        });
+
+        // Monitor resize events for keyboard appearing/disappearing
+        previewEditor.addEventListener('resize', () => {
+            console.log('[PREVIEW] Mobile: Resize detected, syncing line numbers');
+            syncLineNumbersScroll();
+        });
+
+        // Observe visibility and size changes on the editor wrapper
+        const previewEditorWrapper = previewEditor.parentElement;
+        if (previewEditorWrapper && 'ResizeObserver' in window) {
+            const resizeObserver = new ResizeObserver(() => {
+                if (isKeyboardVisible) {
+                    syncLineNumbersScroll();
+                }
+            });
+            resizeObserver.observe(previewEditorWrapper);
+        }
+    }
 }
 
 /**

@@ -999,6 +999,209 @@ body.compact-pagination .app-shell {
   }
 }
 
+/* Mobile preview styles (max-width 767px) */
+@media (max-width: 767px) {
+  .preview-dialog {
+    max-height: calc(100vh - 1rem);
+    height: calc(100vh - 1rem);
+    display: flex;
+    flex-direction: column;
+  }
+
+  .preview-body {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    min-height: 0;
+  }
+
+  .preview-editor-wrapper {
+    flex-direction: row;
+    gap: 0;
+    flex: 1;
+    display: flex;
+    overflow: hidden;
+    min-height: 0;
+  }
+
+  .preview-line-numbers {
+    display: block;
+    width: 45px;
+    flex-shrink: 0;
+    background-color: #f3f4f6;
+    border-right: 1px solid #d1d5db;
+    overflow: hidden;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    user-select: none;
+    padding-top: 8px;
+    position: relative;
+    z-index: 10;
+  }
+
+  .preview-line-numbers-inner {
+    display: flex;
+    flex-direction: column;
+    font-size: 12px;
+    font-family: 'Courier New', Courier, monospace;
+    line-height: 20px;
+    text-align: right;
+    padding-right: 6px;
+    padding-left: 2px;
+    color: #9ca3af;
+    white-space: nowrap;
+    overflow: hidden;
+    height: fit-content;
+    pointer-events: none;
+  }
+
+  .preview-line-numbers-inner span {
+    height: 20px;
+    line-height: 20px;
+    display: block;
+    flex-shrink: 0;
+  }
+
+  .preview-editor {
+    flex: 1;
+    width: 100%;
+    min-width: 0;
+    min-height: 0;
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 12px;
+    line-height: 20px;
+    resize: none;
+    border: 1px solid #d1d5db;
+    padding: 8px;
+    padding-left: 8px;
+    overflow: auto;
+    background-color: white;
+    -webkit-appearance: none;
+    appearance: none;
+  }
+
+  .preview-footer {
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    padding: 0.75rem 0 0 0;
+    border-top: 1px solid #e5e7eb;
+    min-height: auto;
+  }
+
+  .preview-footer-status {
+    display: none;
+  }
+
+  .preview-footer-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+  }
+
+  .preview-footer-actions button,
+  .preview-footer-actions a {
+    padding: 0.4rem 0.5rem;
+    font-size: 0.75rem;
+  }
+}
+
+/* Desktop preview styles (768px+) */
+@media (min-width: 768px) {
+  .preview-body {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-height: 400px;
+    max-height: calc(92vh - 220px);
+    overflow: hidden;
+  }
+
+  .preview-editor-wrapper {
+    flex-direction: row;
+    gap: 0;
+    flex: 1;
+    display: flex;
+    overflow: hidden;
+  }
+
+  .preview-line-numbers {
+    display: block !important;
+    width: 60px;
+    flex-shrink: 0;
+    background-color: #f9fafb;
+    border-right: 1px solid #e5e7eb;
+    overflow: hidden;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    user-select: none;
+    padding-top: 12px;
+  }
+
+  .preview-line-numbers-inner {
+    display: flex;
+    flex-direction: column;
+    font-size: 14px;
+    font-family: 'Courier New', Courier, monospace;
+    line-height: 24px;
+    text-align: right;
+    padding-right: 8px;
+    padding-left: 4px;
+    color: #9ca3af;
+    white-space: nowrap;
+    overflow: hidden;
+    height: fit-content;
+  }
+
+  .preview-line-numbers-inner span {
+    height: 24px;
+    line-height: 24px;
+    display: block;
+    flex-shrink: 0;
+  }
+
+  .preview-editor {
+    flex: 1;
+    min-width: 0;
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 14px;
+    line-height: 24px;
+    resize: none;
+    border: 1px solid #d1d5db;
+    border-radius: 0.375rem;
+    padding: 12px;
+    padding-top: 12px;
+    padding-left: 12px;
+    overflow: auto;
+    background-color: white;
+  }
+
+  /* Preview footer optimizations for larger dialog */
+  .preview-footer {
+    margin-top: auto;
+    padding-top: 1rem;
+    border-top: 1px solid #e5e7eb;
+  }
+
+  .preview-footer-status {
+    margin-bottom: 1rem;
+  }
+
+  .preview-footer-actions {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0.75rem;
+  }
+
+  .preview-footer-actions button,
+  .preview-footer-actions a {
+    padding: 0.625rem 1rem;
+    font-size: 0.95rem;
+  }
+}
+
 /* Firefox Mobile */
 @supports (-moz-appearance: none) {
   @media (max-width: 767px) {

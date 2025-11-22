@@ -947,22 +947,19 @@ function updateLineNumbers() {
 
     const value = previewEditor.value;
     const sanitized = value.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
+    
+    // Count actual lines - tidak perlu add extra line
+    // If empty = 1 line, otherwise split by newline
     let totalLines = sanitized.length === 0 ? 1 : sanitized.split('\n').length;
 
-    // Fix for files ending without newline (e.g., </html> at end)
-    // Add an extra line to ensure last line number is visible when scrolling to bottom
-    if (value.length > 0 && !sanitized.endsWith('\n')) {
-        totalLines += 1;
-        console.log('[LINE_NUMBERS] Added extra line for file without newline ending');
-    }
-
-    // Performance optimization: skip rendering for very large files
+    // Performance optimization untuk file sangat besar
     if (totalLines > 10000) {
         previewLineNumbersInner.innerHTML = '<span>1</span>';
+        console.log('[LINE_NUMBERS] Large file detected (>10000 lines), showing minimal line numbers');
         return;
     }
 
-    // Build line numbers HTML
+    // Build line numbers HTML - simple dan efficient
     let html = '';
     for (let i = 1; i <= totalLines; i += 1) {
         html += `<span>${i}</span>`;
@@ -970,22 +967,16 @@ function updateLineNumbers() {
 
     previewLineNumbersInner.innerHTML = html || '<span>1</span>';
     
-    // Debug logging
-    console.log('[LINE_NUMBERS] Updated:', {
+    console.log('[LINE_NUMBERS] Updated line numbers:', {
         totalLines,
-        editorScrollTop: previewEditor.scrollTop,
-        editorScrollHeight: previewEditor.scrollHeight,
-        editorClientHeight: previewEditor.clientHeight,
+        contentLength: value.length,
         endsWithNewline: sanitized.endsWith('\n')
     });
     
-    // Force a recalculation of styles to ensure alignment
-    previewLineNumbersInner.style.transform = 'translateY(0px)';
-    
-    // Ensure consistent styling between line numbers and editor
+    // Pastikan styling konsisten setelah update
     ensureConsistentStyling();
     
-    // Sync scroll position
+    // Sinkron scroll position
     syncLineNumbersScroll();
 }
 
@@ -995,19 +986,20 @@ function ensureConsistentStyling() {
         return;
     }
     
+    // Get computed styles dari editor
     const editorStyle = window.getComputedStyle(previewEditor);
-    const editorLineHeight = parseFloat(editorStyle.lineHeight);
-    const editorFontSize = parseFloat(editorStyle.fontSize);
-    const calculatedLineHeight = isNaN(editorLineHeight) ? editorFontSize * 1.6 : editorLineHeight;
+    const lineHeight = editorStyle.lineHeight;
+    const fontSize = editorStyle.fontSize;
     
-    // Apply the same line height to the line numbers spans for consistency
-    const lineSpans = previewLineNumbersInner.querySelectorAll('span');
-    lineSpans.forEach(span => {
-        span.style.height = `${calculatedLineHeight}px`;
-        span.style.lineHeight = `${calculatedLineHeight}px`;
+    // Pastikan line numbers inline styles match dengan editor
+    // Gunakan CSS property daripada inline styles untuk flexibility
+    previewLineNumbersInner.style.fontSize = fontSize;
+    previewLineNumbersInner.style.lineHeight = lineHeight;
+    
+    console.log('[LINE_NUMBERS] Consistent styling ensured:', {
+        fontSize,
+        lineHeight
     });
-    
-    console.log('[LINE_NUMBERS] Ensured consistent styling with line height:', calculatedLineHeight);
 }
 
 function syncLineNumbersScroll() {
@@ -1016,45 +1008,21 @@ function syncLineNumbersScroll() {
         return;
     }
 
+    // Get exact scroll position dari editor textarea
     const scrollTop = previewEditor.scrollTop;
-    const scrollHeight = previewEditor.scrollHeight;
-    const clientHeight = previewEditor.clientHeight;
-    const isAtBottom = scrollTop + clientHeight >= scrollHeight - 5;
     
-    // Get the computed line height for more accurate alignment
-    const editorStyle = window.getComputedStyle(previewEditor);
-    const lineNumbersStyle = window.getComputedStyle(previewLineNumbersInner);
+    // Apply transform untuk sinkron scroll
+    // Gunakan translateY untuk smooth scroll sync tanpa re-render
+    previewLineNumbersInner.style.transform = `translateY(${-scrollTop}px)`;
     
-    // Calculate the exact line height
-    const editorLineHeight = parseFloat(editorStyle.lineHeight);
-    const editorFontSize = parseFloat(editorStyle.fontSize);
-    const calculatedLineHeight = isNaN(editorLineHeight) ? editorFontSize * 1.6 : editorLineHeight;
-    
-    // Improved scroll synchronization for files ending without newline
-    let transformOffset = -scrollTop;
-    
-    // If at bottom and file doesn't end with newline, adjust offset
-    if (isAtBottom && previewEditor.value && !previewEditor.value.endsWith('\n')) {
-        // Add a small adjustment to ensure the last line number is visible
-        // Use the calculated line height for more precise adjustment
-        transformOffset -= calculatedLineHeight * 0.125; // 1/8 of line height adjustment
-        console.log('[LINE_NUMBERS] Applied bottom adjustment:', calculatedLineHeight * 0.125);
+    // Debug logging (di-throttle agar tidak spam)
+    if (!window.lastLineNumbersSync || Date.now() - window.lastLineNumbersSync > 500) {
+        console.log('[LINE_NUMBERS] Scroll position:', {
+            editorScrollTop: scrollTop,
+            transform: `translateY(${-scrollTop}px)`
+        });
+        window.lastLineNumbersSync = Date.now();
     }
-    
-    // Debug logging
-    console.log('[LINE_NUMBERS] Scroll sync:', {
-        scrollTop,
-        scrollHeight,
-        clientHeight,
-        isAtBottom,
-        transformOffset,
-        calculatedLineHeight,
-        editorLineHeight,
-        editorFontSize,
-        endsWithNewline: previewEditor.value ? previewEditor.value.endsWith('\n') : 'empty'
-    });
-    
-    previewLineNumbersInner.style.transform = `translateY(${transformOffset}px)`;
 }
 /**
  * Debug function to compare element styles between editor and line numbers
@@ -1431,7 +1399,7 @@ function closePreviewOverlayWrapper(force = false) {
  * @param {Object} item - Item yang akan di-preview
  */
 async function openTextPreview(item) {
-    console.log('[PREVIEW] Opening text preview for:', item.name);
+    console.log('[PREVIEW] Opening text preview for:', item.name, item);
     
     if (hasUnsavedChanges(state.preview)) {
         const confirmed = await confirmDiscardChanges('Perubahan belum disimpan. Buka file lain tanpa menyimpan?');
@@ -1461,6 +1429,11 @@ async function openTextPreview(item) {
     elements.previewEditor.classList.add('is-loading');
     elements.previewEditor.readOnly = true;
     elements.previewEditor.value = '';
+    
+    // CRITICAL: Reset line numbers completely
+    elements.previewLineNumbersInner.innerHTML = '<span>1</span>';
+    elements.previewLineNumbersInner.style.transform = 'translateY(0px)';
+    
     updateLineNumbers();
 
     // Open overlay
@@ -1476,30 +1449,68 @@ async function openTextPreview(item) {
     }
 
     try {
-        // Fetch file content - using 'content' action instead of 'preview'
-        const response = await fetch(`api.php?action=content&path=${encodeURIComponent(item.path)}`);
-        const data = await response.json();
+        // Fetch file content - using 'content' action
+        const encodedPath = encodeURIComponent(item.path);
+        const apiUrl = `api.php?action=content&path=${encodedPath}`;
+        console.log('[PREVIEW] Fetching from:', apiUrl);
+        console.log('[PREVIEW] Item details:', { name: item.name, path: item.path, size: item.size });
+        
+        const response = await fetch(apiUrl);
+        console.log('[PREVIEW] Response received:', { 
+            status: response.status, 
+            statusText: response.statusText,
+            ok: response.ok,
+            headers: {
+                contentType: response.headers.get('content-type')
+            }
+        });
+        
+        const responseText = await response.text();
+        console.log('[PREVIEW] Response text (first 500 chars):', responseText.substring(0, 500));
+        
+        const data = JSON.parse(responseText);
+        console.log('[PREVIEW] Parsed JSON:', {
+            success: data.success,
+            error: data.error,
+            hasContent: typeof data.content !== 'undefined',
+            contentType: typeof data.content,
+            contentLength: data.content ? String(data.content).length : 0,
+            contentPreview: data.content ? String(data.content).substring(0, 100) : null
+        });
 
         if (!response.ok || !data.success) {
-            throw new Error(data.error || 'Failed to load file');
+            throw new Error(data.error || `Failed to load file (Status: ${response.status})`);
         }
 
-        state.preview.originalContent = data.content || '';
-        elements.previewEditor.value = state.preview.originalContent;
+        // Ensure content is a string
+        const content = typeof data.content === 'string' ? data.content : String(data.content || '');
+        console.log('[PREVIEW] Final content:', {
+            type: typeof content,
+            length: content.length,
+            preview: content.substring(0, 150)
+        });
+        
+        state.preview.originalContent = content;
+        elements.previewEditor.value = content;
+        console.log('[PREVIEW] Editor value set. Current value length:', elements.previewEditor.value.length);
+        
         elements.previewEditor.readOnly = false;
         updateLineNumbers();
         ensureConsistentStyling();
 
         if (elements.previewStatus) {
-            elements.previewStatus.textContent = `Karakter: ${data.content.length.toLocaleString('id-ID')}`;
+            elements.previewStatus.textContent = `Karakter: ${content.length.toLocaleString('id-ID')}`;
         }
         
-        // Debug element styles after loading for troubleshooting
+        console.log('[PREVIEW] Content loaded successfully');
+        
+        // Debug element styles after loading
         setTimeout(() => {
             debugElementStyles();
         }, 100);
     } catch (error) {
         console.error('[PREVIEW] Error loading file:', error);
+        console.error('[PREVIEW] Error stack:', error.stack);
         elements.previewEditor.value = `Error: ${error.message}`;
         if (elements.previewStatus) {
             elements.previewStatus.textContent = 'Gagal memuat file';
