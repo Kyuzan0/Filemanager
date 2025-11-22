@@ -59,14 +59,14 @@
     </div>
 </div>
 
-<!-- Mockup Modal Add Item -->
-<div class="modal-backdrop-mockup hidden" id="create-overlay" aria-hidden="true" data-action="create" data-open="create">
-  <div class="modal-content-mockup" role="dialog" aria-modal="true" aria-labelledby="create-title">
-    <div class="modal-header-mockup">
-      <button type="button" class="close-button-mockup" id="create-cancel" data-action="create-cancel" aria-label="Tutup">
+<!-- Modal Add Item -->
+<div class="modal-backdrop-add-item hidden" id="create-overlay" aria-hidden="true" data-action="create" data-open="create">
+  <div class="modal-add-item" role="dialog" aria-modal="true" aria-labelledby="create-title">
+    <div class="modal-add-item-header">
+      <button type="button" class="close-button-add-item" id="create-cancel" data-action="create-cancel" aria-label="Tutup">
         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-x"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
       </button>
-      <h3 class="modal-title-mockup" id="create-title">Add New Item</h3>
+      <h3 class="modal-add-item-title" id="create-title">Add New Item</h3>
     </div>
 
     <!-- Hidden elements for JavaScript compatibility -->
@@ -75,34 +75,34 @@
     <div id="create-hint" style="display: none;"></div>
     <form id="create-form" style="display: none;"></form>
 
-    <div class="form-group-mockup">
-      <label for="create-type-select" class="label-mockup">Item Type</label>
-      <div class="radio-slide-container-mockup">
-        <input type="radio" id="file-option" name="create-type" value="file" class="radio-input-mockup">
-        <label for="file-option" class="radio-label-mockup">File</label>
+    <div class="form-group-add-item">
+      <label for="create-type-select" class="label-add-item">Item Type</label>
+      <div class="radio-slide-container-add-item">
+        <input type="radio" id="file-option" name="create-type" value="file" class="radio-input-add-item">
+        <label for="file-option" class="radio-label-add-item">File</label>
 
-        <input type="radio" id="folder-option" name="create-type" value="folder" class="radio-input-mockup">
-        <label for="folder-option" class="radio-label-mockup">Folder</label>
+        <input type="radio" id="folder-option" name="create-type" value="folder" class="radio-input-add-item">
+        <label for="folder-option" class="radio-label-add-item">Folder</label>
 
-        <span class="radio-slider-mockup"></span>
+        <span class="radio-slider-add-item"></span>
       </div>
     </div>
 
-    <div class="form-group-mockup" id="create-name-group" style="display: none;">
-      <label for="create-name" class="label-mockup">Name</label>
-      <input type="text" id="create-name" name="create-name" placeholder="Misal: catatan.txt" class="input-text-mockup" autocomplete="off" required>
+    <div class="form-group-add-item" id="create-name-group" style="display: none;">
+      <label for="create-name" class="label-add-item">Name</label>
+      <input type="text" id="create-name" name="create-name" placeholder="Misal: catatan.txt" class="input-text-add-item" autocomplete="off" required>
     </div>
 
-    <div class="modal-actions-mockup">
-      <button type="button" class="button-secondary-mockup" id="create-cancel-alt" data-action="create-cancel">Cancel</button>
-      <button type="button" class="button-primary-mockup" id="create-submit" data-action="create-submit">Save</button>
+    <div class="modal-actions-add-item">
+      <button type="button" class="button-secondary-add-item" id="create-cancel-alt" data-action="create-cancel">Cancel</button>
+      <button type="button" class="button-primary-add-item" id="create-submit" data-action="create-submit">Save</button>
     </div>
   </div>
 </div>
 
 <style>
-  /* Base Mockup Styling */
-  .modal-backdrop-mockup {
+  /* Base Add Item Modal Styling */
+  .modal-backdrop-add-item {
     position: fixed;
     top: 0;
     left: 0;
@@ -116,11 +116,11 @@
     font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; /* Modern sans-serif font */
   }
 
-  .modal-backdrop-mockup.hidden {
+  .modal-backdrop-add-item.hidden {
     display: none !important;
   }
 
-  .modal-content-mockup {
+  .modal-add-item {
     background-color: #ffffff;
     border-radius: 12px; /* Rounded corners */
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15); /* Softer, larger shadow */
@@ -133,7 +133,7 @@
     position: relative;
   }
 
-  .modal-header-mockup {
+  .modal-add-item-header {
     display: flex;
     align-items: center;
     justify-content: center;
@@ -141,7 +141,7 @@
     margin-bottom: 10px;
   }
 
-  .close-button-mockup {
+  .close-button-add-item {
     position: absolute;
     left: 0; /* Align to the left */
     background: none;
@@ -152,11 +152,11 @@
     transition: color 0.2s ease;
   }
 
-  .close-button-mockup:hover {
+  .close-button-add-item:hover {
     color: #333;
   }
 
-  .modal-title-mockup {
+  .modal-add-item-title {
     margin: 0;
     font-size: 1.4em;
     font-weight: 600; /* Slightly bolder */
@@ -165,11 +165,11 @@
     text-align: center;
   }
 
-  .form-group-mockup {
+  .form-group-add-item {
     margin-bottom: 0; /* Adjusted for overall gap */
   }
 
-  .label-mockup {
+  .label-add-item {
     display: block;
     font-size: 0.9em;
     font-weight: 500;
@@ -177,8 +177,8 @@
     margin-bottom: 8px;
   }
 
-  /* Radio Button Slide Mockup */
-  .radio-slide-container-mockup {
+  /* Radio Button Slide Add Item */
+  .radio-slide-container-add-item {
     position: relative;
     display: flex;
     background-color: #f0f2f5; /* Light gray background */
@@ -190,11 +190,11 @@
     box-sizing: border-box;
   }
 
-  .radio-input-mockup {
+  .radio-input-add-item {
     display: none;
   }
 
-  .radio-label-mockup {
+  .radio-label-add-item {
     flex: 1;
     display: flex;
     justify-content: center;
@@ -209,11 +209,11 @@
     user-select: none;
   }
 
-  .radio-input-mockup:checked + .radio-label-mockup {
+  .radio-input-add-item:checked + .radio-label-add-item {
     color: #333; /* Darker text when selected */
   }
 
-  .radio-slider-mockup {
+  .radio-slider-add-item {
     position: absolute;
     top: 4px; /* Match padding */
     left: 4px; /* Match padding */
@@ -225,11 +225,11 @@
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.08); /* Subtle shadow for depth */
   }
 
-  .radio-input-mockup:nth-child(3):checked ~ .radio-slider-mockup { /* For the second radio button (folder) */
+  .radio-input-add-item:nth-child(3):checked ~ .radio-slider-add-item { /* For the second radio button (folder) */
     left: calc(50% + 4px);
   }
 
-  .input-text-mockup {
+  .input-text-add-item {
     width: 100%;
     padding: 12px 15px;
     border: 1px solid #dde1e6; /* Light gray border */
@@ -241,25 +241,25 @@
     box-sizing: border-box; /* Include padding in width */
   }
 
-  .input-text-mockup::placeholder {
+  .input-text-add-item::placeholder {
     color: #999;
   }
 
-  .input-text-mockup:focus {
+  .input-text-add-item:focus {
     outline: none;
     border-color: #007bff; /* Blue focus indicator */
     box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.2);
   }
 
-  .modal-actions-mockup {
+  .modal-actions-add-item {
     display: flex;
     justify-content: flex-end;
     gap: 12px;
     margin-top: 10px;
   }
 
-  .button-primary-mockup,
-  .button-secondary-mockup {
+  .button-primary-add-item,
+  .button-secondary-add-item {
     padding: 12px 25px;
     border: none;
     border-radius: 8px;
@@ -269,22 +269,22 @@
     transition: background-color 0.2s ease, box-shadow 0.2s ease;
   }
 
-  .button-primary-mockup {
+  .button-primary-add-item {
     background-color: #007bff; /* Primary blue */
     color: white;
   }
 
-  .button-primary-mockup:hover {
+  .button-primary-add-item:hover {
     background-color: #0056b3;
     box-shadow: 0 4px 10px rgba(0, 123, 255, 0.2);
   }
 
-  .button-secondary-mockup {
+  .button-secondary-add-item {
     background-color: #e9ecef; /* Light gray */
     color: #495057;
   }
 
-  .button-secondary-mockup:hover {
+  .button-secondary-add-item:hover {
     background-color: #dae0e5;
   }
 </style>

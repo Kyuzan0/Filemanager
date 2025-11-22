@@ -16,8 +16,6 @@ export const elements = {
     statusFilter: document.getElementById('status-filter'),
     
     // Buttons
-    btnUp: document.getElementById('btn-up'),
-    btnRefresh: document.getElementById('btn-refresh'),
     btnUpload: document.getElementById('btn-upload'),
     btnDeleteSelected: document.getElementById('btn-delete-selected'),
     btnMoveSelected: document.getElementById('btn-move-selected'),
@@ -42,6 +40,7 @@ export const elements = {
     filterInput: document.getElementById('filter-input'),
     clearSearch: document.getElementById('clear-search'),
     btnSearchMobile: document.getElementById('btn-search-mobile'),
+    btnSelectAllMobile: document.getElementById('btn-select-all-mobile'),
     
     // Search modal
     searchModal: document.getElementById('search-modal'),

@@ -1088,7 +1088,6 @@ export function setLogLoading(state, logTableBody, isLoading) {
     
     // Get global loader overlay
     const loaderOverlay = document.querySelector('.loader-overlay');
-    const btnRefresh = document.querySelector('#btn-refresh');
     
     if (isLoading) {
         // SHOW loading - both table and global overlay
@@ -1120,11 +1119,6 @@ export function setLogLoading(state, logTableBody, isLoading) {
             console.warn('[LOG_LOADING] Global loader-overlay element not found');
         }
         
-        // Disable refresh button
-        if (btnRefresh) {
-            btnRefresh.disabled = true;
-        }
-        
         console.log('[LOG_LOADING] ✓ Loading state activated');
     } else {
         // HIDE loading - clear EVERYTHING
@@ -1141,11 +1135,6 @@ export function setLogLoading(state, logTableBody, isLoading) {
             console.log('[LOG_LOADING] Global loader hidden');
         } else {
             console.warn('[LOG_LOADING] Global loader-overlay element not found for hiding');
-        }
-        
-        // Re-enable refresh button
-        if (btnRefresh) {
-            btnRefresh.disabled = false;
         }
         
         console.log('[LOG_LOADING] ✓ Loading state deactivated');

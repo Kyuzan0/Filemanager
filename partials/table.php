@@ -39,16 +39,8 @@
     <!-- PAGINATION CONTROLS (will be populated by JS) -->
     <div id="pagination-container" class="pagination-container hidden md:block"></div>
 
-    <!-- MOBILE VIEW HEADER -->
-    <div class="md:hidden bg-gray-50 sticky top-0 rounded-t-md -mx-4 px-4 md:mx-0 md:px-2 py-2 flex items-center justify-between border-b border-gray-200">
-        <div class="flex items-center gap-2">
-            <input type="checkbox" id="select-all-mobile" aria-label="Pilih semua item" class="w-5 h-5">
-            <span class="text-sm font-medium text-gray-700">Pilih</span>
-        </div>
-    </div>
-
     <!-- MOBILE VIEW -->
-    <div id="mobile-file-list" class="md:hidden divide-y bg-white rounded-b-md shadow-sm -mx-4 px-4 md:mx-0 md:px-2"></div>
+    <div id="mobile-file-list" class="md:hidden divide-y bg-white rounded-md shadow-sm -mx-4 px-4 md:mx-0 md:px-2"></div>
 
     <div class="empty-state py-8 text-center text-sm text-gray-500" id="empty-state" hidden>Tidak ada file atau folder di direktori ini.</div>
 

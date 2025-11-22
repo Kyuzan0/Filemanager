@@ -1220,7 +1220,7 @@ export function renderItems(
                 targetPath,
                 state,
                 (isLoading) => {
-                    setLoading(document.querySelector('.loader-overlay'), document.querySelector('#btn-refresh'), isLoading);
+                    setLoading(document.querySelector('.loader-overlay'), null, isLoading);
                     debugLog('[DEBUG] Loading:', isLoading);
                 },
                 (error) => { debugLog('[DEBUG] Move error:', error); },
@@ -1585,14 +1585,10 @@ export function setLoading(loaderOverlay, btnRefresh, isLoading) {
         } catch (e) {
             // Element exists but cannot be disabled — ignore safely
         }
-    } else {
-        // Fallback: query by id if button not provided
-        const btn = document.getElementById('btn-refresh') || document.querySelector('#btn-refresh');
-        if (btn) {
-            try { btn.disabled = !!isLoading; } catch (e) { /* ignore */ }
-        }
     }
+    // Note: btn-refresh button has been removed from UI, no fallback needed
     console.log('[PAGINATION DEBUG] Refresh button updated at:', buttonTime, 'delta:', buttonTime - overlayTime);
+
     
     const endTime = performance.now();
     console.log('[PAGINATION DEBUG] setLoading completed at:', endTime, 'total delta:', endTime - startTime);

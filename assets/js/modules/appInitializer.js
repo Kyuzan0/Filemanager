@@ -16,8 +16,6 @@ import {
     loadPaginationPageSize
 } from './storage.js';
 import {
-    setupRefreshHandler,
-    setupUpHandler,
     setupFilterHandler,
     setupSortHandlers,
     setupSelectAllHandler,
@@ -36,7 +34,8 @@ import {
     setupLogExportHandler,
     setupUploadDesktopHandler,
     setupDeleteSelectedDesktopHandler,
-    setupSearchModalHandler
+    setupSearchModalHandler,
+    setupSelectAllMobileButtonHandler
 } from './eventHandlers.js';
 import {
     handleDragStart,
@@ -552,7 +551,7 @@ function clearAllLoadingStates(source = 'unknown') {
     // Re-enable buttons
     const buttons = document.querySelectorAll('button[disabled]');
     buttons.forEach(btn => {
-        if (btn.id === 'btn-refresh' || btn.disabled) {
+        if (btn.disabled) {
             btn.disabled = false;
         }
     });
@@ -2125,22 +2124,6 @@ function setupEventHandlers() {
         return false;
     };
 
-    // Setup refresh handler
-    if (!warnIfMissing('refresh', elements.btnRefresh)) {
-        setupRefreshHandler(
-            elements.btnRefresh,
-            state,
-            () => hasUnsavedChanges(state.preview),
-            confirmDiscardChanges,
-            fetchDirectoryWrapper
-        );
-    }
-
-    // Setup up handler
-    if (!warnIfMissing('up', elements.btnUp)) {
-        setupUpHandler(elements.btnUp, state, navigateTo);
-    }
-
     // Setup filter handler
     if (!warnIfMissing('filter', elements.filterInput) && !warnIfMissing('clearSearch', elements.clearSearch)) {
     setupFilterHandler(elements.filterInput, elements.clearSearch, state, renderItems, resetPagination);
@@ -2171,9 +2154,19 @@ function setupEventHandlers() {
         setupSelectAllHandler(elements.selectAllCheckbox, state, setSelectionForVisible);
     }
 
-    // Setup select all handler for mobile
+    // Setup select all handler for mobile checkbox
     if (!warnIfMissing('selectAllMobile', elements.selectAllCheckboxMobile)) {
         setupSelectAllHandler(elements.selectAllCheckboxMobile, state, setSelectionForVisible);
+    }
+
+    // Setup select all mobile button handler
+    if (!warnIfMissing('selectAllMobileButton', elements.btnSelectAllMobile)) {
+        setupSelectAllMobileButtonHandler(
+            elements.btnSelectAllMobile,
+            elements.selectAllCheckboxMobile,
+            state,
+            setSelectionForVisible
+        );
     }
 
     // Setup delete selected handler

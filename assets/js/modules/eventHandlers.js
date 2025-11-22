@@ -557,7 +557,7 @@ export function setupCreateOverlayHandler(
         createItemWrapper(state.create.kind, createName.value);
     });
 
-    // Handler untuk tombol submit di mockup modal
+    // Handler untuk tombol submit di modal add item
     createSubmit.addEventListener('click', () => {
         if (state.isLoading) {
             return;
@@ -570,6 +570,24 @@ export function setupCreateOverlayHandler(
         // Update state dan panggil create wrapper
         state.create.kind = kind;
         createItemWrapper(kind, name);
+    });
+
+    // Handler untuk Enter key di input create-name
+    createName.addEventListener('keydown', (event) => {
+        if (event.key === 'Enter') {
+            event.preventDefault();
+            if (state.isLoading) {
+                return;
+            }
+            // Baca nilai dari radio button yang dipilih
+            const createTypeRadio = document.querySelector('input[name="create-type"]:checked');
+            const kind = createTypeRadio ? createTypeRadio.value : 'folder';
+            const name = createName.value;
+            
+            // Update state dan panggil create wrapper
+            state.create.kind = kind;
+            createItemWrapper(kind, name);
+        }
     });
 
     createCancel.addEventListener('click', () => {
@@ -1111,5 +1129,44 @@ export function setupSearchModalHandler(
             event.preventDefault();
             closeModal();
         }
+    });
+}
+
+/**
+ * Mengatur event handler untuk tombol select all mobile
+ * @param {HTMLElement} btnSelectAllMobile - Tombol select all mobile
+ * @param {HTMLElement} selectAllCheckboxMobile - Checkbox select all mobile
+ * @param {Object} state - State aplikasi
+ * @param {Function} setSelectionForVisible - Fungsi set selection untuk visible items
+ */
+export function setupSelectAllMobileButtonHandler(
+    btnSelectAllMobile,
+    selectAllCheckboxMobile,
+    state,
+    setSelectionForVisible
+) {
+    if (!btnSelectAllMobile || !selectAllCheckboxMobile) {
+        console.warn('[setupSelectAllMobileButtonHandler] Button or checkbox not found');
+        return;
+    }
+
+    btnSelectAllMobile.addEventListener('click', (event) => {
+        event.preventDefault();
+        event.stopPropagation();
+        
+        if (state.isLoading || state.isDeleting) {
+            console.warn('[setupSelectAllMobileButtonHandler] Loading or deleting - ignoring click');
+            return;
+        }
+        
+        console.log('[setupSelectAllMobileButtonHandler] Click detected, current checked state:', selectAllCheckboxMobile.checked);
+        
+        // Toggle select all
+        const newState = !selectAllCheckboxMobile.checked;
+        selectAllCheckboxMobile.checked = newState;
+        
+        console.log('[setupSelectAllMobileButtonHandler] New state:', newState);
+        
+        setSelectionForVisible(newState);
     });
 }

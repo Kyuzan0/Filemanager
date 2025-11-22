@@ -2,19 +2,15 @@
 // Partial: action bar (buttons, upload, add split menu)
 ?>
 <section class="action-bar container mx-auto px-4 py-4 flex flex-wrap items-center justify-between gap-4 md:flex-row md:justify-between md:gap-4">
-    <div class="flex items-center gap-2 md:gap-2">
-        <button id="btn-up" type="button" class="inline-flex items-center gap-2 px-3 py-2 rounded-md text-sm bg-white border border-gray-200 text-slate-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 min-h-[44px] md:min-h-0" title="Naik Level">
-            <svg viewBox="0 0 24 24" aria-hidden="true" class="w-5 h-5 flex-shrink-0"><path d="M12 5l7 7-1.41 1.41L13 9.83V19h-2V9.83l-4.59 4.58L5 12z"/></svg>
-            <span class="md:inline">Naik Level</span>
-        </button>
-        <button id="btn-refresh" type="button" class="inline-flex items-center gap-2 px-3 py-2 rounded-md text-sm bg-white border border-gray-200 text-slate-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 min-h-[44px] md:min-h-0" title="Muat Ulang">
-            <svg viewBox="0 0 24 24" aria-hidden="true" class="w-5 h-5 flex-shrink-0"><path d="M12 6V3L8 7l4 4V8c2.76 0 5 2.24 5 5a5 5 0 0 1-5 5 5 5 0 0 1-4.33-2.5h-2.3A7 7 0 0 0 12 20a7 7 0 0 0 7-7c0-3.87-3.13-7-7-7z"/></svg>
-            <span class="md:inline">Muat Ulang</span>
-        </button>
-    </div>
-
     <!-- MOBILE VERSION -->
     <div class="flex gap-2 p-2 items-center md:hidden">
+        <!-- Hidden checkbox untuk track select-all state -->
+        <input type="checkbox" id="select-all-mobile" class="hidden" aria-label="Pilih semua item">
+        
+        <button id="btn-select-all-mobile" type="button" class="p-2 bg-indigo-500 text-white rounded flex items-center" title="Pilih semua item">
+            <i class="ri-checkbox-multiple-line text-lg"></i>
+        </button>
+
         <div class="relative">
             <button id="btn-upload" data-action="upload" type="button" class="p-2 bg-blue-500 text-white rounded flex items-center" title="Unggah file">
                 <i class="ri-upload-cloud-line text-lg"></i>
