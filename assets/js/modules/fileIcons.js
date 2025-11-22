@@ -39,6 +39,7 @@ function createSvg(viewBox, pathDs) {
     const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
     svg.setAttribute('viewBox', viewBox);
     svg.setAttribute('aria-hidden', 'true');
+    svg.setAttribute('style', 'width: 100%; height: 100%; display: block;');
     if (!Array.isArray(pathDs)) pathDs = [pathDs];
     pathDs.forEach(d => {
         const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');

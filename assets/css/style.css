@@ -656,6 +656,84 @@ body.modal-open { overflow: hidden; }
   .file-table .item-icon {
     order: 0;
     margin-bottom: 0.25rem;
+    margin-top: 2px;
+    /* Enhanced styling for mobile icons */
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2rem;
+    height: 2rem;
+    border-radius: 0.375rem;
+    background-color: #f3f4f6;
+    color: #6b7280;
+    transition: all 0.2s ease;
+    flex-shrink: 0;
+    min-width: 2rem;
+    min-height: 2rem;
+  }
+  
+  /* Icon color by file type - mobile */
+  .file-table .item-icon.folder {
+    background-color: #dbeafe;
+    color: #1e40af;
+  }
+  
+  .file-table .item-icon.image {
+    background-color: #dcfce7;
+    color: #15803d;
+  }
+  
+  .file-table .item-icon.pdf {
+    background-color: #fee2e2;
+    color: #dc2626;
+  }
+  
+  .file-table .item-icon.code {
+    background-color: #f3e8ff;
+    color: #7e22ce;
+  }
+  
+  .file-table .item-icon.archive {
+    background-color: #fed7aa;
+    color: #c2410c;
+  }
+  
+  .file-table .item-icon.text {
+    background-color: #f5f3ff;
+    color: #5b21b6;
+  }
+  
+  .file-table .item-icon.sheet {
+    background-color: #cffafe;
+    color: #0369a1;
+  }
+  
+  .file-table .item-icon.doc {
+    background-color: #fce7f3;
+    color: #9d174d;
+  }
+  
+  .file-table .item-icon.ppt {
+    background-color: #fef3c7;
+    color: #d97706;
+  }
+  
+  .file-table .item-icon.audio {
+    background-color: #e9d5ff;
+    color: #6b21a8;
+  }
+  
+  .file-table .item-icon.video {
+    background-color: #fda29b;
+    color: #7c2d12;
+  }
+  
+  .file-table .item-icon svg {
+    width: 1.25rem !important;
+    height: 1.25rem !important;
+    display: block !important;
+    color: inherit !important;
+    fill: currentColor !important;
   }
   
   /* Create file details container for mobile - universal across all user agents */
@@ -791,8 +869,93 @@ body.compact-pagination .app-shell {
   }
   
   .file-table .item-icon {
-    order: 0;
-    margin-bottom: 0;
+    order: 0 !important;
+    margin-bottom: 0 !important;
+    margin-top: 2px !important;
+    /* Enhanced styling for desktop icons */
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: 2.5rem !important;
+    height: 2.5rem !important;
+    border-radius: 0.5rem !important;
+    background-color: #f3f4f6 !important;
+    color: #6b7280 !important;
+    transition: all 0.2s ease !important;
+    flex-shrink: 0 !important;
+    min-width: 2.5rem !important;
+    min-height: 2.5rem !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+  }
+  
+  /* Icon color by file type */
+  .file-table .item-icon.folder {
+    background-color: #dbeafe !important;
+    color: #1e40af !important;
+  }
+  
+  .file-table .item-icon.image {
+    background-color: #dcfce7 !important;
+    color: #15803d !important;
+  }
+  
+  .file-table .item-icon.pdf {
+    background-color: #fee2e2 !important;
+    color: #dc2626 !important;
+  }
+  
+  .file-table .item-icon.code {
+    background-color: #f3e8ff !important;
+    color: #7e22ce !important;
+  }
+  
+  .file-table .item-icon.archive {
+    background-color: #fed7aa !important;
+    color: #c2410c !important;
+  }
+  
+  .file-table .item-icon.text {
+    background-color: #f5f3ff !important;
+    color: #5b21b6 !important;
+  }
+  
+  .file-table .item-icon.sheet {
+    background-color: #cffafe !important;
+    color: #0369a1 !important;
+  }
+  
+  .file-table .item-icon.doc {
+    background-color: #fce7f3 !important;
+    color: #9d174d !important;
+  }
+  
+  .file-table .item-icon.ppt {
+    background-color: #fef3c7 !important;
+    color: #d97706 !important;
+  }
+  
+  .file-table .item-icon.audio {
+    background-color: #e9d5ff !important;
+    color: #6b21a8 !important;
+  }
+  
+  .file-table .item-icon.video {
+    background-color: #fda29b !important;
+    color: #7c2d12 !important;
+  }
+  
+  .file-table .item-icon:hover {
+    transform: scale(1.05) !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1) !important;
+  }
+  
+  .file-table .item-icon svg {
+    width: 1.5rem !important;
+    height: 1.5rem !important;
+    display: block !important;
+    color: inherit !important;
+    fill: currentColor !important;
   }
   
   .file-table .item-link {

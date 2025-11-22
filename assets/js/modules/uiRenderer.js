@@ -279,7 +279,17 @@ function renderItemRow(item, state, params) {
     if (iconInfo.className && iconInfo.className.trim()) {
         iconInfo.className.trim().split(/\s+/).forEach(c => icon.classList.add(c));
     }
-    icon.classList.add('inline-flex','items-center','justify-center','w-8','h-8','rounded-md');
+    // Apply inline styles to ensure icon is visible
+    icon.style.display = 'inline-flex';
+    icon.style.alignItems = 'center';
+    icon.style.justifyContent = 'center';
+    icon.style.width = '25px';
+    icon.style.height = '25px';
+    icon.style.borderRadius = '8px';
+    icon.style.backgroundColor = '#f3f4f6';
+    icon.style.color = '#6b7280';
+    icon.style.flexShrink = '0';
+    icon.style.marginTop = '2px';
     // Insert SVG safely: support both legacy string SVGs and Element nodes returned by the icons module.
     // Prefer Element nodes (created via createElementNS) to avoid relying on innerHTML parsing.
     if (iconInfo && iconInfo.svg) {
@@ -287,7 +297,11 @@ function renderItemRow(item, state, params) {
             // DOM Element (preferred)
             if (typeof iconInfo.svg === 'object' && iconInfo.svg.nodeType === 1) {
                 // Clone to avoid moving the canonical node out of the cache
-                icon.appendChild(iconInfo.svg.cloneNode(true));
+                const svgClone = iconInfo.svg.cloneNode(true);
+                // Ensure SVG has size
+                svgClone.style.width = '24px';
+                svgClone.style.height = '24px';
+                icon.appendChild(svgClone);
             } else if (typeof iconInfo.svg === 'string') {
                 // Legacy: trusted SVG string from this module — set as innerHTML
                 icon.innerHTML = iconInfo.svg;
@@ -751,7 +765,7 @@ function createMobileItem(item, state, params) {
     
     // Icon
     const iconContainer = document.createElement('div');
-    iconContainer.classList.add('text-blue-500', 'text-2xl');
+    iconContainer.classList.add('flex', 'items-center', 'justify-center');
     
     // Use the same icon system as desktop
     const iconInfo = getItemIcon(item);
@@ -760,13 +774,27 @@ function createMobileItem(item, state, params) {
     if (iconInfo.className && iconInfo.className.trim()) {
         iconInfo.className.trim().split(/\s+/).forEach(c => icon.classList.add(c));
     }
-    icon.classList.add('inline-flex', 'items-center', 'justify-center', 'w-8', 'h-8', 'rounded-md');
+    // Apply inline styles to ensure icon is visible
+    icon.style.display = 'inline-flex';
+    icon.style.alignItems = 'center';
+    icon.style.justifyContent = 'center';
+    icon.style.width = '32px';
+    icon.style.height = '32px';
+    icon.style.borderRadius = '6px';
+    icon.style.backgroundColor = '#f3f4f6';
+    icon.style.color = '#6b7280';
+    icon.style.flexShrink = '0';
+    icon.style.marginTop = '2px';
     
     // Insert SVG safely
     if (iconInfo && iconInfo.svg) {
         try {
             if (typeof iconInfo.svg === 'object' && iconInfo.svg.nodeType === 1) {
-                icon.appendChild(iconInfo.svg.cloneNode(true));
+                const svgClone = iconInfo.svg.cloneNode(true);
+                // Ensure SVG has size
+                svgClone.style.width = '20px';
+                svgClone.style.height = '20px';
+                icon.appendChild(svgClone);
             } else if (typeof iconInfo.svg === 'string') {
                 icon.innerHTML = iconInfo.svg;
             }
