@@ -823,77 +823,28 @@ function createMobileItem(item, state, params) {
     leftSide.appendChild(nameDateContainer);
     mobileItem.appendChild(leftSide);
     
-    // Right side: action buttons
+    // Right side: action menu button (three dots)
     const rightSide = document.createElement('div');
     rightSide.classList.add('flex', 'items-center', 'gap-2');
     
-    // View button
-    const viewBtn = document.createElement('button');
-    viewBtn.classList.add('p-2', 'rounded-full', 'bg-blue-100', 'text-blue-600');
-    viewBtn.innerHTML = '<i class="ri-eye-line"></i>';
-    viewBtn.addEventListener('click', (event) => {
+    // Three dots menu button
+    const actionBtn = document.createElement('button');
+    actionBtn.classList.add('p-2', 'rounded-full', 'text-gray-600', 'hover:bg-gray-100', 'transition-colors');
+    actionBtn.innerHTML = '⋮';
+    actionBtn.style.fontSize = '20px';
+    actionBtn.style.lineHeight = '1';
+    actionBtn.setAttribute('aria-label', `Menu aksi untuk ${item.name}`);
+    actionBtn.addEventListener('click', (event) => {
         event.stopPropagation();
-        if (isPreviewable) {
-            openTextPreview(item);
-        } else if (isMediaPreviewable) {
-            openMediaPreview(item);
-        } else {
-            const ext = getFileExtension(item.name);
-            if (isWordDocument(ext)) {
-                openInWord(item);
-            } else {
-                const url = buildFileUrl(item.path);
-                const newWindow = window.open(url, '_blank');
-                if (newWindow) newWindow.opener = null;
-            }
+        if (window.mobileActionsOpenMenu) {
+            // Get button position for menu placement
+            const rect = actionBtn.getBoundingClientRect();
+            const x = rect.right - 150; // Align menu to right of button
+            const y = rect.bottom + 5; // Position below button
+            window.mobileActionsOpenMenu(item, x, y);
         }
     });
-    rightSide.appendChild(viewBtn);
-    
-    // Edit button
-    const editBtn = document.createElement('button');
-    editBtn.classList.add('p-2', 'rounded-full', 'bg-blue-100', 'text-blue-600');
-    editBtn.innerHTML = '<i class="ri-edit-line"></i>';
-    editBtn.addEventListener('click', (event) => {
-        event.stopPropagation();
-        if (isPreviewable) {
-            openTextPreview(item);
-        } else {
-            openRenameOverlay(item);
-        }
-    });
-    rightSide.appendChild(editBtn);
-    
-    // Delete button
-    const deleteBtn = document.createElement('button');
-    deleteBtn.classList.add('p-2', 'rounded-full', 'bg-red-100', 'text-red-500');
-    deleteBtn.innerHTML = '<i class="ri-delete-bin-line"></i>';
-    deleteBtn.addEventListener('click', (event) => {
-        event.stopPropagation();
-        if (hasUnsavedChanges(state.preview)) {
-            confirmDiscardChanges('Perubahan belum disimpan. Tetap hapus item terpilih?')
-                .then((proceed) => {
-                    if (!proceed) return;
-                    openConfirmOverlay({
-                        message: `Hapus "${item.name}"?`,
-                        description: 'Item yang dihapus tidak dapat dikembalikan.',
-                        paths: [item.path],
-                        showList: false,
-                        confirmLabel: 'Hapus',
-                    });
-                });
-            return;
-        }
-        
-        openConfirmOverlay({
-            message: `Hapus "${item.name}"?`,
-            description: 'Item yang dihapus tidak dapat dikembalikan.',
-            paths: [item.path],
-            showList: false,
-            confirmLabel: 'Hapus',
-        });
-    });
-    rightSide.appendChild(deleteBtn);
+    rightSide.appendChild(actionBtn);
     
     mobileItem.appendChild(rightSide);
     

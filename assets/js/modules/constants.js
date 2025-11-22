@@ -174,6 +174,12 @@ export const elements = {
     // Other log elements
     logError: document.getElementById('log-error'),
     logRefresh: document.getElementById('log-refresh'),
+    
+    // Mobile actions context menu
+    mobileActionsMenu: document.getElementById('mobile-actions-menu'),
+    mobileActionsViewBtn: document.getElementById('mobile-actions-view'),
+    mobileActionsEditBtn: document.getElementById('mobile-actions-edit'),
+    mobileActionsDeleteBtn: document.getElementById('mobile-actions-delete'),
 };
 
 // Get current path from URL parameters

@@ -35,7 +35,8 @@ import {
     setupUploadDesktopHandler,
     setupDeleteSelectedDesktopHandler,
     setupSearchModalHandler,
-    setupSelectAllMobileButtonHandler
+    setupSelectAllMobileButtonHandler,
+    setupMobileActionsHandler
 } from './eventHandlers.js';
 import {
     handleDragStart,
@@ -2166,6 +2167,25 @@ function setupEventHandlers() {
             elements.selectAllCheckboxMobile,
             state,
             setSelectionForVisible
+        );
+    }
+
+    // Setup mobile actions context menu handler
+    if (!warnIfMissing('mobileActionsMenu', elements.mobileActionsMenu)) {
+        setupMobileActionsHandler(
+            elements.mobileActionsMenu,
+            elements.mobileActionsViewBtn,
+            elements.mobileActionsEditBtn,
+            elements.mobileActionsDeleteBtn,
+            state,
+            openTextPreview,
+            openMediaPreview,
+            openRenameOverlayWrapper,
+            openConfirmOverlayWrapper,
+            navigateTo,
+            buildFileUrl,
+            previewableExtensions,
+            mediaPreviewableExtensions
         );
     }
 

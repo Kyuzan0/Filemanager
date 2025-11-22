@@ -1170,3 +1170,135 @@ export function setupSelectAllMobileButtonHandler(
         setSelectionForVisible(newState);
     });
 }
+
+/**
+ * Setup handler untuk mobile actions floating context menu
+ * @param {HTMLElement} mobileActionsMenu - Context menu element
+ * @param {HTMLElement} mobileActionsViewBtn - View button
+ * @param {HTMLElement} mobileActionsEditBtn - Edit button
+ * @param {HTMLElement} mobileActionsDeleteBtn - Delete button
+ * @param {Object} state - State aplikasi
+ * @param {Function} openTextPreview - Fungsi open text preview
+ * @param {Function} openMediaPreview - Fungsi open media preview
+ * @param {Function} openRenameOverlayWrapper - Fungsi open rename overlay
+ * @param {Function} openConfirmOverlayWrapper - Fungsi open confirm overlay
+ * @param {Function} navigateTo - Fungsi navigate
+ * @param {Function} buildFileUrl - Fungsi build file URL
+ * @param {Array} previewableExtensions - Previewable extensions
+ * @param {Array} mediaPreviewableExtensions - Media previewable extensions
+ */
+export function setupMobileActionsHandler(
+    mobileActionsMenu,
+    mobileActionsViewBtn,
+    mobileActionsEditBtn,
+    mobileActionsDeleteBtn,
+    state,
+    openTextPreview,
+    openMediaPreview,
+    openRenameOverlayWrapper,
+    openConfirmOverlayWrapper,
+    navigateTo,
+    buildFileUrl,
+    previewableExtensions,
+    mediaPreviewableExtensions
+) {
+    if (!mobileActionsMenu) {
+        console.warn('[setupMobileActionsHandler] Context menu not found');
+        return;
+    }
+
+    let currentActionItem = null;
+
+    // Close menu function
+    const closeMenu = () => {
+        mobileActionsMenu.classList.add('hidden');
+        mobileActionsMenu.setAttribute('aria-hidden', 'true');
+        currentActionItem = null;
+    };
+
+    // Open menu function at specific position
+    const openMenu = (item, x, y) => {
+        currentActionItem = item;
+        mobileActionsMenu.classList.remove('hidden');
+        mobileActionsMenu.setAttribute('aria-hidden', 'false');
+        
+        // Position menu at click location, adjusted if near edge
+        let left = x;
+        let top = y;
+        
+        // Adjust if menu goes off screen
+        const rect = mobileActionsMenu.getBoundingClientRect();
+        const menuWidth = rect.width || 150;
+        const menuHeight = rect.height || 120;
+        
+        if (left + menuWidth > window.innerWidth) {
+            left = window.innerWidth - menuWidth - 10;
+        }
+        
+        if (top + menuHeight > window.innerHeight) {
+            top = window.innerHeight - menuHeight - 10;
+        }
+        
+        mobileActionsMenu.style.left = left + 'px';
+        mobileActionsMenu.style.top = top + 'px';
+    };
+
+    // View button handler
+    if (mobileActionsViewBtn) {
+        mobileActionsViewBtn.addEventListener('click', () => {
+            if (!currentActionItem) return;
+            
+            const ext = currentActionItem.name.split('.').pop().toLowerCase();
+            
+            if (currentActionItem.type === 'folder') {
+                navigateTo(currentActionItem.path);
+                closeMenu();
+            } else if (previewableExtensions.has(ext)) {
+                openTextPreview(currentActionItem);
+                closeMenu();
+            } else if (mediaPreviewableExtensions.has(ext)) {
+                openMediaPreview(currentActionItem);
+                closeMenu();
+            }
+        });
+    }
+
+    // Edit button handler
+    if (mobileActionsEditBtn) {
+        mobileActionsEditBtn.addEventListener('click', () => {
+            if (!currentActionItem) return;
+            
+            // Allow rename for both files and folders
+            openRenameOverlayWrapper(currentActionItem);
+            closeMenu();
+        });
+    }
+
+    // Delete button handler
+    if (mobileActionsDeleteBtn) {
+        mobileActionsDeleteBtn.addEventListener('click', () => {
+            if (!currentActionItem) return;
+            
+            openConfirmOverlayWrapper(currentActionItem, 'delete');
+            closeMenu();
+        });
+    }
+
+    // Close menu when clicking outside
+    document.addEventListener('click', (event) => {
+        if (!mobileActionsMenu.classList.contains('hidden') && 
+            !mobileActionsMenu.contains(event.target)) {
+            closeMenu();
+        }
+    });
+
+    // ESC key handler
+    document.addEventListener('keydown', (event) => {
+        if (event.key === 'Escape' && !mobileActionsMenu.classList.contains('hidden')) {
+            closeMenu();
+        }
+    });
+
+    // Expose openMenu globally for item buttons
+    window.mobileActionsOpenMenu = openMenu;
+}
