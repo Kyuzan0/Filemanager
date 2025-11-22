@@ -1131,13 +1131,30 @@ export function renderItems(
         upSel.classList.add('selection-cell','w-12','px-3','text-center','align-middle');
         upRow.appendChild(upSel);
     
-        // Name cell with "↑ .." label (no icon)
+        // Name cell with icon + "Back" label
         const upName = document.createElement('td');
-        upName.classList.add('item-name','px-3','text-sm');
+        upName.classList.add('name-cell','item-name','flex','items-center','gap-4','min-w-0','flex-1','px-3','text-sm');
+        
+        // Add back icon
+        const backIcon = document.createElement('span');
+        backIcon.style.display = 'inline-flex';
+        backIcon.style.alignItems = 'center';
+        backIcon.style.justifyContent = 'center';
+        backIcon.style.width = '25px';
+        backIcon.style.height = '25px';
+        backIcon.style.borderRadius = '8px';
+        backIcon.style.backgroundColor = '#dbeafe';
+        backIcon.style.color = '#1e40af';
+        backIcon.style.flexShrink = '0';
+        backIcon.style.marginTop = '2px';
+        backIcon.style.fontSize = '16px';
+        backIcon.textContent = '←';
+        upName.appendChild(backIcon);
+        
         const upLink = document.createElement('a');
         upLink.classList.add('item-link');
         upLink.href = '#';
-        upLink.textContent = '↑ ..';
+        upLink.textContent = 'Back';
         upLink.addEventListener('click', (event) => {
             event.preventDefault();
             navigateTo(state.parentPath || '');
@@ -1221,6 +1238,52 @@ export function renderItems(
         });
 
         tableBody.appendChild(upRow);
+    
+        // Add up-row for mobile view too
+        if (mobileList) {
+            const mobileUpItem = document.createElement('div');
+            mobileUpItem.classList.add('flex', 'items-center', 'justify-between', 'p-3', 'cursor-pointer', 'hover:bg-gray-50', 'transition-colors', 'border-b');
+            mobileUpItem.dataset.itemPath = state.parentPath || '';
+            mobileUpItem.dataset.itemType = 'parent';
+            
+            // Left side
+            const leftSide = document.createElement('div');
+            leftSide.classList.add('flex', 'items-center', 'gap-3');
+            
+            // Icon for parent
+            const iconContainer = document.createElement('div');
+            iconContainer.classList.add('flex', 'items-center', 'justify-center');
+            const icon = document.createElement('span');
+            icon.style.display = 'inline-flex';
+            icon.style.alignItems = 'center';
+            icon.style.justifyContent = 'center';
+            icon.style.width = '32px';
+            icon.style.height = '32px';
+            icon.style.borderRadius = '6px';
+            icon.style.backgroundColor = '#dbeafe';
+            icon.style.color = '#1e40af';
+            icon.style.flexShrink = '0';
+            icon.style.marginTop = '2px';
+            icon.style.fontSize = '18px';
+            icon.textContent = '←';
+            iconContainer.appendChild(icon);
+            leftSide.appendChild(iconContainer);
+            
+            // Name
+            const nameSpan = document.createElement('span');
+            nameSpan.classList.add('font-medium', 'text-gray-800');
+            nameSpan.textContent = 'Back';
+            leftSide.appendChild(nameSpan);
+            
+            mobileUpItem.appendChild(leftSide);
+            
+            // Click handler
+            mobileUpItem.addEventListener('click', () => {
+                navigateTo(state.parentPath || '');
+            });
+            
+            mobileList.appendChild(mobileUpItem);
+        }
     }
 
     // Show/hide empty state
