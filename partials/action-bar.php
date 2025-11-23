@@ -1,33 +1,33 @@
 <?php
 // Partial: action bar (buttons, upload, add split menu)
 ?>
-<section class="action-bar container mx-auto px-4 py-4 flex flex-wrap items-center justify-between gap-4 md:flex-row md:justify-between md:gap-4">
+<section class="action-bar container mx-auto px-4 py-2 md:py-4 flex flex-wrap items-center justify-between gap-4 md:flex-row md:justify-between md:gap-4">
     <!-- MOBILE VERSION -->
-    <div class="flex gap-2 p-2 items-center md:hidden">
+    <div class="action-bar-mobile flex gap-1.5 p-1.5 items-center justify-center md:hidden">
         <!-- Hidden checkbox untuk track select-all state -->
         <input type="checkbox" id="select-all-mobile" class="hidden" aria-label="Pilih semua item">
         
-        <button id="btn-select-all-mobile" type="button" class="p-2 bg-indigo-500 text-white rounded flex items-center" title="Pilih semua item">
-            <i class="ri-checkbox-multiple-line text-lg"></i>
+        <button id="btn-select-all-mobile" type="button" class="action-btn-mobile p-1.5 bg-indigo-500 text-white rounded-md flex items-center justify-center" title="Pilih semua">
+            <i class="ri-checkbox-multiple-line text-base"></i>
         </button>
 
         <div class="relative">
-            <button id="btn-upload" data-action="upload" type="button" class="p-2 bg-blue-500 text-white rounded flex items-center" title="Unggah file">
-                <i class="ri-upload-cloud-line text-lg"></i>
+            <button id="btn-upload" data-action="upload" type="button" class="action-btn-mobile p-1.5 bg-blue-500 text-white rounded-md flex items-center justify-center" title="Upload">
+                <i class="ri-upload-cloud-line text-base"></i>
             </button>
             <input id="upload-input" type="file" class="hidden" multiple>
         </div>
 
-        <button type="button" class="p-2 bg-green-500 text-white rounded flex items-center" data-action="add-modal" data-kind="folder" title="Folder Baru">
-            <i class="ri-folder-add-line text-lg"></i>
+        <button type="button" class="action-btn-mobile p-1.5 bg-green-500 text-white rounded-md flex items-center justify-center" data-action="add-modal" data-kind="folder" title="Folder Baru">
+            <i class="ri-folder-add-line text-base"></i>
         </button>
 
-        <button id="btn-search-mobile" type="button" class="p-2 bg-purple-500 text-white rounded flex items-center" title="Cari file atau folder">
-            <i class="ri-search-line text-lg"></i>
+        <button id="btn-search-mobile" type="button" class="action-btn-mobile p-1.5 bg-purple-500 text-white rounded-md flex items-center justify-center" title="Cari">
+            <i class="ri-search-line text-base"></i>
         </button>
 
-        <button id="btn-delete-selected" data-action="delete-selected" type="button" class="p-2 bg-red-500 text-white rounded flex items-center disabled:opacity-60" disabled title="Hapus Terpilih">
-            <i class="ri-delete-bin-line text-lg"></i>
+        <button id="btn-delete-selected" data-action="delete-selected" type="button" class="action-btn-mobile p-1.5 bg-red-500 text-white rounded-md flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed" disabled title="Hapus">
+            <i class="ri-delete-bin-line text-base"></i>
         </button>
     </div>
 

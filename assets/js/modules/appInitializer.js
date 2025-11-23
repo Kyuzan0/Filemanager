@@ -120,7 +120,7 @@ function renderSimplePagination(container, onPageChange) {
     }
 
     const wrapper = document.createElement('div');
-    wrapper.className = 'pagination-controls flex flex-col gap-3 border-t border-gray-200 bg-white px-4 py-3 md:flex-row md:items-center md:justify-between';
+    wrapper.className = 'pagination-controls hidden md:flex flex-col gap-3 border-t border-gray-200 bg-white px-4 py-3 md:flex-row md:items-center md:justify-between';
 
     const info = document.createElement('div');
     info.className = 'text-sm text-gray-700';
@@ -204,6 +204,102 @@ function renderSimplePagination(container, onPageChange) {
     wrapper.appendChild(info);
     wrapper.appendChild(controlsWrapper);
     container.appendChild(wrapper);
+}
+
+/**
+ * Render mobile pagination UI
+ */
+function renderMobilePagination(container, onPageChange) {
+    if (!container) {
+        return;
+    }
+
+    const { currentPage, totalPages, totalItems, itemsPerPage } = paginationConfig;
+    const hasItems = totalItems > 0;
+
+    container.innerHTML = '';
+    container.classList.toggle('hidden', !hasItems);
+
+    if (!hasItems) {
+        return;
+    }
+
+    // Top row: Info text with dropdown
+    const topRow = document.createElement('div');
+    topRow.className = 'pagination-mobile-top-row-new';
+    
+    const startItem = (currentPage - 1) * itemsPerPage + 1;
+    const endItem = Math.min(currentPage * itemsPerPage, totalItems);
+    
+    // Info text
+    const info = document.createElement('span');
+    info.className = 'pagination-mobile-info-new';
+    info.textContent = `Menampilkan ${startItem}-${endItem} dari ${totalItems} items`;
+    topRow.appendChild(info);
+    
+    // Dropdown selector
+    const select = document.createElement('select');
+    select.className = 'pagination-mobile-select-new';
+    select.setAttribute('aria-label', 'Items per page');
+    
+    const itemsOptions = [10, 25, 50, 100];
+    itemsOptions.forEach(option => {
+        const opt = document.createElement('option');
+        opt.value = option;
+        opt.textContent = option;
+        if (option === itemsPerPage) {
+            opt.selected = true;
+        }
+        select.appendChild(opt);
+    });
+    
+    select.addEventListener('change', (e) => {
+        const newValue = parseInt(e.target.value, 10);
+        paginationConfig.itemsPerPage = newValue;
+        paginationConfig.currentPage = 1;
+        resetPagination();
+        renderItems(state.items, state.lastUpdated, false);
+        updatePaginationState();
+    });
+    
+    topRow.appendChild(select);
+    container.appendChild(topRow);
+
+    // Bottom row: Navigation with page info
+    const bottomRow = document.createElement('div');
+    bottomRow.className = 'pagination-mobile-bottom-row-new';
+    
+    // Left arrow button
+    const prevBtn = document.createElement('button');
+    prevBtn.className = 'pagination-mobile-arrow-btn';
+    prevBtn.innerHTML = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"></polyline></svg>';
+    prevBtn.disabled = currentPage === 1;
+    prevBtn.addEventListener('click', () => {
+        if (currentPage > 1) {
+            goToPageAndUpdate(currentPage - 1, onPageChange);
+        }
+    });
+    bottomRow.appendChild(prevBtn);
+    
+    // Page info in center
+    const pageInfo = document.createElement('span');
+    pageInfo.className = 'pagination-mobile-page-info-new';
+    pageInfo.textContent = `Page ${currentPage} of ${totalPages}`;
+    bottomRow.appendChild(pageInfo);
+    
+    // Right arrow button
+    const nextBtn = document.createElement('button');
+    nextBtn.className = 'pagination-mobile-arrow-btn';
+    nextBtn.innerHTML = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"></polyline></svg>';
+    nextBtn.disabled = currentPage === totalPages;
+    nextBtn.addEventListener('click', () => {
+        if (currentPage < totalPages) {
+            goToPageAndUpdate(currentPage + 1, onPageChange);
+        }
+    });
+    bottomRow.appendChild(nextBtn);
+    
+    container.appendChild(bottomRow);
 }
 
 function createPaginationButton(text, enabled, onClick, isActive = false) {
@@ -714,13 +810,20 @@ function renderItems(items, lastUpdated, highlightNew) {
  */
 function renderPaginationUI() {
     const container = elements.paginationContainer || document.getElementById('pagination-container');
+    const mobileContainer = document.getElementById('pagination-mobile');
+    
     if (!container) {
         console.warn('[Pagination] Container not found');
         return;
     }
     
-    // Render pagination with callback
+    // Render desktop pagination with callback
     renderSimplePagination(container, handlePageChange);
+    
+    // Render mobile pagination
+    if (mobileContainer) {
+        renderMobilePagination(mobileContainer, handlePageChange);
+    }
 }
 
 /**

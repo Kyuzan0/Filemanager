@@ -2,8 +2,8 @@
 // Partial: table & file list (table wrapper + empty state + status bar)
 // This partial is intended to be included in index.php. JS wiring points are noted below.
 ?>
-<section class="file-card container mx-auto px-4 md:px-4">
-    <div class="file-card-header mb-3">
+<section class="file-card container mx-auto px-4 md:px-4 mt-1 md:mt-0">
+    <div class="file-card-header mb-2 md:mb-3">
         <div class="alert error" id="error-banner" role="alert"></div>
         <!-- Desktop Search (hidden on mobile) -->
         <div class="search-field relative hidden md:block">
@@ -41,6 +41,7 @@
     
     <!-- PAGINATION CONTROLS (will be populated by JS) -->
     <div id="pagination-container" class="pagination-container hidden md:block"></div>
+    <div id="pagination-mobile" class="pagination-mobile md:hidden"></div>
 
     <!-- MOBILE VIEW -->
     <div id="mobile-file-list" class="md:hidden divide-y bg-white rounded-md shadow-sm -mx-4 px-4 md:mx-0 md:px-2"></div>
