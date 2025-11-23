@@ -51,6 +51,134 @@ let renderCache = {
 };
 
 /**
+ * Get icon colors based on file type
+ * Returns { backgroundColor, color } for colorful icons
+ */
+function getIconColors(item) {
+    if (!item || !item.type) {
+        return { backgroundColor: '#e0e7ff', color: '#4f46e5' }; // Indigo for unknown files
+    }
+    
+    if (item.type === 'folder') {
+        return { backgroundColor: '#fef3c7', color: '#f59e0b' }; // Amber for folders
+    }
+    
+    // Get file extension for file type detection
+    const ext = getFileExtension(item.name);
+    
+    // Images - Red
+    const images = new Set(['png','jpg','jpeg','gif','webp','svg','bmp','ico','tiff','tif','avif']);
+    if (images.has(ext)) {
+        return { backgroundColor: '#fee2e2', color: '#dc2626' };
+    }
+    
+    // PDF - Red/Orange
+    if (ext === 'pdf') {
+        return { backgroundColor: '#fecaca', color: '#ea580c' };
+    }
+    
+    // Documents - Blue
+    const docs = new Set(['doc','docx','odt','rtf']);
+    if (docs.has(ext)) {
+        return { backgroundColor: '#dbeafe', color: '#0284c7' };
+    }
+    
+    // Presentations - Orange
+    const ppts = new Set(['ppt','pptx','odp']);
+    if (ppts.has(ext)) {
+        return { backgroundColor: '#fed7aa', color: '#d97706' };
+    }
+    
+    // Spreadsheets - Green
+    const sheets = new Set(['xls','xlsx','ods','csv']);
+    if (sheets.has(ext)) {
+        return { backgroundColor: '#dcfce7', color: '#16a34a' };
+    }
+    
+    // Archives - Purple
+    const archives = new Set(['zip','rar','7z','tar','gz','bz2','tgz','xz']);
+    if (archives.has(ext)) {
+        return { backgroundColor: '#e9d5ff', color: '#a855f7' };
+    }
+    
+    // Audio - Violet
+    const audio = new Set(['mp3','wav','flac','ogg','m4a','aac']);
+    if (audio.has(ext)) {
+        return { backgroundColor: '#ede9fe', color: '#7c3aed' };
+    }
+    
+    // Video - Rose
+    const video = new Set(['mp4','webm','mkv','mov','avi','m4v']);
+    if (video.has(ext)) {
+        return { backgroundColor: '#ffe4e6', color: '#be123c' };
+    }
+    
+    // JavaScript/TypeScript - Yellow
+    const javascript = new Set(['js','jsx']);
+    if (javascript.has(ext)) {
+        return { backgroundColor: '#fef08a', color: '#ca8a04' };
+    }
+    
+    // TypeScript - Blue
+    const typescript = new Set(['ts','tsx']);
+    if (typescript.has(ext)) {
+        return { backgroundColor: '#dbeafe', color: '#0369a1' };
+    }
+    
+    // Python - Blue/Yellow
+    if (ext === 'py') {
+        return { backgroundColor: '#dbeafe', color: '#1e40af' };
+    }
+    
+    // PHP - Violet
+    if (ext === 'php') {
+        return { backgroundColor: '#ede9fe', color: '#6d28d9' };
+    }
+    
+    // HTML - Orange/Red
+    const html = new Set(['html','htm']);
+    if (html.has(ext)) {
+        return { backgroundColor: '#fed7aa', color: '#ea580c' };
+    }
+    
+    // CSS - Blue
+    if (ext === 'css') {
+        return { backgroundColor: '#bfdbfe', color: '#1e40af' };
+    }
+    
+    // SCSS/LESS - Pink
+    const scss = new Set(['scss','less']);
+    if (scss.has(ext)) {
+        return { backgroundColor: '#fbcfe8', color: '#be185d' };
+    }
+    
+    // JSON - Green
+    if (ext === 'json') {
+        return { backgroundColor: '#dcfce7', color: '#16a34a' };
+    }
+    
+    // XML - Emerald
+    if (ext === 'xml') {
+        return { backgroundColor: '#d1fae5', color: '#059669' };
+    }
+    
+    // YAML - Cyan
+    const yaml = new Set(['yml','yaml']);
+    if (yaml.has(ext)) {
+        return { backgroundColor: '#cffafe', color: '#0891b2' };
+    }
+    
+    // Text - Gray
+    const text = new Set(['txt','md','markdown','log','ini','conf','cfg','env']);
+    if (text.has(ext)) {
+        return { backgroundColor: '#f3f4f6', color: '#6b7280' };
+    }
+    
+    // Default - Indigo
+    return { backgroundColor: '#e0e7ff', color: '#4f46e5' };
+}
+
+/**
  * Moves a row in the DOM immediately for optimistic UI update
  * @param {string} itemPath - Path of the item being moved
  * @returns {Object|null} - Object with row element and original position for rollback, or null if not found
@@ -286,8 +414,12 @@ function renderItemRow(item, state, params) {
     icon.style.width = '25px';
     icon.style.height = '25px';
     icon.style.borderRadius = '8px';
-    icon.style.backgroundColor = '#f3f4f6';
-    icon.style.color = '#6b7280';
+    
+    // Apply colorful icon styles based on file type
+    const iconColors = getIconColors(item);
+    icon.style.backgroundColor = iconColors.backgroundColor;
+    icon.style.color = iconColors.color;
+    
     icon.style.flexShrink = '0';
     icon.style.marginTop = '2px';
     // Insert SVG safely: support both legacy string SVGs and Element nodes returned by the icons module.
@@ -796,8 +928,12 @@ function createMobileItem(item, state, params) {
     icon.style.width = '32px';
     icon.style.height = '32px';
     icon.style.borderRadius = '6px';
-    icon.style.backgroundColor = '#f3f4f6';
-    icon.style.color = '#6b7280';
+    
+    // Apply colorful icon styles based on file type
+    const mobileIconColors = getIconColors(item);
+    icon.style.backgroundColor = mobileIconColors.backgroundColor;
+    icon.style.color = mobileIconColors.color;
+    
     icon.style.flexShrink = '0';
     icon.style.marginTop = '2px';
     

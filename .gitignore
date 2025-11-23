@@ -7,6 +7,7 @@ file/*
 logs/*
 
 bak/
+bak2/
 
 node_modules/
 

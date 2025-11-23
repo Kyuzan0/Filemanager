@@ -29,6 +29,23 @@
         <button id="btn-delete-selected" data-action="delete-selected" type="button" class="action-btn-mobile p-1.5 bg-red-500 text-white rounded-md flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed" disabled title="Hapus">
             <i class="ri-delete-bin-line text-base"></i>
         </button>
+
+        <button id="btn-logs-mobile" type="button" data-action="logs" class="action-btn-mobile p-1.5 bg-yellow-500 text-white rounded-md flex items-center justify-center" title="Log Aktivitas">
+            <i class="ri-file-list-line text-base"></i>
+        </button>
+
+        <button id="btn-settings-mobile" type="button" data-action="settings" class="action-btn-mobile p-1.5 bg-gray-500 text-white rounded-md flex items-center justify-center" title="Pengaturan">
+            <i class="ri-settings-line text-base"></i>
+        </button>
+    </div>
+
+    <!-- Floating Selected Count Badge for Mobile -->
+    <div id="mobile-selected-count" class="fixed bottom-4 right-4 bg-blue-500 text-white rounded-full px-3 py-2 shadow-lg flex items-center gap-2 z-40 hidden md:hidden">
+        <i class="ri-checkbox-multiple-line text-sm"></i>
+        <span class="selected-count-text text-sm font-medium">0 dipilih</span>
+        <button id="mobile-clear-selection" class="ml-1 text-white hover:bg-blue-600 rounded-full p-1 transition-colors" title="Hapus pilihan">
+            <i class="ri-close-line text-xs"></i>
+        </button>
     </div>
 
     <!-- DESKTOP VERSION -->

@@ -1239,14 +1239,11 @@ async function savePreviewContent() {
 }
 
 function updateSelectionUI() {
-    const { btnDeleteSelected, btnDeleteSelectedDesktop, btnMoveSelected, selectAllCheckbox, selectAllCheckboxMobile, tableBody, mobileFileList } = elements;
+    const { btnDeleteSelected, btnDeleteSelectedDesktop, btnMoveSelected, selectAllCheckbox, selectAllCheckboxMobile, tableBody, mobileFileList, mobileSelectedCount, mobileClearSelection } = elements;
     const selectedCount = state.selected.size;
-    
+
     if (btnDeleteSelected) {
         btnDeleteSelected.disabled = selectedCount === 0 || state.isLoading;
-        btnDeleteSelected.textContent = selectedCount > 0
-            ? `Hapus (${selectedCount})`
-            : 'Hapus';
     }
     
     // Update desktop delete button as well
@@ -1277,6 +1274,17 @@ function updateSelectionUI() {
         const selectedVisible = state.visibleItems.filter(item => state.selected.has(item.path)).length;
         selectAllCheckboxMobile.checked = totalVisible > 0 && selectedVisible === totalVisible;
         selectAllCheckboxMobile.indeterminate = selectedVisible > 0 && selectedVisible < totalVisible;
+    }
+    
+    // Update floating selected count badge for mobile
+    if (mobileSelectedCount) {
+        const countText = mobileSelectedCount.querySelector('.selected-count-text');
+        if (countText) {
+            countText.textContent = selectedCount > 0 ? `${selectedCount} dipilih` : '0 dipilih';
+        }
+        
+        // Show/hide floating badge based on selection
+        mobileSelectedCount.classList.toggle('hidden', selectedCount === 0);
     }
     
     // Sync checkbox visual state in desktop table
@@ -1660,20 +1668,44 @@ async function openMediaPreview(item) {
  * Wrapper function untuk membuka log modal
  */
 async function openLogModalWrapper() {
-    logger.info('Opening log modal...');
-    
-    // Lazy load logManager module
-    await loadLogManager();
-    
-    // Open the modal
-    openLogModal(
-        state,
-        elements.logOverlay,
-        elements.logClose
-    );
-    
-    // Fetch initial log data
-    await fetchLogDataWrapper();
+    alert('openLogModalWrapper CALLED!'); // DEBUG ALERT
+    console.log('[openLogModalWrapper] ========== WRAPPER START ==========');
+    try {
+        console.log('[openLogModalWrapper] START');
+        logger.info('Opening log modal...');
+        
+        console.log('[openLogModalWrapper] elements.logOverlay:', elements.logOverlay);
+        
+        if (!elements.logOverlay) {
+            alert('ERROR: elements.logOverlay is NULL!');
+            console.error('[openLogModalWrapper] ERROR: logOverlay element not found!');
+            return;
+        }
+        
+        // Lazy load logManager module
+        console.log('[openLogModalWrapper] Loading logManager...');
+        await loadLogManager();
+        console.log('[openLogModalWrapper] logManager loaded');
+        
+        // Open the modal
+        console.log('[openLogModalWrapper] Calling openLogModal...');
+        openLogModal(
+            state,
+            elements.logOverlay,
+            elements.logClose
+        );
+        console.log('[openLogModalWrapper] openLogModal called');
+        
+        // Fetch initial log data
+        console.log('[openLogModalWrapper] Fetching log data...');
+        await fetchLogDataWrapper();
+        console.log('[openLogModalWrapper] Log data fetched, DONE');
+    } catch (error) {
+        logger.error('Failed to open log modal:', error);
+        console.error('[openLogModalWrapper] ERROR:', error);
+        console.error('[openLogModalWrapper] Error stack:', error.stack);
+        alert('ERROR in openLogModalWrapper: ' + error.message);
+    }
 }
 
 /**
@@ -2012,16 +2044,65 @@ async function logNextPageWrapper() {
  */
 function setupLogModalHandlers() {
     logger.info('Setting up log modal handlers...');
+    console.log('[DEBUG] setupLogModalHandlers called');
     
     // Open log modal button (assuming there's a button with id 'btn-logs')
     const btnLogs = document.getElementById('btn-logs');
     if (btnLogs) {
-        btnLogs.addEventListener('click', openLogModalWrapper);
+        console.log('[DEBUG] Found btn-logs');
+        logger.debug('Found btn-logs, adding listener');
+        btnLogs.addEventListener('click', (e) => {
+            console.log('[DEBUG] btn-logs clicked');
+            openLogModalWrapper();
+        });
+    } else {
+        console.log('[DEBUG] btn-logs NOT found');
+        logger.warn('btn-logs not found');
     }
+    
+    // Open log modal button mobile version
+    const btnLogsMobile = document.getElementById('btn-logs-mobile');
+    if (btnLogsMobile) {
+        console.log('[DEBUG] Found btn-logs-mobile');
+        logger.debug('Found btn-logs-mobile, adding listener');
+        btnLogsMobile.addEventListener('click', (e) => {
+            console.log('[DEBUG] btn-logs-mobile clicked');
+            openLogModalWrapper();
+        });
+    } else {
+        console.log('[DEBUG] btn-logs-mobile NOT found');
+        logger.warn('btn-logs-mobile not found');
+    }
+    
+    // Fallback: event delegation for any button with data-action="logs"
+    document.addEventListener('click', (e) => {
+        const logsButton = e.target.closest('button[data-action="logs"]');
+        if (logsButton) {
+            alert('Log button clicked! Calling openLogModalWrapper...'); // DEBUG ALERT
+            console.log('[DEBUG] ========== LOG BUTTON CLICKED ==========');
+            console.log('[DEBUG] Clicked button with data-action="logs"', logsButton);
+            console.log('[DEBUG] Event target:', e.target);
+            logger.debug('Clicked button with data-action="logs"');
+            // Prevent default and stop propagation to avoid conflicts
+            e.preventDefault();
+            e.stopPropagation();
+            console.log('[DEBUG] Calling openLogModalWrapper...');
+            openLogModalWrapper().catch(err => {
+                logger.error('Error in openLogModalWrapper:', err);
+                console.error('[DEBUG] Error in openLogModalWrapper:', err);
+                alert('ERROR caught: ' + err.message);
+            });
+        }
+    });
     
     // Close log modal
     if (elements.logClose) {
         elements.logClose.addEventListener('click', closeLogModalWrapper);
+    }
+    
+    // Close log modal via top button
+    if (elements.logCloseTop) {
+        elements.logCloseTop.addEventListener('click', closeLogModalWrapper);
     }
     
     // Close on overlay click
@@ -2118,6 +2199,7 @@ function setupLogModalHandlers() {
  */
 export async function initializeApp() {
     try {
+        console.log('[initializeApp] start');
         logger.info('Initializing application...');
         
         // Load saved preferences from localStorage
@@ -2290,6 +2372,7 @@ function setupEventHandlers() {
             elements.mobileActionsMenu,
             elements.mobileActionsViewBtn,
             elements.mobileActionsEditBtn,
+            elements.mobileActionsMoveBtn,
             elements.mobileActionsDeleteBtn,
             state,
             openTextPreview,
@@ -2554,8 +2637,17 @@ function setupEventHandlers() {
         });
     }
 
+    // Setup mobile clear selection handler
+    if (elements.mobileClearSelection) {
+        elements.mobileClearSelection.addEventListener('click', () => {
+            state.selected.clear();
+            updateSelectionUI();
+        });
+    }
+
     // Setup log modal handlers (always attempt; internal function will guard)
     try {
+        console.log('[initializeApp] calling setupLogModalHandlers');
         setupLogModalHandlers();
     } catch (e) {
         logger.warn('setupLogModalHandlers failed or partially unavailable', e);

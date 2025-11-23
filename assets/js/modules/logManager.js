@@ -430,39 +430,97 @@ export function renderLogTable(logs, logTableBody, logEmpty) {
         const formattedLog = formatLogEntry(log);
         const row = document.createElement('tr');
         
-        // Timestamp cell
-        const timeCell = document.createElement('td');
-        timeCell.textContent = formattedLog.formattedDate;
-        timeCell.setAttribute('data-label', 'Waktu');
-        row.appendChild(timeCell);
+        // Check if the table structure matches overlays.php (with IP Address) or the provided HTML (without IP Address)
+        const table = logTableBody.parentElement;
+        const headerRow = table.querySelector('thead tr');
+        const headerCells = headerRow ? Array.from(headerRow.querySelectorAll('th')) : [];
         
-        // Action cell
-        const actionCell = document.createElement('td');
-        actionCell.textContent = formattedLog.actionLabel;
-        actionCell.setAttribute('data-label', 'Aksi');
-        actionCell.classList.add('log-action', `log-action-${log.action}`);
-        row.appendChild(actionCell);
+        // Count visible headers (not hidden by Tailwind classes)
+        const hasIpAddressColumn = headerCells.some(th => th.textContent.includes('IP Address'));
+        const hasTargetColumn = headerCells.some(th => th.textContent.includes('Target'));
         
-        // Type cell
-        const typeCell = document.createElement('td');
-        typeCell.textContent = formattedLog.typeLabel;
-        typeCell.setAttribute('data-label', 'Tipe');
-        row.appendChild(typeCell);
+        if (hasIpAddressColumn && hasTargetColumn) {
+            // Structure from overlays.php: Waktu, Aksi, Target (hidden sm:), Tipe (hidden sm:), IP Address (hidden md:)
+            // For mobile, only show: Waktu, Aksi
+            // For tablet/desktop, show: Waktu, Aksi, Target, Tipe, IP Address
+            
+            // Timestamp cell
+            const timeCell = document.createElement('td');
+            timeCell.textContent = formattedLog.formattedDate;
+            timeCell.setAttribute('data-label', 'Waktu');
+            timeCell.className = 'px-3 py-2 text-xs';
+            row.appendChild(timeCell);
+            
+            // Action cell
+            const actionCell = document.createElement('td');
+            actionCell.textContent = formattedLog.actionLabel;
+            actionCell.setAttribute('data-label', 'Aksi');
+            actionCell.classList.add('log-action', `log-action-${log.action}`);
+            actionCell.className = 'px-3 py-2 text-xs';
+            row.appendChild(actionCell);
+            
+            // Target cell (hidden on mobile)
+            const targetCell = document.createElement('td');
+            targetCell.textContent = log.target_path || '-';
+            targetCell.setAttribute('data-label', 'Target');
+            targetCell.className = 'px-3 py-2 text-xs hidden sm:table-cell';
+            row.appendChild(targetCell);
+            
+            // Type cell (hidden on mobile and tablet)
+            const typeCell = document.createElement('td');
+            typeCell.textContent = formattedLog.typeLabel;
+            typeCell.setAttribute('data-label', 'Tipe');
+            typeCell.className = 'px-3 py-2 text-xs hidden sm:table-cell';
+            row.appendChild(typeCell);
+            
+            // IP Address cell (hidden on mobile and tablet)
+            const ipCell = document.createElement('td');
+            ipCell.textContent = log.ip_address || '-';
+            ipCell.setAttribute('data-label', 'IP Address');
+            ipCell.className = 'px-3 py-2 text-xs hidden md:table-cell';
+            row.appendChild(ipCell);
+        } else {
+            // Structure from provided HTML: Waktu, Aksi, Tipe, Path, IP Address
+            // Timestamp cell
+            const timeCell = document.createElement('td');
+            timeCell.textContent = formattedLog.formattedDate;
+            timeCell.setAttribute('data-label', 'Waktu');
+            timeCell.className = 'px-3 py-2 text-xs';
+            row.appendChild(timeCell);
+            
+            // Action cell
+            const actionCell = document.createElement('td');
+            actionCell.textContent = formattedLog.actionLabel;
+            actionCell.setAttribute('data-label', 'Aksi');
+            actionCell.classList.add('log-action', `log-action-${log.action}`);
+            actionCell.className = 'px-3 py-2 text-xs';
+            row.appendChild(actionCell);
+            
+            // Type cell
+            const typeCell = document.createElement('td');
+            typeCell.textContent = formattedLog.typeLabel;
+            typeCell.setAttribute('data-label', 'Tipe');
+            typeCell.className = 'px-3 py-2 text-xs';
+            row.appendChild(typeCell);
+            
+            // Path cell
+            const pathCell = document.createElement('td');
+            pathCell.textContent = log.target_path || '-';
+            pathCell.setAttribute('data-label', 'Path');
+            pathCell.classList.add('log-path');
+            pathCell.className = 'px-3 py-2 text-xs';
+            row.appendChild(pathCell);
+            
+            // IP Address cell
+            const ipAddressCell = document.createElement('td');
+            ipAddressCell.textContent = log.ip_address || '-';
+            ipAddressCell.setAttribute('data-label', 'IP Address');
+            ipAddressCell.classList.add('log-ip-address');
+            ipAddressCell.className = 'px-3 py-2 text-xs';
+            row.appendChild(ipAddressCell);
+        }
         
-        // Path cell
-        const pathCell = document.createElement('td');
-        pathCell.textContent = log.target_path || '-';
-        pathCell.setAttribute('data-label', 'Path');
-        pathCell.classList.add('log-path');
-        row.appendChild(pathCell);
-        
-        // Details cell
-        const detailsCell = document.createElement('td');
-        detailsCell.textContent = log.details || '-';
-        detailsCell.setAttribute('data-label', 'Detail');
-        detailsCell.classList.add('log-details');
-        row.appendChild(detailsCell);
-        
+        row.className = 'border-b border-gray-200 hover:bg-gray-50 text-gray-900';
         logTableBody.appendChild(row);
     });
     
@@ -479,21 +537,49 @@ export function exportLogsToCSV(logs) {
         return '';
     }
     
-    // CSV header
-    const headers = ['Waktu', 'Aksi', 'Tipe', 'Path', 'Detail'];
+    // Check if table structure includes IP Address or Target column
+    const logTableBody = document.getElementById('log-table-body');
+    let hasIpAddressColumn = false;
+    let hasTargetColumn = false;
+    if (logTableBody) {
+        const table = logTableBody.parentElement;
+        const headerRow = table.querySelector('thead tr');
+        const headerCells = headerRow ? Array.from(headerRow.querySelectorAll('th')) : [];
+        hasIpAddressColumn = headerCells.some(th => th.textContent.includes('IP Address'));
+        hasTargetColumn = headerCells.some(th => th.textContent.includes('Target'));
+    }
+    
+    // CSV header based on table structure
+    const headers = (hasIpAddressColumn && hasTargetColumn)
+        ? ['Waktu', 'Aksi', 'Target', 'Tipe', 'IP Address']
+        : ['Waktu', 'Aksi', 'Tipe', 'Path', 'IP Address'];
     let csv = headers.join(',') + '\n';
     
     // CSV rows
     logs.forEach(log => {
         const formattedLog = formatLogEntry(log);
-        const row = [
-            `"${formattedLog.formattedDate}"`,
-            `"${formattedLog.actionLabel}"`,
-            `"${formattedLog.typeLabel}"`,
-            `"${log.target_path || '-'}"`,
-            `"${log.details || '-'}"`
-        ];
-        csv += row.join(',') + '\n';
+        
+        if (hasIpAddressColumn && hasTargetColumn) {
+            // Structure from overlays.php (new responsive structure)
+            const row = [
+                `"${formattedLog.formattedDate}"`,
+                `"${formattedLog.actionLabel}"`,
+                `"${log.target_path || '-'}"`,
+                `"${formattedLog.typeLabel}"`,
+                `"${log.ip_address || '-'}"`
+            ];
+            csv += row.join(',') + '\n';
+        } else {
+            // Structure from provided HTML or old structure
+            const row = [
+                `"${formattedLog.formattedDate}"`,
+                `"${formattedLog.actionLabel}"`,
+                `"${formattedLog.typeLabel}"`,
+                `"${log.target_path || '-'}"`,
+                `"${log.ip_address || '-'}"`
+            ];
+            csv += row.join(',') + '\n';
+        }
     });
     
     return csv;

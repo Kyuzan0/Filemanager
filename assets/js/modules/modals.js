@@ -53,6 +53,12 @@ export function openPreviewOverlay(state, previewOverlay, previewClose) {
         : null;
 
     previewOverlay.hidden = false;
+    // PENTING: Hapus class 'hidden' dari Tailwind
+    previewOverlay.classList.remove('hidden');
+    
+    // ADD VISIBLE CLASS IMMEDIATELY
+    previewOverlay.classList.add('visible');
+    
     // Add Tailwind utilities for overlay + dialog (non-destructive, keeps existing classes)
     previewOverlay.classList.add(
         'tw-overlay',
@@ -65,7 +71,6 @@ export function openPreviewOverlay(state, previewOverlay, previewClose) {
         'z-50'
     );
     requestAnimationFrame(() => {
-        previewOverlay.classList.add('visible');
         // Enhance inner dialog (if present) with Tailwind utilities; keep try/catch defensive
         try {
             const dialog = previewOverlay.querySelector('.modal') || previewOverlay.querySelector('.dialog') || previewOverlay.querySelector('.overlay-dialog');
@@ -292,6 +297,12 @@ export function openConfirmOverlay(
     confirmConfirm.textContent = confirmLabel;
 
     confirmOverlay.hidden = false;
+    // PENTING: Hapus class 'hidden' dari Tailwind
+    confirmOverlay.classList.remove('hidden');
+    
+    // ADD VISIBLE CLASS IMMEDIATELY
+    confirmOverlay.classList.add('visible');
+    
     // Add Tailwind utilities for confirm overlay/dialog (additive)
     confirmOverlay.classList.add(
         'tw-overlay',
@@ -304,7 +315,6 @@ export function openConfirmOverlay(
         'z-50'
     );
     requestAnimationFrame(() => {
-        confirmOverlay.classList.add('visible');
         try {
             const dialog = confirmOverlay.querySelector('.modal') || confirmOverlay.querySelector('.dialog') || confirmOverlay.querySelector('.confirm-dialog');
             if (dialog) {
@@ -353,6 +363,8 @@ export function closeConfirmOverlay(state, confirmOverlay) {
     setTimeout(() => {
         if (!state.confirm.isOpen) {
             confirmOverlay.hidden = true;
+            // Add back class 'hidden' dari Tailwind
+            confirmOverlay.classList.add('hidden');
         }
     }, config.animationDuration);
 }
@@ -374,6 +386,12 @@ export function openUnsavedOverlay(state, unsavedOverlay, unsavedMessage, unsave
     unsavedMessage.textContent = message || 'Anda memiliki perubahan yang belum disimpan. Apa yang ingin Anda lakukan?';
 
     unsavedOverlay.hidden = false;
+    // PENTING: Hapus class 'hidden' dari Tailwind
+    unsavedOverlay.classList.remove('hidden');
+    
+    // ADD VISIBLE CLASS IMMEDIATELY
+    unsavedOverlay.classList.add('visible');
+    
     // Tailwind utilities for unsaved overlay
     unsavedOverlay.classList.add(
         'tw-overlay',
@@ -386,7 +404,6 @@ export function openUnsavedOverlay(state, unsavedOverlay, unsavedMessage, unsave
         'z-50'
     );
     requestAnimationFrame(() => {
-        unsavedOverlay.classList.add('visible');
         // Enhance inner dialog if available
         try {
             const dialog = unsavedOverlay.querySelector('.modal') || unsavedOverlay.querySelector('.dialog') || unsavedOverlay.querySelector('.unsaved-dialog');
@@ -437,6 +454,8 @@ export function closeUnsavedOverlay(state, unsavedOverlay) {
     setTimeout(() => {
         if (!state.unsaved.isOpen) {
             unsavedOverlay.hidden = true;
+            // Add back class 'hidden' dari Tailwind
+            unsavedOverlay.classList.add('hidden');
         }
     }, config.animationDuration);
 }
@@ -503,6 +522,10 @@ export function openCreateOverlay(
 
     createOverlay.hidden = false;
     createOverlay.classList.remove('hidden');
+    
+    // ADD VISIBLE CLASS IMMEDIATELY
+    createOverlay.classList.add('visible');
+    
     // Tailwind utilities for create overlay + dialog
     createOverlay.classList.add(
         'tw-overlay',
@@ -515,7 +538,6 @@ export function openCreateOverlay(
         'z-50'
     );
     requestAnimationFrame(() => {
-        createOverlay.classList.add('visible');
         try {
             const dialog = createOverlay.querySelector('.modal') || createOverlay.querySelector('.dialog') || createOverlay.querySelector('.create-dialog');
             if (dialog) {
@@ -643,6 +665,11 @@ export function openRenameOverlay(
     renameSubmit.textContent = 'Rename';
 
     renameOverlay.hidden = false;
+    renameOverlay.classList.remove('hidden');
+    
+    // ADD VISIBLE CLASS IMMEDIATELY
+    renameOverlay.classList.add('visible');
+    
     // Tailwind utilities for rename overlay/dialog
     renameOverlay.classList.add(
         'tw-overlay',
@@ -655,7 +682,6 @@ export function openRenameOverlay(
         'z-50'
     );
     requestAnimationFrame(() => {
-        renameOverlay.classList.add('visible');
         try {
             const dialog = renameOverlay.querySelector('.modal') || renameOverlay.querySelector('.dialog') || renameOverlay.querySelector('.rename-dialog');
             if (dialog) {
@@ -728,6 +754,7 @@ export function closeRenameOverlay(
     setTimeout(() => {
         if (!state.rename.isOpen) {
             renameOverlay.hidden = true;
+            renameOverlay.classList.add('hidden');
         }
     }, config.animationDuration);
 }
@@ -985,16 +1012,39 @@ export async function openMediaPreview(
  * @param {HTMLElement} logClose - Elemen tombol close
  */
 export function openLogModal(state, logOverlay, logClose) {
+    console.log('[openLogModal] ========== START ==========');
+    console.log('[openLogModal] logOverlay element:', logOverlay);
+    console.log('[openLogModal] logOverlay ID:', logOverlay ? logOverlay.id : 'NULL');
+    
+    if (!logOverlay) {
+        console.error('[openLogModal] ERROR: logOverlay is NULL or undefined!');
+        alert('Error: Log overlay element not found!');
+        return;
+    }
+    
     if (state.logs.isOpen) {
+        console.log('[openLogModal] Modal already open, returning');
         return;
     }
 
+    console.log('[openLogModal] Step 1: Setting state');
     state.logs.isOpen = true;
     state.logs.currentPage = 1;
     state.logs.activeFilters = {};
     
+    console.log('[openLogModal] Step 2: Setting hidden=false');
     logOverlay.hidden = false;
-    // Tailwind utilities for log modal overlay/dialog
+    
+    console.log('[openLogModal] Step 3: Removing Tailwind hidden class');
+    logOverlay.classList.remove('hidden');
+    
+    console.log('[openLogModal] Step 4: Setting aria-hidden=false (CRITICAL for CSS)');
+    logOverlay.setAttribute('aria-hidden', 'false');
+    
+    console.log('[openLogModal] Step 5: Adding visible class (CRITICAL for CSS)');
+    logOverlay.classList.add('visible');
+    
+    console.log('[openLogModal] Step 6: Adding Tailwind display classes');
     logOverlay.classList.add(
         'tw-overlay',
         'fixed',
@@ -1005,35 +1055,43 @@ export function openLogModal(state, logOverlay, logClose) {
         'bg-black/50',
         'z-50'
     );
+    
+    console.log('[openLogModal] Step 7: Classes applied:', logOverlay.className);
+    console.log('[openLogModal] Step 8: aria-hidden value:', logOverlay.getAttribute('aria-hidden'));
+    
+    // Check computed styles
+    const computedStyle = window.getComputedStyle(logOverlay);
+    console.log('[openLogModal] Step 9: Computed display:', computedStyle.display);
+    console.log('[openLogModal] Step 9: Computed visibility:', computedStyle.visibility);
+    console.log('[openLogModal] Step 9: Computed opacity:', computedStyle.opacity);
+    console.log('[openLogModal] Step 9: Computed z-index:', computedStyle.zIndex);
+    
     requestAnimationFrame(() => {
-        logOverlay.classList.add('visible');
+        console.log('[openLogModal] RAF: Applying styles to dialog');
         try {
             const dialog = logOverlay.querySelector('.modal') || logOverlay.querySelector('.dialog') || logOverlay.querySelector('.log-dialog');
             if (dialog) {
+                console.log('[openLogModal] RAF: Found dialog element');
                 dialog.classList.add('bg-white', 'rounded-lg', 'shadow-lg', 'p-4', 'max-w-4xl', 'w-full', 'overflow-hidden');
-                // Accessibility semantics
-                try {
-                    dialog.setAttribute('role', 'dialog');
-                    dialog.setAttribute('aria-modal', 'true');
-                    dialog.tabIndex = -1;
-                } catch (e) {}
+                dialog.setAttribute('role', 'dialog');
+                dialog.setAttribute('aria-modal', 'true');
+                dialog.tabIndex = -1;
+            } else {
+                console.warn('[openLogModal] RAF: Dialog element NOT found!');
             }
-        } catch (e) {}
+        } catch (e) {
+            console.error('[openLogModal] RAF: Error:', e);
+        }
     });
-    logOverlay.setAttribute('aria-hidden', 'false');
-    try {
-        const dialogEl = logOverlay.querySelector('.modal, .dialog, .log-dialog');
-        console.log('[modals] openLogModal ->', {
-            overlayId: logOverlay.id || null,
-            overlayClasses: logOverlay.className,
-            dialogClasses: dialogEl ? dialogEl.className : null
-        });
-    } catch (e) { /* ignore */ }
+    
+    console.log('[openLogModal] Step 10: Calling markOverlayOpen');
     markOverlayOpen();
     
     if (logClose) {
         logClose.focus();
     }
+    
+    console.log('[openLogModal] ========== COMPLETE ==========');
 }
 
 /**
@@ -1054,6 +1112,8 @@ export function closeLogModal(state, logOverlay) {
     setTimeout(() => {
         if (!state.logs.isOpen) {
             logOverlay.hidden = true;
+            // Add back class 'hidden' dari Tailwind
+            logOverlay.classList.add('hidden');
         }
     }, 200);
 }

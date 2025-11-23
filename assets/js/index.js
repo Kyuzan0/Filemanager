@@ -28,6 +28,7 @@ import { config } from './modules/constants.js';
 /**
  * Inisialisasi aplikasi saat DOM dimuat
  */
+console.log('[index.js] loaded');
 document.addEventListener('DOMContentLoaded', () => {
     // Inisialisasi aplikasi
     initializeApp().then(() => {
@@ -227,6 +228,22 @@ document.addEventListener('DOMContentLoaded', () => {
         if (btnSettings) btnSettings.addEventListener('click', openSettings);
         if (settingsClose) settingsClose.addEventListener('click', closeSettings);
         if (settingsCancel) settingsCancel.addEventListener('click', closeSettings);
+
+        // Mobile settings button
+        const btnSettingsMobile = document.getElementById('btn-settings-mobile');
+        if (btnSettingsMobile) {
+            btnSettingsMobile.addEventListener('click', openSettings);
+        }
+
+        // Fallback: event delegation for any button with data-action="settings"
+        document.addEventListener('click', (e) => {
+            const settingsButton = e.target.closest('button[data-action="settings"]');
+            if (settingsButton && typeof openSettings === 'function') {
+                e.preventDefault();
+                e.stopPropagation();
+                openSettings(e);
+            }
+        });
 
         if (settingsSave) {
             settingsSave.addEventListener('click', () => {

@@ -2049,6 +2049,18 @@ body.compact-pagination .app-shell {
   .pagination-mobile-select {
     display: none !important;
   }
+}
+
+/* ============================================================
+   LOG TABLE RESPONSIVE
+   ============================================================ */
+
+/* Hide Type column on small screens (<640px) */
+@media (max-width: 639px) {
+  .log-table thead th:nth-child(4),
+  .log-table tbody td:nth-child(4) {
+    display: none !important;
+  }
 
   .pagination-mobile-select option {
     padding: 0.25rem !important;
@@ -2062,5 +2074,72 @@ body.compact-pagination .app-shell {
   .pagination-mobile-page-compact,
   .pagination-mobile-select-wrapper {
     display: none !important;
+  }
+
+  /* Mobile floating selected count badge */
+  #mobile-selected-count {
+    position: fixed;
+    bottom: 1rem;
+    right: 1rem;
+    background: #3b82f6;
+    color: white;
+    border-radius: 2rem;
+    padding: 0.5rem 0.75rem;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    z-index: 40;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    transition: all 0.2s ease;
+    transform: translateY(0);
+    opacity: 1;
+  }
+
+  #mobile-selected-count.hidden {
+    transform: translateY(10px);
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  #mobile-selected-count i {
+    font-size: 0.875rem;
+  }
+
+  #mobile-selected-count .selected-count-text {
+    white-space: nowrap;
+  }
+
+  #mobile-clear-selection {
+    background: rgba(255, 255, 255, 0.2);
+    border: none;
+    border-radius: 1rem;
+    padding: 0.25rem;
+    margin-left: 0.25rem;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  #mobile-clear-selection:hover {
+    background: rgba(255, 255, 255, 0.3);
+  }
+
+  #mobile-clear-selection:active {
+    transform: scale(0.95);
+  }
+
+  #mobile-clear-selection i {
+    font-size: 0.75rem;
+  }
+
+  /* Ensure floating badge is above other mobile elements */
+  @media (max-width: 767px) {
+    #mobile-selected-count {
+      z-index: 50;
+    }
   }
 }

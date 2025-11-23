@@ -1243,6 +1243,7 @@ export function setupMobileActionsHandler(
     mobileActionsMenu,
     mobileActionsViewBtn,
     mobileActionsEditBtn,
+    mobileActionsMoveBtn,
     mobileActionsDeleteBtn,
     state,
     openTextPreview,
@@ -1326,12 +1327,38 @@ export function setupMobileActionsHandler(
         });
     }
 
+    // Move button handler
+    if (mobileActionsMoveBtn) {
+        mobileActionsMoveBtn.addEventListener('click', async () => {
+            if (!currentActionItem) return;
+            
+            // Import moveOverlay module dynamically
+            try {
+                const moveOverlayModule = await import('./moveOverlay.js');
+                if (moveOverlayModule.openMoveOverlay) {
+                    // Pass the current item path to move overlay
+                    moveOverlayModule.openMoveOverlay([currentActionItem.path]);
+                    closeMenu();
+                }
+            } catch (error) {
+                console.error('Failed to load move overlay:', error);
+                alert('Gagal memuat fitur pindah. Silakan coba lagi.');
+            }
+        });
+    }
+
     // Delete button handler
     if (mobileActionsDeleteBtn) {
         mobileActionsDeleteBtn.addEventListener('click', () => {
             if (!currentActionItem) return;
             
-            openConfirmOverlayWrapper(currentActionItem, 'delete');
+            openConfirmOverlayWrapper({
+                message: `Hapus "${currentActionItem.name}"?`,
+                description: 'Item yang dihapus tidak dapat dikembalikan.',
+                paths: [currentActionItem.path],
+                showList: false,
+                confirmLabel: 'Hapus',
+            });
             closeMenu();
         });
     }

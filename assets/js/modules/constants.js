@@ -41,6 +41,8 @@ export const elements = {
     clearSearch: document.getElementById('clear-search'),
     btnSearchMobile: document.getElementById('btn-search-mobile'),
     btnSelectAllMobile: document.getElementById('btn-select-all-mobile'),
+    mobileSelectedCount: document.getElementById('mobile-selected-count'),
+    mobileClearSelection: document.getElementById('mobile-clear-selection'),
     
     // Search modal
     searchModal: document.getElementById('search-modal'),
@@ -147,6 +149,7 @@ export const elements = {
     logTitle: document.getElementById('log-title'),
     logSubtitle: document.getElementById('log-subtitle'),
     logClose: document.getElementById('log-close'),
+    logCloseTop: document.getElementById('log-close-top'),
     
     // Log table and pagination
     logTableBody: document.getElementById('log-table-body'),
@@ -179,6 +182,7 @@ export const elements = {
     mobileActionsMenu: document.getElementById('mobile-actions-menu'),
     mobileActionsViewBtn: document.getElementById('mobile-actions-view'),
     mobileActionsEditBtn: document.getElementById('mobile-actions-edit'),
+    mobileActionsMoveBtn: document.getElementById('mobile-actions-move'),
     mobileActionsDeleteBtn: document.getElementById('mobile-actions-delete'),
 };
 
