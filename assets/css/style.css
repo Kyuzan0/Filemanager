@@ -2076,25 +2076,26 @@ body.compact-pagination .app-shell {
     display: none !important;
   }
 
-  /* Mobile floating selected count badge */
+  /* Mobile floating selected count badge - Compact version */
   #mobile-selected-count {
     position: fixed;
-    bottom: 1rem;
-    right: 1rem;
+    bottom: 0.75rem;
+    right: 0.75rem;
     background: #3b82f6;
     color: white;
-    border-radius: 2rem;
-    padding: 0.5rem 0.75rem;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    border-radius: 1.25rem;
+    padding: 0.25rem 0.5rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
     z-index: 40;
     display: flex;
     align-items: center;
-    gap: 0.5rem;
-    font-size: 0.875rem;
-    font-weight: 500;
+    gap: 0.25rem;
+    font-size: 0.7rem;
+    font-weight: 600;
     transition: all 0.2s ease;
-    transform: translateY(0);
     opacity: 1;
+    min-width: auto;
+    max-width: fit-content;
   }
 
   #mobile-selected-count.hidden {
@@ -2104,36 +2105,42 @@ body.compact-pagination .app-shell {
   }
 
   #mobile-selected-count i {
-    font-size: 0.875rem;
+    font-size: 0.75rem;
+    line-height: 1;
   }
 
   #mobile-selected-count .selected-count-text {
     white-space: nowrap;
+    line-height: 1;
   }
 
   #mobile-clear-selection {
-    background: rgba(255, 255, 255, 0.2);
+    background: rgba(255, 255, 255, 0.25);
     border: none;
-    border-radius: 1rem;
-    padding: 0.25rem;
-    margin-left: 0.25rem;
+    border-radius: 0.5rem;
+    padding: 0.125rem;
+    margin-left: 0.125rem;
     cursor: pointer;
     transition: background-color 0.2s ease;
     display: flex;
     align-items: center;
     justify-content: center;
+    width: 1.25rem;
+    height: 1.25rem;
+    flex-shrink: 0;
   }
 
   #mobile-clear-selection:hover {
-    background: rgba(255, 255, 255, 0.3);
+    background: rgba(255, 255, 255, 0.35);
   }
 
   #mobile-clear-selection:active {
-    transform: scale(0.95);
+    transform: scale(0.9);
   }
 
   #mobile-clear-selection i {
-    font-size: 0.75rem;
+    font-size: 0.5rem;
+    line-height: 1;
   }
 
   /* Ensure floating badge is above other mobile elements */

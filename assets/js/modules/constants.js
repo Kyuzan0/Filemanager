@@ -19,7 +19,6 @@ export const elements = {
     btnUpload: document.getElementById('btn-upload'),
     btnDeleteSelected: document.getElementById('btn-delete-selected'),
     btnMoveSelected: document.getElementById('btn-move-selected'),
-    btnLogs: document.getElementById('btn-logs'),
     
     // Desktop buttons
     btnUploadDesktop: document.getElementById('btn-upload-desktop'),
@@ -143,40 +142,6 @@ export const elements = {
     
     // Pagination elements
     paginationContainer: document.getElementById('pagination-container'),
-    
-    // Log modal elements
-    logOverlay: document.getElementById('log-overlay'),
-    logTitle: document.getElementById('log-title'),
-    logSubtitle: document.getElementById('log-subtitle'),
-    logClose: document.getElementById('log-close'),
-    logCloseTop: document.getElementById('log-close-top'),
-    
-    // Log table and pagination
-    logTableBody: document.getElementById('log-table-body'),
-    logPrevPage: document.getElementById('log-prev-page'),
-    logNextPage: document.getElementById('log-next-page'),
-    logPageInfo: document.getElementById('log-page-info'),
-    
-    // Log filters
-    logFilterAction: document.getElementById('log-filter-action'),
-    logFilterStartDate: document.getElementById('log-filter-start-date'),
-    logFilterEndDate: document.getElementById('log-filter-end-date'),
-    logFilterType: document.getElementById('log-filter-type'),
-    logFilterPath: document.getElementById('log-filter-path'),
-    logFilterSort: document.getElementById('log-filter-sort'),
-    logApplyFilters: document.getElementById('log-apply-filters'),
-    logClearFilters: document.getElementById('log-clear-filters'),
-    logActiveFilters: document.getElementById('log-active-filters'),
-    
-    // Log actions
-    logExportCSV: document.getElementById('log-export-csv'),
-    logExportJSON: document.getElementById('log-export-json'),
-    logCleanupBtn: document.getElementById('log-cleanup-btn'),
-    logAutoRefreshToggle: document.getElementById('log-auto-refresh-toggle'),
-    
-    // Other log elements
-    logError: document.getElementById('log-error'),
-    logRefresh: document.getElementById('log-refresh'),
     
     // Mobile actions context menu
     mobileActionsMenu: document.getElementById('mobile-actions-menu'),
@@ -365,8 +330,6 @@ export const errorMessages = {
     uploadFailed: 'Gagal mengunggah file',
     saveFailed: 'Gagal menyimpan perubahan',
     copyFailed: 'Gagal menyalin path',
-    logFetchFailed: 'Gagal mengambil data log',
-    logCleanupFailed: 'Gagal membersihkan log',
 };
 
 // Success messages
@@ -378,7 +341,6 @@ export const successMessages = {
     fileUploaded: 'File diunggah',
     changesSaved: 'Perubahan tersimpan',
     pathCopied: 'Path tersalin ke clipboard',
-    logCleaned: 'Log berhasil dibersihkan',
 };
 
 // Action labels for logs
