@@ -3,7 +3,7 @@
 // Intended to be included in index.php. JS wiring points (functions/IDs) are noted in comments.
 ?>
 
-<div class="preview-overlay fixed inset-0 items-center justify-center bg-black/45 p-2 md:p-4 z-50 hidden" id="preview-overlay" aria-hidden="true" data-action="preview" data-open="preview" style="display: none;">
+<div class="preview-overlay fixed inset-0 items-center justify-center bg-black/45 p-2 md:p-4 z-50 hidden" id="preview-overlay" aria-hidden="true" data-action="preview" data-open="preview">
     <div class="preview-dialog bg-white rounded-lg p-4 md:p-8 w-full max-w-3xl md:max-w-6xl shadow-lg max-h-[90vh] md:max-h-[92vh] flex flex-col" role="dialog" aria-modal="true" aria-labelledby="preview-title">
         <header class="preview-header mb-4 flex-shrink-0">
             <div class="preview-title-group">
@@ -35,7 +35,7 @@
     </div>
 </div>
 
-<div class="confirm-overlay fixed inset-0 items-center justify-center bg-black/45 p-2 md:p-4 z-50 hidden" id="confirm-overlay" aria-hidden="true" data-action="confirm" data-open="confirm" style="display: none;">
+<div class="confirm-overlay fixed inset-0 items-center justify-center bg-black/45 p-2 md:p-4 z-50 hidden" id="confirm-overlay" aria-hidden="true" data-action="confirm" data-open="confirm">
     <div class="confirm-dialog bg-white rounded-lg shadow-lg w-full max-w-md" role="dialog" aria-modal="true" aria-labelledby="confirm-title">
         <header class="confirm-header bg-gradient-to-r from-blue-50 to-blue-50 border-b border-gray-100 px-6 py-4 text-center">
             <div class="confirm-icon mx-auto mb-3 w-12 h-12 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center" aria-hidden="true">
@@ -289,7 +289,7 @@
   }
 </style>
 
-<div class="rename-overlay fixed inset-0 items-center justify-center bg-black/45 p-2 md:p-4 z-50 hidden" id="rename-overlay" aria-hidden="true" data-action="rename" data-open="rename" style="display: none;">
+<div class="rename-overlay fixed inset-0 items-center justify-center bg-black/45 p-2 md:p-4 z-50 hidden" id="rename-overlay" aria-hidden="true" data-action="rename" data-open="rename">
     <div class="rename-dialog bg-white rounded-lg shadow-lg w-full max-w-md" role="dialog" aria-modal="true" aria-labelledby="rename-title">
         <header class="rename-header bg-gradient-to-r from-blue-50 to-blue-50 border-b border-gray-100 px-6 py-4 flex items-center gap-4">
             <div class="rename-icon w-12 h-12 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center flex-shrink-0" aria-hidden="true">
@@ -314,7 +314,7 @@
     </div>
 </div>
 
-<div class="unsaved-overlay fixed inset-0 items-center justify-center bg-black/45 p-2 md:p-4 z-50 hidden" id="unsaved-overlay" aria-hidden="true" data-action="unsaved" data-open="unsaved" style="display: none;">
+<div class="unsaved-overlay fixed inset-0 items-center justify-center bg-black/45 p-2 md:p-4 z-50 hidden" id="unsaved-overlay" aria-hidden="true" data-action="unsaved" data-open="unsaved">
     <div class="unsaved-dialog bg-white rounded-lg p-4 md:p-6 w-full max-w-md shadow-lg" role="dialog" aria-modal="true" aria-labelledby="unsaved-title">
         <div class="unsaved-header mb-4">
             <div class="unsaved-icon mx-auto mb-3 w-12 h-12 text-yellow-600" aria-hidden="true">
@@ -336,7 +336,7 @@
 </div>
 
 <!-- Move overlay modal -->
-<div class="move-overlay fixed inset-0 items-center justify-center bg-black/45 p-2 md:p-4 z-50 hidden" id="move-overlay" aria-hidden="true" style="display: none;">
+<div class="move-overlay fixed inset-0 items-center justify-center bg-black/45 p-2 md:p-4 z-50 hidden" id="move-overlay" aria-hidden="true">
     <div class="move-dialog bg-white rounded-lg p-4 md:p-6 w-full max-w-2xl shadow-lg max-h-[90vh] md:max-h-[85vh] overflow-hidden flex flex-col" role="dialog" aria-modal="true" aria-labelledby="move-title">
         <header class="move-header mb-4 flex-shrink-0">
             <div class="move-icon mx-auto mb-3 w-12 h-12 text-blue-600" aria-hidden="true">
@@ -373,7 +373,7 @@
     </div>
 </div>
 
-<div class="log-overlay fixed inset-0 items-center justify-center bg-black/45 p-2 md:p-4 z-50 hidden" id="log-overlay" aria-hidden="true" style="display: none;">
+<div class="log-overlay fixed inset-0 items-center justify-center bg-black/45 p-2 md:p-4 z-50 hidden" id="log-overlay" aria-hidden="true">
     <div class="log-dialog bg-white rounded-lg shadow-lg w-full max-w-sm md:max-w-4xl max-h-[90vh] md:max-h-[85vh] overflow-hidden flex flex-col" role="dialog" aria-modal="true" aria-labelledby="log-title">
         <header class="log-header bg-gradient-to-r from-blue-50 to-blue-50 border-b border-gray-100 px-6 py-4 flex items-center gap-4 flex-shrink-0">
             <div class="log-icon w-12 h-12 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center flex-shrink-0" aria-hidden="true">
@@ -533,7 +533,7 @@
 </div>
 
 <!-- Mobile Search Modal -->
-<div class="search-modal fixed inset-0 items-center justify-center bg-black/45 p-2 md:p-4 z-50 hidden" id="search-modal" aria-hidden="true" style="display: none;">
+<div class="search-modal fixed inset-0 items-center justify-center bg-black/45 p-2 md:p-4 z-50 hidden" id="search-modal" aria-hidden="true">
     <div class="search-dialog bg-white rounded-lg p-4 md:p-6 w-full max-w-md shadow-lg" role="dialog" aria-modal="true" aria-labelledby="search-title">
         <header class="search-header mb-4 flex items-center justify-between">
             <h2 id="search-title" class="text-lg md:text-xl font-semibold">Cari File atau Folder</h2>
@@ -550,7 +550,7 @@
 </div>
 
 <!-- Settings overlay -->
-<div class="settings-overlay fixed inset-0 items-center justify-center bg-black/45 p-2 md:p-4 z-50 hidden" id="settings-overlay" aria-hidden="true" data-action="settings" data-open="settings" style="display: none;">
+<div class="settings-overlay fixed inset-0 items-center justify-center bg-black/45 p-2 md:p-4 z-50 hidden" id="settings-overlay" aria-hidden="true" data-action="settings" data-open="settings">
     <div class="settings-dialog bg-white rounded-lg p-4 md:p-6 w-full max-w-xl shadow-lg" role="dialog" aria-modal="true" aria-labelledby="settings-title">
         <header class="settings-header mb-4 flex items-center justify-between">
             <h2 id="settings-title" class="text-lg md:text-xl font-semibold">Pengaturan</h2>

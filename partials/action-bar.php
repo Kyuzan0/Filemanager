@@ -3,7 +3,7 @@
 ?>
 <section class="action-bar container mx-auto px-4 py-2 md:py-4 flex flex-wrap items-center justify-between gap-4 md:flex-row md:justify-between md:gap-4">
     <!-- MOBILE VERSION -->
-    <div class="action-bar-mobile flex gap-1.5 p-1.5 items-center justify-center md:hidden" style="display: flex;">
+    <div class="action-bar-mobile flex gap-1.5 p-1.5 items-center justify-center md:hidden">
         <!-- Hidden checkbox untuk track select-all state -->
         <input type="checkbox" id="select-all-mobile" class="hidden" aria-label="Pilih semua item">
         
@@ -36,7 +36,7 @@
     </div>
 
     <!-- Floating Selected Count Badge for Mobile - Compact -->
-    <div id="mobile-selected-count" class="fixed bottom-3 right-3 bg-blue-500 text-white rounded-full px-2 py-1.5 shadow-md items-center gap-1.5 z-40 hidden md:hidden" style="display: none;">
+    <div id="mobile-selected-count" class="fixed bottom-3 right-3 bg-blue-500 text-white rounded-full px-2 py-1.5 shadow-md items-center gap-1.5 z-40 hidden">
         <i class="ri-checkbox-multiple-line text-xs"></i>
         <span class="selected-count-text text-xs font-semibold">0 dipilih</span>
         <button id="mobile-clear-selection" class="text-white hover:bg-blue-600 rounded-full p-0.5 transition-colors" title="Hapus pilihan">

@@ -472,6 +472,17 @@ body.modal-open { overflow: hidden; }
 @media (min-width: 768px) {
   .dialog { max-width: 800px; }
   .app-shell { padding: 1.5rem; }
+  
+  /* Desktop action bar - show full buttons with text */
+  .action-bar > div {
+    width: auto;
+    justify-content: flex-start;
+    flex-wrap: nowrap;
+  }
+  
+  .action-bar button span {
+    display: inline;
+  }
 }
 
   /* Mobile responsive styles - applies to all user agents */
