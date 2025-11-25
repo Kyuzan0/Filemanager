@@ -1,0 +1,97 @@
+/**
+ * Table Components
+ * ================
+ * Table, tr, td, th and table-related styles.
+ * 
+ * Extracted from: style.css (lines 204-235)
+ */
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+th,
+td {
+  padding: 12px;
+  text-align: left;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.04);
+  color: var(--muted);
+  transition: background-color 0.2s ease;
+}
+
+[data-theme="dark"] th,
+[data-theme="dark"] td {
+  border-color: rgba(255, 255, 255, 0.08);
+}
+
+th {
+  font-weight: 600;
+  background: transparent;
+  color: var(--muted);
+}
+
+tbody tr:hover {
+  background: var(--glass);
+}
+
+.actions-cell {
+  display: flex;
+  gap: 8px;
+}
+
+/* Up Row - Back Navigation */
+.up-row {
+  background-color: transparent;
+  cursor: pointer;
+  transition: all var(--transition);
+}
+
+.up-row:hover {
+  background-color: var(--bg-secondary);
+}
+
+.up-row td {
+  color: var(--accent);
+  font-weight: 500;
+}
+
+.up-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  margin-right: 8px;
+  font-size: 16px;
+}
+
+/* Mobile Table */
+@media (max-width: 768px) {
+  table {
+    font-size: 12px;
+  }
+
+  th,
+  td {
+    padding: 8px 12px;
+  }
+
+  th {
+    font-size: 11px;
+  }
+}
+
+.table-responsive {
+  overflow-x: auto;
+}
+
+.table-compact {
+  font-size: 13px;
+}
+
+.table-compact th,
+.table-compact td {
+  padding: 8px 12px;
+}

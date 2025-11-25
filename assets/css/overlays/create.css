@@ -1,0 +1,210 @@
+/**
+ * Create/Add Item Overlay
+ * =======================
+ * Styles for the Add Item modal (create file/folder).
+ * Extracted from partials/overlays.php lines 193-310
+ */
+
+/* Base Add Item Modal Styling */
+.modal-backdrop-add-item {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.4);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+}
+
+.modal-backdrop-add-item.hidden {
+  display: none !important;
+}
+
+.modal-add-item {
+  background: var(--card);
+  color: var(--muted);
+  border-radius: 12px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+  padding: 30px;
+  width: 380px;
+  max-width: 90%;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  position: relative;
+}
+
+.modal-add-item-header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  margin-bottom: 10px;
+}
+
+.close-button-add-item {
+  position: absolute;
+  left: 0;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 5px;
+  color: var(--muted);
+  transition: color 0.2s ease;
+}
+
+.close-button-add-item:hover {
+  color: var(--muted);
+}
+
+.modal-add-item-title {
+  margin: 0;
+  font-size: 1.4em;
+  font-weight: 600;
+  color: var(--muted);
+  flex-grow: 1;
+  text-align: center;
+}
+
+.form-group-add-item {
+  margin-bottom: 0;
+}
+
+.label-add-item {
+  display: block;
+  font-size: 0.9em;
+  font-weight: 500;
+  color: #555;
+  margin-bottom: 8px;
+}
+
+/* Radio Button Slide Add Item */
+.radio-slide-container-add-item {
+  position: relative;
+  display: flex;
+  background-color: var(--glass);
+  border-radius: 8px;
+  overflow: hidden;
+  height: 44px;
+  width: 100%;
+  padding: 4px;
+  box-sizing: border-box;
+}
+
+.radio-input-add-item {
+  display: none;
+}
+
+.radio-label-add-item {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 0 15px;
+  cursor: pointer;
+  z-index: 1;
+  transition: color 0.3s ease;
+  font-weight: 500;
+  font-size: 0.9em;
+  color: var(--muted);
+  user-select: none;
+}
+
+.radio-input-add-item:checked + .radio-label-add-item {
+  color: var(--muted);
+}
+
+.radio-slider-add-item {
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  width: calc(50% - 4px);
+  height: calc(100% - 8px);
+  background-color: rgba(58, 123, 255, 0.12);
+  border-radius: 6px;
+  transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.08);
+}
+
+.radio-input-add-item:nth-child(3):checked ~ .radio-slider-add-item {
+  left: calc(50% + 4px);
+}
+
+.input-text-add-item {
+  width: 100%;
+  padding: 12px 15px;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  border-radius: 8px;
+  font-size: 1em;
+  color: var(--muted);
+  background-color: var(--card);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  box-sizing: border-box;
+}
+
+.input-text-add-item::placeholder {
+  color: rgba(127, 137, 153, 0.8);
+}
+
+.input-text-add-item:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+}
+
+.modal-actions-add-item {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 10px;
+}
+
+.button-primary-add-item,
+.button-secondary-add-item {
+  padding: 12px 25px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 1em;
+  font-weight: 600;
+  transition: background-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.button-primary-add-item {
+  background: linear-gradient(180deg, var(--accent), #245ecf);
+  color: #fff;
+}
+
+.button-primary-add-item:hover {
+  background-color: #0056b3;
+  box-shadow: 0 4px 10px rgba(0, 123, 255, 0.2);
+}
+
+.button-secondary-add-item {
+  background: var(--glass);
+  color: var(--muted);
+}
+
+.button-secondary-add-item:hover {
+  background: rgba(58, 123, 255, 0.12);
+  border: 1px solid rgba(58, 123, 255, 0.14);
+  color: var(--muted);
+}
+
+@media (prefers-color-scheme: dark) {
+  .button-secondary-add-item:hover {
+    background: rgba(58, 123, 255, 0.16);
+    border: 1px solid rgba(58, 123, 255, 0.18);
+    color: #fff;
+  }
+}
+
+[data-theme="dark"] .modal-add-item .button-secondary-add-item:hover {
+  background: rgba(58, 123, 255, 0.16) !important;
+  border: 1px solid rgba(58, 123, 255, 0.18) !important;
+  color: #fff !important;
+}

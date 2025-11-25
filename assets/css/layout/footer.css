@@ -1,0 +1,60 @@
+/**
+ * Footer Styles
+ * =============
+ * Application footer area.
+ * 
+ * Note: Footer styles are minimal in original CSS.
+ * Will extract if additional footer styles found.
+ */
+
+.footer {
+  background-color: var(--card);
+  border-top: 1px solid var(--card-border);
+  padding: 12px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 12px;
+  color: var(--text-secondary);
+  transition: background-color var(--transition), border-color var(--transition);
+}
+
+.footer-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.footer-center {
+  flex: 1;
+  text-align: center;
+}
+
+.footer-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.footer-info {
+  cursor: pointer;
+  transition: color var(--transition);
+}
+
+.footer-info:hover {
+  color: var(--accent);
+}
+
+@media (max-width: 768px) {
+  .footer {
+    flex-direction: column;
+    gap: 8px;
+    text-align: center;
+  }
+
+  .footer-left,
+  .footer-right {
+    width: 100%;
+    justify-content: center;
+  }
+}

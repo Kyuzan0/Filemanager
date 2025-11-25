@@ -1,0 +1,68 @@
+/**
+ * Main CSS Entry Point
+ * ===================
+ * This file imports all modular CSS files in the correct order.
+ * DO NOT add styles here - add them to appropriate module files.
+ * 
+ * Import Order:
+ * 1. Core (variables, reset, base)
+ * 2. Layout (app shell, sidebar, topbar, footer)
+ * 3. Components (buttons, cards, forms, tables, etc)
+ * 4. Overlays (modals, dialogs)
+ * 5. Themes (dark mode overrides)
+ * 6. Utilities (animations, helpers, responsive)
+ */
+
+/* ============================================================================
+   CORE - Variables, Reset, Base Styles
+   ============================================================================ */
+@import 'core/variables.css';
+@import 'core/reset.css';
+@import 'core/base.css';
+
+/* ============================================================================
+   LAYOUT - App Shell, Sidebar, Topbar, Footer
+   ============================================================================ */
+@import 'layout/app.css';
+@import 'layout/sidebar.css';
+@import 'layout/topbar.css';
+@import 'layout/footer.css';
+
+/* ============================================================================
+   COMPONENTS - Buttons, Cards, Tables, Forms, Modals
+   ============================================================================ */
+@import 'components/buttons.css';
+@import 'components/cards.css';
+@import 'components/tables.css';
+@import 'components/forms.css';
+@import 'components/modals.css';
+@import 'components/badges.css';
+@import 'components/icons.css';
+@import 'components/context-menu.css';
+@import 'components/loader.css';
+@import 'components/navigation.css';
+
+/* ============================================================================
+   OVERLAYS - Create, Preview, Confirm, Move, Rename, Log, Settings, Context Menu
+   ============================================================================ */
+@import 'overlays/create.css';
+@import 'overlays/preview.css';
+@import 'overlays/confirm.css';
+@import 'overlays/rename.css';
+@import 'overlays/unsaved.css';
+@import 'overlays/move.css';
+@import 'overlays/log.css';
+@import 'overlays/settings.css';
+@import 'overlays/context-menu.css';
+
+/* ============================================================================
+   THEMES - Dark Mode and Other Theme Variations
+   ============================================================================ */
+@import 'themes/dark.css';
+
+/* ============================================================================
+   UTILITIES - Animations, Helpers, Responsive Media Queries
+   ============================================================================ */
+@import 'utilities/animations.css';
+@import 'utilities/helpers.css';
+@import 'utilities/responsive.css';

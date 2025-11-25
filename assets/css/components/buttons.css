@@ -1,0 +1,120 @@
+/**
+ * Button Components
+ * =================
+ * All button styles and variants.
+ * 
+ * Extracted from: style.css (lines 107-145)
+ */
+
+.btn {
+  background: var(--card);
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  padding: 8px 12px;
+  border-radius: 10px;
+  cursor: pointer;
+  color: var(--muted);
+  transition: all 0.2s ease;
+  font-size: 13px;
+  font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  white-space: nowrap;
+}
+
+[data-theme="dark"] .btn {
+  background: var(--card);
+  border-color: rgba(255, 255, 255, 0.1);
+  color: var(--muted);
+}
+
+.btn:hover {
+  background: var(--glass);
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+[data-theme="dark"] .btn:hover {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.btn:active {
+  transform: scale(0.98);
+}
+
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Primary Button */
+.btn.primary {
+  background: linear-gradient(180deg, var(--accent), #245ecf);
+  color: #fff;
+  border: none;
+  box-shadow: 0 4px 12px rgba(57, 120, 255, 0.3);
+}
+
+.btn.primary:hover {
+  box-shadow: 0 6px 16px rgba(57, 120, 255, 0.4);
+  transform: translateY(-2px);
+}
+
+/* Secondary Button */
+.btn-secondary {
+  background-color: var(--card);
+  color: var(--text);
+  border-color: var(--card-border);
+}
+
+.btn-secondary:hover {
+  background-color: var(--bg-secondary);
+}
+
+/* Danger Button */
+.btn-danger {
+  background-color: var(--danger);
+  color: white;
+}
+
+.btn-danger:hover {
+  opacity: 0.9;
+}
+
+/* Ghost Button */
+.btn-ghost {
+  background-color: transparent;
+  color: var(--text-secondary);
+}
+
+.btn-ghost:hover {
+  background-color: var(--bg-secondary);
+  color: var(--text);
+}
+
+/* Size Variants */
+.btn-sm {
+  padding: 6px 12px;
+  font-size: 12px;
+}
+
+.btn-lg {
+  padding: 10px 20px;
+  font-size: 16px;
+}
+
+.btn-block {
+  width: 100%;
+}
+
+/* Icon-only Button */
+.btn-icon {
+  padding: 8px;
+  border-radius: 4px;
+}
+
+.btn-icon svg {
+  width: 18px;
+  height: 18px;
+}

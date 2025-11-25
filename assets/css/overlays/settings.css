@@ -1,0 +1,176 @@
+/**
+ * Settings Dialog Overlay
+ * =======================
+ * Styles for the application settings dialog.
+ * Extracted from partials/overlays.php lines 569-591
+ */
+
+.settings-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 0.5rem;
+  z-index: 50;
+}
+
+.settings-overlay.hidden {
+  display: none !important;
+}
+
+.settings-overlay[aria-hidden="false"] {
+  display: flex;
+}
+
+.settings-dialog {
+  background: var(--card);
+  color: var(--muted);
+  border-radius: 0.5rem;
+  padding: 1rem;
+  width: 100%;
+  max-width: 28rem;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+}
+
+.settings-header {
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.settings-body {
+  margin-bottom: 1rem;
+}
+
+.setting-row {
+  margin-bottom: 1.5rem;
+}
+
+.toggle {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  cursor: pointer;
+}
+
+.toggle-input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.toggle-switch {
+  display: inline-block;
+  width: 3rem;
+  height: 1.5rem;
+  background: #d1d5db;
+  border-radius: 9999px;
+  position: relative;
+  transition: background-color 0.2s;
+}
+
+.toggle-switch-dot {
+  position: absolute;
+  width: 1rem;
+  height: 1rem;
+  background: white;
+  border-radius: 9999px;
+  left: 0.25rem;
+  top: 0.25rem;
+  transition: transform 0.2s;
+}
+
+.toggle-input:checked + .toggle-switch {
+  background: var(--accent);
+}
+
+.toggle-input:checked + .toggle-switch .toggle-switch-dot {
+  transform: translateX(1.5rem);
+}
+
+.toggle-label {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--muted);
+}
+
+.setting-hint {
+  font-size: 0.875rem;
+  color: #9ca3af;
+  margin-top: 0.5rem;
+}
+
+.settings-footer {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+@media (min-width: 640px) {
+  .settings-footer {
+    flex-direction: row;
+  }
+}
+
+/* Search modal styling */
+.search-modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 0.5rem;
+  z-index: 50;
+}
+
+.search-modal.hidden {
+  display: none !important;
+}
+
+.search-modal[aria-hidden="false"] {
+  display: flex;
+}
+
+.search-dialog {
+  background: var(--card);
+  color: var(--muted);
+  border-radius: 0.5rem;
+  padding: 1.5rem;
+  width: 100%;
+  max-width: 28rem;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+}
+
+.search-header {
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.search-body {
+  margin-bottom: 1rem;
+}
+
+.search-footer {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+@media (min-width: 640px) {
+  .search-footer {
+    flex-direction: row;
+    justify-content: flex-end;
+  }
+}

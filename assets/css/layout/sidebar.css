@@ -1,0 +1,84 @@
+/**
+ * Sidebar Styles
+ * ==============
+ * Left sidebar navigation and layout.
+ * 
+ * Extracted from: style.css (lines 41-71)
+ */
+
+.sidebar {
+  width: 220px;
+  padding: 20px;
+  background: var(--card);
+  border-right: 1px solid rgba(0, 0, 0, 0.04);
+  transition: background-color 0.3s ease;
+}
+
+[data-theme="dark"] .sidebar {
+  background: var(--card);
+  border-right-color: rgba(255, 255, 255, 0.08);
+}
+
+.logo {
+  font-weight: 700;
+  color: var(--accent);
+  margin-bottom: 18px;
+}
+
+.side-list {
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+
+.side-list li {
+  padding: 10px 8px;
+  border-radius: 8px;
+  color: var(--muted);
+  cursor: pointer;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.side-list li:hover {
+  background: var(--glass);
+  color: inherit;
+}
+
+.side-item {
+  padding: 12px 20px;
+  cursor: pointer;
+  transition: background-color var(--transition);
+  color: var(--text-secondary);
+}
+
+.side-item:hover {
+  background-color: var(--bg-secondary);
+}
+
+.side-item.active {
+  background-color: var(--bg-secondary);
+  color: var(--accent);
+  font-weight: 600;
+}
+
+.side-divider {
+  height: 1px;
+  background-color: var(--card-border);
+  margin: 10px 0;
+}
+
+@media (max-width: 768px) {
+  .sidebar {
+    position: fixed;
+    left: 0;
+    top: 0;
+    height: 100vh;
+    z-index: 999;
+    transform: translateX(-100%);
+    transition: transform var(--transition);
+  }
+
+  .sidebar.active {
+    transform: translateX(0);
+  }
+}

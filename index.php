@@ -9,7 +9,8 @@
             darkMode: ['class', '[data-theme="dark"]'],
         }
     </script>
-    <link rel="stylesheet" href="assets/css/style.css">
+    <!-- Modular CSS - Main entry point (Phase 8 complete) -->
+    <link rel="stylesheet" href="assets/css/main.css">
     <!-- RemixIcon CDN -->
     <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
     <meta charset="UTF-8">

@@ -1,0 +1,122 @@
+/**
+ * Form Components
+ * ===============
+ * Input, select, textarea, and form-related styles.
+ * 
+ * Extracted from: style.css (lines 316-377)
+ */
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 16px;
+}
+
+label {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text);
+}
+
+.form-control,
+.modal input[type="text"],
+.modal input[type="file"],
+.modal input[type="search"],
+.modal select,
+.modal textarea,
+select {
+  background: var(--card);
+  color: var(--muted);
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  border-radius: 8px;
+  padding: 8px 12px;
+  width: 100%;
+  font-size: 14px;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+[data-theme="dark"] .form-control,
+[data-theme="dark"] .modal input[type="text"],
+[data-theme="dark"] .modal input[type="file"],
+[data-theme="dark"] .modal input[type="search"],
+[data-theme="dark"] .modal select,
+[data-theme="dark"] .modal textarea,
+[data-theme="dark"] select {
+  background: var(--card);
+  color: var(--muted);
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+.form-control:focus,
+.modal input[type="text"]:focus,
+.modal input[type="file"]:focus,
+.modal input[type="search"]:focus,
+.modal select:focus,
+.modal textarea:focus,
+select:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(57, 120, 255, 0.1);
+}
+
+[data-theme="dark"] .form-control:focus,
+[data-theme="dark"] .modal input[type="text"]:focus,
+[data-theme="dark"] .modal input[type="file"]:focus,
+[data-theme="dark"] .modal input[type="search"]:focus,
+[data-theme="dark"] .modal select:focus,
+[data-theme="dark"] .modal textarea:focus,
+[data-theme="dark"] select:focus {
+  box-shadow: 0 0 0 3px rgba(107, 161, 255, 0.15);
+}
+
+.form-control:disabled {
+  background-color: var(--bg-secondary);
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+textarea.form-control {
+  resize: vertical;
+  min-height: 100px;
+}
+
+.form-helper {
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+.form-error {
+  color: var(--danger);
+}
+
+/* Checkbox & Radio */
+.checkbox,
+.radio {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+}
+
+input[type="checkbox"],
+input[type="radio"] {
+  cursor: pointer;
+}
+
+/* Input with icon */
+.form-input-icon {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.form-input-icon input {
+  padding-left: 36px;
+}
+
+.form-input-icon-content {
+  position: absolute;
+  left: 10px;
+  color: var(--text-secondary);
+}

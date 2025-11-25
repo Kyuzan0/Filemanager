@@ -1,0 +1,177 @@
+/**
+ * Responsive Media Queries & Breakpoints
+ * ======================================
+ * Mobile-first responsive design rules.
+ * 
+ * Breakpoints:
+ * - Mobile: < 640px
+ * - Tablet: 640px - 1024px
+ * - Desktop: > 1024px
+ */
+
+/* ============================================================================
+   TABLET (640px and up)
+   ============================================================================ */
+
+@media (min-width: 640px) {
+  /* Tablet-specific styles */
+}
+
+/* ============================================================================
+   DESKTOP (768px and up)
+   ============================================================================ */
+
+@media (min-width: 768px) {
+  /* Desktop-specific styles */
+}
+
+/* ============================================================================
+   LARGE DESKTOP (1024px and up)
+   ============================================================================ */
+
+@media (min-width: 1024px) {
+  /* Large screen styles */
+}
+
+/* ============================================================================
+   EXTRA LARGE (1280px and up)
+   ============================================================================ */
+
+@media (min-width: 1280px) {
+  /* Extra large screen styles */
+}
+
+/* ============================================================================
+   SMALL DEVICES (max-width 640px)
+   ============================================================================ */
+
+@media (max-width: 640px) {
+  /* Mobile-specific styles */
+}
+
+/* ============================================================================
+   PRINT MEDIA
+   ============================================================================ */
+
+@media print {
+  * {
+    background: transparent !important;
+    color: black !important;
+    box-shadow: none !important;
+    text-shadow: none !important;
+  }
+
+  body {
+    background-color: white;
+  }
+
+  .no-print {
+    display: none !important;
+  }
+}
+
+/* ============================================================================
+   PREFERS REDUCED MOTION (Accessibility)
+   ============================================================================ */
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+  
+  .transition-fast,
+  .transition-normal,
+  .transition-slow {
+    transition: none !important;
+  }
+  
+  [class*="animate-"],
+  [class*="animation"] {
+    animation: none !important;
+  }
+}
+
+/* ============================================================================
+   SIDEBAR RESPONSIVE (Hide on mobile)
+   ============================================================================ */
+
+@media (max-width: 900px) {
+  .sidebar {
+    display: none;
+  }
+  .main {
+    padding: 12px;
+  }
+}
+
+/* ============================================================================
+   MOBILE OPTIMIZATIONS (max-width 767px)
+   ============================================================================ */
+
+@media (max-width: 767px) {
+  /* Stack forms vertically on mobile */
+  .form-row {
+    flex-direction: column;
+  }
+  
+  /* Full width buttons on mobile */
+  .btn {
+    width: 100%;
+  }
+  
+  /* Mobile menu adjustments */
+  .sidebar {
+    display: none;
+  }
+  
+  .main {
+    padding: 12px;
+  }
+}
+
+/* ============================================================================
+   LANDSCAPE ORIENTATION (Mobile landscape)
+   ============================================================================ */
+
+@media (max-width: 767px) and (orientation: landscape) {
+  .main {
+    padding: 8px;
+  }
+}
+
+/* ============================================================================
+   SMALL DEVICES (max-width 480px)
+   ============================================================================ */
+
+@media (max-width: 480px) {
+  .container {
+    padding: 8px;
+  }
+}
+
+/* ============================================================================
+   TOUCH DEVICES (Hover: none, coarse pointer)
+   ============================================================================ */
+
+@media (hover: none) and (pointer: coarse) {
+  /* Increase touch target sizes */
+  .btn,
+  .btn-sm,
+  .icon {
+    min-height: 44px;
+    min-width: 44px;
+  }
+}
+
+/* ============================================================================
+   HIGH DPI/RETINA DISPLAYS
+   ============================================================================ */
+
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+  .border {
+    border-width: 0.5px;
+  }
+}

@@ -1,0 +1,100 @@
+/**
+ * CSS Variables - Core Design Tokens
+ * ==================================
+ * Defines all CSS custom properties for light and dark themes.
+ * These variables are used throughout the application.
+ * 
+ * Structure:
+ * - Light mode: :root selector
+ * - Dark mode: [data-theme="dark"] selector
+ * 
+ * Extracted from: style.css (lines 1-18)
+ */
+
+/* ============================================================================
+   LIGHT MODE - Default Theme
+   ============================================================================ */
+
+:root {
+  /* Background Colors */
+  --bg: #f5f7fb;
+  --bg-secondary: #eef1f6;
+  
+  /* Component Colors */
+  --card: #fff;
+  --card-border: #e8ecf1;
+  
+  /* Text Colors */
+  --text: #131a24;
+  --text-secondary: #5a6b7d;
+  --muted: #7b8794;
+  
+  /* Accent Colors */
+  --accent: #3978ff;
+  --accent-light: #6ba1ff;
+  --danger: #ff4757;
+  --warning: #ffa502;
+  --success: #2ed573;
+  
+  /* Layout & Radius */
+  --radius: 12px;
+  --radius-sm: 8px;
+  --radius-lg: 16px;
+  
+  /* Glass/Backdrop */
+  --glass: rgba(255, 255, 255, 0.6);
+  --glass-light: rgba(255, 255, 255, 0.8);
+  
+  /* Shadow */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+  --shadow: 0 4px 6px rgba(0, 0, 0, 0.07);
+  --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1);
+  
+  /* Transitions */
+  --transition: 0.2s ease-in-out;
+  --transition-slow: 0.3s ease-in-out;
+}
+
+/* ============================================================================
+   DARK MODE - Dark Theme
+   ============================================================================ */
+
+[data-theme="dark"] {
+  /* Background Colors */
+  --bg: #131a24;
+  --bg-secondary: #1a2332;
+  
+  /* Component Colors */
+  --card: #1a2332;
+  --card-border: #2a3a4a;
+  
+  /* Text Colors */
+  --text: #f5f7fb;
+  --text-secondary: #c0c8d4;
+  --muted: #c0c8d4;
+  
+  /* Accent Colors */
+  --accent: #6ba1ff;
+  --accent-light: #8ab5ff;
+  --danger: #ff6b7a;
+  --warning: #ffb820;
+  --success: #55dd92;
+  
+  /* Layout & Radius */
+  --radius: 12px;
+  --radius-sm: 8px;
+  --radius-lg: 16px;
+  
+  /* Glass/Backdrop */
+  --glass: rgba(255, 255, 255, 0.06);
+  --glass-light: rgba(255, 255, 255, 0.12);
+  
+  /* Shadow */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.2);
+  --shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+  --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.4);
+  
+  /* Transitions */
+  --transition: 0.2s ease-in-out;
+  --transition-slow: 0.3s ease-in-out;
+}

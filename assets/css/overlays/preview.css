@@ -1,0 +1,55 @@
+/**
+ * Preview Overlay
+ * ===============
+ * Styles for the file preview modal (view/edit files).
+ * Extracted from partials/overlays.php lines 7-44
+ */
+
+.preview-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 0.5rem;
+  z-index: 50;
+}
+
+.preview-overlay.hidden {
+  display: none !important;
+}
+
+.preview-overlay[aria-hidden="false"] {
+  display: flex;
+}
+
+.preview-dialog {
+  background: var(--card);
+  color: var(--muted);
+  border-radius: 0.5rem;
+  padding: 1rem;
+  width: 100%;
+  max-width: 72rem;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+}
+
+.preview-title {
+  color: var(--muted);
+  font-weight: 600;
+}
+
+.preview-editor {
+  background: var(--card);
+  color: var(--muted);
+  border: none;
+  font-size: 0.875rem;
+  width: 100%;
+  padding: 0.5rem;
+  font-family: 'Courier New', monospace;
+}
+
+.preview-editor:focus {
+  outline: none;
+  border: 1px solid var(--accent);
+}

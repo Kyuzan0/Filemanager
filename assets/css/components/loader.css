@@ -1,0 +1,64 @@
+/**
+ * Loader & Loading States
+ * =======================
+ * Loader overlay, spinner, and loading indicator styles.
+ * Extracted from style.css lines 510-545, 3327-3370
+ */
+
+/* Loading indicator */
+.loader-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 10000;
+  padding: 1rem;
+  box-sizing: border-box;
+}
+
+.loader-overlay .loader-inner {
+  background: #ffffff;
+  padding: 0.5rem 0.75rem;
+  border-radius: 0.375rem;
+  box-shadow: 0 6px 18px rgba(2, 6, 23, 0.12);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.loader-overlay.visible,
+.loader-overlay[aria-hidden="false"] {
+  display: flex;
+}
+
+/* Alternative modern loader inner */
+.loader-inner {
+  background: var(--card);
+  padding: 20px;
+  border-radius: 12px;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 200px;
+  transition: background-color 0.3s ease;
+}
+
+[data-theme="dark"] .loader-inner {
+  background: var(--card);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.6);
+}
+
+.loader-inner svg {
+  width: 24px;
+  height: 24px;
+  animation: spin 1s linear infinite;
+  color: var(--accent);
+}
+
+.loader-inner span {
+  font-size: 14px;
+  color: var(--muted);
+}

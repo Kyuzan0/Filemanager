@@ -1,0 +1,96 @@
+/**
+ * Modal Components
+ * ================
+ * Modal dialogs and backdrop styles.
+ * 
+ * Extracted from: style.css (lines 254-282)
+ */
+
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  transition: background-color 0.3s ease;
+}
+
+[data-theme="dark"] .modal-backdrop {
+  background: rgba(0, 0, 0, 0.7);
+}
+
+.modal-backdrop.visible {
+  display: flex;
+}
+
+.modal {
+  width: 100% !important;
+  max-width: 520px !important;
+  background: var(--card) !important;
+  border-radius: 12px;
+  padding: 20px;
+  transition: background-color 0.3s ease, box-shadow 0.3s ease;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+  color: var(--muted);
+}
+
+[data-theme="dark"] .modal {
+  background: var(--card) !important;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+}
+
+.modal-header {
+  padding: 20px 0;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.04);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.modal-title {
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.modal-close {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--text-secondary);
+  font-size: 24px;
+  transition: color var(--transition);
+}
+
+.modal-close:hover {
+  color: var(--text);
+}
+
+.modal-body {
+  padding: 0;
+  margin-bottom: 16px;
+}
+
+.modal-footer {
+  padding: 12px 0;
+  border-top: 1px solid rgba(0, 0, 0, 0.04);
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
+.modal-footer .btn {
+  min-width: 100px;
+}
+
+/* Large Modal */
+.modal-lg {
+  max-width: 800px;
+}
+
+/* Small Modal */
+.modal-sm {
+  max-width: 300px;
+}

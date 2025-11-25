@@ -1,0 +1,31 @@
+/**
+ * Topbar/Header Styles
+ * ====================
+ * Top navigation bar and header area.
+ * 
+ * Extracted from: style.css (lines 88-102)
+ */
+
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14px;
+}
+
+.breadcrumbs {
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.controls {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.control-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}

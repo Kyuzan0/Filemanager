@@ -1,0 +1,99 @@
+/**
+ * Log Viewer Overlay
+ * ==================
+ * Styles for the activity log viewer dialog.
+ * Extracted from partials/overlays.php lines 407-530
+ */
+
+.log-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 0.5rem;
+  z-index: 50;
+}
+
+.log-overlay.hidden {
+  display: none !important;
+}
+
+.log-overlay[aria-hidden="false"] {
+  display: flex;
+}
+
+.log-dialog {
+  background: var(--card);
+  color: var(--muted);
+  border-radius: 0.5rem;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+  width: 100%;
+  max-width: 80rem;
+  max-height: 90vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.log-header {
+  background: linear-gradient(to right, #eff6ff, #eff6ff);
+  border-bottom: 1px solid #f3f4f6;
+  padding: 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-shrink: 0;
+}
+
+.log-icon {
+  width: 3rem;
+  height: 3rem;
+  border-radius: 9999px;
+  background: #dbeafe;
+  color: #2563eb;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.log-title {
+  font-weight: 600;
+  color: var(--muted);
+}
+
+.log-body {
+  flex: 1;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  padding: 1rem 1.5rem;
+}
+
+.log-table-wrapper {
+  flex: 1;
+  overflow-y: auto;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.375rem;
+}
+
+.log-table {
+  width: 100%;
+  font-size: 0.75rem;
+}
+
+.log-table thead {
+  background: #f9fafb;
+  position: sticky;
+  top: 0;
+}
+
+.log-table th {
+  padding: 0.5rem 0.75rem;
+  text-align: left;
+  font-weight: 500;
+  color: var(--muted);
+  font-size: 0.75rem;
+}

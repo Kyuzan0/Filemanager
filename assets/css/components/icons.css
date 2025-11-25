@@ -1,0 +1,112 @@
+/**
+ * Icon Components
+ * ===============
+ * Icon and icon-related styles.
+ * 
+ * Extracted from: style.css (lines 235-251)
+ */
+
+.icon {
+  display: inline-flex;
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  align-items: center;
+  justify-content: center;
+  background: var(--glass);
+  transition: background-color 0.2s ease;
+  flex-shrink: 0;
+}
+
+.icon:hover {
+  background: rgba(0, 0, 0, 0.08);
+}
+
+[data-theme="dark"] .icon:hover {
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.icon-sm {
+  width: 16px;
+  height: 16px;
+}
+
+.icon-lg {
+  width: 32px;
+  height: 32px;
+}
+
+.icon-xl {
+  width: 40px;
+  height: 40px;
+}
+
+.icon-spin {
+  animation: spin 1s linear infinite;
+}
+
+.icon-pulse {
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+.item-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
+  background-color: var(--bg-secondary);
+  color: var(--text-secondary);
+  font-size: 16px;
+  flex-shrink: 0;
+}
+
+.item-icon.folder {
+  color: var(--accent);
+}
+
+.item-icon.image {
+  color: #ff7f50;
+}
+
+.item-icon.document {
+  color: #4169e1;
+}
+
+.item-icon.video {
+  color: #ff1493;
+}
+
+.item-icon.audio {
+  color: #9370db;
+}
+
+.up-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  font-size: 18px;
+  color: var(--accent);
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}

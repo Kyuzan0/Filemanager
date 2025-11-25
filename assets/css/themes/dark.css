@@ -1,0 +1,201 @@
+/**
+ * Dark Theme Overrides
+ * ====================
+ * All dark mode specific styles consolidated in one place.
+ * Dark mode is activated via [data-theme="dark"] attribute on document.
+ * 
+ * CSS variables are already defined in core/variables.css
+ * This file contains component-specific overrides for dark theme.
+ * Extracted from style.css lines 12-18, 32-33, 51-55, 119-136, 158-166, 195-216, 250-263, 277-283, 296-316, 334-383, 424-430, 461-468, 612-675, 782-843
+ */
+
+/* ============================================================================
+   VARIABLES - Dark Theme CSS Custom Properties (Core)
+   Note: Defined in core/variables.css, but repeated here for clarity
+   ============================================================================ */
+[data-theme="dark"] {
+  --bg: #131a24;
+  --card: #1a2332;
+  --muted: #c0c8d4;
+  --accent: #6ba1ff;
+  --glass: rgba(255, 255, 255, 0.06);
+}
+
+/* ============================================================================
+   BASE - Dark Theme Body & Global Styles
+   ============================================================================ */
+[data-theme="dark"] body {
+  background: #0f1419;
+}
+
+/* ============================================================================
+   LAYOUT - Dark Theme Layout Components
+   ============================================================================ */
+[data-theme="dark"] .sidebar {
+  background: var(--card);
+  border-right-color: rgba(255, 255, 255, 0.08);
+}
+
+/* ============================================================================
+   COMPONENTS - Dark Theme Component Overrides
+   ============================================================================ */
+
+/* Buttons */
+[data-theme="dark"] .btn {
+  background: var(--card);
+  border-color: rgba(255, 255, 255, 0.1);
+  color: var(--muted);
+}
+
+[data-theme="dark"] .btn:hover {
+  background: var(--glass);
+  border-color: rgba(255, 255, 255, 0.15);
+}
+
+/* Search */
+[data-theme="dark"] .search {
+  background: var(--card);
+  border-color: rgba(255, 255, 255, 0.1);
+  color: var(--muted);
+}
+
+/* Cards */
+[data-theme="dark"] .card {
+  background: var(--card);
+  border-color: rgba(255, 255, 255, 0.08);
+}
+
+/* Tables */
+[data-theme="dark"] th,
+[data-theme="dark"] td {
+  border-bottom-color: rgba(255, 255, 255, 0.04);
+  color: var(--muted);
+}
+
+/* Icons */
+[data-theme="dark"] .icon:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+/* ============================================================================
+   OVERLAYS - Dark Theme Modal/Dialog Styles
+   ============================================================================ */
+
+/* Modal Backdrop */
+[data-theme="dark"] .modal-backdrop {
+  background: rgba(0, 0, 0, 0.7);
+}
+
+/* Modals & Dialogs - General */
+[data-theme="dark"] .modal {
+  background: var(--card);
+  color: var(--muted);
+}
+
+[data-theme="dark"] .modal h3,
+[data-theme="dark"] .modal p,
+[data-theme="dark"] .preview-title,
+[data-theme="dark"] .confirm-title,
+[data-theme="dark"] .create-title,
+[data-theme="dark"] .rename-title,
+[data-theme="dark"] .log-title,
+[data-theme="dark"] .move-title,
+[data-theme="dark"] .settings-title {
+  color: var(--muted);
+}
+
+/* Modal Form Controls */
+[data-theme="dark"] .modal input[type="text"],
+[data-theme="dark"] .modal input[type="file"],
+[data-theme="dark"] .modal input[type="search"],
+[data-theme="dark"] .modal select,
+[data-theme="dark"] .modal textarea {
+  background: rgba(0, 0, 0, 0.2);
+  border-color: rgba(255, 255, 255, 0.1);
+  color: var(--muted);
+}
+
+[data-theme="dark"] .modal input[type="text"]:focus,
+[data-theme="dark"] .modal input[type="file"]:focus,
+[data-theme="dark"] .modal input[type="search"]:focus,
+[data-theme="dark"] .modal select:focus,
+[data-theme="dark"] .modal textarea:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(107, 161, 255, 0.15);
+}
+
+/* Select Elements */
+[data-theme="dark"] select {
+  background: var(--card);
+  border-color: rgba(255, 255, 255, 0.1);
+  color: var(--muted);
+}
+
+/* Context Menu */
+[data-theme="dark"] .context {
+  background: var(--card);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.5);
+}
+
+/* Badges */
+[data-theme="dark"] .badge {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.1);
+  color: var(--muted);
+}
+
+/* ============================================================================
+   DIALOGS - Dark Theme Dialog Container Styles
+   ============================================================================ */
+[data-theme="dark"] .preview-dialog,
+[data-theme="dark"] .confirm-dialog,
+[data-theme="dark"] .create-dialog,
+[data-theme="dark"] .rename-dialog,
+[data-theme="dark"] .unsaved-dialog,
+[data-theme="dark"] .move-dialog,
+[data-theme="dark"] .log-dialog,
+[data-theme="dark"] .settings-dialog {
+  background: var(--card);
+  color: var(--muted);
+}
+
+/* Form Labels */
+[data-theme="dark"] .form-field label {
+  color: var(--muted);
+}
+
+/* Form Inputs */
+[data-theme="dark"] .form-field input[type="text"],
+[data-theme="dark"] .move-search-input,
+[data-theme="dark"] .filter-search-input,
+[data-theme="dark"] .preview-editor {
+  background: rgba(0, 0, 0, 0.2);
+  border-color: rgba(255, 255, 255, 0.1);
+  color: var(--muted);
+}
+
+/* Dialog Buttons - Outline Style */
+[data-theme="dark"] .create-button.outline,
+[data-theme="dark"] .rename-button.outline,
+[data-theme="dark"] .confirm-button.outline,
+[data-theme="dark"] .log-button.outline,
+[data-theme="dark"] .move-button.outline,
+[data-theme="dark"] .preview-button.outline,
+[data-theme="dark"] .unsaved-button.outline,
+[data-theme="dark"] .settings-button.outline {
+  background: var(--card);
+  border-color: rgba(255, 255, 255, 0.1);
+  color: var(--muted);
+}
+
+[data-theme="dark"] .create-button.outline:hover,
+[data-theme="dark"] .rename-button.outline:hover,
+[data-theme="dark"] .confirm-button.outline:hover,
+[data-theme="dark"] .log-button.outline:hover,
+[data-theme="dark"] .move-button.outline:hover,
+[data-theme="dark"] .preview-button.outline:hover,
+[data-theme="dark"] .unsaved-button.outline:hover,
+[data-theme="dark"] .settings-button.outline:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.15);
+}

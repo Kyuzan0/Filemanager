@@ -1,0 +1,75 @@
+/**
+ * Move Dialog Overlay
+ * ===================
+ * Styles for the move file/folder dialog with tree navigation.
+ * Extracted from partials/overlays.php lines 373-405
+ */
+
+.move-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 0.5rem;
+  z-index: 50;
+}
+
+.move-overlay.hidden {
+  display: none !important;
+}
+
+.move-overlay[aria-hidden="false"] {
+  display: flex;
+}
+
+.move-dialog {
+  background: var(--card);
+  color: var(--muted);
+  border-radius: 0.5rem;
+  padding: 1rem;
+  width: 100%;
+  max-width: 64rem;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+  max-height: 90vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.move-header {
+  margin-bottom: 1rem;
+  flex-shrink: 0;
+}
+
+.move-icon {
+  width: 3rem;
+  height: 3rem;
+  color: #2563eb;
+  margin: 0 auto 0.75rem;
+}
+
+.move-body {
+  flex: 1;
+  overflow-y: auto;
+}
+
+.move-list {
+  flex: 1;
+  overflow-y: auto;
+}
+
+.move-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-top: 1rem;
+  flex-shrink: 0;
+}
+
+@media (min-width: 640px) {
+  .move-actions {
+    flex-direction: row;
+  }
+}

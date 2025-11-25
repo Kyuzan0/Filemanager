@@ -1,0 +1,58 @@
+/**
+ * Unsaved Changes Overlay
+ * =======================
+ * Styles for the unsaved changes confirmation modal.
+ * Extracted from partials/overlays.php lines 348-371
+ */
+
+.unsaved-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 0.5rem;
+  z-index: 50;
+}
+
+.unsaved-overlay.hidden {
+  display: none !important;
+}
+
+.unsaved-overlay[aria-hidden="false"] {
+  display: flex;
+}
+
+.unsaved-dialog {
+  background: var(--card);
+  color: var(--muted);
+  border-radius: 0.5rem;
+  padding: 1rem;
+  width: 100%;
+  max-width: 28rem;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+}
+
+.unsaved-header {
+  margin-bottom: 1rem;
+}
+
+.unsaved-icon {
+  width: 3rem;
+  height: 3rem;
+  color: #ca8a04;
+  margin: 0 auto 0.75rem;
+}
+
+.unsaved-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+@media (min-width: 640px) {
+  .unsaved-actions {
+    flex-direction: row;
+  }
+}

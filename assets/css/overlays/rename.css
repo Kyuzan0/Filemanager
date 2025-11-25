@@ -1,0 +1,68 @@
+/**
+ * Rename Dialog Overlay
+ * =====================
+ * Styles for the rename file/folder dialog.
+ * Extracted from partials/overlays.php lines 318-346
+ */
+
+.rename-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 0.5rem;
+  z-index: 50;
+}
+
+.rename-overlay.hidden {
+  display: none !important;
+}
+
+.rename-overlay[aria-hidden="false"] {
+  display: flex;
+}
+
+.rename-dialog {
+  background: var(--card);
+  color: var(--muted);
+  border-radius: 0.5rem;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+  width: 100%;
+  max-width: 28rem;
+}
+
+.rename-header {
+  background: linear-gradient(to right, #eff6ff, #eff6ff);
+  border-bottom: 1px solid #f3f4f6;
+  padding: 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.rename-icon {
+  width: 3rem;
+  height: 3rem;
+  border-radius: 9999px;
+  background: #dbeafe;
+  color: #2563eb;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.rename-form {
+  padding: 1rem 1.5rem;
+}
+
+.rename-actions {
+  display: flex;
+  gap: 0.5rem;
+  border-top: 1px solid #f3f4f6;
+  background: #f9fafb;
+  padding: 0.75rem 1.5rem;
+  border-radius: 0 0 0.5rem 0.5rem;
+}

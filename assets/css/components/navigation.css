@@ -1,0 +1,159 @@
+/**
+ * Navigation Components
+ * ====================
+ * Navigation-specific styles (breadcrumbs, back button, etc).
+ * Extracted from style.css lines 3375-3404
+ */
+
+/* Breadcrumb styling */
+#breadcrumbs {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+  font-size: 13px;
+}
+
+#breadcrumbs span {
+  cursor: pointer;
+  color: var(--accent);
+  padding: 2px 4px;
+  border-radius: 4px;
+  transition: background-color 0.2s ease;
+}
+
+#breadcrumbs span:hover {
+  background: var(--glass);
+}
+
+#breadcrumbs span:first-child {
+  color: var(--muted);
+  cursor: default;
+}
+
+#breadcrumbs span:first-child:hover {
+  background: transparent;
+}
+
+.nav-breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  overflow-x: auto;
+  padding: 4px 0;
+}
+
+.nav-breadcrumb-item {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 4px;
+  color: var(--text-secondary);
+  transition: all var(--transition);
+  white-space: nowrap;
+}
+
+.nav-breadcrumb-item:hover {
+  background-color: var(--bg-secondary);
+  color: var(--accent);
+}
+
+.nav-breadcrumb-item.active {
+  color: var(--text);
+  font-weight: 500;
+}
+
+.nav-breadcrumb-separator {
+  color: var(--muted);
+  font-size: 12px;
+  user-select: none;
+}
+
+.nav-back-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 4px;
+  background-color: var(--card);
+  color: var(--accent);
+  border: 1px solid var(--card-border);
+  cursor: pointer;
+  transition: all var(--transition);
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.nav-back-button:hover {
+  background-color: var(--bg-secondary);
+}
+
+.nav-back-icon {
+  font-size: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.up-row {
+  cursor: pointer;
+  transition: all var(--transition);
+}
+
+.up-row:hover {
+  background-color: var(--glass);
+}
+
+.up-row-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  color: var(--accent);
+  font-weight: 500;
+}
+
+.up-mobile-row {
+  display: none;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--card-border);
+  cursor: pointer;
+  transition: all var(--transition);
+}
+
+.up-mobile-row:hover {
+  background-color: var(--glass);
+}
+
+.up-mobile-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--accent);
+  font-weight: 500;
+  font-size: 13px;
+}
+
+@media (max-width: 768px) {
+  .up-mobile-row {
+    display: block;
+  }
+
+  #breadcrumbs {
+    font-size: 12px;
+  }
+
+  #breadcrumbs span {
+    padding: 1px 3px;
+  }
+
+  .nav-breadcrumb {
+    font-size: 11px;
+  }
+
+  .nav-breadcrumb-item {
+    padding: 2px 6px;
+  }
+}
