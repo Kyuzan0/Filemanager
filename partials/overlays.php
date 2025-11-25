@@ -27,9 +27,9 @@
             </div>
             <div class="preview-footer-actions flex flex-col sm:flex-row md:flex-row items-stretch md:items-center gap-2 md:gap-3">
                 <a id="preview-open-raw" href="#" target="_blank" rel="noopener" class="inline-flex items-center justify-center gap-2 text-sm text-blue-600 hover:underline focus:outline-none px-3 py-2 border border-blue-200 rounded-md">Buka Asli</a>
-                <button type="button" id="preview-copy" data-action="preview-copy" class="inline-flex items-center justify-center gap-2 px-3 py-2 rounded-md text-sm bg-white border border-gray-200 text-slate-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">Salin</button>
+                <button type="button" id="preview-copy" data-action="preview-copy" class="btn inline-flex items-center justify-center gap-2 px-3 py-2 rounded-md text-sm" >Salin</button>
                 <button type="button" id="preview-save" data-action="preview-save" disabled class="inline-flex items-center justify-center gap-2 px-3 py-2 rounded-md text-sm bg-blue-600 text-white opacity-60 cursor-not-allowed" aria-disabled="true">Simpan</button>
-                <button type="button" id="preview-close" data-action="preview-close" class="inline-flex items-center justify-center gap-2 px-3 py-2 rounded-md text-sm bg-white border border-gray-200 text-slate-700 hover:bg-gray-50 focus:outline-none">Tutup</button>
+                <button type="button" id="preview-close" data-action="preview-close" class="btn inline-flex items-center justify-center gap-2 px-3 py-2 rounded-md text-sm">Tutup</button>
             </div>
         </footer>
     </div>
@@ -53,7 +53,7 @@
             <ul class="confirm-list text-sm text-gray-700 mt-2" id="confirm-list" hidden></ul>
         </div>
         <div class="confirm-actions flex gap-2 border-t border-gray-100 bg-gray-50 px-6 py-3 rounded-b-lg">
-            <button type="button" class="confirm-button outline flex-1 inline-flex items-center justify-center gap-2 px-3 py-2 rounded-md text-sm bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 font-medium" id="confirm-cancel" data-action="confirm-cancel">Batal</button>
+            <button type="button" class="confirm-button outline flex-1 inline-flex items-center justify-center gap-2 px-3 py-2 rounded-md text-sm btn" id="confirm-cancel" data-action="confirm-cancel">Batal</button>
             <button type="button" class="confirm-button danger flex-1 inline-flex items-center justify-center gap-2 px-3 py-2 rounded-md text-sm bg-red-600 text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 font-medium" id="confirm-confirm" data-action="confirm-confirm">Hapus</button>
         </div>
     </div>
@@ -90,7 +90,7 @@
 
     <div class="form-group-add-item" id="create-name-group" style="display: none;">
       <label for="create-name" class="label-add-item">Name</label>
-      <input type="text" id="create-name" name="create-name" placeholder="Misal: catatan.txt" class="input-text-add-item" autocomplete="off" required>
+      <input type="text" id="create-name" name="create-name" placeholder="Misal: document.txt" class="input-text-add-item" autocomplete="off" required>
     </div>
 
     <div class="modal-actions-add-item">
@@ -120,8 +120,9 @@
     display: none !important;
   }
 
-  .modal-add-item {
-    background-color: #ffffff;
+    .modal-add-item {
+        background: var(--card);
+        color: var(--muted);
     border-radius: 12px; /* Rounded corners */
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15); /* Softer, larger shadow */
     padding: 30px;
@@ -141,28 +142,28 @@
     margin-bottom: 10px;
   }
 
-  .close-button-add-item {
+    .close-button-add-item {
     position: absolute;
     left: 0; /* Align to the left */
     background: none;
     border: none;
     cursor: pointer;
     padding: 5px;
-    color: #666;
+    color: var(--muted);
     transition: color 0.2s ease;
   }
 
-  .close-button-add-item:hover {
-    color: #333;
+    .close-button-add-item:hover {
+        color: var(--muted);
   }
 
-  .modal-add-item-title {
-    margin: 0;
-    font-size: 1.4em;
-    font-weight: 600; /* Slightly bolder */
-    color: #333;
-    flex-grow: 1;
-    text-align: center;
+    .modal-add-item-title {
+        margin: 0;
+        font-size: 1.4em;
+        font-weight: 600; /* Slightly bolder */
+        color: var(--muted);
+        flex-grow: 1;
+        text-align: center;
   }
 
   .form-group-add-item {
@@ -181,7 +182,7 @@
   .radio-slide-container-add-item {
     position: relative;
     display: flex;
-    background-color: #f0f2f5; /* Light gray background */
+    background-color: var(--glass); /* Use glass variable to be theme-aware */
     border-radius: 8px;
     overflow: hidden;
     height: 44px;
@@ -205,21 +206,21 @@
     transition: color 0.3s ease;
     font-weight: 500;
     font-size: 0.9em;
-    color: #666;
+    color: var(--muted);
     user-select: none;
   }
 
-  .radio-input-add-item:checked + .radio-label-add-item {
-    color: #333; /* Darker text when selected */
+    .radio-input-add-item:checked + .radio-label-add-item {
+        color: var(--muted); /* Darker text when selected */
   }
 
-  .radio-slider-add-item {
+    .radio-slider-add-item {
     position: absolute;
     top: 4px; /* Match padding */
     left: 4px; /* Match padding */
     width: calc(50% - 4px); /* Half width minus padding */
     height: calc(100% - 8px); /* Full height minus padding */
-    background-color: #e2eafc; /* Light blue accent */
+    background-color: rgba(58, 123, 255, 0.12); /* Light blue accent */
     border-radius: 6px; /* Slightly less rounded than container */
     transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1); /* Smooth animation */
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.08); /* Subtle shadow for depth */
@@ -229,26 +230,26 @@
     left: calc(50% + 4px);
   }
 
-  .input-text-add-item {
-    width: 100%;
-    padding: 12px 15px;
-    border: 1px solid #dde1e6; /* Light gray border */
-    border-radius: 8px;
-    font-size: 1em;
-    color: #333;
-    background-color: #fcfcfc;
+    .input-text-add-item {
+        width: 100%;
+        padding: 12px 15px;
+        border: 1px solid rgba(0,0,0,0.06); /* Light border by default */
+        border-radius: 8px;
+        font-size: 1em;
+        color: var(--muted);
+        background-color: var(--card);
     transition: border-color 0.2s ease, box-shadow 0.2s ease;
     box-sizing: border-box; /* Include padding in width */
   }
 
-  .input-text-add-item::placeholder {
-    color: #999;
+    .input-text-add-item::placeholder {
+        color: rgba(127,137,153,0.8);
   }
 
-  .input-text-add-item:focus {
-    outline: none;
-    border-color: #007bff; /* Blue focus indicator */
-    box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.2);
+    .input-text-add-item:focus {
+        outline: none;
+        border-color: var(--accent); /* Blue focus indicator */
+        box-shadow: 0 0 0 3px rgba(37,99,235,0.12);
   }
 
   .modal-actions-add-item {
@@ -269,9 +270,9 @@
     transition: background-color 0.2s ease, box-shadow 0.2s ease;
   }
 
-  .button-primary-add-item {
-    background-color: #007bff; /* Primary blue */
-    color: white;
+    .button-primary-add-item {
+        background: linear-gradient(180deg, var(--accent), #245ecf);
+        color: #fff;
   }
 
   .button-primary-add-item:hover {
@@ -279,14 +280,32 @@
     box-shadow: 0 4px 10px rgba(0, 123, 255, 0.2);
   }
 
-  .button-secondary-add-item {
-    background-color: #e9ecef; /* Light gray */
-    color: #495057;
+    .button-secondary-add-item {
+        background: var(--glass);
+        color: var(--muted);
   }
 
-  .button-secondary-add-item:hover {
-    background-color: #dae0e5;
-  }
+        .button-secondary-add-item:hover {
+            background: rgba(58, 123, 255, 0.12);
+            border: 1px solid rgba(58, 123, 255, 0.14);
+            color: var(--muted);
+        }
+
+    /* Dark mode: make the hover more visible */
+    @media (prefers-color-scheme: dark) {
+        .button-secondary-add-item:hover {
+            background: rgba(58, 123, 255, 0.16);
+            border: 1px solid rgba(58, 123, 255, 0.18);
+            color: #fff;
+        }
+    }
+
+    /* Also support our app theme toggle via data-theme attribute */
+        [data-theme="dark"] .modal-add-item .button-secondary-add-item:hover {
+            background: rgba(58, 123, 255, 0.16) !important;
+            border: 1px solid rgba(58, 123, 255, 0.18) !important;
+            color: #fff !important;
+        }
 </style>
 
 <div class="rename-overlay fixed inset-0 items-center justify-center bg-black/45 p-2 md:p-4 z-50 hidden" id="rename-overlay" aria-hidden="true" data-action="rename" data-open="rename">
@@ -308,7 +327,7 @@
             </div>
         </form>
         <footer class="rename-actions flex gap-2 border-t border-gray-100 bg-gray-50 px-6 py-3 rounded-b-lg">
-            <button type="button" class="rename-button outline flex-1 inline-flex items-center justify-center gap-2 px-3 py-2 rounded-md text-sm bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 font-medium" id="rename-cancel" data-action="rename-cancel">Batal</button>
+            <button type="button" class="rename-button outline flex-1 inline-flex items-center justify-center gap-2 px-3 py-2 rounded-md text-sm btn" id="rename-cancel" data-action="rename-cancel">Batal</button>
             <button type="submit" form="rename-form" class="rename-button primary flex-1 inline-flex items-center justify-center gap-2 px-3 py-2 rounded-md text-sm bg-blue-600 text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 font-medium" id="rename-submit" data-action="rename-submit">Rename</button>
         </footer>
     </div>

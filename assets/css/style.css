@@ -1,103 +1,504 @@
-/* Minimal stylesheet — legacy CSS removed.
-   App is now styled using Tailwind CDN utilities.
-   Add component-specific custom rules here only if needed.
-*/
+/* Modern File Manager — Design System Implementation */
 
-/* Basic reset */
-* { box-sizing: border-box; margin: 0; padding: 0; }
-
-/* Page defaults */
 :root {
-  --app-max-width: 1200px;
-  --content-padding: 1rem;
-}
-html, body {
-  height: 100%;
-  background-color: #f8fafc;
-  color: #0f172a;
-  font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+  --bg: #f5f7fb;
+  --card: #fff;
+  --muted: #7b8794;
+  --accent: #3978ff;
+  --radius: 12px;
+  --glass: rgba(255, 255, 255, 0.6);
 }
 
-/* App wrapper */
-.app-shell {
-  max-width: var(--app-max-width);
-  margin: 0 auto;
-  padding: var(--content-padding);
+[data-theme="dark"] {
+  --bg: #131a24;
+  --card: #1a2332;
+  --muted: #c0c8d4;
+  --accent: #6ba1ff;
+  --glass: rgba(255, 255, 255, 0.06);
 }
 
-/* Utility helpers (non-Tailwind) */
-.sr-only { position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0;}
-
-/* Lightweight button fallback (if any element lacks Tailwind classes) */
-.button-fallback {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.5rem 0.75rem;
-  border-radius: 0.375rem;
-  border: 1px solid rgba(0,0,0,0.08);
-  background: #fff;
-  color: inherit;
-  cursor: pointer;
-}
-
-/* Overlay & dialog fallbacks (Tailwind utility equivalents)
-   These provide reasonable defaults when Tailwind classes aren't present.
-   Keep markup-focused classes (e.g. *.create-dialog) so JS can rely on stable selectors.
-*/
-
-/* Generic overlay helper used by JS when Tailwind utilities are applied at runtime */
-.tw-overlay {
-  position: fixed;
-  inset: 0;
-  display: none !important;
-  align-items: center;
-  justify-content: center;
-  background: rgba(0,0,0,0.5);
-  z-index: 9999;
-  padding: 1rem;
+* {
   box-sizing: border-box;
 }
 
-/* When visible flag/class is applied by JS */
-.tw-overlay.visible,
-.tw-overlay[aria-hidden="false"] {
-  display: flex !important;
+body {
+  margin: 0;
+  font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+  color: var(--muted);
+  background: var(--bg);
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
-/* Ensure all overlay elements are hidden by default */
-.preview-overlay,
-.confirm-overlay,
-.create-overlay,
-.rename-overlay,
-.unsaved-overlay,
-.move-overlay,
-.log-overlay,
-.settings-overlay,
-.context-menu {
-  display: none !important;
+[data-theme="dark"] body {
+  background: #0f1419;
 }
 
-/* Show overlay when explicitly marked as visible */
-.preview-overlay.visible,
-.confirm-overlay.visible,
-.create-overlay.visible,
-.rename-overlay.visible,
-.unsaved-overlay.visible,
-.move-overlay.visible,
-.log-overlay.visible,
-.settings-overlay.visible,
-.context-menu.visible,
-.preview-overlay[aria-hidden="false"],
-.confirm-overlay[aria-hidden="false"],
-.create-overlay[aria-hidden="false"],
-.rename-overlay[aria-hidden="false"],
-.unsaved-overlay[aria-hidden="false"],
-.move-overlay[aria-hidden="false"],
-.log-overlay[aria-hidden="false"],
-.settings-overlay[aria-hidden="false"],
-.context-menu[aria-hidden="false"] {
-  display: flex !important;
+.app {
+  display: flex;
+  min-height: 100vh;
+  transition: background-color 0.3s ease;
+}
+
+/* SIDEBAR */
+.sidebar {
+  width: 220px;
+  padding: 20px;
+  background: var(--card);
+  border-right: 1px solid rgba(0, 0, 0, 0.04);
+  transition: background-color 0.3s ease;
+}
+
+[data-theme="dark"] .sidebar {
+  background: var(--card);
+  border-right-color: rgba(255, 255, 255, 0.08);
+}
+
+.logo {
+  font-weight: 700;
+  color: var(--accent);
+  margin-bottom: 18px;
+}
+
+.side-list {
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+
+.side-list li {
+  padding: 10px 8px;
+  border-radius: 8px;
+  color: var(--muted);
+  cursor: pointer;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.side-list li:hover {
+  background: var(--glass);
+  color: inherit;
+}
+
+/* MAIN */
+.main {
+  flex: 1;
+  padding: 18px;
+  background: var(--bg);
+  transition: background-color 0.3s ease;
+}
+
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14px;
+}
+
+.breadcrumbs {
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.controls {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.btn {
+  background: var(--card);
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  padding: 8px 12px;
+  border-radius: 10px;
+  cursor: pointer;
+  color: var(--muted);
+  transition: all 0.2s ease;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+[data-theme="dark"] .btn {
+  background: var(--card);
+  border-color: rgba(255, 255, 255, 0.1);
+  color: var(--muted);
+}
+
+.btn:hover {
+  background: var(--glass);
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+[data-theme="dark"] .btn:hover {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.btn.primary {
+  background: linear-gradient(180deg, var(--accent), #245ecf);
+  color: #fff;
+  border: none;
+  box-shadow: 0 4px 12px rgba(57, 120, 255, 0.3);
+}
+
+.btn.primary:hover {
+  box-shadow: 0 6px 16px rgba(57, 120, 255, 0.4);
+  transform: translateY(-2px);
+}
+
+.search {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--card);
+  padding: 8px;
+  border-radius: 10px;
+  border: 1px solid rgba(0, 0, 0, 0.04);
+  transition: border-color 0.2s ease;
+}
+
+[data-theme="dark"] .search {
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+.search input {
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: inherit;
+  font-size: 13px;
+  flex: 1;
+}
+
+.search input::placeholder {
+  color: var(--muted);
+  opacity: 0.6;
+}
+
+/* HEADER ACTIONS */
+.header-actions {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  margin: 12px 0;
+  flex-wrap: wrap;
+}
+
+/* TABLE CARD */
+.card {
+  background: var(--card);
+  border-radius: 12px;
+  padding: 12px;
+  border: 1px solid rgba(0, 0, 0, 0.04);
+  transition: background-color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+[data-theme="dark"] .card {
+  border-color: rgba(255, 255, 255, 0.08);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+th,
+td {
+  padding: 12px;
+  text-align: left;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.04);
+  color: var(--muted);
+  transition: background-color 0.2s ease;
+}
+
+[data-theme="dark"] th,
+[data-theme="dark"] td {
+  border-color: rgba(255, 255, 255, 0.08);
+}
+
+th {
+  font-weight: 600;
+  background: transparent;
+  color: var(--muted);
+}
+
+tbody tr:hover {
+  background: var(--glass);
+}
+
+.actions-cell {
+  display: flex;
+  gap: 8px;
+}
+
+.icon {
+  display: inline-flex;
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  align-items: center;
+  justify-content: center;
+  background: var(--glass);
+  transition: background-color 0.2s ease;
+}
+
+.icon:hover {
+  background: rgba(0, 0, 0, 0.08);
+}
+
+[data-theme="dark"] .icon:hover {
+  background: rgba(255, 255, 255, 0.15);
+}
+
+/* FOOTER */
+.footer {
+  display: flex;
+  justify-content: space-between;
+  padding-top: 10px;
+  color: var(--muted);
+  font-size: 13px;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+/* Modal */
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  transition: background-color 0.3s ease;
+}
+
+[data-theme="dark"] .modal-backdrop {
+  background: rgba(0, 0, 0, 0.7);
+}
+
+.modal-backdrop.visible {
+  display: flex;
+}
+
+.modal {
+  width: 100% !important;
+  max-width: 520px !important;
+  background: var(--card) !important;
+  border-radius: 12px;
+  padding: 20px;
+  transition: background-color 0.3s ease, box-shadow 0.3s ease;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+  color: var(--muted);
+}
+
+[data-theme="dark"] .modal {
+  background: var(--card) !important;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+}
+
+/* Ensure any modal inside the upload backdrop uses theme variables explicitly */
+#modalBackdrop .modal {
+  background-color: var(--card) !important;
+  color: var(--muted) !important;
+}
+
+[data-theme="dark"] .modal h3,
+[data-theme="dark"] .modal p,
+[data-theme="dark"] .preview-title,
+[data-theme="dark"] .confirm-title,
+[data-theme="dark"] .create-title,
+[data-theme="dark"] .rename-title,
+[data-theme="dark"] .log-title,
+[data-theme="dark"] .move-title,
+[data-theme="dark"] .settings-title {
+  color: var(--muted);
+}
+
+.modal input[type="text"],
+.modal input[type="file"],
+.modal input[type="search"],
+.modal select,
+.modal textarea {
+  background: var(--card);
+  color: var(--muted);
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  border-radius: 8px;
+  padding: 8px 12px;
+  width: 100%;
+  font-size: 14px;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+[data-theme="dark"] .modal input[type="text"],
+[data-theme="dark"] .modal input[type="file"],
+[data-theme="dark"] .modal input[type="search"],
+[data-theme="dark"] .modal select,
+[data-theme="dark"] .modal textarea {
+  background: var(--card);
+  color: var(--muted);
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+.modal input[type="text"]:focus,
+.modal input[type="file"]:focus,
+.modal input[type="search"]:focus,
+.modal select:focus,
+.modal textarea:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(57, 120, 255, 0.1);
+}
+
+[data-theme="dark"] .modal input[type="text"]:focus,
+[data-theme="dark"] .modal input[type="file"]:focus,
+[data-theme="dark"] .modal input[type="search"]:focus,
+[data-theme="dark"] .modal select:focus,
+[data-theme="dark"] .modal textarea:focus {
+  box-shadow: 0 0 0 3px rgba(107, 161, 255, 0.15);
+}
+
+/* Select styling */
+select {
+  background: var(--card);
+  color: var(--muted);
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  border-radius: 8px;
+  padding: 8px 12px;
+  cursor: pointer;
+  transition: border-color 0.2s ease;
+}
+
+[data-theme="dark"] select {
+  background: var(--card);
+  color: var(--muted);
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+select:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(57, 120, 255, 0.1);
+}
+
+/* Context menu button styling */
+.context button {
+  background: transparent;
+  color: var(--muted);
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.context button:hover {
+  background: var(--glass);
+}
+
+.modal h3 {
+  margin-bottom: 8px;
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--muted);
+}
+
+.modal p {
+  font-size: 13px;
+  color: var(--muted);
+  margin-bottom: 12px;
+}
+
+/* Context menu */
+.context {
+  position: fixed;
+  background: var(--card);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+  border-radius: 8px;
+  padding: 6px;
+  display: none;
+  z-index: 9999;
+  transition: background-color 0.3s ease;
+}
+
+[data-theme="dark"] .context {
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.5);
+}
+
+.context.visible {
+  display: block;
+}
+
+.context button {
+  display: block;
+  padding: 8px 12px;
+  border: 0;
+  background: transparent;
+  width: 100%;
+  text-align: left;
+  cursor: pointer;
+  border-radius: 4px;
+  transition: background-color 0.2s ease;
+  font-size: 14px;
+  color: var(--muted);
+}
+
+.context button:hover {
+  background: var(--glass);
+}
+
+/* Badge */
+.badge {
+  background: var(--card);
+  color: var(--muted);
+  padding: 4px 8px;
+  border-radius: 999px;
+  font-size: 12px;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  transition: all 0.2s ease;
+}
+
+[data-theme="dark"] .badge {
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+/* Tree */
+.file-name {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.folder-toggle {
+  cursor: pointer;
+}
+
+.text-dark {
+  color: var(--muted);
+}
+
+/* Responsive */
+@media (max-width: 900px) {
+  .sidebar {
+    display: none;
+  }
+  .main {
+    padding: 12px;
+  }
+}
+
+/* Utility helpers (non-Tailwind) */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
 }
 
 /* Context menu uses different display type */
@@ -196,7 +597,8 @@ body.modal-open { overflow: hidden; }
 .move-dialog,
 .log-dialog,
 .settings-dialog {
-  background: #ffffff;
+  background: var(--card);
+  color: var(--muted);
   border-radius: 0.5rem;
   padding: 1rem;
   max-width: 720px;
@@ -204,6 +606,19 @@ body.modal-open { overflow: hidden; }
   box-shadow: 0 10px 25px rgba(2,6,23,0.12);
   overflow: auto;
   max-height: calc(100vh - 4rem);
+  transition: background-color 0.3s ease;
+}
+
+[data-theme="dark"] .preview-dialog,
+[data-theme="dark"] .confirm-dialog,
+[data-theme="dark"] .create-dialog,
+[data-theme="dark"] .rename-dialog,
+[data-theme="dark"] .unsaved-dialog,
+[data-theme="dark"] .move-dialog,
+[data-theme="dark"] .log-dialog,
+[data-theme="dark"] .settings-dialog {
+  background: var(--card);
+  box-shadow: 0 10px 25px rgba(0,0,0,0.5);
 }
 
 /* Header groups */
@@ -242,6 +657,11 @@ body.modal-open { overflow: hidden; }
 .form-field label {
   font-size: 0.875rem;
   color: #0f172a;
+  transition: color 0.3s ease;
+}
+
+[data-theme="dark"] .form-field label {
+  color: var(--muted);
 }
 
 /* Inputs & editor fallbacks */
@@ -256,6 +676,16 @@ body.modal-open { overflow: hidden; }
   color: inherit;
   font-size: 0.9375rem;
   outline: none;
+  transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease;
+}
+
+[data-theme="dark"] .form-field input[type="text"],
+[data-theme="dark"] .move-search-input,
+[data-theme="dark"] .filter-search-input,
+[data-theme="dark"] .preview-editor {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.1);
+  color: var(--muted);
 }
 .form-field input[type="text"]:focus,
 .move-search-input:focus,
@@ -346,6 +776,28 @@ body.modal-open { overflow: hidden; }
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
+  transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+}
+
+[data-theme="dark"] .create-button.outline,
+[data-theme="dark"] .rename-button.outline,
+[data-theme="dark"] .confirm-button.outline,
+[data-theme="dark"] .log-button.outline,
+[data-theme="dark"] .move-button.outline,
+[data-theme="dark"] .settings-footer .outline,
+[data-theme="dark"] .log-actions-right .outline {
+  color: var(--muted);
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+[data-theme="dark"] .create-button.outline:hover,
+[data-theme="dark"] .rename-button.outline:hover,
+[data-theme="dark"] .confirm-button.outline:hover,
+[data-theme="dark"] .log-button.outline:hover,
+[data-theme="dark"] .move-button.outline:hover,
+[data-theme="dark"] .settings-footer .outline:hover,
+[data-theme="dark"] .log-actions-right .outline:hover {
+  background: rgba(255, 255, 255, 0.05);
 }
 
 .create-button.outline:focus,
@@ -394,6 +846,13 @@ body.modal-open { overflow: hidden; }
   right: 0;
   margin-top: 0.5rem;
   z-index: 60;
+  transition: background-color 0.3s ease, border-color 0.3s ease;
+}
+
+[data-theme="dark"] .log-export-menu {
+  background: var(--card);
+  border-color: rgba(255, 255, 255, 0.1);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.5);
 }
 
 .log-export-menu[aria-hidden="false"],
@@ -448,9 +907,19 @@ body.modal-open { overflow: hidden; }
   border: none;
   text-align: left;
   cursor: pointer;
+  color: inherit;
+  transition: background-color 0.2s ease, color 0.2s ease;
 }
 .context-menu .context-menu-item:hover {
   background: rgba(15,23,42,0.04);
+}
+
+[data-theme="dark"] .context-menu .context-menu-item {
+  color: var(--muted);
+}
+
+[data-theme="dark"] .context-menu .context-menu-item:hover {
+  background: rgba(255, 255, 255, 0.08);
 }
 
 /* Layout tweaks */
@@ -1102,6 +1571,12 @@ body.compact-pagination .app-shell {
     padding-top: 8px;
     position: relative;
     z-index: 10;
+    transition: background-color 0.3s ease, border-color 0.3s ease;
+  }
+
+  [data-theme="dark"] .preview-line-numbers {
+    background-color: rgba(0, 0, 0, 0.2);
+    border-right-color: rgba(255, 255, 255, 0.1);
   }
 
   .preview-line-numbers-inner {
@@ -1143,6 +1618,13 @@ body.compact-pagination .app-shell {
     background-color: white;
     -webkit-appearance: none;
     appearance: none;
+    transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease;
+  }
+
+  [data-theme="dark"] .preview-editor {
+    background-color: rgba(0, 0, 0, 0.2);
+    border-color: rgba(255, 255, 255, 0.1);
+    color: var(--muted);
   }
 
   .preview-footer {
@@ -1202,6 +1684,12 @@ body.compact-pagination .app-shell {
     -moz-user-select: none;
     user-select: none;
     padding-top: 12px;
+    transition: background-color 0.3s ease, border-color 0.3s ease;
+  }
+
+  [data-theme="dark"] .preview-line-numbers {
+    background-color: rgba(0, 0, 0, 0.2);
+    border-right-color: rgba(255, 255, 255, 0.1);
   }
 
   .preview-line-numbers-inner {
@@ -1240,6 +1728,13 @@ body.compact-pagination .app-shell {
     padding-left: 12px;
     overflow: auto;
     background-color: white;
+    transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease;
+  }
+
+  [data-theme="dark"] .preview-editor {
+    background-color: rgba(0, 0, 0, 0.2);
+    border-color: rgba(255, 255, 255, 0.1);
+    color: var(--muted);
   }
 
   /* Preview footer optimizations for larger dialog */
@@ -2161,3 +2656,748 @@ body.compact-pagination .app-shell {
     }
   }
 }
+
+/* ============= Drag & Drop Styles ============= */
+
+
+/* ============= Additional Dark Mode Enhancements ============= */
+
+/* Select dropdowns in dark mode */
+[data-theme="dark"] select {
+  background-color: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.1);
+  color: var(--muted);
+}
+
+[data-theme="dark"] select option {
+  background-color: var(--card);
+  color: var(--muted);
+}
+
+/* Log table dark mode */
+[data-theme="dark"] .log-table {
+  background-color: transparent;
+  color: var(--muted);
+}
+
+[data-theme="dark"] .log-table th {
+  background-color: rgba(255, 255, 255, 0.05);
+  color: var(--muted);
+}
+
+[data-theme="dark"] .log-table td {
+  color: var(--muted);
+}
+
+[data-theme="dark"] .log-table tbody tr:hover {
+  background-color: rgba(255, 255, 255, 0.05);
+}
+
+/* Move chips/badges in dark mode */
+[data-theme="dark"] .move-chip,
+[data-theme="dark"] .badge {
+  background-color: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.1);
+  color: var(--muted);
+}
+
+/* Folder browser in move modal */
+[data-theme="dark"] .move-browser-item {
+  color: var(--muted);
+}
+
+[data-theme="dark"] .move-browser-item:hover {
+  background-color: rgba(255, 255, 255, 0.08);
+}
+
+/* Breadcrumb links in dark mode */
+[data-theme="dark"] .move-breadcrumb span,
+[data-theme="dark"] .breadcrumbs span {
+  color: var(--muted);
+}
+
+/* Preview footer in dark mode */
+[data-theme="dark"] .preview-footer {
+  border-top-color: rgba(255, 255, 255, 0.1);
+}
+
+[data-theme="dark"] .preview-footer-status {
+  color: var(--muted);
+}
+
+/* Line numbers text color in dark mode */
+[data-theme="dark"] .preview-line-numbers-inner {
+  color: rgba(255, 255, 255, 0.4);
+}
+
+[data-theme="dark"] .preview-line-numbers-inner span {
+  color: rgba(255, 255, 255, 0.4);
+}
+
+/* Confirm modal item list */
+[data-theme="dark"] .confirm-items-list {
+  background-color: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+[data-theme="dark"] .confirm-items-list li {
+  color: var(--muted);
+  border-bottom-color: rgba(255, 255, 255, 0.1);
+}
+
+/* Create modal toggle buttons */
+[data-theme="dark"] .create-type-selector button {
+  color: var(--muted);
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+[data-theme="dark"] .create-type-selector button.active {
+  background-color: var(--accent);
+  color: white;
+  border-color: var(--accent);
+}
+
+/* Settings toggle switch in dark mode */
+[data-theme="dark"] .toggle-switch {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+[data-theme="dark"] .toggle-switch.active {
+  background-color: var(--accent);
+}
+
+/* Filter select in log modal */
+[data-theme="dark"] .filter-select-compact,
+[data-theme="dark"] .log-cleanup-select {
+  background-color: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.1);
+  color: var(--muted);
+}
+
+/* Active filters display */
+[data-theme="dark"] .active-filters {
+  background-color: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+[data-theme="dark"] .filter-tag {
+  background-color: rgba(255, 255, 255, 0.1);
+  color: var(--muted);
+}
+
+/* Pagination in dark mode */
+[data-theme="dark"] .log-pagination button {
+  background-color: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.1);
+  color: var(--muted);
+}
+
+[data-theme="dark"] .log-pagination button:hover:not(:disabled) {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+[data-theme="dark"] .log-pagination button.active {
+  background-color: var(--accent);
+  color: white;
+  border-color: var(--accent);
+}
+
+/* Empty state in dark mode */
+[data-theme="dark"] #empty-state {
+  color: var(--muted);
+}
+
+/* File input in dark mode */
+[data-theme="dark"] input[type="file"] {
+  color: var(--muted);
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+[data-theme="dark"] input[type="file"]::file-selector-button {
+  background-color: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.1);
+  color: var(--muted);
+}
+
+/* Scrollbar styling for dark mode */
+[data-theme="dark"] ::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+[data-theme="dark"] ::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+[data-theme="dark"] ::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 5px;
+}
+
+[data-theme="dark"] ::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+/* Mobile selected count badge in dark mode */
+[data-theme="dark"] #mobile-selected-count {
+  background: var(--accent);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+/* Smooth color transitions for all interactive elements */
+[data-theme="dark"] button,
+[data-theme="dark"] input,
+[data-theme="dark"] select,
+[data-theme="dark"] textarea {
+  transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease;
+}
+
+/* Toast notifications in dark mode (if implemented) */
+[data-theme="dark"] .toast {
+  background-color: var(--card);
+  color: var(--muted);
+  border-color: rgba(255, 255, 255, 0.1);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+}
+tr[draggable="true"] {
+  cursor: move;
+}
+
+tr.dragging {
+  opacity: 0.5;
+  background: var(--glass) !important;
+}
+
+tr.drop-active {
+  background: var(--accent);
+  background: linear-gradient(180deg, rgba(57, 120, 255, 0.15), rgba(57, 120, 255, 0.1));
+  border: 2px dashed var(--accent);
+  box-shadow: inset 0 0 8px rgba(57, 120, 255, 0.2);
+}
+
+#tbody.drag-active {
+  background: var(--glass);
+}
+
+/* ============= Interactive States ============= */
+
+input[type="checkbox"] {
+  cursor: pointer;
+
+/* ============= Override Tailwind Classes for Dark Mode ============= */
+
+/* Body background in dark mode */
+[data-theme="dark"] body {
+  background-color: #0f1419 !important;
+  color: var(--muted) !important;
+}
+
+/* Main area background */
+[data-theme="dark"] .main {
+  background-color: var(--bg) !important;
+}
+
+/* Sidebar in dark mode */
+[data-theme="dark"] aside.sidebar {
+  background-color: var(--card) !important;
+  border-right-color: rgba(255, 255, 255, 0.08) !important;
+}
+
+/* Override Tailwind bg-white classes */
+[data-theme="dark"] .bg-white {
+  background-color: var(--card) !important;
+}
+
+/* Override Tailwind bg-slate-50 */
+[data-theme="dark"] .bg-slate-50 {
+  background-color: var(--bg) !important;
+}
+
+/* Override Tailwind text colors */
+[data-theme="dark"] .text-slate-600,
+[data-theme="dark"] .text-slate-700,
+[data-theme="dark"] .text-slate-900 {
+  color: var(--muted) !important;
+}
+
+/* Override Tailwind border colors */
+[data-theme="dark"] .border-slate-200 {
+  border-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+/* Buttons with bg-white in dark mode */
+[data-theme="dark"] button.bg-white,
+[data-theme="dark"] .btn.bg-white {
+  background-color: rgba(255, 255, 255, 0.05) !important;
+  color: var(--muted) !important;
+}
+
+[data-theme="dark"] button.bg-white:hover,
+[data-theme="dark"] .btn.bg-white:hover {
+  background-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+/* Card backgrounds */
+[data-theme="dark"] .card.bg-white {
+  background-color: var(--card) !important;
+  border-color: rgba(255, 255, 255, 0.08) !important;
+}
+
+/* Badge in dark mode */
+[data-theme="dark"] .badge.bg-white {
+  background-color: rgba(255, 255, 255, 0.05) !important;
+  border-color: rgba(255, 255, 255, 0.1) !important;
+  color: var(--muted) !important;
+}
+
+/* Search box */
+[data-theme="dark"] .search.bg-white {
+  background-color: rgba(255, 255, 255, 0.05) !important;
+  border-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+/* Theme toggle button */
+[data-theme="dark"] .btn-theme {
+  background-color: rgba(255, 255, 255, 0.05) !important;
+  border-color: rgba(255, 255, 255, 0.1) !important;
+  color: var(--muted) !important;
+}
+
+[data-theme="dark"] .btn-theme:hover {
+  background-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+/* Footer text */
+[data-theme="dark"] .footer {
+  color: var(--muted) !important;
+}
+
+/* Modal backdrop darker */
+[data-theme="dark"] .modal-backdrop.bg-black\/45 {
+  background-color: rgba(0, 0, 0, 0.7) !important;
+}
+
+/* Upload modal */
+[data-theme="dark"] .modal.bg-white {
+  background-color: var(--card) !important;
+}
+
+/* Modal headings and text */
+[data-theme="dark"] .modal h3.text-slate-900 {
+  color: var(--muted) !important;
+}
+
+[data-theme="dark"] .modal p.text-slate-600 {
+  color: rgba(192, 200, 212, 0.8) !important;
+}
+
+/* Context menu */
+[data-theme="dark"] .context.bg-white {
+  background-color: var(--card) !important;
+  border-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+[data-theme="dark"] .context button.text-slate-700 {
+  color: var(--muted) !important;
+}
+
+[data-theme="dark"] .context button:hover {
+  background-color: rgba(255, 255, 255, 0.08) !important;
+}
+
+/* Loader inner */
+[data-theme="dark"] .loader-inner.bg-white {
+  background-color: var(--card) !important;
+}
+
+[data-theme="dark"] .loader-inner span.text-slate-700 {
+  color: var(--muted) !important;
+}
+
+/* Select dropdown */
+[data-theme="dark"] select.border-slate-200 {
+  background-color: rgba(255, 255, 255, 0.05) !important;
+  border-color: rgba(255, 255, 255, 0.1) !important;
+  color: var(--muted) !important;
+}
+
+/* File input */
+[data-theme="dark"] input[type="file"].border-slate-300 {
+  border-color: rgba(255, 255, 255, 0.1) !important;
+  color: var(--muted) !important;
+}
+
+/* Sidebar list items hover */
+[data-theme="dark"] .side-list li.hover\:bg-slate-100:hover {
+  background-color: rgba(255, 255, 255, 0.08) !important;
+}
+
+/* ============= Tailwind Dark Mode Classes - Higher Specificity ============= */
+
+/* Force all Tailwind utility classes to respect dark mode */
+[data-theme="dark"] .bg-slate-50,
+[data-theme="dark"].bg-slate-50 {
+  background-color: #131a24 !important;
+}
+
+[data-theme="dark"] .bg-white,
+[data-theme="dark"].bg-white {
+  background-color: #1a2332 !important;
+}
+
+[data-theme="dark"] .text-slate-600,
+[data-theme="dark"] .text-slate-700,
+[data-theme="dark"] .text-slate-900 {
+  color: #c0c8d4 !important;
+}
+
+[data-theme="dark"] .text-slate-500 {
+  color: rgba(192, 200, 212, 0.8) !important;
+}
+
+/* ============= Upload Modal Specific Dark Mode Fix ============= */
+
+/* Upload modal container */
+[data-theme="dark"] #modalBackdrop .modal {
+  background-color: var(--card) !important;
+}
+
+/* Upload modal heading */
+[data-theme="dark"] #modalBackdrop .modal h3 {
+  color: var(--muted) !important;
+}
+
+/* Upload modal paragraph */
+[data-theme="dark"] #modalBackdrop .modal p {
+  color: rgba(192, 200, 212, 0.8) !important;
+}
+
+/* Upload modal file input */
+[data-theme="dark"] #modalBackdrop .modal input[type="file"] {
+  background-color: rgba(255, 255, 255, 0.05) !important;
+  border-color: rgba(255, 255, 255, 0.1) !important;
+  color: var(--muted) !important;
+}
+
+/* File input button */
+[data-theme="dark"] #modalBackdrop .modal input[type="file"]::file-selector-button {
+  background-color: rgba(255, 255, 255, 0.1) !important;
+  border-color: rgba(255, 255, 255, 0.1) !important;
+  color: var(--muted) !important;
+  padding: 0.5rem 1rem;
+  border-radius: 0.375rem;
+  cursor: pointer;
+  margin-right: 0.75rem;
+}
+
+[data-theme="dark"] #modalBackdrop .modal input[type="file"]::file-selector-button:hover {
+  background-color: rgba(255, 255, 255, 0.15) !important;
+}
+
+/* Upload modal buttons */
+[data-theme="dark"] #modalBackdrop .modal .btn {
+  background-color: rgba(255, 255, 255, 0.05) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  color: var(--muted) !important;
+}
+
+[data-theme="dark"] #modalBackdrop .modal .btn:hover {
+  background-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+/* Upload modal primary button */
+[data-theme="dark"] #modalBackdrop .modal .btn-primary,
+[data-theme="dark"] #modalBackdrop .modal button.bg-blue-600 {
+  background: linear-gradient(180deg, var(--accent), #245ecf) !important;
+  color: #fff !important;
+  border: none !important;
+}
+
+[data-theme="dark"] #modalBackdrop .modal .btn-primary:hover,
+[data-theme="dark"] #modalBackdrop .modal button.bg-blue-600:hover {
+  background: linear-gradient(180deg, #7ab0ff, #2d6ae0) !important;
+}
+
+/* Rounded corners for upload modal */
+[data-theme="dark"] #modalBackdrop .modal.rounded-2xl {
+  border-radius: 1rem !important;
+}
+
+/* Special "up" row (go to parent folder) styles */
+.up-row {
+  cursor: pointer;
+}
+.up-row td {
+  background: transparent;
+}
+.up-row:hover td {
+  background: var(--glass);
+}
+
+/* Mobile up-row */
+.up-mobile-row {
+  cursor: pointer;
+}
+.up-mobile-row:hover {
+  background: var(--glass);
+}
+
+.up-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  background: rgba(58, 123, 255, 0.12);
+  color: #1e40af;
+  font-weight: 700;
+}
+[data-theme="dark"] .up-icon.small {
+  background: rgba(58,123,255,0.12) !important;
+  color: #7ab0ff !important;
+}
+
+.up-icon.small { width: 25px; height: 25px; font-size: 14px; }
+
+[data-theme="dark"] .up-icon {
+  background: rgba(58, 123, 255, 0.14) !important;
+  color: #7ab0ff !important;
+}
+
+[data-theme="dark"] .border-slate-200,
+[data-theme="dark"] .border-slate-100 {
+  border-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+[data-theme="dark"] .border-slate-300 {
+  border-color: rgba(255, 255, 255, 0.15) !important;
+}
+
+[data-theme="dark"] .divide-slate-100 > * {
+  border-color: rgba(255, 255, 255, 0.08) !important;
+}
+
+/* Hover states for Tailwind classes */
+[data-theme="dark"] .hover\:bg-slate-50:hover,
+[data-theme="dark"] .hover\:bg-slate-100:hover {
+  background-color: rgba(255, 255, 255, 0.08) !important;
+}
+
+/* Table styling in dark mode */
+[data-theme="dark"] table {
+  color: var(--muted) !important;
+}
+
+[data-theme="dark"] thead th {
+  color: var(--muted) !important;
+  background-color: transparent !important;
+}
+
+[data-theme="dark"] tbody td {
+  color: var(--muted) !important;
+}
+
+[data-theme="dark"] tbody tr {
+  border-bottom-color: rgba(255, 255, 255, 0.08) !important;
+}
+
+[data-theme="dark"] tbody tr:hover {
+  background-color: rgba(255, 255, 255, 0.05) !important;
+}
+
+/* Text color for .text-dark class */
+[data-theme="dark"] .text-dark {
+  color: var(--muted) !important;
+}
+
+/* Empty state */
+[data-theme="dark"] .empty-state {
+  color: rgba(192, 200, 212, 0.7) !important;
+}
+
+/* Logo color */
+[data-theme="dark"] .logo {
+  color: var(--accent) !important;
+}
+
+/* Sidebar list items */
+[data-theme="dark"] .side-list li {
+  color: var(--muted) !important;
+}
+
+/* Rounded borders and shadows */
+[data-theme="dark"] .shadow-sm {
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.3) !important;
+}
+
+[data-theme="dark"] .shadow-lg {
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.5), 0 4px 6px -2px rgba(0, 0, 0, 0.3) !important;
+}
+
+/* Create/Add modal specific styles */
+.modal-add-item {
+  background: var(--card);
+  color: var(--muted);
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.12);
+}
+
+[data-theme="dark"] .modal-add-item {
+  background: var(--card) !important;
+  color: var(--muted) !important;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.5) !important;
+}
+
+.modal-add-item .input-text-add-item {
+  background: var(--card);
+  color: var(--muted);
+  border: 1px solid rgba(0,0,0,0.06);
+}
+
+[data-theme="dark"] .modal-add-item .input-text-add-item {
+  background: rgba(255,255,255,0.02);
+  border-color: rgba(255,255,255,0.1);
+  color: var(--muted);
+}
+
+[data-theme="dark"] .button-secondary-add-item {
+  background: rgba(255,255,255,0.03) !important;
+  color: var(--muted) !important;
+  border: 1px solid rgba(255,255,255,0.06) !important;
+}
+
+/* Specific element overrides */
+[data-theme="dark"] main.main {
+  background-color: #131a24 !important;
+  color: #c0c8d4 !important;
+}
+
+[data-theme="dark"] .topbar {
+  color: #c0c8d4 !important;
+}
+
+[data-theme="dark"] .header-actions {
+  color: #c0c8d4 !important;
+}
+
+[data-theme="dark"] .footer {
+  color: #c0c8d4 !important;
+}
+
+/* Input placeholders */
+[data-theme="dark"] input::placeholder,
+[data-theme="dark"] textarea::placeholder {
+  color: rgba(192, 200, 212, 0.5) !important;
+}
+
+/* Select options */
+[data-theme="dark"] select option {
+  background-color: #1a2332 !important;
+  color: #c0c8d4 !important;
+}
+
+/* Gradient buttons - keep vibrant */
+[data-theme="dark"] .bg-gradient-to-b {
+  background-image: linear-gradient(to bottom, var(--accent), #245ecf) !important;
+}
+
+/* Primary button - keep gradient but adjust for dark mode */
+[data-theme="dark"] .btn-primary {
+  background: linear-gradient(180deg, var(--accent), #245ecf) !important;
+  color: #fff !important;
+}
+  accent-color: var(--accent);
+}
+
+input[type="checkbox"]:hover {
+  transform: scale(1.1);
+}
+
+tr {
+  cursor: pointer;
+  user-select: none;
+}
+
+tr:active {
+  transform: scale(0.99);
+}
+
+/* Loading indicator */
+.loader-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 10000;
+}
+
+.loader-inner {
+  background: var(--card);
+  padding: 20px;
+  border-radius: 12px;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 200px;
+  transition: background-color 0.3s ease;
+}
+
+[data-theme="dark"] .loader-inner {
+  background: var(--card);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.6);
+}
+
+.loader-inner svg {
+  width: 24px;
+  height: 24px;
+  animation: spin 1s linear infinite;
+  color: var(--accent);
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.loader-inner span {
+  font-size: 14px;
+  color: var(--muted);
+}
+
+/* Breadcrumb styling */
+#breadcrumbs {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+  font-size: 13px;
+}
+
+#breadcrumbs span {
+  cursor: pointer;
+  color: var(--accent);
+  padding: 2px 4px;
+  border-radius: 4px;
+  transition: background-color 0.2s ease;
+}
+
+#breadcrumbs span:hover {
+  background: var(--glass);
+}
+
+#breadcrumbs span:first-child {
+  color: var(--muted);
+  cursor: default;
+}
+
+#breadcrumbs span:first-child:hover {
+  background: transparent;
+}
+

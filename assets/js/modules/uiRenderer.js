@@ -828,7 +828,7 @@ function renderNormalItems(tableBody, filtered, state, params) {
  */
 function renderMobileItems(mobileList, items, state, params) {
     const renderStartTime = performance.now();
-    console.log('[PAGINATION DEBUG] renderMobileItems called at:', renderStartTime, 'with', items.length, 'items');
+        console.log('[PAGINATION DEBUG] renderMobileItems called at:', renderStartTime, 'with', items.length, 'items');
     
     if (!mobileList) {
         console.log('[PAGINATION DEBUG] Mobile list not found, skipping');
@@ -1221,177 +1221,161 @@ export function renderItems(
         mobileList.innerHTML = '';
     }
 
-    // Insert "Up (..)" row at the top when not at root
-    if (state.parentPath !== null) {
-        const upRow = document.createElement('tr');
-        upRow.classList.add('up-row','cursor-pointer','hover:bg-gray-50','transition-colors');
-        upRow.tabIndex = 0;
-        try { upRow.setAttribute('role', 'row'); } catch (e) {}
+    // Insert "Up (..)" row at the top (always show it)
+    const upRow = document.createElement('tr');
+    upRow.classList.add('up-row','cursor-pointer','transition-colors');
+    upRow.tabIndex = 0;
+    try { upRow.setAttribute('role', 'row'); } catch (e) {}
+    try { upRow.setAttribute('aria-label', 'Kembali ke folder sebelumnya'); } catch (e) {}
+
+    // Empty selection cell (no checkbox)
+    const upSel = document.createElement('td');
+    upSel.classList.add('selection-cell','w-12','px-3','text-center','align-middle');
+    upRow.appendChild(upSel);
+
+    // Name cell with icon + "Back" label
+    const upName = document.createElement('td');
+    upName.classList.add('name-cell','item-name','flex','items-center','gap-4','min-w-0','flex-1','px-3','text-sm');
     
-        // Empty selection cell (no checkbox)
-        const upSel = document.createElement('td');
-        upSel.classList.add('selection-cell','w-12','px-3','text-center','align-middle');
-        upRow.appendChild(upSel);
+    // Add back icon
+    const backIcon = document.createElement('span');
+    backIcon.classList.add('up-icon', 'small', 'inline-flex', 'items-center', 'justify-center');
+    backIcon.classList.add('flex-shrink-0');
+    backIcon.textContent = '...';
+    upName.appendChild(backIcon);
     
-        // Name cell with icon + "Back" label
-        const upName = document.createElement('td');
-        upName.classList.add('name-cell','item-name','flex','items-center','gap-4','min-w-0','flex-1','px-3','text-sm');
-        
-        // Add back icon
-        const backIcon = document.createElement('span');
-        backIcon.style.display = 'inline-flex';
-        backIcon.style.alignItems = 'center';
-        backIcon.style.justifyContent = 'center';
-        backIcon.style.width = '25px';
-        backIcon.style.height = '25px';
-        backIcon.style.borderRadius = '8px';
-        backIcon.style.backgroundColor = '#dbeafe';
-        backIcon.style.color = '#1e40af';
-        backIcon.style.flexShrink = '0';
-        backIcon.style.marginTop = '2px';
-        backIcon.style.fontSize = '16px';
-        backIcon.textContent = '←';
-        upName.appendChild(backIcon);
-        
-        const upLink = document.createElement('a');
-        upLink.classList.add('item-link');
-        upLink.href = '#';
-        upLink.textContent = 'Back';
-        upLink.addEventListener('click', (event) => {
+    const upLink = document.createElement('a');
+    upLink.classList.add('item-link');
+    upLink.href = '#';
+    upLink.textContent = '...';
+    upLink.setAttribute('title', 'Kembali ke folder sebelumnya');
+    upLink.addEventListener('click', (event) => {
+        event.preventDefault();
+        navigateTo(state.parentPath || '');
+    });
+    upName.appendChild(upLink);
+    upRow.appendChild(upName);
+
+    // Modified column shows "-"
+    const upModified = document.createElement('td');
+    upModified.classList.add('modified-cell','text-sm','text-gray-500','w-36','text-right','whitespace-nowrap','px-3');
+    upModified.textContent = '-';
+    upRow.appendChild(upModified);
+
+    // Size column shows "-"
+    const upSize = document.createElement('td');
+    upSize.classList.add('size-cell','text-sm','text-gray-500','w-[100px]','text-right','whitespace-nowrap','px-2');
+    upSize.textContent = '-';
+    upRow.appendChild(upSize);
+
+    // Empty actions cell (no actions)
+    const upActions = document.createElement('td');
+    upActions.classList.add('actions-cell','w-36','pr-2','px-3','text-right');
+    upRow.appendChild(upActions);
+
+    // Keyboard and mouse interactions
+    upRow.addEventListener('dblclick', () => navigateTo(state.parentPath || ''));
+    upRow.addEventListener('keydown', (event) => {
+        if (event.key === 'Enter' || event.key === ' ') {
             event.preventDefault();
             navigateTo(state.parentPath || '');
-        });
-        upName.appendChild(upLink);
-        upRow.appendChild(upName);
-    
-        // Modified column shows "-"
-        const upModified = document.createElement('td');
-        upModified.classList.add('modified-cell','text-sm','text-gray-500','w-36','text-right','whitespace-nowrap','px-3');
-        upModified.textContent = '-';
-        upRow.appendChild(upModified);
-    
-        // Size column shows "-"
-        const upSize = document.createElement('td');
-        upSize.classList.add('size-cell','text-sm','text-gray-500','w-[100px]','text-right','whitespace-nowrap','px-2');
-        upSize.textContent = '-';
-        upRow.appendChild(upSize);
-    
-        // Empty actions cell (no actions)
-        const upActions = document.createElement('td');
-        upActions.classList.add('actions-cell','w-36','pr-2','px-3','text-right');
-        upRow.appendChild(upActions);
-
-        // Keyboard and mouse interactions
-        upRow.addEventListener('dblclick', () => navigateTo(state.parentPath || ''));
-        upRow.addEventListener('keydown', (event) => {
-            if (event.key === 'Enter' || event.key === ' ') {
-                event.preventDefault();
-                navigateTo(state.parentPath || '');
-            }
-        });
-
-        // Make the up-row a drop target to move item to parent directory
-        upRow.addEventListener('dragover', (event) => {
-            if (!state.drag.isDragging) {
-                return;
-            }
-            event.preventDefault();
-            event.dataTransfer.dropEffect = 'move';
-            // Visual highlight for drop target
-            upRow.classList.add('drop-target');
-        });
-
-        upRow.addEventListener('dragleave', (event) => {
-            // Only remove when actually leaving the row, not entering children
-            if (event.currentTarget === event.target) {
-                upRow.classList.remove('drop-target');
-            }
-        });
-
-        upRow.addEventListener('drop', (event) => {
-            if (!state.drag.isDragging || !state.drag.draggedItem) {
-                return;
-            }
-            event.preventDefault();
-            // Prevent bubbling to body to avoid duplicate move requests
-            event.stopPropagation();
-            if (typeof event.stopImmediatePropagation === 'function') {
-                event.stopImmediatePropagation();
-            }
-
-            const targetPath = state.parentPath || '';
-            debugLog('[DEBUG] Dropping', state.drag.draggedItem.name, 'onto up-row to move into parent', targetPath);
-
-            // Perform the move operation to parent directory
-            moveItem(
-                state.drag.draggedItem.path,
-                targetPath,
-                state,
-                (isLoading) => {
-                    setLoading(document.querySelector('.loader-overlay'), null, isLoading);
-                    debugLog('[DEBUG] Loading:', isLoading);
-                },
-                (error) => { debugLog('[DEBUG] Move error:', error); },
-                () => fetchDirectory(state.currentPath, { silent: true }),
-                (message) => { debugLog('[DEBUG] Status:', message); },
-                null, // previewTitle
-                null, // previewMeta
-                null, // previewOpenRaw
-                null  // buildFileUrl
-            );
-
-            // Clean up highlight/state
-            upRow.classList.remove('drop-target');
-            state.drag.dropTarget = null;
-        });
-
-        tableBody.appendChild(upRow);
-    
-        // Add up-row for mobile view too
-        if (mobileList) {
-            const mobileUpItem = document.createElement('div');
-            mobileUpItem.classList.add('flex', 'items-center', 'justify-between', 'p-3', 'cursor-pointer', 'hover:bg-gray-50', 'transition-colors', 'border-b');
-            mobileUpItem.dataset.itemPath = state.parentPath || '';
-            mobileUpItem.dataset.itemType = 'parent';
-            
-            // Left side
-            const leftSide = document.createElement('div');
-            leftSide.classList.add('flex', 'items-center', 'gap-3');
-            
-            // Icon for parent
-            const iconContainer = document.createElement('div');
-            iconContainer.classList.add('flex', 'items-center', 'justify-center');
-            const icon = document.createElement('span');
-            icon.style.display = 'inline-flex';
-            icon.style.alignItems = 'center';
-            icon.style.justifyContent = 'center';
-            icon.style.width = '32px';
-            icon.style.height = '32px';
-            icon.style.borderRadius = '6px';
-            icon.style.backgroundColor = '#dbeafe';
-            icon.style.color = '#1e40af';
-            icon.style.flexShrink = '0';
-            icon.style.marginTop = '2px';
-            icon.style.fontSize = '18px';
-            icon.textContent = '←';
-            iconContainer.appendChild(icon);
-            leftSide.appendChild(iconContainer);
-            
-            // Name
-            const nameSpan = document.createElement('span');
-            nameSpan.classList.add('font-medium', 'text-gray-800');
-            nameSpan.textContent = 'Back';
-            leftSide.appendChild(nameSpan);
-            
-            mobileUpItem.appendChild(leftSide);
-            
-            // Click handler
-            mobileUpItem.addEventListener('click', () => {
-                navigateTo(state.parentPath || '');
-            });
-            
-            mobileList.appendChild(mobileUpItem);
         }
+    });
+
+    // Make the up-row a drop target to move item to parent directory
+    upRow.addEventListener('dragover', (event) => {
+        if (!state.drag.isDragging) {
+            return;
+        }
+        event.preventDefault();
+        event.dataTransfer.dropEffect = 'move';
+        // Visual highlight for drop target
+        upRow.classList.add('drop-target');
+    });
+
+    upRow.addEventListener('dragleave', (event) => {
+        // Only remove when actually leaving the row, not entering children
+        if (event.currentTarget === event.target) {
+            upRow.classList.remove('drop-target');
+        }
+    });
+
+    upRow.addEventListener('drop', (event) => {
+        if (!state.drag.isDragging || !state.drag.draggedItem) {
+            return;
+        }
+        event.preventDefault();
+        // Prevent bubbling to body to avoid duplicate move requests
+        event.stopPropagation();
+        if (typeof event.stopImmediatePropagation === 'function') {
+            event.stopImmediatePropagation();
+        }
+
+        const targetPath = state.parentPath || '';
+        debugLog('[DEBUG] Dropping', state.drag.draggedItem.name, 'onto up-row to move into parent', targetPath);
+
+        // Perform the move operation to parent directory
+        moveItem(
+            state.drag.draggedItem.path,
+            targetPath,
+            state,
+            (isLoading) => {
+                setLoading(document.querySelector('.loader-overlay'), null, isLoading);
+                debugLog('[DEBUG] Loading:', isLoading);
+            },
+            (error) => { debugLog('[DEBUG] Move error:', error); },
+            () => fetchDirectory(state.currentPath, { silent: true }),
+            (message) => { debugLog('[DEBUG] Status:', message); },
+            null, // previewTitle
+            null, // previewMeta
+            null, // previewOpenRaw
+            null  // buildFileUrl
+        );
+
+        // Clean up highlight/state
+        tableBody.appendChild(upRow);
+
+        // (mobile 'up' row insertion is handled below as mobileUpItem to avoid duplication)
+        state.drag.dropTarget = null;
+    });
+
+    tableBody.appendChild(upRow);
+
+    // Add up-row for mobile view too
+    if (mobileList) {
+        const mobileUpItem = document.createElement('div');
+        mobileUpItem.classList.add('flex', 'items-center', 'justify-between', 'p-3', 'cursor-pointer', 'up-mobile-row', 'transition-colors', 'border-b');
+        mobileUpItem.dataset.itemPath = state.parentPath || '';
+        mobileUpItem.dataset.itemType = 'parent';
+        
+        // Left side
+        const leftSide = document.createElement('div');
+        leftSide.classList.add('flex', 'items-center', 'gap-3');
+        
+        // Icon for parent
+        const iconContainer = document.createElement('div');
+        iconContainer.classList.add('flex', 'items-center', 'justify-center');
+        const icon = document.createElement('span');
+        icon.classList.add('up-icon', 'small', 'inline-flex', 'items-center', 'justify-center');
+        icon.textContent = '...';
+        iconContainer.appendChild(icon);
+        leftSide.appendChild(iconContainer);
+        
+        // Name
+        const nameSpan = document.createElement('span');
+        nameSpan.classList.add('font-medium');
+        nameSpan.style.color = 'var(--muted)';
+        nameSpan.textContent = '...';
+        leftSide.appendChild(nameSpan);
+        
+        mobileUpItem.appendChild(leftSide);
+        
+        // Click handler
+        mobileUpItem.addEventListener('click', () => {
+            navigateTo(state.parentPath || '');
+        });
+        
+        mobileList.appendChild(mobileUpItem);
     }
 
     // Show/hide empty state
