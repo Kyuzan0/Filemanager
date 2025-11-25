@@ -94,7 +94,14 @@
         <div class="modal" id="uploadModal" role="dialog" aria-modal="true">
             <h3 class="text-lg font-semibold mb-2">Upload File</h3>
             <p class="text-sm mb-4">Pilih satu atau beberapa file untuk diunggah ke direktori saat ini.</p>
-            <input type="file" id="fileInput" multiple class="mb-4 w-full rounded-lg p-2">
+            <div class="mb-4 flex items-center justify-center border-2 border-dashed border-slate-300 rounded-lg p-6 cursor-pointer hover:border-slate-400 transition-colors" id="fileDropZone">
+                <div class="text-center">
+                    <i class="ri-upload-cloud-line text-3xl text-slate-400 mb-2 block"></i>
+                    <p class="text-sm text-slate-600">Klik untuk memilih file atau drag & drop di sini</p>
+                </div>
+            </div>
+            <input type="file" id="fileInput" multiple class="hidden">
+            <div class="mb-4 text-sm text-slate-600" id="fileList"></div>
             <div class="flex gap-2 justify-end">
                 <button class="btn px-4 py-2 rounded-lg" id="cancelUpload">Batal</button>
                 <button class="btn btn-primary px-4 py-2 rounded-lg" id="doUpload">Unggah</button>

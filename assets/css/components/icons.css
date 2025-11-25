@@ -110,3 +110,76 @@
     opacity: 0.5;
   }
 }
+
+/* File icon styling in table */
+.file-icon-cell {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  position: relative;
+}
+
+.file-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  flex-shrink: 0;
+  color: var(--accent);
+  position: relative;
+}
+
+.file-icon svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.file-icon > div {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+}
+
+[data-theme="dark"] .file-icon {
+  color: #60a5fa;
+}
+
+/* Language badge for code files */
+.icon-with-badge {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.15));
+}
+
+.icon-with-badge svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.icon-with-badge::after {
+  content: attr(data-badge);
+  position: absolute;
+  bottom: -8px;
+  left: 50%;
+  transform: translateX(-50%) scale(0.85);
+  transform-origin: center;
+  background-color: var(--badge-color, #3498db);
+  color: var(--badge-text, #fff);
+  padding: 2px 5px;
+  border-radius: 7px;
+  font-size: 10px;
+  font-weight: 700;
+  white-space: nowrap;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.25);
+  line-height: 1;
+  z-index: 10;
+}
+
+

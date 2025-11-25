@@ -241,15 +241,100 @@ function getParentPath(path) {
   return segments.join('/');
 }
 
-function getFileIcon(type) {
-  const icons = {
-    'folder': '📁',
-    'png': '🖼️', 'jpg': '🖼️', 'jpeg': '🖼️', 'gif': '🖼️',
-    'pdf': '📄', 'txt': '📝', 'doc': '📘', 'docx': '📘',
-    'xls': '📊', 'xlsx': '📊', 'zip': '📦', 'rar': '📦',
-    'mp3': '🎵', 'mp4': '🎬'
+function getFileExtension(filename) {
+  const parts = filename.split('.');
+  return parts.length > 1 ? parts[parts.length - 1].toLowerCase() : '';
+}
+
+function getLanguageBadge(ext) {
+  const badgeMap = {
+    'html': { label: 'HTML', color: '#fff', bg: '#3498db' },
+    'htm': { label: 'HTML', color: '#fff', bg: '#3498db' },
+    'css': { label: 'CSS', color: '#fff', bg: '#27ae60' },
+    'scss': { label: 'SCSS', color: '#fff', bg: '#c6538c' },
+    'less': { label: 'LESS', color: '#fff', bg: '#1d365d' },
+    'js': { label: 'JS', color: '#fff', bg: '#e74c3c' },
+    'jsx': { label: 'JSX', color: '#000', bg: '#61dafb' },
+    'ts': { label: 'TS', color: '#fff', bg: '#3178c6' },
+    'tsx': { label: 'TSX', color: '#000', bg: '#61dafb' },
+    'php': { label: 'PHP', color: '#fff', bg: '#777bb4' },
+    'py': { label: 'PY', color: '#fff', bg: '#3776ab' },
+    'java': { label: 'JAVA', color: '#fff', bg: '#f89820' },
+    'json': { label: 'JSON', color: '#333', bg: '#ffd700' },
+    'xml': { label: 'XML', color: '#fff', bg: '#ff6b35' },
+    'yaml': { label: 'YAML', color: '#fff', bg: '#cb171e' },
+    'yml': { label: 'YAML', color: '#fff', bg: '#cb171e' },
+    'conf': { label: 'CONF', color: '#333', bg: '#9e9e9e' },
+    'ini': { label: 'INI', color: '#333', bg: '#9e9e9e' },
+    'env': { label: 'ENV', color: '#333', bg: '#ffc107' },
   };
-  return icons[type] || '🗎';
+  return badgeMap[ext] || null;
+}
+
+function getFileIcon(filename, type) {
+  const ext = getFileExtension(filename);
+  const badge = getLanguageBadge(ext);
+  
+  const svgIcons = {
+    folder: `<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M10 4l2 2h7a2 2 0 0 1 2 2v1H3V6a2 2 0 0 1 2-2h5zm11 6v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-8h18z"></path></svg>`,
+    file: `<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M6 2h9l5 5v15a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2zm8 1v5h5"></path></svg>`,
+    image: `<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M21 19V5a2 2 0 0 0-2-2H5C3.9 3 3 3.9 3 5v14c0 1.1.9 2 2 2h14a2 2 0 0 0 2-2zM8.5 11.5A2.5 2.5 0 1 0 8.5 6a2.5 2.5 0 0 0 0 5.5zM5 19l5.5-7 4 5 3-4L19 19H5z"></path></svg>`,
+    pdf: `<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M14 2H6a2 2 0 0 0-2 2v16c0 1.1.9 2 2 2h12a2 2 0 0 0 2-2V8l-6-6zm0 18H6V4h8v16zm-2-3h-2v-2h2v2zm0-4h-2V9h2v4zm4 4h-2v-2h2v2zm0-4h-2V9h2v4z"></path></svg>`,
+    archive: `<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V5h14v14zm-6-10h-2V9h2v4z"></path></svg>`,
+    text: `<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M14 2H6a2 2 0 0 0-2 2v16c0 1.1.9 2 2 2h12a2 2 0 0 0 2-2V8l-6-6zm-2 16H8v-2h4v2zm4-4H8v-2h8v2zm0-4H8V8h8v2z"></path></svg>`,
+    sheet: `<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V5h14v14zM7 9h2v2H7V9zm4 0h2v2h-2V9zm4 0h2v2h-2V9zM7 13h2v2H7v-2zm4 0h2v2h-2v-2zm4 0h2v2h-2v-2z"></path></svg>`,
+    doc: `<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M14 2H6a2 2 0 0 0-2 2v16c0 1.1.9 2 2 2h12a2 2 0 0 0 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm0-4H8V8h8v2z"></path></svg>`,
+    ppt: `<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 9h-2V9h2v3zm4 0h-2V9h2v3zM9 9v3H7V9h2z"></path></svg>`,
+    audio: `<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 3v10.55c-.5-.3-1-.5-1.5-.5-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"></path></svg>`,
+    video: `<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M17 10.5V7c0-.55-.45-1-1-1H4c-.55 0-1 .45-1 1v10c0 .55.45 1 1 1h12c.55 0 1-.45 1-1v-3.5l4 4v-11l-4 4z"></path></svg>`,
+    markdown: `<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-2 10h-2v2h-2v-2h-2v-2h2V9h2v2h2v2zm-8-2h2v6H9v-6z"></path></svg>`,
+  };
+  
+  const iconMap = {
+    // Folders
+    'folder': 'folder',
+    
+    // Images
+    'png': 'image', 'jpg': 'image', 'jpeg': 'image', 
+    'gif': 'image', 'webp': 'image', 'svg': 'image',
+    'bmp': 'image', 'ico': 'image',
+    
+    // Documents
+    'pdf': 'pdf',
+    'doc': 'doc', 'docx': 'doc',
+    'xls': 'sheet', 'xlsx': 'sheet', 'csv': 'sheet', 'ods': 'sheet',
+    'ppt': 'ppt', 'pptx': 'ppt', 'odp': 'ppt',
+    
+    // Text/Code
+    'txt': 'text',
+    'md': 'markdown', 'markdown': 'markdown',
+    'html': 'code', 'htm': 'code',
+    'css': 'code', 'scss': 'code', 'less': 'code',
+    'js': 'code', 'jsx': 'code', 'ts': 'code', 'tsx': 'code',
+    'php': 'code', 'py': 'code', 'java': 'code', 'c': 'code', 'cpp': 'code',
+    'json': 'code', 'xml': 'code', 'yaml': 'code',
+    'yml': 'code', 'conf': 'code', 'ini': 'code', 'env': 'code',
+    
+    // Archives
+    'zip': 'archive', 'rar': 'archive', '7z': 'archive',
+    'tar': 'archive', 'gz': 'archive', 'bz2': 'archive', 'tgz': 'archive',
+    
+    // Media
+    'mp3': 'audio', 'wav': 'audio', 'flac': 'audio',
+    'ogg': 'audio', 'm4a': 'audio', 'aac': 'audio',
+    'mp4': 'video', 'webm': 'video', 'mkv': 'video',
+    'mov': 'video', 'avi': 'video', 'm4v': 'video', 'flv': 'video',
+  };
+  
+  const iconKey = iconMap[ext] || iconMap[type] || 'file';
+  const baseSvg = svgIcons[iconKey] || svgIcons.file;
+  
+  // Return icon with badge if available
+  if (badge && iconKey === 'code') {
+    return `<span class="icon-with-badge" style="--badge-color: ${badge.bg}; --badge-text: ${badge.color};" data-badge="${badge.label}">${baseSvg}</span>`;
+  }
+  
+  return baseSvg;
 }
 
 function render() {
@@ -332,11 +417,11 @@ function render() {
     tr.draggable = true;
 
     const checked = selected.has(f.path);
-    const icon = f.type === 'folder' ? '📁' : getFileIcon(f.type);
+    const icon = f.type === 'folder' ? '<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M10 4l2 2h7a2 2 0 0 1 2 2v1H3V6a2 2 0 0 1 2-2h5zm11 6v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-8h18z"></path></svg>' : getFileIcon(f.name, f.type);
 
     tr.innerHTML = `
       <td class="px-3 py-3"><input type="checkbox" class="sel" data-path="${f.path}" ${checked ? 'checked' : ''}></td>
-      <td class="px-3 py-3"><span class="file-name"><span>${icon}</span><span class="text-dark">${f.name}</span></span></td>
+      <td class="px-3 py-3"><span class="file-name file-icon-cell"><span class="file-icon">${icon}</span><span class="text-dark">${f.name}</span></span></td>
       <td class="px-3 py-3 text-sm">${f.type}</td>
       <td class="px-3 py-3 text-sm">${f.date}</td>
       <td class="px-3 py-3 text-right text-sm">${f.size}</td>
@@ -378,8 +463,9 @@ function isValidDropTarget(row) {
   const type = row.dataset ? row.dataset.itemType : null;
   if (type) return type === 'folder';
 
-  const iconSpan = row.querySelector('.file-name span');
-  return !!(iconSpan && iconSpan.textContent.includes('📁'));
+  const iconSvg = row.querySelector('.file-icon svg path');
+  // Check if the path starts with the folder path pattern
+  return !!(iconSvg && iconSvg.getAttribute('d').includes('10 4l2 2h7'));
 }
 
 function handleDragStart(e) {
@@ -547,16 +633,72 @@ function initializeEventHandlers() {
   // Upload
   const modal = document.getElementById('modalBackdrop');
   const fileInput = document.getElementById('fileInput');
+  const fileDropZone = document.getElementById('fileDropZone');
+  const fileList = document.getElementById('fileList');
 
+  function displaySelectedFiles() {
+    if (fileInput.files.length === 0) {
+      fileList.innerHTML = '';
+      return;
+    }
+    
+    const files = Array.from(fileInput.files);
+    const total = files.reduce((sum, f) => sum + f.size, 0);
+    const totalMB = (total / 1024 / 1024).toFixed(2);
+    
+    fileList.innerHTML = `
+      <div class="bg-blue-50 p-3 rounded-lg">
+        <p class="font-medium text-blue-900">${files.length} file dipilih</p>
+        <p class="text-sm text-blue-700">Total: ${totalMB} MB</p>
+        <ul class="text-xs text-blue-700 mt-2 space-y-1">
+          ${files.slice(0, 3).map(f => `<li>• ${f.name}</li>`).join('')}
+          ${files.length > 3 ? `<li>• ... dan ${files.length - 3} file lainnya</li>` : ''}
+        </ul>
+      </div>
+    `;
+  }
+
+  // Show modal first when upload button clicked
   document.getElementById('uploadBtn')?.addEventListener('click', () => {
     modal?.classList.add('visible');
     modal.style.display = 'flex';
+  });
+
+  // Handle file selection from input
+  fileInput?.addEventListener('change', () => {
+    displaySelectedFiles();
+  });
+
+  // Drag and drop support
+  fileDropZone?.addEventListener('dragover', (e) => {
+    e.preventDefault();
+    fileDropZone.classList.add('border-blue-400', 'bg-blue-50');
+  });
+
+  fileDropZone?.addEventListener('dragleave', () => {
+    fileDropZone.classList.remove('border-blue-400', 'bg-blue-50');
+  });
+
+  fileDropZone?.addEventListener('drop', (e) => {
+    e.preventDefault();
+    fileDropZone.classList.remove('border-blue-400', 'bg-blue-50');
+    if (e.dataTransfer.files.length > 0) {
+      fileInput.files = e.dataTransfer.files;
+      const event = new Event('change', { bubbles: true });
+      fileInput.dispatchEvent(event);
+    }
+  });
+
+  // Click on drop zone to open file picker
+  fileDropZone?.addEventListener('click', () => {
+    fileInput.click();
   });
 
   document.getElementById('cancelUpload')?.addEventListener('click', () => {
     modal?.classList.remove('visible');
     modal.style.display = 'none';
     fileInput.value = '';
+    fileList.innerHTML = '';
   });
 
   document.getElementById('doUpload')?.addEventListener('click', async () => {
@@ -596,6 +738,7 @@ function initializeEventHandlers() {
       modal?.classList.remove('visible');
       modal.style.display = 'none';
       fileInput.value = '';
+      fileList.innerHTML = '';
       
       if (successCount > 0) {
         showSuccess(`${successCount} file berhasil diunggah${errorCount > 0 ? `, ${errorCount} gagal` : ''}`);
