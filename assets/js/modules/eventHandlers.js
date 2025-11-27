@@ -235,7 +235,16 @@ export function setupUploadHandler(
     confirmDiscardChanges,
     uploadFilesWrapper
 ) {
-    btnUpload.addEventListener('click', () => {
+    // Prevent multiple event listeners
+    if (btnUpload._uploadHandlerAttached) {
+        return;
+    }
+    btnUpload._uploadHandlerAttached = true;
+    
+    btnUpload.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        
         if (state.isLoading) {
             return;
         }
@@ -279,7 +288,16 @@ export function setupUploadDesktopHandler(
     confirmDiscardChanges,
     uploadFilesWrapper
 ) {
-    btnUploadDesktop.addEventListener('click', () => {
+    // Prevent multiple event listeners
+    if (btnUploadDesktop._uploadHandlerAttached) {
+        return;
+    }
+    btnUploadDesktop._uploadHandlerAttached = true;
+    
+    btnUploadDesktop.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        
         if (state.isLoading) {
             return;
         }

@@ -84,9 +84,10 @@
                 <div class="flex items-center gap-2">
                     <span>Item per halaman:</span>
                     <select id="pageSize" class="px-2 py-1 border border-slate-200 rounded-md text-sm">
-                        <option>5</option>
-                        <option>10</option>
-                        <option>20</option>
+                        <option value="10">10</option>
+                        <option value="25">25</option>
+                        <option value="50">50</option>
+                        <option value="100">100</option>
                     </select>
                     <button class="btn px-2 py-1 rounded-md text-sm">‹ Prev</button>
                     <button class="btn px-2 py-1 rounded-md text-sm">Next ›</button>

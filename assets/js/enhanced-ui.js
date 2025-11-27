@@ -536,7 +536,18 @@ function handleContextMenu(e) {
 
 // ============= Event Handlers =============
 
+let eventHandlersInitialized = false;
+
 function initializeEventHandlers() {
+  // Prevent duplicate initialization
+  if (eventHandlersInitialized) {
+    console.log('[enhanced-ui] Event handlers already initialized, skipping');
+    return;
+  }
+  eventHandlersInitialized = true;
+  
+  console.log('[enhanced-ui] Initializing event handlers');
+  
   // Close context menu
   document.addEventListener('click', () => {
     ctxMenu.classList.remove('visible');
@@ -690,7 +701,9 @@ function initializeEventHandlers() {
   });
 
   // Click on drop zone to open file picker
-  fileDropZone?.addEventListener('click', () => {
+  fileDropZone?.addEventListener('click', (e) => {
+    e.preventDefault();
+    e.stopPropagation();
     fileInput.click();
   });
 
@@ -822,7 +835,18 @@ function initializeEventHandlers() {
 
 // ============= Initialization =============
 
+let appInitialized = false;
+
 document.addEventListener('DOMContentLoaded', async () => {
+  // Prevent duplicate initialization
+  if (appInitialized) {
+    console.log('[enhanced-ui] App already initialized, skipping');
+    return;
+  }
+  appInitialized = true;
+  
+  console.log('[enhanced-ui] Starting app initialization');
+  
   // Initialize DOM references
   tbody = document.getElementById('tbody');
   showing = document.getElementById('showing');
