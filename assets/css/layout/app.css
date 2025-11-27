@@ -8,7 +8,8 @@
 
 .app {
   display: flex;
-  min-height: 100vh;
+  height: 100vh;
+  overflow: hidden;
   transition: background-color 0.3s ease;
 }
 
@@ -33,6 +34,9 @@
 
 .main {
   flex: 1;
+  height: 100%;
+  overflow-y: auto;
+  position: relative;
   padding: 18px;
   background: var(--bg);
   transition: background-color 0.3s ease;

@@ -22,13 +22,13 @@
     <link rel="shortcut icon" type="image/svg+xml" href="favicon.svg">
     <title>File Manager — SiyNLic Pro</title>
 </head>
-<body class="bg-slate-50 text-slate-900">
+<body class="bg-slate-50 text-slate-900 dark:bg-[#0f1419] dark:text-slate-300 overflow-hidden">
     <!-- Sidebar Overlay for Mobile -->
     <div class="sidebar-overlay" id="sidebar-overlay"></div>
     
-    <div class="app min-h-screen flex" id="app" data-theme="light">
+    <div class="app h-screen flex overflow-hidden" id="app">
         <!-- SIDEBAR -->
-        <aside class="sidebar w-56 px-5 py-5 bg-white border-r border-slate-200 hidden md:block sticky top-0 h-screen overflow-y-auto" id="sidebar">
+        <aside class="sidebar w-56 px-5 py-5 bg-white border-r border-slate-200 hidden md:block h-full overflow-y-auto" id="sidebar">
             <div class="sidebar-header flex items-center justify-between mb-4">
                 <div class="logo text-lg font-bold text-blue-600">SiyNLic Pro</div>
                 <button class="sidebar-close md:hidden p-2 hover:bg-slate-100 rounded-lg" id="sidebar-close">
@@ -44,7 +44,7 @@
             </ul>
         </aside>
 
-        <main class="main flex-1">
+        <main class="main flex-1 h-full overflow-y-auto relative">
             <!-- TOPBAR -->
             <section class="topbar">
                 <div class="topbar-left">
@@ -152,6 +152,7 @@
 
     <?php include 'partials/overlays.php'; ?>
 
+    <script src="assets/js/modules/toast.js"></script>
     <script src="assets/js/enhanced-ui.js"></script>
     <script src="assets/js/modals-handler.js"></script>
     <script src="assets/js/log-handler.js"></script>

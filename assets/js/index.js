@@ -24,6 +24,7 @@
 // Import modul-modul yang diperlukan
 import { initializeApp } from './modules/appInitializer.js';
 import { config } from './modules/constants.js';
+import './modules/toast.js'; // Toast notification system
 
 /**
  * Inisialisasi aplikasi saat DOM dimuat

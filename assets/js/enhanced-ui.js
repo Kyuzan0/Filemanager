@@ -78,6 +78,9 @@ async function renameItem(oldPath, newName) {
     const finalPath = parentPath ? `${parentPath}/${newName}` : newName;
     
     const url = `${API_BASE}?action=rename&path=${encodeURIComponent(oldPath)}`;
+    console.log('[renameItem] URL:', url);
+    console.log('[renameItem] Body:', { newName, newPath: finalPath });
+    
     const response = await fetch(url, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -87,12 +90,16 @@ async function renameItem(oldPath, newName) {
       })
     });
     
+    console.log('[renameItem] Response status:', response.status);
     const data = await response.json();
+    console.log('[renameItem] Response data:', data);
+    
     if (!data.success) throw new Error(data.error || 'Rename failed');
     
     await loadFiles(currentPath);
     showSuccess(`Renamed to: ${newName}`);
   } catch (error) {
+    console.error('[renameItem] Error:', error);
     showError(error.message);
   } finally {
     showLoader(false);
@@ -155,12 +162,20 @@ function showLoader(show) {
 }
 
 function showError(msg) {
-  console.error(msg);
-  alert(`Error: ${msg}`);
+  if (typeof window.showToast === 'function') {
+    window.showToast('error', msg);
+  } else {
+    console.error(msg);
+    alert(`Error: ${msg}`);
+  }
 }
 
 function showSuccess(msg) {
-  console.log(msg);
+  if (typeof window.showToast === 'function') {
+    window.showToast('success', msg);
+  } else {
+    console.log(msg);
+  }
 }
 
 function updateBreadcrumbs(path) {

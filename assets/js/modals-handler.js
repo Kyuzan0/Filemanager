@@ -799,6 +799,24 @@ function escapeHtml(text) {
   return div.innerHTML;
 }
 
+// Helper functions for notifications - delegate to toast system
+function showError(msg) {
+  if (typeof window.showToast === 'function') {
+    window.showToast('error', msg);
+  } else {
+    console.error(msg);
+    alert(`Error: ${msg}`);
+  }
+}
+
+function showSuccess(msg) {
+  if (typeof window.showToast === 'function') {
+    window.showToast('success', msg);
+  } else {
+    console.log(msg);
+  }
+}
+
 // Export functions for use in other scripts
 window.openPreviewModal = openPreviewModal;
 window.openConfirmModal = openConfirmModal;
