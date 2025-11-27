@@ -23,6 +23,111 @@ $method = $_SERVER['REQUEST_METHOD'] ?? 'GET';
 $editableExtensions = get_editable_extensions();
 
 try {
+    // =========================================================================
+    // LOGS API ENDPOINTS
+    // =========================================================================
+    
+    if ($action === 'logs') {
+        // Get activity logs with optional filtering and pagination
+        $page = isset($_GET['page']) ? max(1, (int)$_GET['page']) : 1;
+        $limit = isset($_GET['limit']) ? max(1, min(100, (int)$_GET['limit'])) : 20;
+        $offset = ($page - 1) * $limit;
+        
+        $filters = [];
+        if (isset($_GET['filterAction']) && $_GET['filterAction'] !== '') {
+            $filters['action'] = $_GET['filterAction'];
+        }
+        if (isset($_GET['filterType']) && $_GET['filterType'] !== '') {
+            $filters['targetType'] = $_GET['filterType'];
+        }
+        if (isset($_GET['search']) && $_GET['search'] !== '') {
+            $filters['search'] = $_GET['search'];
+        }
+        if (isset($_GET['startDate']) && $_GET['startDate'] !== '') {
+            $filters['startDate'] = $_GET['startDate'];
+        }
+        if (isset($_GET['endDate']) && $_GET['endDate'] !== '') {
+            $filters['endDate'] = $_GET['endDate'];
+        }
+        
+        $result = read_activity_logs($limit, $offset, $filters);
+        
+        $totalPages = $limit > 0 ? ceil($result['filtered'] / $limit) : 1;
+        
+        echo json_encode([
+            'success' => true,
+            'type' => 'logs',
+            'logs' => $result['logs'],
+            'pagination' => [
+                'page' => $page,
+                'limit' => $limit,
+                'total' => $result['total'],
+                'filtered' => $result['filtered'],
+                'totalPages' => $totalPages
+            ],
+            'generated_at' => time(),
+        ], JSON_UNESCAPED_UNICODE);
+        exit;
+    }
+    
+    if ($action === 'logs-cleanup') {
+        if (strtoupper($method) !== 'POST') {
+            throw new RuntimeException('Metode HTTP tidak diizinkan.');
+        }
+        
+        $rawBody = file_get_contents('php://input');
+        $payload = json_decode($rawBody, true);
+        
+        $days = isset($payload['days']) ? max(1, (int)$payload['days']) : 30;
+        
+        $deletedCount = cleanup_activity_logs($days);
+        
+        // Log the cleanup action itself
+        write_activity_log('cleanup', 'activity_logs', 'system', '', [
+            'days' => $days,
+            'deleted' => $deletedCount
+        ]);
+        
+        echo json_encode([
+            'success' => true,
+            'type' => 'logs-cleanup',
+            'deleted' => $deletedCount,
+            'days' => $days,
+            'generated_at' => time(),
+        ], JSON_UNESCAPED_UNICODE);
+        exit;
+    }
+    
+    if ($action === 'logs-export') {
+        $format = isset($_GET['format']) ? strtolower($_GET['format']) : 'json';
+        
+        $filters = [];
+        if (isset($_GET['filterAction']) && $_GET['filterAction'] !== '') {
+            $filters['action'] = $_GET['filterAction'];
+        }
+        if (isset($_GET['filterType']) && $_GET['filterType'] !== '') {
+            $filters['targetType'] = $_GET['filterType'];
+        }
+        if (isset($_GET['search']) && $_GET['search'] !== '') {
+            $filters['search'] = $_GET['search'];
+        }
+        
+        if ($format === 'csv') {
+            header('Content-Type: text/csv; charset=utf-8');
+            header('Content-Disposition: attachment; filename="activity_logs_' . date('Y-m-d_His') . '.csv"');
+            echo export_logs_csv($filters);
+        } else {
+            header('Content-Type: application/json; charset=utf-8');
+            header('Content-Disposition: attachment; filename="activity_logs_' . date('Y-m-d_His') . '.json"');
+            echo export_logs_json($filters);
+        }
+        exit;
+    }
+    
+    // =========================================================================
+    // FILE MANAGER API ENDPOINTS
+    // =========================================================================
+
     if ($action === 'create') {
         if (strtoupper($method) !== 'POST') {
             throw new RuntimeException('Metode HTTP tidak diizinkan.');
@@ -57,6 +162,9 @@ try {
             $content = isset($payload['content']) && is_string($payload['content']) ? $payload['content'] : '';
             $created = create_file($root, $targetPath, $content);
         }
+
+        // Log activity
+        write_activity_log('create', $name, $type, $sanitizedPath);
 
         echo json_encode([
             'success' => true,
@@ -107,6 +215,15 @@ try {
                 exit;
             }
 
+            // Log activity when upload is finished
+            if (!empty($result['finished']) && !empty($result['uploaded'])) {
+                foreach ($result['uploaded'] as $uploaded) {
+                    write_activity_log('upload', $uploaded['name'] ?? $originalName, 'file', $targetPath, [
+                        'size' => $uploaded['size'] ?? 0
+                    ]);
+                }
+            }
+
             echo json_encode([
                 'success' => true,
                 'type' => 'upload',
@@ -126,6 +243,15 @@ try {
         $result = upload_files($root, $targetPath, $_FILES['files']);
         $hasUploads = !empty($result['uploaded']);
         $hasErrors = !empty($result['errors']);
+
+        // Log activity for successful uploads
+        if ($hasUploads) {
+            foreach ($result['uploaded'] as $uploaded) {
+                write_activity_log('upload', $uploaded['name'] ?? 'unknown', 'file', $targetPath, [
+                    'size' => $uploaded['size'] ?? 0
+                ]);
+            }
+        }
 
         if (!$hasUploads && $hasErrors) {
             http_response_code(400);
@@ -198,6 +324,11 @@ try {
 
         $content = $payload['content'];
     $file = write_text_file($root, $sanitizedPath, $content, $editableExtensions);
+
+        // Log activity
+        write_activity_log('save', $file['name'], 'file', $sanitizedPath, [
+            'size' => $file['size']
+        ]);
 
         echo json_encode([
             'success' => true,
@@ -276,6 +407,13 @@ try {
         error_log('[DEBUG] Calling delete_paths with paths: ' . implode(', ', $paths));
         $result = delete_paths($root, $paths);
         error_log('[DEBUG] Delete result: ' . json_encode($result));
+
+        // Log activity for successful deletions
+        if (!empty($result['deleted'])) {
+            foreach ($result['deleted'] as $deleted) {
+                write_activity_log('delete', $deleted['name'] ?? basename($deleted['path'] ?? ''), $deleted['type'] ?? 'file', $deleted['path'] ?? '');
+            }
+        }
         
         $success = count($result['errors']) === 0;
 
@@ -329,6 +467,12 @@ try {
         }
 
         $renamed = rename_item($root, $sanitizedPath, $sanitizedNewPath);
+
+        // Log activity
+        write_activity_log('rename', $renamed['name'], $renamed['type'], $sanitizedNewPath, [
+            'oldPath' => $sanitizedPath,
+            'oldName' => basename($sanitizedPath)
+        ]);
 
         echo json_encode([
             'success' => true,
@@ -397,6 +541,12 @@ try {
         error_log('[DEBUG] Final new path: "' . $newPath . '"');
 
         $moved = move_item($root, $sanitizedSourcePath, $newPath);
+
+        // Log activity
+        write_activity_log('move', $moved['name'], $moved['type'], $moved['path'], [
+            'oldPath' => $sanitizedSourcePath,
+            'newPath' => $moved['path']
+        ]);
 
         echo json_encode([
             'success' => true,

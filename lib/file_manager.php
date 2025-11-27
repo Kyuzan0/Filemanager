@@ -991,3 +991,300 @@ function move_item(string $root, string $oldRelativePath, string $newRelativePat
         throw $e;
     }
 }
+
+// ============================================================================
+// ACTIVITY LOGGING FUNCTIONS
+// ============================================================================
+
+/**
+ * Get the logs directory path
+ * @return string
+ */
+function get_logs_directory(): string
+{
+    return __DIR__ . '/../logs';
+}
+
+/**
+ * Get the activity log file path
+ * @return string
+ */
+function get_activity_log_file(): string
+{
+    return get_logs_directory() . '/activity.json';
+}
+
+/**
+ * Ensure logs directory exists and is writable
+ * @return void
+ */
+function ensure_logs_directory(): void
+{
+    $logsDir = get_logs_directory();
+    if (!is_dir($logsDir)) {
+        if (!mkdir($logsDir, 0755, true)) {
+            throw new RuntimeException('Gagal membuat direktori logs.');
+        }
+    }
+    
+    if (!is_writable($logsDir)) {
+        throw new RuntimeException('Direktori logs tidak dapat ditulisi.');
+    }
+}
+
+/**
+ * Read activity logs from JSON file
+ * @param int $limit Maximum number of logs to return (0 = all)
+ * @param int $offset Starting position for pagination
+ * @param array $filters Filter options (action, targetType, search, startDate, endDate)
+ * @return array
+ */
+function read_activity_logs(int $limit = 0, int $offset = 0, array $filters = []): array
+{
+    $logFile = get_activity_log_file();
+    
+    if (!file_exists($logFile)) {
+        return [
+            'logs' => [],
+            'total' => 0,
+            'filtered' => 0
+        ];
+    }
+    
+    $content = file_get_contents($logFile);
+    if ($content === false) {
+        return [
+            'logs' => [],
+            'total' => 0,
+            'filtered' => 0
+        ];
+    }
+    
+    $allLogs = json_decode($content, true);
+    if (!is_array($allLogs)) {
+        $allLogs = [];
+    }
+    
+    // Sort by timestamp descending (newest first)
+    usort($allLogs, function($a, $b) {
+        return ($b['timestamp'] ?? 0) - ($a['timestamp'] ?? 0);
+    });
+    
+    $total = count($allLogs);
+    
+    // Apply filters
+    $filteredLogs = array_filter($allLogs, function($log) use ($filters) {
+        // Action filter
+        if (!empty($filters['action']) && ($log['action'] ?? '') !== $filters['action']) {
+            return false;
+        }
+        
+        // Target type filter
+        if (!empty($filters['targetType']) && ($log['targetType'] ?? '') !== $filters['targetType']) {
+            return false;
+        }
+        
+        // Search filter (search in target name and path)
+        if (!empty($filters['search'])) {
+            $search = strtolower($filters['search']);
+            $target = strtolower($log['target'] ?? '');
+            $path = strtolower($log['path'] ?? '');
+            $action = strtolower($log['action'] ?? '');
+            
+            if (strpos($target, $search) === false && 
+                strpos($path, $search) === false &&
+                strpos($action, $search) === false) {
+                return false;
+            }
+        }
+        
+        // Date range filter
+        if (!empty($filters['startDate'])) {
+            $startTimestamp = strtotime($filters['startDate']);
+            if ($startTimestamp !== false && ($log['timestamp'] ?? 0) < $startTimestamp) {
+                return false;
+            }
+        }
+        
+        if (!empty($filters['endDate'])) {
+            $endTimestamp = strtotime($filters['endDate'] . ' 23:59:59');
+            if ($endTimestamp !== false && ($log['timestamp'] ?? 0) > $endTimestamp) {
+                return false;
+            }
+        }
+        
+        return true;
+    });
+    
+    $filteredLogs = array_values($filteredLogs);
+    $filteredCount = count($filteredLogs);
+    
+    // Apply pagination
+    if ($limit > 0) {
+        $filteredLogs = array_slice($filteredLogs, $offset, $limit);
+    } elseif ($offset > 0) {
+        $filteredLogs = array_slice($filteredLogs, $offset);
+    }
+    
+    return [
+        'logs' => $filteredLogs,
+        'total' => $total,
+        'filtered' => $filteredCount
+    ];
+}
+
+/**
+ * Write an activity log entry
+ * @param string $action The action performed (create, delete, upload, rename, move, download, save)
+ * @param string $target The target file/folder name
+ * @param string $targetType The target type (file or folder)
+ * @param string $path The path where the action occurred
+ * @param array $extra Extra data (oldPath, newPath, size, etc.)
+ * @return array The created log entry
+ */
+function write_activity_log(string $action, string $target, string $targetType, string $path = '', array $extra = []): array
+{
+    ensure_logs_directory();
+    
+    $logFile = get_activity_log_file();
+    
+    // Read existing logs
+    $logs = [];
+    if (file_exists($logFile)) {
+        $content = file_get_contents($logFile);
+        if ($content !== false) {
+            $decoded = json_decode($content, true);
+            if (is_array($decoded)) {
+                $logs = $decoded;
+            }
+        }
+    }
+    
+    // Create new log entry
+    $logEntry = [
+        'id' => uniqid('log_', true),
+        'timestamp' => time(),
+        'datetime' => date('Y-m-d H:i:s'),
+        'action' => $action,
+        'target' => $target,
+        'targetType' => $targetType,
+        'path' => $path,
+        'ip' => $_SERVER['REMOTE_ADDR'] ?? 'unknown',
+        'userAgent' => $_SERVER['HTTP_USER_AGENT'] ?? 'unknown'
+    ];
+    
+    // Merge extra data
+    if (!empty($extra)) {
+        $logEntry = array_merge($logEntry, $extra);
+    }
+    
+    // Add to logs array
+    array_unshift($logs, $logEntry);
+    
+    // Limit log size (keep last 10000 entries)
+    $maxLogs = 10000;
+    if (count($logs) > $maxLogs) {
+        $logs = array_slice($logs, 0, $maxLogs);
+    }
+    
+    // Write to file
+    $json = json_encode($logs, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
+    if ($json === false) {
+        throw new RuntimeException('Gagal mengenkode log ke JSON.');
+    }
+    
+    if (file_put_contents($logFile, $json, LOCK_EX) === false) {
+        throw new RuntimeException('Gagal menyimpan log aktivitas.');
+    }
+    
+    return $logEntry;
+}
+
+/**
+ * Clean up old activity logs
+ * @param int $days Delete logs older than this many days
+ * @return int Number of logs deleted
+ */
+function cleanup_activity_logs(int $days): int
+{
+    $logFile = get_activity_log_file();
+    
+    if (!file_exists($logFile)) {
+        return 0;
+    }
+    
+    $content = file_get_contents($logFile);
+    if ($content === false) {
+        return 0;
+    }
+    
+    $logs = json_decode($content, true);
+    if (!is_array($logs)) {
+        return 0;
+    }
+    
+    $cutoffTimestamp = time() - ($days * 24 * 60 * 60);
+    $originalCount = count($logs);
+    
+    $logs = array_filter($logs, function($log) use ($cutoffTimestamp) {
+        return ($log['timestamp'] ?? 0) >= $cutoffTimestamp;
+    });
+    
+    $logs = array_values($logs);
+    $deletedCount = $originalCount - count($logs);
+    
+    if ($deletedCount > 0) {
+        $json = json_encode($logs, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
+        if ($json !== false) {
+            file_put_contents($logFile, $json, LOCK_EX);
+        }
+    }
+    
+    return $deletedCount;
+}
+
+/**
+ * Export activity logs to CSV format
+ * @param array $filters Filter options
+ * @return string CSV content
+ */
+function export_logs_csv(array $filters = []): string
+{
+    $result = read_activity_logs(0, 0, $filters);
+    $logs = $result['logs'];
+    
+    $output = "ID,Waktu,Aksi,Target,Tipe,Path,IP\n";
+    
+    foreach ($logs as $log) {
+        $row = [
+            $log['id'] ?? '',
+            $log['datetime'] ?? date('Y-m-d H:i:s', $log['timestamp'] ?? 0),
+            $log['action'] ?? '',
+            $log['target'] ?? '',
+            $log['targetType'] ?? '',
+            $log['path'] ?? '',
+            $log['ip'] ?? ''
+        ];
+        
+        // Escape CSV values
+        $row = array_map(function($val) {
+            $val = str_replace('"', '""', $val);
+            return '"' . $val . '"';
+        }, $row);
+        
+        $output .= implode(',', $row) . "\n";
+    }
+    
+    return $output;
+}
+
+/**
+ * Export activity logs to JSON format
+ * @param array $filters Filter options
+ * @return string JSON content
+ */
+function export_logs_json(array $filters = []): string
+{
+    $result = read_activity_logs(0, 0, $filters);
+    return json_encode($result['logs'], JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
+}

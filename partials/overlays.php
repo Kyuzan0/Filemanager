@@ -21,15 +21,27 @@
             </div>
         </div>
         <footer class="preview-footer flex-shrink-0">
-            <div class="preview-footer-status mb-3">
-                <span class="preview-status text-sm text-gray-600" id="preview-status"></span>
-                <span class="preview-loader text-sm text-blue-600" id="preview-loader" hidden>Memuat konten...</span>
+            <div class="preview-footer-status mb-2 sm:mb-3">
+                <span class="preview-status text-xs sm:text-sm text-gray-600" id="preview-status"></span>
+                <span class="preview-loader text-xs sm:text-sm text-blue-600" id="preview-loader" hidden>Memuat konten...</span>
             </div>
-            <div class="preview-footer-actions flex flex-col sm:flex-row md:flex-row items-stretch md:items-center gap-2 md:gap-3">
-                <a id="preview-open-raw" href="#" target="_blank" rel="noopener" class="inline-flex items-center justify-center gap-2 text-sm text-blue-600 hover:underline focus:outline-none px-3 py-2 border border-blue-200 rounded-md">Buka Asli</a>
-                <button type="button" id="preview-copy" data-action="preview-copy" class="btn inline-flex items-center justify-center gap-2 px-3 py-2 rounded-md text-sm" >Salin</button>
-                <button type="button" id="preview-save" data-action="preview-save" disabled class="inline-flex items-center justify-center gap-2 px-3 py-2 rounded-md text-sm bg-blue-600 text-white opacity-60 cursor-not-allowed" aria-disabled="true">Simpan</button>
-                <button type="button" id="preview-close" data-action="preview-close" class="btn inline-flex items-center justify-center gap-2 px-3 py-2 rounded-md text-sm">Tutup</button>
+            <div class="preview-footer-actions grid grid-cols-4 sm:flex sm:flex-row gap-1.5 sm:gap-2 md:gap-3">
+                <a id="preview-open-raw" href="#" target="_blank" rel="noopener" class="inline-flex items-center justify-center gap-1 text-xs sm:text-sm text-blue-600 hover:underline focus:outline-none px-2 sm:px-3 py-1.5 sm:py-2 border border-blue-200 dark:border-blue-800 rounded-md" title="Buka Asli">
+                    <svg class="w-4 h-4 sm:hidden" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6M15 3h6v6M10 14L21 3"/></svg>
+                    <span class="hidden sm:inline">Buka Asli</span>
+                </a>
+                <button type="button" id="preview-copy" data-action="preview-copy" class="btn inline-flex items-center justify-center gap-1 px-2 sm:px-3 py-1.5 sm:py-2 rounded-md text-xs sm:text-sm" title="Salin">
+                    <svg class="w-4 h-4 sm:hidden" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                    <span class="hidden sm:inline">Salin</span>
+                </button>
+                <button type="button" id="preview-save" data-action="preview-save" disabled class="inline-flex items-center justify-center gap-1 px-2 sm:px-3 py-1.5 sm:py-2 rounded-md text-xs sm:text-sm bg-blue-600 text-white opacity-60 cursor-not-allowed" aria-disabled="true" title="Simpan">
+                    <svg class="w-4 h-4 sm:hidden" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+                    <span class="hidden sm:inline">Simpan</span>
+                </button>
+                <button type="button" id="preview-close" data-action="preview-close" class="btn inline-flex items-center justify-center gap-1 px-2 sm:px-3 py-1.5 sm:py-2 rounded-md text-xs sm:text-sm" title="Tutup">
+                    <svg class="w-4 h-4 sm:hidden" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                    <span class="hidden sm:inline">Tutup</span>
+                </button>
             </div>
         </footer>
     </div>
