@@ -23,6 +23,9 @@ let modalState = {
 
 // ============= Preview/Editor Modal =============
 
+// Store scroll handler reference for cleanup
+let previewScrollHandler = null;
+
 function openPreviewModal(filePath, fileName) {
   const overlay = document.getElementById('preview-overlay');
   const title = document.getElementById('preview-title');
@@ -31,6 +34,7 @@ function openPreviewModal(filePath, fileName) {
   const saveBtn = document.getElementById('preview-save');
   const loader = document.getElementById('preview-loader');
   const openRaw = document.getElementById('preview-open-raw');
+  const lineNumbersInner = document.getElementById('preview-line-numbers-inner');
   
   overlay.classList.remove('hidden');
   overlay.style.display = 'flex';
@@ -46,6 +50,19 @@ function openPreviewModal(filePath, fileName) {
   modalState.preview.currentFile = filePath;
   modalState.preview.isDirty = false;
   
+  // Setup direct scroll synchronization
+  if (previewScrollHandler) {
+    editor.removeEventListener('scroll', previewScrollHandler);
+  }
+  
+  previewScrollHandler = function() {
+    if (lineNumbersInner) {
+      lineNumbersInner.style.transform = `translateY(${-editor.scrollTop}px)`;
+    }
+  };
+  
+  editor.addEventListener('scroll', previewScrollHandler, { passive: true });
+  
   // Load file content
   fetch(`${API_BASE}?action=content&path=${encodeURIComponent(filePath)}`)
     .then(res => res.json())
@@ -56,7 +73,20 @@ function openPreviewModal(filePath, fileName) {
         meta.textContent = `${formatSize(data.size)} • Terakhir diubah: ${formatDate(data.modified)}`;
         editor.disabled = false;
         openRaw.href = `api.php?action=content&path=${encodeURIComponent(filePath)}`;
-        updateLineNumbers();
+        
+        // Update line numbers after a small delay to ensure DOM is ready
+        setTimeout(() => {
+          updateLineNumbers();
+          // Reset scroll position and sync
+          editor.scrollTop = 0;
+          if (lineNumbersInner) {
+            lineNumbersInner.style.transform = 'translateY(0px)';
+          }
+          // Ensure consistent styling
+          if (typeof window.ensureConsistentStyling === 'function') {
+            try { window.ensureConsistentStyling(); } catch (e) { /* ignore */ }
+          }
+        }, 50);
       } else {
         throw new Error(data.error || 'Gagal memuat file');
       }
@@ -119,15 +149,36 @@ function savePreviewContent() {
 }
 
 function updateLineNumbers() {
-  const editor = document.getElementById('preview-editor');
-  const lineNumbers = document.getElementById('preview-line-numbers-inner');
-  const lines = editor.value.split('\n').length;
-  
-  let html = '';
-  for (let i = 1; i <= lines; i++) {
-    html += `<span>${i}</span>`;
+  // Use the global function from appInitializer.js if available
+  if (typeof window.updateLineNumbers === 'function' && window.updateLineNumbers !== updateLineNumbers) {
+    window.updateLineNumbers();
+    return;
   }
-  lineNumbers.innerHTML = html;
+  
+  // Fallback: Direct implementation
+  const editor = document.getElementById('preview-editor');
+  const lineNumbersInner = document.getElementById('preview-line-numbers-inner');
+  if (!editor || !lineNumbersInner) return;
+  
+  const value = editor.value || '';
+  const lines = value.split('\n');
+  const totalLines = lines.length || 1;
+  
+  // Get computed line height from editor
+  const editorStyle = window.getComputedStyle(editor);
+  const lineHeight = parseFloat(editorStyle.lineHeight) || 24;
+  
+  // Build line numbers
+  let html = '';
+  for (let i = 1; i <= totalLines; i++) {
+    html += `<span style="display:block;height:${lineHeight}px;line-height:${lineHeight}px">${i}</span>`;
+  }
+  lineNumbersInner.innerHTML = html;
+  
+  // Sync scroll
+  if (typeof window.syncLineNumbersScroll === 'function') {
+    window.syncLineNumbersScroll(true);
+  }
 }
 
 // ============= Confirm Modal =============

@@ -989,8 +989,7 @@ function updateLineNumbers() {
     const value = previewEditor.value;
     const sanitized = value.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
     
-    // Count actual lines - tidak perlu add extra line
-    // If empty = 1 line, otherwise split by newline
+    // Count actual lines - If empty = 1 line, otherwise split by newline
     let totalLines = sanitized.length === 0 ? 1 : sanitized.split('\n').length;
 
     // Performance optimization untuk file sangat besar
@@ -1000,18 +999,46 @@ function updateLineNumbers() {
         return;
     }
 
-    // Build line numbers HTML - simple dan efficient
-    let html = '';
+    // Get computed styles from editor for consistent styling
+    const editorStyle = window.getComputedStyle(previewEditor);
+    const lineHeight = editorStyle.lineHeight;
+    const fontSize = editorStyle.fontSize;
+    const fontFamily = editorStyle.fontFamily;
+    
+    // Convert to numeric values for precise calculation
+    const lineHeightNum = parseFloat(lineHeight);
+    const fontSizeNum = parseFloat(fontSize);
+    const actualLineHeight = isNaN(lineHeightNum) ? fontSizeNum * 1.5 : lineHeightNum;
+
+    // Build line numbers HTML - more efficient with document fragment
+    const fragment = document.createDocumentFragment();
     for (let i = 1; i <= totalLines; i += 1) {
-        html += `<span>${i}</span>`;
+        const span = document.createElement('span');
+        span.textContent = i;
+        span.style.height = `${actualLineHeight}px`;
+        span.style.lineHeight = `${actualLineHeight}px`;
+        span.style.display = 'block';
+        span.style.margin = '0';
+        span.style.padding = '0';
+        span.style.fontSize = fontSize;
+        span.style.fontFamily = fontFamily;
+        fragment.appendChild(span);
     }
 
-    previewLineNumbersInner.innerHTML = html || '<span>1</span>';
+    // Clear and append new content
+    previewLineNumbersInner.innerHTML = '';
+    previewLineNumbersInner.appendChild(fragment);
+    
+    // Apply container styling
+    previewLineNumbersInner.style.fontSize = fontSize;
+    previewLineNumbersInner.style.lineHeight = lineHeight;
+    previewLineNumbersInner.style.fontFamily = fontFamily;
     
     console.log('[LINE_NUMBERS] Updated line numbers:', {
         totalLines,
         contentLength: value.length,
-        endsWithNewline: sanitized.endsWith('\n')
+        endsWithNewline: sanitized.endsWith('\n'),
+        actualLineHeight
     });
     
     // Pastikan styling konsisten setelah update
@@ -1023,7 +1050,8 @@ function updateLineNumbers() {
 
 function ensureConsistentStyling() {
     const { previewEditor, previewLineNumbersInner } = elements;
-    if (!previewLineNumbersInner || !previewEditor) {
+    const { previewLineNumbers } = elements;
+    if (!previewLineNumbersInner || !previewEditor || !previewLineNumbers) {
         return;
     }
     
@@ -1031,40 +1059,50 @@ function ensureConsistentStyling() {
     const editorStyle = window.getComputedStyle(previewEditor);
     const lineHeight = editorStyle.lineHeight;
     const fontSize = editorStyle.fontSize;
+    const fontFamily = editorStyle.fontFamily;
+    const paddingTop = editorStyle.paddingTop;
+    const paddingBottom = editorStyle.paddingBottom;
     
-    // Pastikan line numbers inline styles match dengan editor
-    // Gunakan CSS property daripada inline styles untuk flexibility
+    // Convert to numeric values for precise calculation
+    const lineHeightNum = parseFloat(lineHeight);
+    const fontSizeNum = parseFloat(fontSize);
+    const paddingTopNum = parseFloat(paddingTop);
+    const paddingBottomNum = parseFloat(paddingBottom);
+    
+    // Calculate exact line height in pixels
+    const actualLineHeight = isNaN(lineHeightNum) ? fontSizeNum * 1.5 : lineHeightNum;
+    
+    // Apply consistent styling to line numbers
     previewLineNumbersInner.style.fontSize = fontSize;
     previewLineNumbersInner.style.lineHeight = lineHeight;
+    previewLineNumbersInner.style.fontFamily = fontFamily;
+    
+    // Apply matching padding to ensure perfect alignment
+    previewLineNumbersInner.style.paddingTop = paddingTop;
+    previewLineNumbersInner.style.paddingBottom = paddingBottom;
+    
+    // Ensure each line number span has exact same height
+    const lineSpans = previewLineNumbersInner.querySelectorAll('span');
+    lineSpans.forEach(span => {
+        span.style.height = `${actualLineHeight}px`;
+        span.style.lineHeight = `${actualLineHeight}px`;
+        span.style.display = 'block';
+        span.style.margin = '0';
+        span.style.padding = '0';
+    });
     
     console.log('[LINE_NUMBERS] Consistent styling ensured:', {
         fontSize,
-        lineHeight
+        lineHeight,
+        fontFamily,
+        paddingTop,
+        paddingBottom,
+        actualLineHeight,
+        lineCount: lineSpans.length
     });
 }
 
-function syncLineNumbersScroll() {
-    const { previewEditor, previewLineNumbersInner } = elements;
-    if (!previewLineNumbersInner || !previewEditor) {
-        return;
-    }
-
-    // Get exact scroll position dari editor textarea
-    const scrollTop = previewEditor.scrollTop;
-    
-    // Apply transform untuk sinkron scroll
-    // Gunakan translateY untuk smooth scroll sync tanpa re-render
-    previewLineNumbersInner.style.transform = `translateY(${-scrollTop}px)`;
-    
-    // Debug logging (di-throttle agar tidak spam)
-    if (!window.lastLineNumbersSync || Date.now() - window.lastLineNumbersSync > 500) {
-        console.log('[LINE_NUMBERS] Scroll position:', {
-            editorScrollTop: scrollTop,
-            transform: `translateY(${-scrollTop}px)`
-        });
-        window.lastLineNumbersSync = Date.now();
-    }
-}
+// `syncLineNumbersScroll` implemented later (enhanced 2-way sync)
 /**
  * Debug function to compare element styles between editor and line numbers
  * Useful for troubleshooting alignment issues
@@ -1112,6 +1150,13 @@ async function savePreviewContent() {
     });
     updatePreviewStatus();
     
+    // Update save button UI
+    if (elements.previewSave) {
+        elements.previewSave.disabled = true;
+        elements.previewSave.textContent = 'Menyimpan...';
+        elements.previewSave.classList.add('saving');
+    }
+    
     try {
         const content = elements.previewEditor.value;
         
@@ -1144,16 +1189,25 @@ async function savePreviewContent() {
         
         // Update status
         if (elements.previewStatus) {
-            elements.previewStatus.textContent = `Disimpan • ${data.characters.toLocaleString('id-ID')} karakter`;
+            const charCount = content.length.toLocaleString('id-ID');
+            elements.previewStatus.textContent = `Disimpan • ${charCount} karakter`;
         }
         
-        // Disable save button
+        // Update save button
         if (elements.previewSave) {
             elements.previewSave.disabled = true;
+            elements.previewSave.textContent = 'Simpan';
+            elements.previewSave.classList.remove('saving', 'dirty');
         }
+        
+        // Update window title (remove asterisk)
+        const originalTitle = document.title.replace(/^\* /, '');
+        document.title = originalTitle;
         
         // Show success notification
         flashStatus('File berhasil disimpan');
+        
+        return Promise.resolve(data);
         
     } catch (error) {
         console.error('[PREVIEW] Error saving file:', error);
@@ -1171,8 +1225,18 @@ async function savePreviewContent() {
             elements.previewStatus.textContent = 'Gagal menyimpan: ' + error.message;
         }
         
+        // Update save button
+        if (elements.previewSave) {
+            elements.previewSave.disabled = false;
+            elements.previewSave.textContent = 'Simpan *';
+            elements.previewSave.classList.add('dirty');
+            elements.previewSave.classList.remove('saving');
+        }
+        
         // Show error notification
         setError('Gagal menyimpan file: ' + error.message);
+        
+        return Promise.reject(error);
     }
 }
 
@@ -1860,13 +1924,9 @@ function setupEventHandlers() {
         );
     }
 
-    // Setup throttled scroll sync for line numbers (60fps = ~16ms)
+    // Setup enhanced scroll synchronization for line numbers
     if (elements.previewEditor) {
-        const throttledScrollSync = throttle(() => {
-            syncLineNumbersScroll();
-        }, 16);
-
-        elements.previewEditor.addEventListener('scroll', throttledScrollSync, { passive: true });
+        initializeScrollSync();
     }
 
     // Setup scroll listener for virtual scrolling on table
@@ -2285,10 +2345,352 @@ function initializeAdditionalFeatures() {
     setupKeyboardShortcuts();
 }
 
+// Enhanced scroll synchronization state
+const scrollSyncState = {
+    isScrollingFromEditor: false,
+    isScrollingFromLineNumbers: false,
+    lastScrollTime: 0,
+    rafId: null,
+    isInitialized: false,
+    heightCheckTimeout: null,
+    contentChangeTimeout: null
+};
+
+/**
+ * Enhanced scroll synchronization with two-way binding and smooth behavior
+ * @param {boolean} fromEditor - Whether scroll is triggered from editor
+ */
+function syncLineNumbersScroll(fromEditor = true) {
+    const { previewEditor, previewLineNumbersInner } = elements;
+    if (!previewLineNumbersInner || !previewEditor) {
+        return;
+    }
+
+    // Simply sync line numbers to editor scroll position using transform
+    const scrollTop = previewEditor.scrollTop;
+    
+    // Apply transform for smooth sync without transition (immediate)
+    previewLineNumbersInner.style.transform = `translateY(${-scrollTop}px)`;
+}
+
+/**
+ * Validate and fix scroll height mismatches
+ */
+function validateScrollHeights() {
+    const { previewEditor, previewLineNumbersInner } = elements;
+    if (!previewLineNumbersInner || !previewEditor) return;
+
+    const editorScrollHeight = previewEditor.scrollHeight;
+    const lineNumbersHeight = previewLineNumbersInner.scrollHeight;
+    const heightDiff = Math.abs(editorScrollHeight - lineNumbersHeight);
+
+    // Update line numbers if height difference is significant
+    if (heightDiff > 10) {
+        console.log('[LINE_NUMBERS] Height mismatch detected:', {
+            editorScrollHeight,
+            lineNumbersHeight,
+            difference: heightDiff
+        });
+        
+        // Debounced update to prevent excessive re-renders
+        clearTimeout(scrollSyncState.heightCheckTimeout);
+        scrollSyncState.heightCheckTimeout = setTimeout(() => {
+            updateLineNumbers();
+        }, 100);
+    }
+}
+
+/**
+ * Throttled scroll logging for debugging
+ */
+function logScrollSync(direction, data) {
+    const now = Date.now();
+    if (now - scrollSyncState.lastScrollTime > 200) { // Log every 200ms max
+        console.log(`[LINE_NUMBERS] Scroll sync ${direction}:`, data);
+        scrollSyncState.lastScrollTime = now;
+    }
+}
+
+/**
+ * Initialize scroll synchronization with proper event listeners
+ */
+function initializeScrollSync() {
+    const { previewEditor, previewLineNumbersInner } = elements;
+    if (!previewLineNumbersInner || !previewEditor || scrollSyncState.isInitialized) {
+        return;
+    }
+
+    console.log('[LINE_NUMBERS] Initializing enhanced scroll synchronization...');
+
+    // Throttled scroll handler for editor (60fps = ~16ms)
+    const throttledEditorScroll = throttle(() => {
+        syncLineNumbersScroll(true);
+    }, 16);
+    scrollSyncState.throttledEditorScroll = throttledEditorScroll;
+
+    // Throttled scroll handler for line numbers (wheel/scroll/touch)
+    const throttledLineNumbersScroll = throttle(() => {
+        syncLineNumbersScroll(false);
+    }, 16);
+    scrollSyncState.throttledLineNumbersScroll = throttledLineNumbersScroll;
+
+    // Add event listeners with passive option for better performance
+    previewEditor.addEventListener('scroll', throttledEditorScroll, { passive: true });
+    
+    // Handle wheel events on editor to normalize delta values
+    const onEditorWheel = (e) => {
+        // No-op handler kept for potential future normalization or intercepting
+    };
+    previewEditor.addEventListener('wheel', onEditorWheel, { passive: true });
+    scrollSyncState.onEditorWheel = onEditorWheel;
+
+    // Helper: animate editor scroll to a target top (smooth falling back to direct assignment)
+    let smoothAnimId = null;
+    let smoothTarget = null;
+    function animateEditorScrollTo(target) {
+        if (!previewEditor) return;
+        smoothTarget = Math.max(0, Math.min(target, previewEditor.scrollHeight - previewEditor.clientHeight));
+        if ('scrollBehavior' in document.documentElement.style) {
+            // Browser supports smooth scroll via property
+            previewEditor.scrollTo({ top: smoothTarget, behavior: 'smooth' });
+            return;
+        }
+        // Fallback manual animation
+        if (smoothAnimId) cancelAnimationFrame(smoothAnimId);
+        const start = previewEditor.scrollTop;
+        const diff = smoothTarget - start;
+        const duration = 180; // ms
+        const startTime = performance.now();
+        function step(now) {
+            const t = Math.min(1, (now - startTime) / duration);
+            const eased = (--t) * t * t + 1; // easeOutCubic
+            previewEditor.scrollTop = start + diff * eased;
+            if (Math.abs(previewEditor.scrollTop - smoothTarget) > 0.5) {
+                smoothAnimId = requestAnimationFrame(step);
+            } else {
+                previewEditor.scrollTop = smoothTarget;
+                smoothAnimId = null;
+            }
+        }
+        smoothAnimId = requestAnimationFrame(step);
+    }
+
+    // Handle resize events to maintain synchronization
+    const resizeObserver = new ResizeObserver(entries => {
+        for (const entry of entries) {
+            if (entry.target === previewEditor) {
+                // Re-sync on resize
+                syncLineNumbersScroll(true);
+            }
+        }
+    });
+
+    resizeObserver.observe(previewEditor);
+    scrollSyncState.resizeObserver = resizeObserver;
+
+    // Handle window resize
+    const throttledWindowResize = throttle(() => {
+        ensureConsistentStyling();
+        syncLineNumbersScroll(true);
+    }, 100);
+    scrollSyncState.windowResizeHandler = throttledWindowResize;
+
+    window.addEventListener('resize', throttledWindowResize, { passive: true });
+
+    // Handle content changes
+    const mutationObserver = new MutationObserver((mutations) => {
+        let shouldResync = false;
+        
+        mutations.forEach((mutation) => {
+            if (mutation.type === 'characterData' ||
+                mutation.type === 'childList' ||
+                (mutation.type === 'attributes' && mutation.attributeName === 'style')) {
+                shouldResync = true;
+            }
+        });
+
+        if (shouldResync) {
+            // Debounced resync
+            clearTimeout(scrollSyncState.contentChangeTimeout);
+            scrollSyncState.contentChangeTimeout = setTimeout(() => {
+                updateLineNumbers();
+                syncLineNumbersScroll(true);
+            }, 50);
+        }
+    });
+
+    mutationObserver.observe(previewEditor, {
+        characterData: true,
+        childList: true,
+        subtree: true,
+        attributes: true,
+        attributeFilter: ['style']
+    });
+    scrollSyncState.mutationObserver = mutationObserver;
+
+    // Mark as initialized
+    scrollSyncState.isInitialized = true;
+    console.log('[LINE_NUMBERS] Enhanced scroll synchronization initialized successfully');
+
+    // Two-way: Allow mouse wheel / touch on line numbers to control editor scroll
+    const { previewLineNumbers } = elements;
+    if (previewLineNumbers) {
+        // Wheel handler - convert wheel on line numbers to editor.scrollTop
+        const onLineNumbersWheel = throttle((e) => {
+            // Prevent default so only editor scroll changes (this helps mobile and trackpad)
+            if (e.cancelable) e.preventDefault();
+
+            // Normalize deltaY based on deltaMode
+            let deltaY = e.deltaY;
+            if (e.deltaMode === WheelEvent.DOM_DELTA_LINE) {
+                deltaY *= 16;
+            } else if (e.deltaMode === WheelEvent.DOM_DELTA_PAGE) {
+                deltaY *= previewEditor.clientHeight;
+            }
+
+            // Add to editor scrollTop with smooth animation
+            animateEditorScrollTo(previewEditor.scrollTop + deltaY);
+            // Update side too
+            syncLineNumbersScroll(false);
+        }, 16);
+
+        // Pointer drag to scroll (desktop) & touch move (mobile)
+        let isDragging = false;
+        let dragStartY = 0;
+        let dragStartTop = 0;
+
+        function onPointerDown(e) {
+            isDragging = true;
+            dragStartY = e.clientY || (e.touches && e.touches[0].clientY) || 0;
+            dragStartTop = previewEditor.scrollTop;
+            previewLineNumbers.setPointerCapture?.(e.pointerId);
+            e.preventDefault?.();
+        }
+
+        function onPointerMove(e) {
+            if (!isDragging) return;
+            const y = e.clientY || (e.touches && e.touches[0].clientY) || 0;
+            const delta = dragStartY - y;
+            const target = dragStartTop + delta;
+            animateEditorScrollTo(target);
+            syncLineNumbersScroll(false);
+        }
+
+        function onPointerUp(e) {
+            isDragging = false;
+            previewLineNumbers.releasePointerCapture?.(e.pointerId);
+        }
+
+        // Add listeners
+        previewLineNumbers.addEventListener('wheel', onLineNumbersWheel, { passive: false });
+        // pointer events
+        previewLineNumbers.addEventListener('pointerdown', onPointerDown);
+        window.addEventListener('pointermove', onPointerMove);
+        window.addEventListener('pointerup', onPointerUp);
+        // touch fallback
+        const onTouchStart = (e) => { isDragging = true; dragStartY = e.touches[0].clientY; dragStartTop = previewEditor.scrollTop; };
+        const onTouchMove = throttle((e) => { if (!isDragging) return; const cur = e.touches[0].clientY; const delta = dragStartY - cur; animateEditorScrollTo(dragStartTop + delta); syncLineNumbersScroll(false); }, 16);
+        const onTouchEnd = () => { isDragging = false; };
+        previewLineNumbers.addEventListener('touchstart', onTouchStart, { passive: true });
+        previewLineNumbers.addEventListener('touchmove', onTouchMove, { passive: false });
+        previewLineNumbers.addEventListener('touchend', onTouchEnd, { passive: true });
+
+        // If the line numbers container becomes scrollable, listen to its scroll event
+        previewLineNumbers.addEventListener('scroll', throttledLineNumbersScroll, { passive: true });
+
+        // Cleanup hook - ensure we remove listeners on cleanup
+        const cleanupListeners = () => {
+            previewLineNumbers.removeEventListener('wheel', onLineNumbersWheel);
+            previewLineNumbers.removeEventListener('pointerdown', onPointerDown);
+            window.removeEventListener('pointermove', onPointerMove);
+            window.removeEventListener('pointerup', onPointerUp);
+            previewLineNumbers.removeEventListener('touchstart', onTouchStart);
+            previewLineNumbers.removeEventListener('touchmove', onTouchMove);
+            previewLineNumbers.removeEventListener('touchend', onTouchEnd);
+            previewLineNumbers.removeEventListener('scroll', throttledLineNumbersScroll);
+        };
+
+        // Expose cleanup for the existing cleanupScrollSync which uses other timers
+        scrollSyncState.cleanupListeners = cleanupListeners;
+    }
+
+    // store editor listeners to cleanup later
+    scrollSyncState.previewEditor = previewEditor;
+    scrollSyncState.previewLineNumbers = elements.previewLineNumbers;
+    // attach cancel function for smooth animation
+    scrollSyncState.cancelSmoothAnim = () => {
+        try { if (smoothAnimId) cancelAnimationFrame(smoothAnimId); } catch (e) {}
+        smoothAnimId = null;
+    };
+}
+
+/**
+ * Cleanup scroll synchronization
+ */
+function cleanupScrollSync() {
+    if (scrollSyncState.rafId) {
+        cancelAnimationFrame(scrollSyncState.rafId);
+    }
+    // Cancel any autoraf for smooth scroll
+    if (scrollSyncState.cancelSmoothAnim) {
+        try { scrollSyncState.cancelSmoothAnim(); } catch (e) {}
+    }
+    clearTimeout(scrollSyncState.heightCheckTimeout);
+    clearTimeout(scrollSyncState.contentChangeTimeout);
+    // Remove editor listeners
+    try {
+        if (scrollSyncState.previewEditor && scrollSyncState.throttledEditorScroll) {
+            scrollSyncState.previewEditor.removeEventListener('scroll', scrollSyncState.throttledEditorScroll);
+        }
+        if (scrollSyncState.previewEditor && scrollSyncState.onEditorWheel) {
+            scrollSyncState.previewEditor.removeEventListener('wheel', scrollSyncState.onEditorWheel);
+        }
+    } catch (e) { /* swallow */ }
+
+    // Remove line numbers listeners and cleanup
+    try {
+        if (scrollSyncState.cleanupListeners) {
+            scrollSyncState.cleanupListeners();
+        }
+    } catch (e) { /* swallow */ }
+
+    // Disconnect observers
+    try { if (scrollSyncState.resizeObserver) scrollSyncState.resizeObserver.disconnect(); } catch (e) {}
+    try { if (scrollSyncState.mutationObserver) scrollSyncState.mutationObserver.disconnect(); } catch (e) {}
+
+    // Remove window resize listener
+    try { if (scrollSyncState.windowResizeHandler) window.removeEventListener('resize', scrollSyncState.windowResizeHandler); } catch (e) {}
+
+    scrollSyncState.isInitialized = false;
+    // unset saved references
+    scrollSyncState.throttledEditorScroll = null;
+    scrollSyncState.throttledLineNumbersScroll = null;
+    scrollSyncState.onEditorWheel = null;
+    scrollSyncState.resizeObserver = null;
+    scrollSyncState.mutationObserver = null;
+    scrollSyncState.windowResizeHandler = null;
+    scrollSyncState.previewEditor = null;
+    scrollSyncState.previewLineNumbers = null;
+    scrollSyncState.cleanupListeners = null;
+    scrollSyncState.cancelSmoothAnim = null;
+    console.log('[LINE_NUMBERS] Scroll synchronization cleaned up');
+}
+
 // Export fungsi utama
 export {
     setupEventHandlers,
     loadInitialDirectory,
     initializeAdditionalFeatures,
-    handleContextMenuAction
+    handleContextMenuAction,
+    initializeScrollSync,
+    cleanupScrollSync
 };
+
+// Expose some helper functions to legacy modules that call them directly
+try {
+    window.updateLineNumbers = updateLineNumbers;
+    window.ensureConsistentStyling = ensureConsistentStyling;
+    window.syncLineNumbersScroll = syncLineNumbersScroll;
+    window.initializeScrollSync = initializeScrollSync;
+    window.cleanupScrollSync = cleanupScrollSync;
+} catch (e) { /* silent */ }

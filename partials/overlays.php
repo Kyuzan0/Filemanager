@@ -14,7 +14,7 @@
         </header>
         <div class="preview-body mb-0 flex-1">
             <div class="preview-editor-wrapper flex flex-row">
-                <div class="preview-line-numbers block sm:block" id="preview-line-numbers">
+                <div class="preview-line-numbers" id="preview-line-numbers">
                     <div class="preview-line-numbers-inner" id="preview-line-numbers-inner"><span>1</span></div>
                 </div>
                 <textarea class="preview-editor block bg-white border-0 rounded-md text-sm md:text-base" id="preview-editor" spellcheck="false"></textarea>
