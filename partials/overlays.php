@@ -4,31 +4,59 @@
 ?>
 
 <div class="preview-overlay fixed inset-0 items-center justify-center bg-black/45 p-2 md:p-4 z-50 hidden" id="preview-overlay" aria-hidden="true" data-action="preview" data-open="preview">
-    <div class="preview-dialog bg-white rounded-lg p-4 md:p-8 w-full max-w-3xl md:max-w-6xl shadow-lg max-h-[90vh] md:max-h-[92vh] flex flex-col" role="dialog" aria-modal="true" aria-labelledby="preview-title">
+    <div class="preview-dialog bg-white dark:bg-[#1a2332] rounded-lg p-4 md:p-8 w-full max-w-3xl md:max-w-6xl shadow-lg max-h-[90vh] md:max-h-[92vh] flex flex-col" role="dialog" aria-modal="true" aria-labelledby="preview-title">
         <header class="preview-header mb-4 flex-shrink-0">
             <div class="preview-title-group">
-                <span class="preview-label text-sm text-gray-600">Editor</span>
-                <h2 class="preview-title text-lg md:text-xl font-semibold" id="preview-title">Pratinjau</h2>
+                <span class="preview-label text-sm text-gray-600 dark:text-slate-400" id="preview-label">Editor</span>
+                <h2 class="preview-title text-lg md:text-xl font-semibold dark:text-slate-200" id="preview-title">Pratinjau</h2>
             </div>
-            <p class="preview-meta text-sm text-gray-500" id="preview-meta"></p>
+            <p class="preview-meta text-sm text-gray-500 dark:text-slate-400" id="preview-meta"></p>
         </header>
-        <div class="preview-body mb-0 flex-1">
-            <div class="preview-editor-wrapper flex flex-row">
+        <div class="preview-body mb-0 flex-1 overflow-hidden">
+            <!-- Text Editor View -->
+            <div class="preview-editor-wrapper flex flex-row" id="preview-editor-wrapper">
                 <div class="preview-line-numbers" id="preview-line-numbers">
                     <div class="preview-line-numbers-inner" id="preview-line-numbers-inner"><span>1</span></div>
                 </div>
-                <textarea class="preview-editor block bg-white border-0 rounded-md text-sm md:text-base" id="preview-editor" spellcheck="false"></textarea>
+                <textarea class="preview-editor block bg-white dark:bg-[#0d1117] dark:text-slate-200 border-0 rounded-md text-sm md:text-base" id="preview-editor" spellcheck="false"></textarea>
+            </div>
+            <!-- Image Preview View -->
+            <div class="preview-image-wrapper items-center justify-center h-full" id="preview-image-wrapper" style="display: none;">
+                <img id="preview-image" src="" alt="Preview" class="max-w-full max-h-full object-contain rounded-lg shadow-md" />
+            </div>
+            <!-- Video Preview View -->
+            <div class="preview-video-wrapper items-center justify-center h-full" id="preview-video-wrapper" style="display: none;">
+                <video id="preview-video" controls class="max-w-full max-h-full rounded-lg shadow-md">
+                    Your browser does not support the video tag.
+                </video>
+            </div>
+            <!-- Audio Preview View -->
+            <div class="preview-audio-wrapper flex-col items-center justify-center h-full gap-4" id="preview-audio-wrapper" style="display: none;">
+                <div class="audio-icon w-24 h-24 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center">
+                    <svg class="w-12 h-12 text-white" viewBox="0 0 24 24" fill="currentColor"><path d="M12 3v10.55c-.5-.3-1-.5-1.5-.5-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/></svg>
+                </div>
+                <audio id="preview-audio" controls class="w-full max-w-md">
+                    Your browser does not support the audio element.
+                </audio>
+            </div>
+            <!-- PDF Preview View -->
+            <div class="preview-pdf-wrapper h-full" id="preview-pdf-wrapper" style="display: none;">
+                <iframe id="preview-pdf" src="" class="w-full h-full rounded-lg border-0" title="PDF Preview"></iframe>
             </div>
         </div>
         <footer class="preview-footer flex-shrink-0">
             <div class="preview-footer-status mb-2 sm:mb-3">
-                <span class="preview-status text-xs sm:text-sm text-gray-600" id="preview-status"></span>
+                <span class="preview-status text-xs sm:text-sm text-gray-600 dark:text-slate-400" id="preview-status"></span>
                 <span class="preview-loader text-xs sm:text-sm text-blue-600" id="preview-loader" hidden>Memuat konten...</span>
             </div>
-            <div class="preview-footer-actions grid grid-cols-4 sm:flex sm:flex-row gap-1.5 sm:gap-2 md:gap-3">
+            <div class="preview-footer-actions grid grid-cols-5 sm:flex sm:flex-row gap-1.5 sm:gap-2 md:gap-3">
                 <a id="preview-open-raw" href="#" target="_blank" rel="noopener" class="inline-flex items-center justify-center gap-1 text-xs sm:text-sm text-blue-600 hover:underline focus:outline-none px-2 sm:px-3 py-1.5 sm:py-2 border border-blue-200 dark:border-blue-800 rounded-md" title="Buka Asli">
                     <svg class="w-4 h-4 sm:hidden" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6M15 3h6v6M10 14L21 3"/></svg>
                     <span class="hidden sm:inline">Buka Asli</span>
+                </a>
+                <a id="preview-download" href="#" download class="inline-flex items-center justify-center gap-1 text-xs sm:text-sm text-green-600 hover:underline focus:outline-none px-2 sm:px-3 py-1.5 sm:py-2 border border-green-200 dark:border-green-800 rounded-md" title="Download">
+                    <svg class="w-4 h-4 sm:hidden" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                    <span class="hidden sm:inline">Download</span>
                 </a>
                 <button type="button" id="preview-copy" data-action="preview-copy" class="btn inline-flex items-center justify-center gap-1 px-2 sm:px-3 py-1.5 sm:py-2 rounded-md text-xs sm:text-sm" title="Salin">
                     <svg class="w-4 h-4 sm:hidden" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>

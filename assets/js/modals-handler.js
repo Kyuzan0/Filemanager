@@ -26,15 +26,68 @@ let modalState = {
 // Store scroll handler reference for cleanup
 let previewScrollHandler = null;
 
+// File type detection helpers
+const PREVIEW_TYPES = {
+  image: ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp', 'svg', 'ico'],
+  video: ['mp4', 'webm', 'ogg', 'mov', 'avi', 'mkv'],
+  audio: ['mp3', 'wav', 'ogg', 'flac', 'aac', 'm4a', 'wma'],
+  pdf: ['pdf'],
+  text: ['txt', 'html', 'css', 'js', 'json', 'xml', 'md', 'php', 'py', 'java', 'c', 'cpp', 'h', 'sh', 'bat', 'sql', 'yml', 'yaml', 'ini', 'conf', 'log', 'htaccess', 'gitignore', 'env', 'ts', 'tsx', 'jsx', 'vue', 'svelte']
+};
+
+function getFileExtension(filename) {
+  const ext = filename.split('.').pop().toLowerCase();
+  return ext === filename.toLowerCase() ? '' : ext;
+}
+
+function getPreviewType(filename) {
+  const ext = getFileExtension(filename);
+  for (const [type, extensions] of Object.entries(PREVIEW_TYPES)) {
+    if (extensions.includes(ext)) return type;
+  }
+  // Default to text for unknown extensions
+  return 'text';
+}
+
+function hideAllPreviewWrappers() {
+  const wrappers = ['preview-editor-wrapper', 'preview-image-wrapper', 'preview-video-wrapper', 'preview-audio-wrapper', 'preview-pdf-wrapper'];
+  wrappers.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) {
+      el.style.display = 'none';
+    }
+  });
+}
+
+function showPreviewWrapper(type) {
+  hideAllPreviewWrappers();
+  const wrapperMap = {
+    text: 'preview-editor-wrapper',
+    image: 'preview-image-wrapper',
+    video: 'preview-video-wrapper',
+    audio: 'preview-audio-wrapper',
+    pdf: 'preview-pdf-wrapper'
+  };
+  const wrapper = document.getElementById(wrapperMap[type]);
+  if (wrapper) {
+    wrapper.style.display = type === 'audio' ? 'flex' : (type === 'text' ? 'flex' : 'flex');
+  }
+}
+
 function openPreviewModal(filePath, fileName) {
   const overlay = document.getElementById('preview-overlay');
   const title = document.getElementById('preview-title');
   const meta = document.getElementById('preview-meta');
   const editor = document.getElementById('preview-editor');
   const saveBtn = document.getElementById('preview-save');
+  const copyBtn = document.getElementById('preview-copy');
   const loader = document.getElementById('preview-loader');
   const openRaw = document.getElementById('preview-open-raw');
+  const downloadBtn = document.getElementById('preview-download');
   const lineNumbersInner = document.getElementById('preview-line-numbers-inner');
+  
+  // Detect file type
+  const previewType = getPreviewType(fileName);
   
   overlay.classList.remove('hidden');
   overlay.style.display = 'flex';
@@ -42,62 +95,151 @@ function openPreviewModal(filePath, fileName) {
   
   title.textContent = fileName;
   meta.textContent = 'Memuat...';
-  editor.value = '';
-  editor.disabled = true;
-  saveBtn.disabled = true;
   loader.hidden = false;
   
   modalState.preview.currentFile = filePath;
   modalState.preview.isDirty = false;
   
-  // Setup direct scroll synchronization
-  if (previewScrollHandler) {
-    editor.removeEventListener('scroll', previewScrollHandler);
+  // Show/hide appropriate actions based on preview type
+  const isEditable = previewType === 'text';
+  if (saveBtn) saveBtn.style.display = isEditable ? '' : 'none';
+  if (copyBtn) copyBtn.style.display = isEditable ? '' : 'none';
+  
+  // Set download link for all file types
+  const downloadUrl = `api.php?action=raw&path=${encodeURIComponent(filePath)}`;
+  if (downloadBtn) {
+    downloadBtn.href = downloadUrl;
+    downloadBtn.download = fileName;
   }
   
-  previewScrollHandler = function() {
-    if (lineNumbersInner) {
-      lineNumbersInner.style.transform = `translateY(${-editor.scrollTop}px)`;
+  // Show appropriate wrapper
+  showPreviewWrapper(previewType);
+  
+  if (previewType === 'text') {
+    // Text/Code Editor Mode
+    editor.value = '';
+    editor.disabled = true;
+    saveBtn.disabled = true;
+    
+    // Setup direct scroll synchronization
+    if (previewScrollHandler) {
+      editor.removeEventListener('scroll', previewScrollHandler);
     }
-  };
-  
-  editor.addEventListener('scroll', previewScrollHandler, { passive: true });
-  
-  // Load file content
-  fetch(`${API_BASE}?action=content&path=${encodeURIComponent(filePath)}`)
-    .then(res => res.json())
-    .then(data => {
-      if (data.success) {
-        editor.value = data.content || '';
-        modalState.preview.originalContent = data.content || '';
-        meta.textContent = `${formatSize(data.size)} • Terakhir diubah: ${formatDate(data.modified)}`;
-        editor.disabled = false;
-        openRaw.href = `api.php?action=content&path=${encodeURIComponent(filePath)}`;
-        
-        // Update line numbers after a small delay to ensure DOM is ready
-        setTimeout(() => {
-          updateLineNumbers();
-          // Reset scroll position and sync
-          editor.scrollTop = 0;
-          if (lineNumbersInner) {
-            lineNumbersInner.style.transform = 'translateY(0px)';
-          }
-          // Ensure consistent styling
-          if (typeof window.ensureConsistentStyling === 'function') {
-            try { window.ensureConsistentStyling(); } catch (e) { /* ignore */ }
-          }
-        }, 50);
-      } else {
-        throw new Error(data.error || 'Gagal memuat file');
+    
+    previewScrollHandler = function() {
+      if (lineNumbersInner) {
+        lineNumbersInner.style.transform = `translateY(${-editor.scrollTop}px)`;
       }
-    })
-    .catch(error => {
-      meta.textContent = 'Error: ' + error.message;
-      editor.value = 'Gagal memuat konten file.';
-    })
-    .finally(() => {
+    };
+    
+    editor.addEventListener('scroll', previewScrollHandler, { passive: true });
+    
+    // Load file content
+    fetch(`${API_BASE}?action=content&path=${encodeURIComponent(filePath)}`)
+      .then(res => res.json())
+      .then(data => {
+        if (data.success) {
+          editor.value = data.content || '';
+          modalState.preview.originalContent = data.content || '';
+          meta.textContent = `${formatSize(data.size)} • Terakhir diubah: ${formatDate(data.modified)}`;
+          editor.disabled = false;
+          openRaw.href = `api.php?action=content&path=${encodeURIComponent(filePath)}`;
+          
+          // Update line numbers after a small delay to ensure DOM is ready
+          setTimeout(() => {
+            updateLineNumbers();
+            // Reset scroll position and sync
+            editor.scrollTop = 0;
+            if (lineNumbersInner) {
+              lineNumbersInner.style.transform = 'translateY(0px)';
+            }
+            // Ensure consistent styling
+            if (typeof window.ensureConsistentStyling === 'function') {
+              try { window.ensureConsistentStyling(); } catch (e) { /* ignore */ }
+            }
+          }, 50);
+        } else {
+          throw new Error(data.error || 'Gagal memuat file');
+        }
+      })
+      .catch(error => {
+        meta.textContent = 'Error: ' + error.message;
+        editor.value = 'Gagal memuat konten file.';
+      })
+      .finally(() => {
+        loader.hidden = true;
+      });
+      
+  } else if (previewType === 'image') {
+    // Image Preview Mode
+    const img = document.getElementById('preview-image');
+    const rawUrl = `api.php?action=raw&path=${encodeURIComponent(filePath)}`;
+    
+    img.onload = function() {
+      meta.textContent = `${this.naturalWidth} × ${this.naturalHeight} piksel`;
       loader.hidden = true;
-    });
+    };
+    img.onerror = function() {
+      meta.textContent = 'Error: Gagal memuat gambar';
+      loader.hidden = true;
+    };
+    img.src = rawUrl;
+    openRaw.href = rawUrl;
+    
+  } else if (previewType === 'video') {
+    // Video Preview Mode
+    const video = document.getElementById('preview-video');
+    const rawUrl = `api.php?action=raw&path=${encodeURIComponent(filePath)}`;
+    
+    video.onloadedmetadata = function() {
+      const duration = formatDuration(this.duration);
+      meta.textContent = `${this.videoWidth} × ${this.videoHeight} • ${duration}`;
+      loader.hidden = true;
+    };
+    video.onerror = function() {
+      meta.textContent = 'Error: Gagal memuat video';
+      loader.hidden = true;
+    };
+    video.src = rawUrl;
+    openRaw.href = rawUrl;
+    
+  } else if (previewType === 'audio') {
+    // Audio Preview Mode
+    const audio = document.getElementById('preview-audio');
+    const rawUrl = `api.php?action=raw&path=${encodeURIComponent(filePath)}`;
+    
+    audio.onloadedmetadata = function() {
+      const duration = formatDuration(this.duration);
+      meta.textContent = `Durasi: ${duration}`;
+      loader.hidden = true;
+    };
+    audio.onerror = function() {
+      meta.textContent = 'Error: Gagal memuat audio';
+      loader.hidden = true;
+    };
+    audio.src = rawUrl;
+    openRaw.href = rawUrl;
+    
+  } else if (previewType === 'pdf') {
+    // PDF Preview Mode
+    const iframe = document.getElementById('preview-pdf');
+    const rawUrl = `api.php?action=raw&path=${encodeURIComponent(filePath)}`;
+    
+    iframe.onload = function() {
+      meta.textContent = 'PDF Document';
+      loader.hidden = true;
+    };
+    iframe.src = rawUrl;
+    openRaw.href = rawUrl;
+  }
+}
+
+// Helper function to format duration (for video/audio)
+function formatDuration(seconds) {
+  if (isNaN(seconds) || seconds === Infinity) return 'Unknown';
+  const mins = Math.floor(seconds / 60);
+  const secs = Math.floor(seconds % 60);
+  return `${mins}:${secs.toString().padStart(2, '0')}`;
 }
 
 function closePreviewModal() {
@@ -110,6 +252,32 @@ function closePreviewModal() {
   overlay.classList.add('hidden');
   overlay.style.display = 'none';
   overlay.setAttribute('aria-hidden', 'true');
+  
+  // Cleanup media elements to stop playback
+  const video = document.getElementById('preview-video');
+  const audio = document.getElementById('preview-audio');
+  const image = document.getElementById('preview-image');
+  const pdf = document.getElementById('preview-pdf');
+  
+  if (video) {
+    video.pause();
+    video.src = '';
+    video.load();
+  }
+  if (audio) {
+    audio.pause();
+    audio.src = '';
+    audio.load();
+  }
+  if (image) {
+    image.src = '';
+  }
+  if (pdf) {
+    pdf.src = '';
+  }
+  
+  // Hide all wrappers
+  hideAllPreviewWrappers();
   
   modalState.preview.currentFile = null;
   modalState.preview.isDirty = false;
