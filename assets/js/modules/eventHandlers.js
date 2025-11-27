@@ -451,11 +451,80 @@ export function setupPreviewEditorHandler(
     });
 
     previewEditor.addEventListener('keydown', (event) => {
+        // Ctrl/Cmd + S for save
         if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 's') {
             event.preventDefault();
             if (!previewSave.disabled) {
                 savePreviewContent();
             }
+            return;
+        }
+
+        // Ctrl/Cmd + Enter for save and close
+        if ((event.ctrlKey || event.metaKey) && event.key === 'Enter') {
+            event.preventDefault();
+            if (!previewSave.disabled) {
+                savePreviewContent().then(() => {
+                    // Close after successful save
+                    const closeBtn = document.getElementById('preview-close');
+                    if (closeBtn) {
+                        closeBtn.click();
+                    }
+                });
+            }
+            return;
+        }
+
+        // Escape to close (if no unsaved changes)
+        if (event.key === 'Escape') {
+            const hasUnsaved = previewEditor.value !== state.preview.originalContent;
+            if (!hasUnsaved) {
+                const closeBtn = document.getElementById('preview-close');
+                if (closeBtn) {
+                    closeBtn.click();
+                }
+            } else {
+                // Show unsaved changes dialog
+                event.preventDefault();
+            }
+            return;
+        }
+
+        // Ctrl/Cmd + F for find
+        if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'f') {
+            event.preventDefault();
+            // Implement find functionality
+            const searchTerm = prompt('Cari teks:');
+            if (searchTerm) {
+                const content = previewEditor.value;
+                const index = content.indexOf(searchTerm);
+                if (index !== -1) {
+                    previewEditor.focus();
+                    previewEditor.setSelectionRange(index, index + searchTerm.length);
+                } else {
+                    alert('Teks tidak ditemukan');
+                }
+            }
+            return;
+        }
+
+        // Tab key handling for proper indentation
+        if (event.key === 'Tab') {
+            event.preventDefault();
+            const start = previewEditor.selectionStart;
+            const end = previewEditor.selectionEnd;
+            const value = previewEditor.value;
+            
+            // Insert 4 spaces for tab
+            const spaces = '    ';
+            previewEditor.value = value.substring(0, start) + spaces + value.substring(end);
+            
+            // Restore cursor position
+            previewEditor.selectionStart = previewEditor.selectionEnd = start + spaces.length;
+            
+            // Trigger input event to update line numbers
+            previewEditor.dispatchEvent(new Event('input', { bubbles: true }));
+            return;
         }
     });
 
@@ -473,7 +542,7 @@ export function setupPreviewEditorHandler(
                 // Start aggressive monitoring while keyboard is visible
                 scrollMonitorInterval = setInterval(() => {
                     syncLineNumbersScroll();
-                }, 25); // ~40fps for very smooth monitoring
+                }, 16); // ~60fps for smoother monitoring
             }
         });
 

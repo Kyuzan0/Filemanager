@@ -67,19 +67,42 @@ tbody tr:hover {
   font-size: 16px;
 }
 
-/* Mobile Table */
-@media (max-width: 768px) {
+/* Desktop table styles */
+@media (min-width: 768px) {
   table {
-    font-size: 12px;
+    font-size: 14px;
   }
 
   th,
   td {
-    padding: 8px 12px;
+    padding: 12px;
   }
 
   th {
-    font-size: 11px;
+    font-size: 13px;
+  }
+}
+
+/* Mobile table - more compact */
+@media (max-width: 767px) {
+  table {
+    font-size: 13px;
+  }
+
+  th,
+  td {
+    padding: 8px 10px;
+  }
+
+  th {
+    font-size: 12px;
+  }
+}
+
+/* Ultra-compact mobile */
+@media (max-width: 479px) {
+  table {
+    font-size: 12px;
   }
 }
 

@@ -258,6 +258,268 @@
   max-width: 100%;
 }
 
+/* ===========================================
+   MOBILE RESPONSIVE STYLES
+   =========================================== */
+
+/* Extra small devices (phones, less than 480px) */
+@media (max-width: 479px) {
+  .preview-overlay {
+    padding: 0;
+  }
+  
+  .preview-dialog {
+    border-radius: 0;
+    max-height: 100vh;
+    height: 100vh;
+    padding: 0.75rem;
+  }
+  
+  .preview-header {
+    flex-direction: column;
+    gap: 0.5rem;
+    margin-bottom: 0.75rem;
+  }
+  
+  .preview-title {
+    font-size: 1rem;
+  }
+  
+  .preview-label {
+    font-size: 0.75rem;
+  }
+  
+  .preview-meta {
+    font-size: 0.75rem;
+  }
+  
+  .preview-editor-wrapper {
+    min-height: 200px;
+    max-height: calc(100vh - 200px);
+    border-radius: 0.375rem;
+  }
+  
+  .preview-line-numbers {
+    min-width: 2.5rem;
+    padding: 0.5rem 0.5rem;
+    font-size: 12px;
+    line-height: 20px;
+  }
+  
+  .preview-line-numbers-inner span {
+    height: 20px;
+    line-height: 20px;
+    font-size: 12px;
+  }
+  
+  .preview-editor,
+  .preview-editor-wrapper .preview-editor {
+    font-size: 12px;
+    line-height: 20px;
+    padding: 0.5rem 0.75rem;
+    -webkit-text-size-adjust: none;
+    text-size-adjust: none;
+  }
+  
+  .preview-footer {
+    padding-top: 0.5rem;
+  }
+  
+  .preview-footer-status {
+    margin-bottom: 0.5rem;
+  }
+  
+  .preview-status,
+  .preview-loader {
+    font-size: 0.75rem;
+  }
+  
+  .preview-footer-actions {
+    gap: 0.375rem;
+  }
+  
+  .preview-footer-actions button,
+  .preview-footer-actions a {
+    padding: 0.5rem 0.75rem;
+    font-size: 0.8125rem;
+    min-height: 40px;
+  }
+  
+  /* Stack buttons on very small screens */
+  .preview-footer-actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.5rem;
+  }
+  
+  .preview-footer-actions #preview-close {
+    grid-column: span 2;
+  }
+}
+
+/* Small devices (phones in landscape, 480px - 639px) */
+@media (min-width: 480px) and (max-width: 639px) {
+  .preview-overlay {
+    padding: 0.25rem;
+  }
+  
+  .preview-dialog {
+    border-radius: 0.5rem;
+    max-height: 95vh;
+    padding: 1rem;
+  }
+  
+  .preview-editor-wrapper {
+    min-height: 250px;
+    max-height: calc(100vh - 220px);
+  }
+  
+  .preview-line-numbers {
+    min-width: 2.75rem;
+    font-size: 13px;
+    line-height: 22px;
+    padding: 0.625rem 0.625rem;
+  }
+  
+  .preview-line-numbers-inner span {
+    height: 22px;
+    line-height: 22px;
+    font-size: 13px;
+  }
+  
+  .preview-editor,
+  .preview-editor-wrapper .preview-editor {
+    font-size: 13px;
+    line-height: 22px;
+    padding: 0.625rem 0.875rem;
+  }
+  
+  .preview-footer-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+  
+  .preview-footer-actions button,
+  .preview-footer-actions a {
+    flex: 1 1 auto;
+    min-width: calc(50% - 0.25rem);
+    text-align: center;
+    justify-content: center;
+  }
+}
+
+/* Medium devices (tablets, 640px - 767px) */
+@media (min-width: 640px) and (max-width: 767px) {
+  .preview-dialog {
+    max-height: 90vh;
+    padding: 1.25rem;
+  }
+  
+  .preview-editor-wrapper {
+    min-height: 300px;
+    max-height: 55vh;
+  }
+  
+  .preview-footer-actions {
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 0.5rem;
+  }
+  
+  .preview-footer-actions button,
+  .preview-footer-actions a {
+    flex: 0 1 auto;
+  }
+}
+
+/* Touch device optimizations */
+@media (hover: none) and (pointer: coarse) {
+  .preview-editor {
+    /* Prevent iOS zoom on focus */
+    font-size: 16px;
+  }
+  
+  .preview-footer-actions button,
+  .preview-footer-actions a {
+    min-height: 44px; /* Apple's recommended touch target size */
+    min-width: 44px;
+  }
+  
+  /* Better touch scrolling */
+  .preview-editor,
+  .preview-editor-wrapper .preview-editor {
+    -webkit-overflow-scrolling: touch;
+    scroll-behavior: smooth;
+  }
+  
+  .preview-line-numbers {
+    /* Match font size for touch devices to prevent zoom */
+    font-size: 16px;
+    line-height: 26px;
+  }
+  
+  .preview-line-numbers-inner span {
+    height: 26px;
+    line-height: 26px;
+    font-size: 16px;
+  }
+  
+  .preview-editor-wrapper .preview-editor {
+    font-size: 16px;
+    line-height: 26px;
+  }
+}
+
+/* Landscape orientation adjustments */
+@media (max-height: 500px) and (orientation: landscape) {
+  .preview-dialog {
+    max-height: 100vh;
+    padding: 0.5rem 1rem;
+  }
+  
+  .preview-header {
+    margin-bottom: 0.5rem;
+    flex-direction: row;
+    align-items: center;
+  }
+  
+  .preview-title-group {
+    flex-direction: row;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  
+  .preview-label {
+    display: none;
+  }
+  
+  .preview-meta {
+    display: none;
+  }
+  
+  .preview-editor-wrapper {
+    min-height: 150px;
+    max-height: calc(100vh - 120px);
+  }
+  
+  .preview-footer-status {
+    display: none;
+  }
+  
+  .preview-footer-actions {
+    flex-direction: row;
+    gap: 0.5rem;
+  }
+  
+  .preview-footer-actions button,
+  .preview-footer-actions a {
+    padding: 0.375rem 0.75rem;
+    font-size: 0.8125rem;
+  }
+}
+
 /* Dark mode support */
 [data-theme="dark"] .preview-editor {
   background: #1e1e1e;

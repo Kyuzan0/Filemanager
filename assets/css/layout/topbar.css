@@ -11,21 +11,56 @@
   align-items: center;
   justify-content: space-between;
   margin-bottom: 14px;
+  gap: 8px;
+}
+
+.topbar-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+  min-width: 0;
 }
 
 .breadcrumbs {
   font-size: 13px;
   color: var(--muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .controls {
   display: flex;
   gap: 8px;
   align-items: center;
+  flex-shrink: 0;
 }
 
 .control-group {
   display: flex;
   align-items: center;
   gap: 8px;
+}
+
+/* Mobile compact topbar */
+@media (max-width: 767px) {
+  .topbar {
+    flex-wrap: nowrap;
+    gap: 4px;
+    margin-bottom: 8px;
+  }
+  
+  .topbar-left {
+    gap: 6px;
+  }
+  
+  .breadcrumbs {
+    font-size: 12px;
+    min-width: 0;
+  }
+  
+  .controls {
+    gap: 4px;
+  }
 }

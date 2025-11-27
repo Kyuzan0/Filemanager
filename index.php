@@ -23,10 +23,18 @@
     <title>File Manager — SiyNLic Pro</title>
 </head>
 <body class="bg-slate-50 text-slate-900">
+    <!-- Sidebar Overlay for Mobile -->
+    <div class="sidebar-overlay" id="sidebar-overlay"></div>
+    
     <div class="app min-h-screen flex" id="app" data-theme="light">
         <!-- SIDEBAR -->
-        <aside class="sidebar w-56 px-5 py-5 bg-white border-r border-slate-200 hidden md:block sticky top-0 h-screen overflow-y-auto">
-            <div class="logo text-lg font-bold text-blue-600 mb-4.5">SiyNLic Pro</div>
+        <aside class="sidebar w-56 px-5 py-5 bg-white border-r border-slate-200 hidden md:block sticky top-0 h-screen overflow-y-auto" id="sidebar">
+            <div class="sidebar-header flex items-center justify-between mb-4">
+                <div class="logo text-lg font-bold text-blue-600">SiyNLic Pro</div>
+                <button class="sidebar-close md:hidden p-2 hover:bg-slate-100 rounded-lg" id="sidebar-close">
+                    <i class="ri-close-line text-xl"></i>
+                </button>
+            </div>
             <ul class="side-list space-y-2">
                 <li class="px-2 py-2.5 rounded-lg text-slate-600 cursor-pointer hover:bg-slate-100 transition-colors">My Files</li>
                 <li class="px-2 py-2.5 rounded-lg text-slate-600 cursor-pointer hover:bg-slate-100 transition-colors">Uploads</li>
@@ -36,10 +44,16 @@
             </ul>
         </aside>
 
-        <main class="main flex-1 p-4.5 md:p-4.5">
+        <main class="main flex-1">
             <!-- TOPBAR -->
-            <section class="topbar mb-3.5 flex items-center justify-between gap-4">
-                <div class="breadcrumbs text-sm text-slate-600" id="breadcrumbs">Home</div>
+            <section class="topbar">
+                <div class="topbar-left">
+                    <!-- Mobile Menu Toggle -->
+                    <button class="mobile-menu-toggle md:hidden p-2 hover:bg-slate-100 rounded-lg" id="mobile-menu-toggle" title="Menu">
+                        <i class="ri-menu-line text-xl text-slate-600"></i>
+                    </button>
+                    <div class="breadcrumbs text-sm text-slate-600" id="breadcrumbs">Home</div>
+                </div>
                 <div class="controls flex items-center gap-2">
                     <div class="search hidden md:flex items-center gap-2 px-2 py-1.5 rounded-2xl border">
                         <span>🔎</span>
@@ -122,6 +136,74 @@
     <script src="assets/js/enhanced-ui.js"></script>
     <script src="assets/js/modals-handler.js"></script>
     <script src="assets/js/log-handler.js"></script>
+    
+    <!-- Mobile Sidebar Toggle Script -->
+    <script>
+    (function() {
+        const mobileMenuToggle = document.getElementById('mobile-menu-toggle');
+        const sidebarClose = document.getElementById('sidebar-close');
+        const sidebar = document.getElementById('sidebar');
+        const sidebarOverlay = document.getElementById('sidebar-overlay');
+        
+        function openSidebar() {
+            if (sidebar) {
+                sidebar.classList.add('active');
+                sidebar.style.display = 'block';
+            }
+            if (sidebarOverlay) {
+                sidebarOverlay.classList.add('active');
+            }
+            document.body.style.overflow = 'hidden';
+        }
+        
+        function closeSidebar() {
+            if (sidebar) {
+                sidebar.classList.remove('active');
+                // Only hide on mobile
+                if (window.innerWidth < 768) {
+                    setTimeout(() => {
+                        if (!sidebar.classList.contains('active')) {
+                            sidebar.style.display = '';
+                        }
+                    }, 300);
+                }
+            }
+            if (sidebarOverlay) {
+                sidebarOverlay.classList.remove('active');
+            }
+            document.body.style.overflow = '';
+        }
+        
+        if (mobileMenuToggle) {
+            mobileMenuToggle.addEventListener('click', openSidebar);
+        }
+        
+        if (sidebarClose) {
+            sidebarClose.addEventListener('click', closeSidebar);
+        }
+        
+        if (sidebarOverlay) {
+            sidebarOverlay.addEventListener('click', closeSidebar);
+        }
+        
+        // Close sidebar on window resize to desktop
+        window.addEventListener('resize', function() {
+            if (window.innerWidth >= 768) {
+                closeSidebar();
+                if (sidebar) {
+                    sidebar.style.display = '';
+                }
+            }
+        });
+        
+        // Close sidebar on escape key
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape' && sidebar && sidebar.classList.contains('active')) {
+                closeSidebar();
+            }
+        });
+    })();
+    </script>
 </body>
 </html>
 
