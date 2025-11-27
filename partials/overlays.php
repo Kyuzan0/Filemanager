@@ -102,26 +102,26 @@
 
 
 <div class="rename-overlay fixed inset-0 items-center justify-center bg-black/45 p-2 md:p-4 z-50 hidden" id="rename-overlay" aria-hidden="true" data-action="rename" data-open="rename">
-    <div class="rename-dialog bg-white rounded-lg shadow-lg w-full max-w-md" role="dialog" aria-modal="true" aria-labelledby="rename-title">
-        <header class="rename-header bg-gradient-to-r from-blue-50 to-blue-50 border-b border-gray-100 px-6 py-4 flex items-center gap-4">
-            <div class="rename-icon w-12 h-12 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center flex-shrink-0" aria-hidden="true">
+    <div class="rename-dialog rounded-lg shadow-lg w-full max-w-md" role="dialog" aria-modal="true" aria-labelledby="rename-title">
+        <header class="rename-header px-6 py-4 flex items-center gap-4">
+            <div class="rename-icon w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0" aria-hidden="true">
                 <svg viewBox="0 0 24 24" fill="currentColor" class="w-6 h-6"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04a1 1 0 0 0 0-1.41l-2.34-2.34a1 1 0 0 0-1.41 0L15 4.25l3.75 3.75 1.96-1.96z"/></svg>
             </div>
             <div class="rename-title-group">
-                <h2 class="rename-title text-base font-semibold text-gray-900" id="rename-title">Rename Item</h2>
-                <p class="rename-subtitle text-xs text-gray-600 mt-0.5" id="rename-subtitle"></p>
+                <h2 class="rename-title text-base font-semibold" id="rename-title">Rename Item</h2>
+                <p class="rename-subtitle text-xs mt-0.5" id="rename-subtitle"></p>
             </div>
         </header>
         <form class="rename-form px-6 py-4" id="rename-form">
             <div class="form-field mb-4">
-                <label for="rename-name" id="rename-label" class="text-sm font-medium text-gray-700 block mb-2">Nama Baru</label>
-                <input type="text" id="rename-name" name="rename-name" autocomplete="off" required class="border border-gray-300 rounded-md px-3 py-2 w-full focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm" />
-                <p class="form-hint text-xs text-gray-500 mt-1" id="rename-hint">Gunakan huruf, angka, titik, atau garis bawah.</p>
+                <label for="rename-name" id="rename-label" class="text-sm font-medium block mb-2">Nama Baru</label>
+                <input type="text" id="rename-name" name="rename-name" autocomplete="off" required class="rename-input rounded-md px-3 py-2 w-full focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm" />
+                <p class="form-hint text-xs mt-1" id="rename-hint">Gunakan huruf, angka, titik, atau garis bawah.</p>
             </div>
         </form>
-        <footer class="rename-actions flex gap-2 border-t border-gray-100 bg-gray-50 px-6 py-3 rounded-b-lg">
-            <button type="button" class="rename-button outline flex-1 inline-flex items-center justify-center gap-2 px-3 py-2 rounded-md text-sm btn" id="rename-cancel" data-action="rename-cancel">Batal</button>
-            <button type="submit" form="rename-form" class="rename-button primary flex-1 inline-flex items-center justify-center gap-2 px-3 py-2 rounded-md text-sm bg-blue-600 text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 font-medium" id="rename-submit" data-action="rename-submit">Rename</button>
+        <footer class="rename-actions flex gap-2 px-6 py-3 rounded-b-lg">
+            <button type="button" class="rename-button outline flex-1 inline-flex items-center justify-center gap-2 px-3 py-2 rounded-md text-sm" id="rename-cancel" data-action="rename-cancel">Batal</button>
+            <button type="submit" form="rename-form" class="rename-button primary flex-1 inline-flex items-center justify-center gap-2 px-3 py-2 rounded-md text-sm font-medium" id="rename-submit" data-action="rename-submit">Rename</button>
         </footer>
     </div>
 </div>
@@ -147,40 +147,117 @@
     </div>
 </div>
 
+<!-- Delete confirmation overlay modal -->
+<div class="delete-overlay fixed inset-0 items-center justify-center bg-black/45 p-2 md:p-4 z-50 hidden" id="delete-overlay" aria-hidden="true">
+    <div class="delete-dialog rounded-lg shadow-lg w-full max-w-md" role="dialog" aria-modal="true" aria-labelledby="delete-title">
+        <header class="delete-header px-6 py-4 flex items-center gap-4">
+            <div class="delete-icon w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="currentColor" class="w-6 h-6">
+                    <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/>
+                </svg>
+            </div>
+            <div class="delete-title-group">
+                <h2 class="delete-title text-base font-semibold" id="delete-title">Hapus Item</h2>
+                <p class="delete-subtitle text-xs mt-0.5" id="delete-subtitle">Konfirmasi penghapusan</p>
+            </div>
+        </header>
+        <div class="delete-body px-6 py-4">
+            <p class="delete-message text-sm" id="delete-message">Apakah Anda yakin ingin menghapus item ini?</p>
+            <div class="delete-items-list mt-3 max-h-32 overflow-y-auto" id="delete-items-list"></div>
+            <p class="delete-warning text-xs mt-3 flex items-center gap-2" id="delete-warning">
+                <svg viewBox="0 0 24 24" fill="currentColor" class="w-4 h-4 flex-shrink-0">
+                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/>
+                </svg>
+                <span>Tindakan ini tidak dapat dibatalkan.</span>
+            </p>
+        </div>
+        <footer class="delete-actions flex gap-2 px-6 py-3 rounded-b-lg">
+            <button type="button" class="delete-button outline flex-1 inline-flex items-center justify-center gap-2 px-3 py-2 rounded-md text-sm" id="delete-cancel" data-action="delete-cancel">Batal</button>
+            <button type="button" class="delete-button danger flex-1 inline-flex items-center justify-center gap-2 px-3 py-2 rounded-md text-sm font-medium" id="delete-confirm" data-action="delete-confirm">
+                <svg viewBox="0 0 24 24" fill="currentColor" class="w-4 h-4">
+                    <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/>
+                </svg>
+                Hapus
+            </button>
+        </footer>
+    </div>
+</div>
+
+<!-- Download confirmation overlay modal -->
+<div class="download-overlay fixed inset-0 items-center justify-center bg-black/45 p-2 md:p-4 z-50 hidden" id="download-overlay" aria-hidden="true">
+    <div class="download-dialog rounded-lg shadow-lg w-full max-w-md" role="dialog" aria-modal="true" aria-labelledby="download-title">
+        <header class="download-header px-6 py-4 flex items-center gap-4">
+            <div class="download-icon w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="currentColor" class="w-6 h-6">
+                    <path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/>
+                </svg>
+            </div>
+            <div class="download-title-group">
+                <h2 class="download-title text-base font-semibold" id="download-title">Unduh File</h2>
+                <p class="download-subtitle text-xs mt-0.5" id="download-subtitle">Konfirmasi unduhan</p>
+            </div>
+        </header>
+        <div class="download-body px-6 py-4">
+            <div class="download-file-info flex items-center gap-3 p-3 rounded-lg mb-4" id="download-file-info">
+                <div class="download-file-icon w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0" id="download-file-icon">
+                    <svg viewBox="0 0 24 24" fill="currentColor" class="w-5 h-5">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6z"/>
+                        <path d="M14 2v6h6M16 13H8M16 17H8M10 9H8"/>
+                    </svg>
+                </div>
+                <div class="download-file-details flex-1 min-w-0">
+                    <p class="download-file-name text-sm font-medium truncate" id="download-file-name">filename.txt</p>
+                    <p class="download-file-size text-xs" id="download-file-size">0 KB</p>
+                </div>
+            </div>
+            <p class="download-message text-sm" id="download-message">File akan diunduh ke folder unduhan default Anda.</p>
+        </div>
+        <footer class="download-actions flex gap-2 px-6 py-3 rounded-b-lg">
+            <button type="button" class="download-button outline flex-1 inline-flex items-center justify-center gap-2 px-3 py-2 rounded-md text-sm" id="download-cancel" data-action="download-cancel">Batal</button>
+            <button type="button" class="download-button primary flex-1 inline-flex items-center justify-center gap-2 px-3 py-2 rounded-md text-sm font-medium" id="download-confirm" data-action="download-confirm">
+                <svg viewBox="0 0 24 24" fill="currentColor" class="w-4 h-4">
+                    <path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/>
+                </svg>
+                Unduh
+            </button>
+        </footer>
+    </div>
+</div>
+
 <!-- Move overlay modal -->
 <div class="move-overlay fixed inset-0 items-center justify-center bg-black/45 p-2 md:p-4 z-50 hidden" id="move-overlay" aria-hidden="true">
-    <div class="move-dialog bg-white rounded-lg p-4 md:p-6 w-full max-w-2xl shadow-lg max-h-[90vh] md:max-h-[85vh] overflow-hidden flex flex-col" role="dialog" aria-modal="true" aria-labelledby="move-title">
+    <div class="move-dialog rounded-lg p-4 md:p-6 w-full max-w-2xl shadow-lg max-h-[90vh] md:max-h-[85vh] overflow-hidden flex flex-col" role="dialog" aria-modal="true" aria-labelledby="move-title">
         <header class="move-header mb-4 flex-shrink-0">
-            <div class="move-icon mx-auto mb-3 w-12 h-12 text-blue-600" aria-hidden="true">
+            <div class="move-icon mx-auto mb-3 w-12 h-12" aria-hidden="true">
                 <svg viewBox="0 0 24 24" fill="currentColor">
                     <path d="M5 9h2v6H5zm12-4h2v14h-2zm-6 8h2v6h-2z"/>
                 </svg>
             </div>
             <div class="move-title-group text-center">
                 <h2 class="move-title text-lg md:text-xl font-semibold" id="move-title">Pindah Item</h2>
-                <p class="move-subtitle text-sm text-gray-600 mt-1" id="move-subtitle">Pilih folder tujuan untuk memindahkan item.</p>
+                <p class="move-subtitle text-sm mt-1" id="move-subtitle">Pilih folder tujuan untuk memindahkan item.</p>
             </div>
         </header>
         <div class="move-body flex-1 overflow-hidden flex flex-col">
             <nav class="move-breadcrumbs mb-3 text-sm" id="move-breadcrumbs" aria-label="Lokasi tujuan"></nav>
             <div class="move-tools mb-3 flex flex-col md:flex-row gap-2">
                 <div class="move-shortcuts flex flex-wrap gap-2">
-                    <button type="button" class="move-chip inline-flex items-center gap-2 px-2 py-1 rounded-md bg-gray-100 text-sm" id="move-root-shortcut" title="Ke Root">Root</button>
-                    <button type="button" class="move-chip inline-flex items-center gap-2 px-2 py-1 rounded-md bg-gray-100 text-sm" id="move-current-shortcut" title="Ke folder saat ini">Folder saat ini</button>
+                    <button type="button" class="move-chip inline-flex items-center gap-2 px-2 py-1 rounded-md text-sm" id="move-root-shortcut" title="Ke Root">Root</button>
+                    <button type="button" class="move-chip inline-flex items-center gap-2 px-2 py-1 rounded-md text-sm" id="move-current-shortcut" title="Ke folder saat ini">Folder saat ini</button>
                 </div>
-                <div class="move-search">
-                    <input type="search" id="move-search" class="move-search-input w-full border rounded-md px-3 py-2 text-sm" placeholder="Cari folder di lokasi ini" autocomplete="off" />
+                <div class="move-search flex-1">
+                    <input type="search" id="move-search" class="move-search-input w-full rounded-md px-3 py-2 text-sm" placeholder="Cari folder di lokasi ini" autocomplete="off" />
                 </div>
             </div>
             <div class="move-recents mb-3" id="move-recents" aria-label="Tujuan terakhir"></div>
             <ul class="move-list flex-1 overflow-y-auto" id="move-list" aria-label="Daftar folder tujuan"></ul>
-            <p class="move-error text-sm text-red-600 mt-2" id="move-error" role="alert"></p>
+            <p class="move-error text-sm mt-2" id="move-error" role="alert"></p>
         </div>
         <footer class="move-actions flex flex-col sm:flex-row items-stretch sm:items-end gap-2 mt-4 flex-shrink-0">
-            <button type="button" class="move-button outline inline-flex items-center justify-center gap-2 px-3 py-2 rounded-md text-sm bg-white border border-gray-200 text-slate-700 hover:bg-gray-50 focus:outline-none" id="move-select-here">Pilih di sini</button>
+            <button type="button" class="move-button outline inline-flex items-center justify-center gap-2 px-3 py-2 rounded-md text-sm" id="move-select-here">Pilih di sini</button>
             <div class="move-actions-spacer flex-1"></div>
-            <button type="button" class="move-button outline inline-flex items-center justify-center gap-2 px-3 py-2 rounded-md text-sm bg-white border border-gray-200 text-slate-700 hover:bg-gray-50 focus:outline-none" id="move-cancel">Batal</button>
-            <button type="button" class="move-button primary inline-flex items-center justify-center gap-2 px-3 py-2 rounded-md text-sm bg-blue-600 text-white disabled:opacity-60 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500" id="move-confirm" disabled>Pindahkan</button>
+            <button type="button" class="move-button outline inline-flex items-center justify-center gap-2 px-3 py-2 rounded-md text-sm" id="move-cancel">Batal</button>
+            <button type="button" class="move-button primary inline-flex items-center justify-center gap-2 px-3 py-2 rounded-md text-sm" id="move-confirm" disabled>Pindahkan</button>
         </footer>
     </div>
 </div>

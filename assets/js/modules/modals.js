@@ -1324,3 +1324,297 @@ export function detachOverlayA11y(overlay) {
         try { overlay._a11yDetach(); } catch (e) {}
     }
 }
+
+// ============================================================================
+// DELETE OVERLAY FUNCTIONS
+// ============================================================================
+
+/**
+ * Opens the delete confirmation overlay
+ * @param {Array|Object} items - Items to delete (can be single item or array)
+ * @param {Function} onConfirm - Callback when delete is confirmed
+ * @param {Function} onCancel - Optional callback when cancelled
+ */
+export function openDeleteOverlay(items, onConfirm, onCancel = null) {
+    const overlay = document.getElementById('delete-overlay');
+    if (!overlay) {
+        console.warn('[modals] delete-overlay not found');
+        return;
+    }
+    
+    const itemsArray = Array.isArray(items) ? items : [items];
+    const itemCount = itemsArray.length;
+    
+    // Update title and subtitle
+    const title = overlay.querySelector('#delete-title');
+    const subtitle = overlay.querySelector('#delete-subtitle');
+    const message = overlay.querySelector('#delete-message');
+    const itemsList = overlay.querySelector('#delete-items-list');
+    
+    if (title) {
+        title.textContent = itemCount > 1 ? `Hapus ${itemCount} Item` : 'Hapus Item';
+    }
+    
+    if (subtitle) {
+        subtitle.textContent = itemCount > 1 
+            ? `Konfirmasi penghapusan ${itemCount} item` 
+            : 'Konfirmasi penghapusan';
+    }
+    
+    if (message) {
+        message.textContent = itemCount > 1 
+            ? `Apakah Anda yakin ingin menghapus ${itemCount} item berikut?` 
+            : `Apakah Anda yakin ingin menghapus item ini?`;
+    }
+    
+    // Populate items list
+    if (itemsList) {
+        itemsList.innerHTML = itemsArray.slice(0, 10).map(item => {
+            const name = typeof item === 'string' ? item.split('/').pop() : (item.name || item.path?.split('/').pop() || 'Unknown');
+            const isFolder = typeof item === 'object' && item.type === 'folder';
+            const icon = isFolder 
+                ? '<svg viewBox="0 0 24 24" fill="currentColor" class="delete-item-icon"><path d="M10 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2h-8l-2-2z"/></svg>'
+                : '<svg viewBox="0 0 24 24" fill="currentColor" class="delete-item-icon"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6z"/><path d="M14 2v6h6"/></svg>';
+            return `<div class="delete-item">${icon}<span class="delete-item-name">${escapeHtml(name)}</span></div>`;
+        }).join('');
+        
+        if (itemCount > 10) {
+            itemsList.innerHTML += `<div class="delete-item text-gray-500">... dan ${itemCount - 10} item lainnya</div>`;
+        }
+    }
+    
+    // Store callbacks
+    overlay._deleteConfirmCallback = onConfirm;
+    overlay._deleteCancelCallback = onCancel;
+    overlay._deleteItems = itemsArray;
+    
+    // Show overlay
+    overlay.hidden = false;
+    overlay.classList.remove('hidden');
+    overlay.classList.add('visible');
+    overlay.setAttribute('aria-hidden', 'false');
+    
+    // Setup event listeners
+    const confirmBtn = overlay.querySelector('#delete-confirm');
+    const cancelBtn = overlay.querySelector('#delete-cancel');
+    
+    const handleConfirm = async () => {
+        if (typeof overlay._deleteConfirmCallback === 'function') {
+            try {
+                await overlay._deleteConfirmCallback(overlay._deleteItems);
+            } catch (e) {
+                console.error('[modals] Delete confirm error:', e);
+            }
+        }
+        closeDeleteOverlay();
+    };
+    
+    const handleCancel = () => {
+        if (typeof overlay._deleteCancelCallback === 'function') {
+            overlay._deleteCancelCallback();
+        }
+        closeDeleteOverlay();
+    };
+    
+    // Remove old listeners
+    confirmBtn?.replaceWith(confirmBtn.cloneNode(true));
+    cancelBtn?.replaceWith(cancelBtn.cloneNode(true));
+    
+    // Add new listeners
+    overlay.querySelector('#delete-confirm')?.addEventListener('click', handleConfirm);
+    overlay.querySelector('#delete-cancel')?.addEventListener('click', handleCancel);
+    
+    // Close on backdrop click
+    overlay.addEventListener('click', (e) => {
+        if (e.target === overlay) handleCancel();
+    }, { once: true });
+    
+    // Focus cancel button
+    setTimeout(() => {
+        overlay.querySelector('#delete-cancel')?.focus();
+    }, 100);
+    
+    markOverlayOpen();
+    attachOverlayA11y(overlay, handleCancel);
+    
+    console.log('[modals] openDeleteOverlay ->', { itemCount, items: itemsArray });
+}
+
+/**
+ * Closes the delete confirmation overlay
+ */
+export function closeDeleteOverlay() {
+    const overlay = document.getElementById('delete-overlay');
+    if (!overlay) return;
+    
+    overlay.classList.remove('visible');
+    overlay.classList.add('hidden');
+    overlay.setAttribute('aria-hidden', 'true');
+    overlay.hidden = true;
+    
+    // Clear callbacks
+    delete overlay._deleteConfirmCallback;
+    delete overlay._deleteCancelCallback;
+    delete overlay._deleteItems;
+    
+    // Clear items list
+    const itemsList = overlay.querySelector('#delete-items-list');
+    if (itemsList) itemsList.innerHTML = '';
+    
+    markOverlayClosed();
+    detachOverlayA11y(overlay);
+}
+
+// ============================================================================
+// DOWNLOAD OVERLAY FUNCTIONS
+// ============================================================================
+
+/**
+ * Opens the download confirmation overlay
+ * @param {Object} fileData - File data with name, size, path, type
+ * @param {Function} onConfirm - Callback when download is confirmed
+ * @param {Function} onCancel - Optional callback when cancelled
+ */
+export function openDownloadOverlay(fileData, onConfirm, onCancel = null) {
+    const overlay = document.getElementById('download-overlay');
+    if (!overlay) {
+        console.warn('[modals] download-overlay not found');
+        return;
+    }
+    
+    // Update file info
+    const fileName = overlay.querySelector('#download-file-name');
+    const fileSize = overlay.querySelector('#download-file-size');
+    const fileIcon = overlay.querySelector('#download-file-icon');
+    const subtitle = overlay.querySelector('#download-subtitle');
+    
+    if (fileName) {
+        fileName.textContent = fileData.name || 'Unknown file';
+    }
+    
+    if (fileSize) {
+        const size = fileData.size || 0;
+        fileSize.textContent = formatFileSize(size);
+    }
+    
+    if (subtitle) {
+        subtitle.textContent = `Unduh ${fileData.name || 'file'}`;
+    }
+    
+    // Set appropriate icon based on file type
+    if (fileIcon) {
+        fileIcon.className = 'download-file-icon w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0';
+        const ext = (fileData.name || '').split('.').pop()?.toLowerCase() || '';
+        
+        if (['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg', 'bmp'].includes(ext)) {
+            fileIcon.classList.add('image');
+        } else if (['js', 'ts', 'jsx', 'tsx', 'php', 'py', 'html', 'css', 'json', 'xml'].includes(ext)) {
+            fileIcon.classList.add('code');
+        } else if (['doc', 'docx', 'pdf', 'txt', 'md', 'rtf'].includes(ext)) {
+            fileIcon.classList.add('document');
+        } else if (fileData.type === 'folder') {
+            fileIcon.classList.add('folder');
+        }
+    }
+    
+    // Store callbacks
+    overlay._downloadConfirmCallback = onConfirm;
+    overlay._downloadCancelCallback = onCancel;
+    overlay._downloadFileData = fileData;
+    
+    // Show overlay
+    overlay.hidden = false;
+    overlay.classList.remove('hidden');
+    overlay.classList.add('visible');
+    overlay.setAttribute('aria-hidden', 'false');
+    
+    // Setup event listeners
+    const confirmBtn = overlay.querySelector('#download-confirm');
+    const cancelBtn = overlay.querySelector('#download-cancel');
+    
+    const handleConfirm = async () => {
+        if (typeof overlay._downloadConfirmCallback === 'function') {
+            try {
+                await overlay._downloadConfirmCallback(overlay._downloadFileData);
+            } catch (e) {
+                console.error('[modals] Download confirm error:', e);
+            }
+        }
+        closeDownloadOverlay();
+    };
+    
+    const handleCancel = () => {
+        if (typeof overlay._downloadCancelCallback === 'function') {
+            overlay._downloadCancelCallback();
+        }
+        closeDownloadOverlay();
+    };
+    
+    // Remove old listeners
+    confirmBtn?.replaceWith(confirmBtn.cloneNode(true));
+    cancelBtn?.replaceWith(cancelBtn.cloneNode(true));
+    
+    // Add new listeners
+    overlay.querySelector('#download-confirm')?.addEventListener('click', handleConfirm);
+    overlay.querySelector('#download-cancel')?.addEventListener('click', handleCancel);
+    
+    // Close on backdrop click
+    overlay.addEventListener('click', (e) => {
+        if (e.target === overlay) handleCancel();
+    }, { once: true });
+    
+    // Focus download button
+    setTimeout(() => {
+        overlay.querySelector('#download-confirm')?.focus();
+    }, 100);
+    
+    markOverlayOpen();
+    attachOverlayA11y(overlay, handleCancel);
+    
+    console.log('[modals] openDownloadOverlay ->', { fileData });
+}
+
+/**
+ * Closes the download overlay
+ */
+export function closeDownloadOverlay() {
+    const overlay = document.getElementById('download-overlay');
+    if (!overlay) return;
+    
+    overlay.classList.remove('visible');
+    overlay.classList.add('hidden');
+    overlay.setAttribute('aria-hidden', 'true');
+    overlay.hidden = true;
+    
+    // Clear callbacks
+    delete overlay._downloadConfirmCallback;
+    delete overlay._downloadCancelCallback;
+    delete overlay._downloadFileData;
+    
+    markOverlayClosed();
+    detachOverlayA11y(overlay);
+}
+
+/**
+ * Helper function to format file size
+ * @param {number} bytes - File size in bytes
+ * @returns {string} Formatted file size
+ */
+function formatFileSize(bytes) {
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+}
+
+/**
+ * Helper function to escape HTML
+ * @param {string} text - Text to escape
+ * @returns {string} Escaped text
+ */
+function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}

@@ -51,6 +51,8 @@
 @import 'overlays/rename.css';
 @import 'overlays/unsaved.css';
 @import 'overlays/move.css';
+@import 'overlays/delete.css';
+@import 'overlays/download.css';
 @import 'overlays/log.css';
 @import 'overlays/settings.css';
 @import 'overlays/context-menu.css';

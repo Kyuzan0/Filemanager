@@ -125,11 +125,29 @@
     </div>
 
     <!-- CONTEXT MENU -->
-    <div class="context fixed border rounded-lg shadow-lg p-1.5 hidden z-50" id="contextMenu">
-        <button data-action="open" class="block w-full text-left px-3 py-2 text-sm hover:rounded">Open</button>
-        <button data-action="download" class="block w-full text-left px-3 py-2 text-sm hover:rounded">Download</button>
-        <button data-action="rename" class="block w-full text-left px-3 py-2 text-sm hover:rounded">Rename</button>
-        <button data-action="delete" class="block w-full text-left px-3 py-2 text-sm hover:rounded">Delete</button>
+    <div class="context-menu hidden" id="contextMenu" role="menu" aria-hidden="true">
+        <button data-action="open" class="context-menu-item" role="menuitem">
+            <i class="ri-folder-open-line context-menu-icon"></i>
+            <span>Buka</span>
+        </button>
+        <button data-action="download" class="context-menu-item" role="menuitem">
+            <i class="ri-download-2-line context-menu-icon"></i>
+            <span>Unduh</span>
+        </button>
+        <div class="context-menu-divider"></div>
+        <button data-action="rename" class="context-menu-item" role="menuitem">
+            <i class="ri-edit-line context-menu-icon"></i>
+            <span>Ganti Nama</span>
+        </button>
+        <button data-action="move" class="context-menu-item" role="menuitem">
+            <i class="ri-folder-transfer-line context-menu-icon"></i>
+            <span>Pindahkan</span>
+        </button>
+        <div class="context-menu-divider"></div>
+        <button data-action="delete" class="context-menu-item context-menu-item-danger" role="menuitem">
+            <i class="ri-delete-bin-line context-menu-icon"></i>
+            <span>Hapus</span>
+        </button>
     </div>
 
     <?php include 'partials/overlays.php'; ?>

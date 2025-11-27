@@ -562,7 +562,242 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('toggle-debug')?.addEventListener('change', function() {
     this.setAttribute('aria-checked', this.checked);
   });
+  
+  // Delete overlay event listeners
+  document.getElementById('delete-cancel')?.addEventListener('click', closeDeleteOverlay);
+  document.getElementById('delete-confirm')?.addEventListener('click', confirmDelete);
+  document.getElementById('delete-overlay')?.addEventListener('click', function(e) {
+    if (e.target === this) closeDeleteOverlay();
+  });
+  
+  // Download overlay event listeners
+  document.getElementById('download-cancel')?.addEventListener('click', closeDownloadOverlay);
+  document.getElementById('download-confirm')?.addEventListener('click', confirmDownload);
+  document.getElementById('download-overlay')?.addEventListener('click', function(e) {
+    if (e.target === this) closeDownloadOverlay();
+  });
+  
+  // Global keyboard handler for modals
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+      // Check which modal is open and close it
+      const deleteOverlay = document.getElementById('delete-overlay');
+      const downloadOverlay = document.getElementById('download-overlay');
+      
+      if (deleteOverlay && !deleteOverlay.classList.contains('hidden')) {
+        closeDeleteOverlay();
+      } else if (downloadOverlay && !downloadOverlay.classList.contains('hidden')) {
+        closeDownloadOverlay();
+      }
+    }
+  });
 });
+
+// ============= Delete Overlay =============
+
+let deleteState = {
+  items: [],
+  confirmCallback: null,
+  cancelCallback: null
+};
+
+function openDeleteOverlay(items, onConfirm, onCancel = null) {
+  const overlay = document.getElementById('delete-overlay');
+  if (!overlay) return;
+  
+  const itemsArray = Array.isArray(items) ? items : [items];
+  const itemCount = itemsArray.length;
+  
+  // Store state
+  deleteState.items = itemsArray;
+  deleteState.confirmCallback = onConfirm;
+  deleteState.cancelCallback = onCancel;
+  
+  // Update title and subtitle
+  const title = document.getElementById('delete-title');
+  const subtitle = document.getElementById('delete-subtitle');
+  const message = document.getElementById('delete-message');
+  const itemsList = document.getElementById('delete-items-list');
+  
+  if (title) {
+    title.textContent = itemCount > 1 ? `Hapus ${itemCount} Item` : 'Hapus Item';
+  }
+  
+  if (subtitle) {
+    subtitle.textContent = itemCount > 1 
+      ? `Konfirmasi penghapusan ${itemCount} item` 
+      : 'Konfirmasi penghapusan';
+  }
+  
+  if (message) {
+    message.textContent = itemCount > 1 
+      ? `Apakah Anda yakin ingin menghapus ${itemCount} item berikut?` 
+      : `Apakah Anda yakin ingin menghapus item ini?`;
+  }
+  
+  // Populate items list
+  if (itemsList) {
+    itemsList.innerHTML = itemsArray.slice(0, 10).map(item => {
+      const name = typeof item === 'string' ? item.split('/').pop() : (item.name || item.path?.split('/').pop() || 'Unknown');
+      const isFolder = typeof item === 'object' && item.type === 'folder';
+      const icon = isFolder 
+        ? '<svg viewBox="0 0 24 24" fill="currentColor" class="delete-item-icon w-4 h-4"><path d="M10 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2h-8l-2-2z"/></svg>'
+        : '<svg viewBox="0 0 24 24" fill="currentColor" class="delete-item-icon w-4 h-4"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6z"/><path d="M14 2v6h6"/></svg>';
+      return `<div class="delete-item flex items-center gap-2 py-1 px-2 text-xs rounded">${icon}<span class="delete-item-name flex-1 truncate">${escapeHtml(name)}</span></div>`;
+    }).join('');
+    
+    if (itemCount > 10) {
+      itemsList.innerHTML += `<div class="delete-item text-gray-500 py-1 px-2 text-xs">... dan ${itemCount - 10} item lainnya</div>`;
+    }
+  }
+  
+  // Show overlay
+  overlay.hidden = false;
+  overlay.classList.remove('hidden');
+  overlay.classList.add('visible');
+  overlay.setAttribute('aria-hidden', 'false');
+  overlay.style.display = 'flex';
+  
+  // Focus cancel button
+  setTimeout(() => {
+    document.getElementById('delete-cancel')?.focus();
+  }, 100);
+}
+
+function closeDeleteOverlay() {
+  const overlay = document.getElementById('delete-overlay');
+  if (!overlay) return;
+  
+  overlay.classList.remove('visible');
+  overlay.classList.add('hidden');
+  overlay.setAttribute('aria-hidden', 'true');
+  overlay.hidden = true;
+  overlay.style.display = 'none';
+  
+  // Clear items list
+  const itemsList = document.getElementById('delete-items-list');
+  if (itemsList) itemsList.innerHTML = '';
+  
+  // Clear state
+  deleteState = { items: [], confirmCallback: null, cancelCallback: null };
+}
+
+async function confirmDelete() {
+  if (typeof deleteState.confirmCallback === 'function') {
+    try {
+      await deleteState.confirmCallback(deleteState.items);
+    } catch (e) {
+      console.error('[modals-handler] Delete confirm error:', e);
+    }
+  }
+  closeDeleteOverlay();
+}
+
+// ============= Download Overlay =============
+
+let downloadState = {
+  fileData: null,
+  confirmCallback: null,
+  cancelCallback: null
+};
+
+function openDownloadOverlay(fileData, onConfirm, onCancel = null) {
+  const overlay = document.getElementById('download-overlay');
+  if (!overlay) return;
+  
+  // Store state
+  downloadState.fileData = fileData;
+  downloadState.confirmCallback = onConfirm;
+  downloadState.cancelCallback = onCancel;
+  
+  // Update file info
+  const fileName = document.getElementById('download-file-name');
+  const fileSize = document.getElementById('download-file-size');
+  const fileIcon = document.getElementById('download-file-icon');
+  const subtitle = document.getElementById('download-subtitle');
+  
+  if (fileName) {
+    fileName.textContent = fileData.name || 'Unknown file';
+  }
+  
+  if (fileSize) {
+    const size = fileData.size || 0;
+    fileSize.textContent = formatFileSize(size);
+  }
+  
+  if (subtitle) {
+    subtitle.textContent = `Unduh ${fileData.name || 'file'}`;
+  }
+  
+  // Set appropriate icon based on file type
+  if (fileIcon) {
+    fileIcon.className = 'download-file-icon w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0';
+    const ext = (fileData.name || '').split('.').pop()?.toLowerCase() || '';
+    
+    if (['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg', 'bmp'].includes(ext)) {
+      fileIcon.classList.add('image');
+    } else if (['js', 'ts', 'jsx', 'tsx', 'php', 'py', 'html', 'css', 'json', 'xml'].includes(ext)) {
+      fileIcon.classList.add('code');
+    } else if (['doc', 'docx', 'pdf', 'txt', 'md', 'rtf'].includes(ext)) {
+      fileIcon.classList.add('document');
+    } else if (fileData.type === 'folder') {
+      fileIcon.classList.add('folder');
+    }
+  }
+  
+  // Show overlay
+  overlay.hidden = false;
+  overlay.classList.remove('hidden');
+  overlay.classList.add('visible');
+  overlay.setAttribute('aria-hidden', 'false');
+  overlay.style.display = 'flex';
+  
+  // Focus download button
+  setTimeout(() => {
+    document.getElementById('download-confirm')?.focus();
+  }, 100);
+}
+
+function closeDownloadOverlay() {
+  const overlay = document.getElementById('download-overlay');
+  if (!overlay) return;
+  
+  overlay.classList.remove('visible');
+  overlay.classList.add('hidden');
+  overlay.setAttribute('aria-hidden', 'true');
+  overlay.hidden = true;
+  overlay.style.display = 'none';
+  
+  // Clear state
+  downloadState = { fileData: null, confirmCallback: null, cancelCallback: null };
+}
+
+async function confirmDownload() {
+  if (typeof downloadState.confirmCallback === 'function') {
+    try {
+      await downloadState.confirmCallback(downloadState.fileData);
+    } catch (e) {
+      console.error('[modals-handler] Download confirm error:', e);
+    }
+  }
+  closeDownloadOverlay();
+}
+
+// ============= Helper Functions =============
+
+function formatFileSize(bytes) {
+  if (bytes === 0) return '0 Bytes';
+  const k = 1024;
+  const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
+  const i = Math.floor(Math.log(bytes) / Math.log(k));
+  return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+}
+
+function escapeHtml(text) {
+  const div = document.createElement('div');
+  div.textContent = text;
+  return div.innerHTML;
+}
 
 // Export functions for use in other scripts
 window.openPreviewModal = openPreviewModal;
@@ -572,3 +807,9 @@ window.openRenameModal = openRenameModal;
 window.openMoveModal = openMoveModal;
 window.openSettingsModal = openSettingsModal;
 window.loadMoveFolders = loadMoveFolders;
+window.openDeleteOverlay = openDeleteOverlay;
+window.closeDeleteOverlay = closeDeleteOverlay;
+window.confirmDelete = confirmDelete;
+window.openDownloadOverlay = openDownloadOverlay;
+window.closeDownloadOverlay = closeDownloadOverlay;
+window.confirmDownload = confirmDownload;

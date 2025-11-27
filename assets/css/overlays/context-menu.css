@@ -2,23 +2,45 @@
  * Context Menu Overlay
  * ====================
  * Styles for the right-click context menu and mobile actions menu.
- * Extracted from partials/overlays.php lines 532-580
+ * Modern design with smooth animations for both light and dark modes.
  */
 
 .context-menu {
-  position: absolute;
+  position: fixed;
   background: var(--card);
-  border-radius: 0.375rem;
-  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
-  z-index: 50;
+  border: 1px solid var(--card-border);
+  border-radius: 12px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12),
+              0 2px 8px rgba(0, 0, 0, 0.08);
+  z-index: 9999;
   display: none;
-  min-width: 11.25rem;
-  max-width: 17.5rem;
+  min-width: 180px;
+  max-width: 240px;
   overflow: hidden;
+  padding: 6px;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  animation: contextMenuFadeIn 0.15s ease-out;
+  transform-origin: top left;
+}
+
+@keyframes contextMenuFadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95) translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
 }
 
 .context-menu.hidden {
   display: none !important;
+}
+
+.context-menu:not(.hidden) {
+  display: block;
 }
 
 .context-menu[aria-hidden="false"] {
@@ -33,52 +55,140 @@
 .context-menu-item {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: 10px;
   width: 100%;
-  padding: 0.75rem 0.75rem;
+  padding: 10px 12px;
   border: none;
+  border-radius: 8px;
   background: transparent;
-  color: var(--muted);
+  color: var(--text);
   text-align: left;
   cursor: pointer;
-  font-size: 0.875rem;
-  transition: background-color 0.2s;
+  font-size: 13px;
+  font-weight: 450;
+  transition: all 0.15s ease;
+  outline: none;
 }
 
 .context-menu-item:hover {
   background: var(--glass);
 }
 
-.context-menu-item.danger {
+.context-menu-item:focus-visible {
+  background: var(--glass);
+  box-shadow: 0 0 0 2px var(--accent);
+}
+
+/* Context Menu Icon */
+.context-menu-icon {
+  width: 18px;
+  height: 18px;
+  font-size: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  opacity: 0.7;
+  transition: opacity 0.15s ease;
+}
+
+.context-menu-item:hover .context-menu-icon {
+  opacity: 1;
+}
+
+/* Context Menu Divider */
+.context-menu-divider {
+  height: 1px;
+  background: var(--card-border);
+  margin: 6px 8px;
+}
+
+/* Danger Item */
+.context-menu-item-danger {
+  color: var(--danger);
+}
+
+.context-menu-item-danger .context-menu-icon {
+  opacity: 0.9;
+}
+
+.context-menu-item-danger:hover {
+  background: rgba(255, 71, 87, 0.1);
+}
+
+/* ============================================================================
+   LIGHT MODE SPECIFIC
+   ============================================================================ */
+
+:root .context-menu {
+  background: rgba(255, 255, 255, 0.95);
+}
+
+:root .context-menu-item:hover {
+  background: rgba(0, 0, 0, 0.05);
+}
+
+:root .context-menu-item:active {
+  background: rgba(0, 0, 0, 0.08);
+}
+
+:root .context-menu-item-danger:hover {
+  background: rgba(255, 71, 87, 0.08);
   color: #dc2626;
 }
 
-.context-menu-item.danger:hover {
-  background: #fee2e2;
+/* ============================================================================
+   DARK MODE SPECIFIC
+   ============================================================================ */
+
+[data-theme="dark"] .context-menu {
+  background: rgba(26, 35, 50, 0.95);
+  border-color: rgba(255, 255, 255, 0.1);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4),
+              0 2px 8px rgba(0, 0, 0, 0.3),
+              inset 0 1px 0 rgba(255, 255, 255, 0.05);
 }
 
-.context-menu-separator {
-  border-top: 1px solid #e5e7eb;
-  margin: 0.25rem 0;
+[data-theme="dark"] .context-menu-item {
+  color: #e5e7eb;
 }
 
-[data-theme="dark"] .context-menu-item.danger:hover {
-  background: rgba(220, 38, 38, 0.1);
+[data-theme="dark"] .context-menu-item:hover {
+  background: rgba(255, 255, 255, 0.08);
 }
 
-[data-theme="dark"] .context-menu-separator {
-  border-top-color: rgba(255, 255, 255, 0.1);
+[data-theme="dark"] .context-menu-item:active {
+  background: rgba(255, 255, 255, 0.12);
+}
+
+[data-theme="dark"] .context-menu-divider {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+[data-theme="dark"] .context-menu-item-danger {
+  color: #ff6b7a;
+}
+
+[data-theme="dark"] .context-menu-item-danger:hover {
+  background: rgba(255, 107, 122, 0.15);
 }
 
 /* Mobile actions floating menu */
 .mobile-actions-menu {
   position: fixed;
-  z-index: 50;
-  background: white;
-  border-radius: 0.5rem;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-  min-width: 140px;
+  z-index: 9999;
+  background: rgba(255, 255, 255, 0.95);
+  border: 1px solid var(--card-border);
+  border-radius: 12px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12),
+              0 2px 8px rgba(0, 0, 0, 0.08);
+  min-width: 160px;
+  max-width: 200px;
+  padding: 6px;
   display: none;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  animation: contextMenuFadeIn 0.15s ease-out;
 }
 
 .mobile-actions-menu.hidden {
@@ -92,51 +202,107 @@
 .mobile-actions-item {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: 10px;
   width: 100%;
-  padding: 0.5rem 1rem;
+  padding: 10px 12px;
   border: none;
-  border-bottom: 1px solid #f3f4f6;
-  background: white;
-  color: #374151;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--text);
   text-align: left;
   cursor: pointer;
-  font-size: 0.875rem;
-  transition: background-color 0.2s ease;
+  font-size: 13px;
+  font-weight: 450;
+  transition: all 0.15s ease;
 }
 
-.mobile-actions-item:last-child {
-  border-bottom: none;
+.mobile-actions-item:hover,
+.mobile-actions-item:active {
+  background: rgba(0, 0, 0, 0.05);
 }
 
-.mobile-actions-item:hover {
-  background: #f9fafb;
-}
-
-.mobile-actions-item:first-child {
-  border-radius: 0.5rem 0.5rem 0 0;
-}
-
-.mobile-actions-item:last-child {
-  border-radius: 0 0 0.5rem 0.5rem;
+.mobile-actions-item i {
+  width: 18px;
+  height: 18px;
+  font-size: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0.7;
 }
 
 .mobile-actions-item svg {
-  width: 1rem;
-  height: 1rem;
+  width: 18px;
+  height: 18px;
   flex-shrink: 0;
+  opacity: 0.7;
+}
+
+.mobile-actions-item:hover i,
+.mobile-actions-item:hover svg {
+  opacity: 1;
+}
+
+.mobile-actions-item-danger {
+  color: var(--danger);
+}
+
+.mobile-actions-item-danger:hover {
+  background: rgba(255, 71, 87, 0.08);
 }
 
 [data-theme="dark"] .mobile-actions-menu {
-  background: var(--card);
+  background: rgba(26, 35, 50, 0.95);
+  border-color: rgba(255, 255, 255, 0.1);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4),
+              0 2px 8px rgba(0, 0, 0, 0.3),
+              inset 0 1px 0 rgba(255, 255, 255, 0.05);
 }
 
 [data-theme="dark"] .mobile-actions-item {
-  background: var(--card);
-  color: var(--muted);
-  border-bottom-color: rgba(255, 255, 255, 0.1);
+  color: #e5e7eb;
 }
 
-[data-theme="dark"] .mobile-actions-item:hover {
-  background: var(--glass);
+[data-theme="dark"] .mobile-actions-item:hover,
+[data-theme="dark"] .mobile-actions-item:active {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+[data-theme="dark"] .mobile-actions-item-danger {
+  color: #ff6b7a;
+}
+
+[data-theme="dark"] .mobile-actions-item-danger:hover {
+  background: rgba(255, 107, 122, 0.15);
+}
+
+/* ============================================================================
+   RESPONSIVE ADJUSTMENTS
+   ============================================================================ */
+
+@media (max-width: 767px) {
+  .context-menu {
+    min-width: 160px;
+    max-width: 200px;
+  }
+  
+  .context-menu-item {
+    padding: 12px 14px;
+    font-size: 14px;
+  }
+  
+  .context-menu-icon {
+    width: 20px;
+    height: 20px;
+    font-size: 18px;
+  }
+}
+
+/* Touch device optimizations */
+@media (hover: none) and (pointer: coarse) {
+  .context-menu-item,
+  .mobile-actions-item {
+    padding: 14px 16px;
+    min-height: 44px;
+  }
 }

@@ -528,10 +528,33 @@ function handleContextMenu(e) {
   currentContextId = path;
   contextFileData = fileData;
   
+  // Show context menu
+  ctxMenu.classList.remove('hidden');
   ctxMenu.classList.add('visible');
   ctxMenu.style.display = 'block';
-  ctxMenu.style.left = e.pageX + 'px';
-  ctxMenu.style.top = e.pageY + 'px';
+  ctxMenu.setAttribute('aria-hidden', 'false');
+  
+  // Position the menu
+  const menuWidth = ctxMenu.offsetWidth || 180;
+  const menuHeight = ctxMenu.offsetHeight || 200;
+  const viewportWidth = window.innerWidth;
+  const viewportHeight = window.innerHeight;
+  
+  let posX = e.pageX;
+  let posY = e.pageY;
+  
+  // Adjust if menu would overflow right edge
+  if (posX + menuWidth > viewportWidth - 10) {
+    posX = viewportWidth - menuWidth - 10;
+  }
+  
+  // Adjust if menu would overflow bottom edge
+  if (posY + menuHeight > viewportHeight - 10) {
+    posY = viewportHeight - menuHeight - 10;
+  }
+  
+  ctxMenu.style.left = posX + 'px';
+  ctxMenu.style.top = posY + 'px';
 }
 
 // ============= Event Handlers =============
@@ -549,18 +572,30 @@ function initializeEventHandlers() {
   console.log('[enhanced-ui] Initializing event handlers');
   
   // Close context menu
-  document.addEventListener('click', () => {
-    ctxMenu.classList.remove('visible');
-    ctxMenu.style.display = 'none';
+  document.addEventListener('click', (e) => {
+    // Don't close if clicking inside context menu
+    if (ctxMenu && !ctxMenu.contains(e.target)) {
+      ctxMenu.classList.add('hidden');
+      ctxMenu.classList.remove('visible');
+      ctxMenu.style.display = 'none';
+      ctxMenu.setAttribute('aria-hidden', 'true');
+    }
   });
 
   // Context menu actions
   ctxMenu?.addEventListener('click', async (e) => {
-    const action = e.target.dataset.action;
+    e.stopPropagation();
+    const action = e.target.closest('[data-action]')?.dataset.action;
     if (!action) return;
     
     const path = currentContextId;
     const fileData = contextFileData;
+    
+    // Close context menu immediately for better UX
+    ctxMenu.classList.add('hidden');
+    ctxMenu.classList.remove('visible');
+    ctxMenu.style.display = 'none';
+    ctxMenu.setAttribute('aria-hidden', 'true');
     
     if (action === 'open' && fileData?.type === 'folder') {
       await loadFiles(path);
@@ -570,17 +605,53 @@ function initializeEventHandlers() {
         window.openPreviewModal(path, fileData?.name);
       }
     } else if (action === 'download') {
-      window.open(`api.php?action=content&path=${encodeURIComponent(path)}`);
+      // Use download modal
+      if (window.openDownloadOverlay) {
+        window.openDownloadOverlay(
+          { ...fileData, path },
+          async (file) => {
+            window.open(`api.php?action=content&path=${encodeURIComponent(file.path)}`);
+          }
+        );
+      } else {
+        // Fallback to direct download
+        window.open(`api.php?action=content&path=${encodeURIComponent(path)}`);
+      }
     } else if (action === 'rename') {
-      const newName = prompt('Nama baru:', fileData?.name);
-      if (newName) await renameItem(path, newName);
+      // Use rename modal
+      if (window.openRenameModal) {
+        window.openRenameModal(path, fileData?.name);
+      } else if (window.openRenameOverlay) {
+        window.openRenameOverlay({ ...fileData, path });
+      } else {
+        // Fallback to prompt
+        const newName = prompt('Nama baru:', fileData?.name);
+        if (newName) await renameItem(path, newName);
+      }
     } else if (action === 'delete') {
-      if (confirm(`Hapus "${fileData?.name}"?`)) {
-        await deleteItems([path]);
+      // Use delete modal
+      if (window.openDeleteOverlay) {
+        window.openDeleteOverlay(
+          [{ ...fileData, path }],
+          async (items) => {
+            const paths = items.map(item => item.path);
+            await deleteItems(paths);
+          }
+        );
+      } else {
+        // Fallback to confirm
+        if (confirm(`Hapus "${fileData?.name}"?`)) {
+          await deleteItems([path]);
+        }
+      }
+    } else if (action === 'move') {
+      // Open move overlay if available
+      if (window.openMoveModal) {
+        window.openMoveModal([path]);
+      } else if (window.openMoveOverlay) {
+        window.openMoveOverlay([path]);
       }
     }
-    
-    ctxMenu.style.display = 'none';
   });
 
   // Search
@@ -629,9 +700,32 @@ function initializeEventHandlers() {
   document.getElementById('deleteSel')?.addEventListener('click', async () => {
     if (selected.size === 0) return showError('Tidak ada item yang dipilih');
     
-    if (confirm(`Hapus ${selected.size} item terpilih?`)) {
-      const selectedPaths = Array.from(selected);
-      await deleteItems(selectedPaths);
+    const selectedPaths = Array.from(selected);
+    
+    // Build items array with file info
+    const itemsToDelete = selectedPaths.map(path => {
+      const name = path.split('/').pop();
+      const fileInfo = files.find(f => f.path === path || f.name === name);
+      return {
+        path,
+        name,
+        type: fileInfo?.type || 'file'
+      };
+    });
+    
+    if (window.openDeleteOverlay) {
+      window.openDeleteOverlay(
+        itemsToDelete,
+        async (items) => {
+          const paths = items.map(item => item.path);
+          await deleteItems(paths);
+        }
+      );
+    } else {
+      // Fallback to confirm
+      if (confirm(`Hapus ${selected.size} item terpilih?`)) {
+        await deleteItems(selectedPaths);
+      }
     }
   });
 

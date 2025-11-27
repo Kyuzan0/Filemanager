@@ -1,0 +1,342 @@
+/**
+ * Download Dialog Overlay
+ * =======================
+ * Styles for the download confirmation dialog.
+ */
+
+.download-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 0.5rem;
+  z-index: 50;
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+}
+
+.download-overlay.hidden {
+  display: none !important;
+}
+
+.download-overlay[aria-hidden="false"],
+.download-overlay.visible {
+  display: flex;
+}
+
+.download-dialog {
+  background: var(--card, #ffffff);
+  color: var(--muted, #64748b);
+  border-radius: 0.75rem;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15), 0 0 0 1px rgba(0, 0, 0, 0.05);
+  width: 100%;
+  max-width: 28rem;
+  animation: modal-slide-up 0.2s ease-out;
+}
+
+@keyframes modal-slide-up {
+  from {
+    opacity: 0;
+    transform: translateY(20px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.download-header {
+  background: linear-gradient(to right, #f0fdf4, #dcfce7);
+  border-bottom: 1px solid #bbf7d0;
+  padding: 1.25rem 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  border-radius: 0.75rem 0.75rem 0 0;
+}
+
+.download-icon {
+  width: 3rem;
+  height: 3rem;
+  border-radius: 9999px;
+  background: #dcfce7;
+  color: #16a34a;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.download-title-group {
+  flex: 1;
+  min-width: 0;
+}
+
+.download-title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #111827;
+  margin: 0;
+}
+
+.download-subtitle {
+  font-size: 0.75rem;
+  color: #6b7280;
+  margin-top: 0.25rem;
+}
+
+.download-body {
+  padding: 1.25rem 1.5rem;
+}
+
+.download-file-info {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.875rem;
+  background: #f9fafb;
+  border-radius: 0.625rem;
+  margin-bottom: 1rem;
+  border: 1px solid #f3f4f6;
+}
+
+.download-file-icon {
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 0.5rem;
+  background: #dbeafe;
+  color: #2563eb;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.download-file-icon.folder {
+  background: #fef3c7;
+  color: #d97706;
+}
+
+.download-file-icon.image {
+  background: #fce7f3;
+  color: #db2777;
+}
+
+.download-file-icon.document {
+  background: #dbeafe;
+  color: #2563eb;
+}
+
+.download-file-icon.code {
+  background: #ede9fe;
+  color: #7c3aed;
+}
+
+.download-file-details {
+  flex: 1;
+  min-width: 0;
+}
+
+.download-file-name {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #111827;
+  margin: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.download-file-size {
+  font-size: 0.75rem;
+  color: #6b7280;
+  margin-top: 0.125rem;
+}
+
+.download-message {
+  font-size: 0.875rem;
+  color: #6b7280;
+  line-height: 1.5;
+}
+
+.download-actions {
+  display: flex;
+  gap: 0.5rem;
+  border-top: 1px solid #f3f4f6;
+  background: #f9fafb;
+  padding: 0.75rem 1.5rem;
+  border-radius: 0 0 0.75rem 0.75rem;
+}
+
+.download-button {
+  flex: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.625rem 1rem;
+  border-radius: 0.5rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.download-button.outline {
+  background: var(--card, #ffffff);
+  border: 1px solid #e5e7eb;
+  color: #374151;
+}
+
+.download-button.outline:hover {
+  background: #f3f4f6;
+  border-color: #d1d5db;
+}
+
+.download-button.primary {
+  background: #16a34a;
+  border: none;
+  color: #ffffff;
+}
+
+.download-button.primary:hover {
+  background: #15803d;
+}
+
+.download-button.primary:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(22, 163, 74, 0.3);
+}
+
+/* Download progress state */
+.download-button.loading {
+  pointer-events: none;
+  opacity: 0.7;
+}
+
+.download-button.loading::after {
+  content: '';
+  width: 1rem;
+  height: 1rem;
+  border: 2px solid transparent;
+  border-top-color: currentColor;
+  border-radius: 50%;
+  animation: spinner 0.6s linear infinite;
+}
+
+@keyframes spinner {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Dark mode styles */
+[data-theme="dark"] .download-dialog {
+  background: var(--card, #1f2937);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.05);
+}
+
+[data-theme="dark"] .download-header {
+  background: linear-gradient(to right, rgba(22, 101, 52, 0.2), rgba(21, 128, 61, 0.15));
+  border-bottom: 1px solid rgba(34, 197, 94, 0.2);
+}
+
+[data-theme="dark"] .download-icon {
+  background: rgba(34, 197, 94, 0.15);
+  color: #4ade80;
+}
+
+[data-theme="dark"] .download-title {
+  color: #f9fafb;
+}
+
+[data-theme="dark"] .download-subtitle {
+  color: #9ca3af;
+}
+
+[data-theme="dark"] .download-file-info {
+  background: rgba(0, 0, 0, 0.2);
+  border-color: rgba(255, 255, 255, 0.05);
+}
+
+[data-theme="dark"] .download-file-icon {
+  background: rgba(59, 130, 246, 0.15);
+  color: #60a5fa;
+}
+
+[data-theme="dark"] .download-file-icon.folder {
+  background: rgba(251, 191, 36, 0.15);
+  color: #fbbf24;
+}
+
+[data-theme="dark"] .download-file-icon.image {
+  background: rgba(236, 72, 153, 0.15);
+  color: #f472b6;
+}
+
+[data-theme="dark"] .download-file-icon.document {
+  background: rgba(59, 130, 246, 0.15);
+  color: #60a5fa;
+}
+
+[data-theme="dark"] .download-file-icon.code {
+  background: rgba(139, 92, 246, 0.15);
+  color: #a78bfa;
+}
+
+[data-theme="dark"] .download-file-name {
+  color: #f9fafb;
+}
+
+[data-theme="dark"] .download-file-size {
+  color: #9ca3af;
+}
+
+[data-theme="dark"] .download-message {
+  color: #9ca3af;
+}
+
+[data-theme="dark"] .download-actions {
+  background: rgba(0, 0, 0, 0.2);
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+[data-theme="dark"] .download-button.outline {
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #d1d5db;
+}
+
+[data-theme="dark"] .download-button.outline:hover {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.15);
+}
+
+[data-theme="dark"] .download-button.primary {
+  background: #16a34a;
+}
+
+[data-theme="dark"] .download-button.primary:hover {
+  background: #22c55e;
+}
+
+/* Responsive */
+@media (min-width: 768px) {
+  .download-overlay {
+    padding: 1rem;
+  }
+  
+  .download-header {
+    padding: 1.5rem;
+  }
+  
+  .download-body {
+    padding: 1.5rem;
+  }
+  
+  .download-actions {
+    padding: 1rem 1.5rem;
+  }
+}
