@@ -30,17 +30,24 @@
         <!-- SIDEBAR -->
         <aside class="sidebar w-56 px-5 py-5 bg-white border-r border-slate-200 hidden md:block h-full overflow-y-auto" id="sidebar">
             <div class="sidebar-header flex items-center justify-between mb-4">
-                <div class="logo text-lg font-bold text-blue-600">SiyNLic Pro</div>
+                <div class="logo text-lg font-bold text-blue-600">Filemanager</div>
                 <button class="sidebar-close md:hidden p-2 hover:bg-slate-100 rounded-lg" id="sidebar-close">
                     <i class="ri-close-line text-xl"></i>
                 </button>
             </div>
             <ul class="side-list space-y-2">
-                <li class="px-2 py-2.5 rounded-lg text-slate-600 cursor-pointer hover:bg-slate-100 transition-colors">My Files</li>
-                <li class="px-2 py-2.5 rounded-lg text-slate-600 cursor-pointer hover:bg-slate-100 transition-colors">Uploads</li>
-                <li class="px-2 py-2.5 rounded-lg text-slate-600 cursor-pointer hover:bg-slate-100 transition-colors">Shared</li>
-                <li class="px-2 py-2.5 rounded-lg text-slate-600 cursor-pointer hover:bg-slate-100 transition-colors">Favorites</li>
-                <li class="px-2 py-2.5 rounded-lg text-slate-600 cursor-pointer hover:bg-slate-100 transition-colors">Trash</li>
+                <li class="px-2 py-2.5 rounded-lg text-slate-600 cursor-pointer hover:bg-slate-100 transition-colors flex items-center gap-2">
+                    <i class="ri-folder-line"></i> My Files
+                </li>
+                <li class="px-2 py-2.5 rounded-lg text-slate-600 cursor-pointer hover:bg-slate-100 transition-colors flex items-center gap-2">
+                    <i class="ri-upload-cloud-line"></i> Uploads
+                </li>
+                <li class="px-2 py-2.5 rounded-lg text-slate-600 cursor-pointer hover:bg-slate-100 transition-colors flex items-center gap-2" id="sidebar-log-activity">
+                    <i class="ri-file-list-3-line"></i> Log Activity
+                </li>
+                <li class="px-2 py-2.5 rounded-lg text-slate-600 cursor-pointer hover:bg-slate-100 transition-colors flex items-center gap-2">
+                    <i class="ri-delete-bin-line"></i> Trash
+                </li>
             </ul>
         </aside>
 
@@ -59,17 +66,32 @@
                         <span>🔎</span>
                         <input type="search" id="search" placeholder="Find files..." class="border-0 outline-none bg-transparent text-sm" />
                     </div>
-                    <button class="btn px-3 py-2 rounded-2xl" id="toggleTheme">🌙</button>
                 </div>
             </section>
 
             <!-- HEADER ACTIONS -->
-            <section class="header-actions mb-3 flex items-center gap-2.5 flex-wrap">
-                <button class="btn btn-primary px-4 py-2 rounded-2xl font-medium text-sm" id="newBtn">+ New</button>
-                <button class="btn px-3 py-2 rounded-2xl text-sm" id="uploadBtn">Upload File</button>
-                <div class="ml-auto flex items-center gap-2">
-                    <div class="badge px-2 py-1 rounded-full text-xs" id="selectedCount">0 selected</div>
-                    <button class="btn px-3 py-2 rounded-2xl text-sm" id="deleteSel">Hapus Terpilih</button>
+            <section class="header-actions mb-3 flex items-center justify-between gap-2">
+                <div class="flex items-center gap-2">
+                    <button class="btn btn-primary px-3 py-2 rounded-xl font-medium text-sm flex items-center gap-2" id="newBtn">
+                        <i class="ri-add-line text-lg"></i>
+                        <span class="hidden sm:inline">New</span>
+                    </button>
+                    <button class="btn px-3 py-2 rounded-xl text-sm flex items-center gap-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700" id="uploadBtn">
+                        <i class="ri-upload-cloud-2-line text-lg"></i>
+                        <span class="hidden sm:inline">Upload</span>
+                    </button>
+                </div>
+
+                <button class="btn px-3 py-2 rounded-xl text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors" id="toggleTheme">
+                    <i class="ri-moon-line text-xl"></i>
+                </button>
+
+                <div class="flex items-center gap-2">
+                    <div class="badge px-2 py-1 rounded-full text-xs bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700" id="selectedCount">0 selected</div>
+                    <button class="btn px-3 py-2 rounded-xl text-sm flex items-center gap-2 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20" id="deleteSel">
+                        <i class="ri-delete-bin-line text-lg"></i>
+                        <span class="hidden sm:inline">Hapus</span>
+                    </button>
                 </div>
             </section>
 
@@ -222,6 +244,21 @@
                 closeSidebar();
             }
         });
+
+        // Log Activity button handler
+        const logActivityBtn = document.getElementById('sidebar-log-activity');
+        if (logActivityBtn) {
+            logActivityBtn.addEventListener('click', function() {
+                // Close sidebar on mobile
+                if (window.innerWidth < 768) {
+                    closeSidebar();
+                }
+                // Open log modal
+                if (typeof openLogModal === 'function') {
+                    openLogModal();
+                }
+            });
+        }
     })();
     </script>
 </body>

@@ -263,16 +263,16 @@
 </div>
 
 <div class="log-overlay fixed inset-0 items-center justify-center bg-black/45 p-2 md:p-4 z-50 hidden" id="log-overlay" aria-hidden="true">
-    <div class="log-dialog bg-white rounded-lg shadow-lg w-full max-w-sm md:max-w-4xl max-h-[90vh] md:max-h-[85vh] overflow-hidden flex flex-col" role="dialog" aria-modal="true" aria-labelledby="log-title">
-        <header class="log-header bg-gradient-to-r from-blue-50 to-blue-50 border-b border-gray-100 px-6 py-4 flex items-center gap-4 flex-shrink-0">
-            <div class="log-icon w-12 h-12 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center flex-shrink-0" aria-hidden="true">
+    <div class="log-dialog bg-white dark:bg-[#1a2332] rounded-lg shadow-lg w-full max-w-sm md:max-w-4xl max-h-[90vh] md:max-h-[85vh] overflow-hidden flex flex-col" role="dialog" aria-modal="true" aria-labelledby="log-title">
+        <header class="log-header bg-gradient-to-r from-blue-50 to-blue-50 dark:from-blue-900/30 dark:to-blue-900/20 border-b border-gray-100 dark:border-white/10 px-6 py-4 flex items-center gap-4 flex-shrink-0">
+            <div class="log-icon w-12 h-12 rounded-full bg-blue-100 dark:bg-blue-500/20 text-blue-600 dark:text-blue-400 flex items-center justify-center flex-shrink-0" aria-hidden="true">
                 <svg viewBox="0 0 24 24" fill="currentColor" class="w-6 h-6"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6z"/><path d="M14 2v6h6M16 13H8M16 17H8M10 9H8"/></svg>
             </div>
             <div class="log-title-group">
-                <h2 class="log-title text-base font-semibold text-gray-900" id="log-title">Log Aktivitas</h2>
-                <p class="log-subtitle text-xs text-gray-600 mt-0.5" id="log-subtitle">Riwayat aktivitas file manager</p>
+                <h2 class="log-title text-base font-semibold text-gray-900 dark:text-slate-200" id="log-title">Log Aktivitas</h2>
+                <p class="log-subtitle text-xs text-gray-600 dark:text-slate-400 mt-0.5" id="log-subtitle">Riwayat aktivitas file manager</p>
             </div>
-            <button type="button" id="log-close-top" aria-label="Tutup" class="ml-auto inline-flex items-center justify-center w-8 h-8 rounded-full text-gray-500 hover:text-gray-700 hover:bg-gray-100">
+            <button type="button" id="log-close-top" aria-label="Tutup" class="ml-auto inline-flex items-center justify-center w-8 h-8 rounded-full text-gray-500 dark:text-slate-400 hover:text-gray-700 dark:hover:text-slate-200 hover:bg-gray-100 dark:hover:bg-white/10">
                 <svg viewBox="0 0 24 24" fill="currentColor" class="w-5 h-5"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
             </button>
         </header>
@@ -280,14 +280,14 @@
             <div class="log-filter-bar mb-4 flex-shrink-0">
                 <div class="filter-primary flex flex-col lg:flex-row gap-3">
                     <div class="filter-search-main relative flex-1">
-                        <svg viewBox="0 0 24 24" aria-hidden="true" class="search-icon absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400">
+                        <svg viewBox="0 0 24 24" aria-hidden="true" class="search-icon absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 dark:text-slate-500">
                             <path fill="currentColor" d="M15.5 14h-.79l-.28-.27a6 6 0 1 0-.71.71l.27.28v.79l4.5 4.5a1 1 0 0 0 1.41-1.41L15.5 14zm-6 0a4 4 0 1 1 0-8 4 4 0 0 1 0 8z"/>
                         </svg>
-                        <input type="text" id="log-path-search" class="filter-search-input pl-10 pr-3 py-2 border border-gray-300 rounded-md w-full text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Cari aktivitas...">
+                        <input type="text" id="log-path-search" class="filter-search-input pl-10 pr-3 py-2 border border-gray-300 dark:border-white/10 dark:bg-black/30 dark:text-slate-200 dark:placeholder-slate-500 rounded-md w-full text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Cari aktivitas...">
                     </div>
                     
                     <div class="filter-quick-actions flex flex-col sm:flex-row gap-2">
-                        <select id="log-filter" class="filter-select-compact border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <select id="log-filter" class="filter-select-compact border border-gray-300 dark:border-white/10 dark:bg-black/30 dark:text-slate-200 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
                             <option value="">Semua Aktivitas</option>
                             <option value="create">Buat</option>
                             <option value="delete">Hapus</option>
@@ -297,7 +297,7 @@
                             <option value="download">Unduh</option>
                         </select>
                         
-                        <select id="log-target-type" class="filter-select-compact border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <select id="log-target-type" class="filter-select-compact border border-gray-300 dark:border-white/10 dark:bg-black/30 dark:text-slate-200 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
                             <option value="">Semua Tipe</option>
                             <option value="file">File</option>
                             <option value="folder">Folder</option>
@@ -306,25 +306,25 @@
                 </div>
                 
                 <div id="active-filters-display" class="active-filters-minimal mt-2" style="display: none;">
-                    <span class="active-filters-label text-xs text-gray-600 font-medium">Aktif:</span>
+                    <span class="active-filters-label text-xs text-gray-600 dark:text-slate-400 font-medium">Aktif:</span>
                     <div class="active-filters-tags flex flex-wrap gap-2 mt-1" id="active-filters-tags"></div>
                 </div>
             </div>
             
-            <div class="log-table-wrapper flex-1 overflow-auto border border-gray-200 rounded-md">
+            <div class="log-table-wrapper flex-1 overflow-auto border border-gray-200 dark:border-white/10 rounded-md">
                 <table class="log-table min-w-full w-full text-xs">
-                    <thead class="bg-gray-50 sticky top-0">
+                    <thead class="bg-gray-50 dark:bg-black/30 sticky top-0">
                         <tr>
-                            <th class="px-3 py-2 text-left font-medium text-gray-700 text-xs">Waktu</th>
-                            <th class="px-3 py-2 text-left font-medium text-gray-700 text-xs">Aksi</th>
-                            <th class="px-3 py-2 text-left font-medium text-gray-700 text-xs hidden sm:table-cell">Target</th>
-                            <th class="px-3 py-2 text-left font-medium text-gray-700 text-xs hidden sm:table-cell">Tipe</th>
-                            <th class="px-3 py-2 text-left font-medium text-gray-700 text-xs hidden md:table-cell">IP Address</th>
+                            <th class="px-3 py-2 text-left font-medium text-gray-700 dark:text-slate-400 text-xs">Waktu</th>
+                            <th class="px-3 py-2 text-left font-medium text-gray-700 dark:text-slate-400 text-xs">Aksi</th>
+                            <th class="px-3 py-2 text-left font-medium text-gray-700 dark:text-slate-400 text-xs hidden sm:table-cell">Target</th>
+                            <th class="px-3 py-2 text-left font-medium text-gray-700 dark:text-slate-400 text-xs hidden sm:table-cell">Tipe</th>
+                            <th class="px-3 py-2 text-left font-medium text-gray-700 dark:text-slate-400 text-xs hidden md:table-cell">IP Address</th>
                         </tr>
                     </thead>
-                    <tbody id="log-table-body">
+                    <tbody id="log-table-body" class="dark:text-slate-200">
                         <tr>
-                            <td colspan="5" class="log-loading px-3 py-4 text-center text-gray-500">Memuat data log...</td>
+                            <td colspan="5" class="log-loading px-3 py-4 text-center text-gray-500 dark:text-slate-400">Memuat data log...</td>
                         </tr>
                     </tbody>
                 </table>
@@ -332,35 +332,35 @@
             
             <div class="log-controls-bottom flex flex-col sm:flex-row justify-between items-center gap-3 mt-4 flex-shrink-0">
                 <div class="log-pagination flex items-center gap-2">
-                    <button id="log-prev" type="button" class="log-pagination-btn p-2 border border-gray-300 rounded-md text-sm disabled:opacity-50 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <button id="log-prev" type="button" class="log-pagination-btn p-2 border border-gray-300 dark:border-white/10 dark:bg-[#1a2332] dark:text-slate-400 dark:hover:bg-white/10 dark:hover:text-slate-200 rounded-md text-sm disabled:opacity-50 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500">
                         <svg viewBox="0 0 24 24" aria-hidden="true" class="w-4 h-4"><path fill="currentColor" d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/></svg>
                     </button>
-                    <span id="log-page-info" class="text-xs font-medium text-gray-700">Halaman 1</span>
-                    <button id="log-next" type="button" class="log-pagination-btn p-2 border border-gray-300 rounded-md text-sm disabled:opacity-50 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <span id="log-page-info" class="text-xs font-medium text-gray-700 dark:text-slate-400">Halaman 1</span>
+                    <button id="log-next" type="button" class="log-pagination-btn p-2 border border-gray-300 dark:border-white/10 dark:bg-[#1a2332] dark:text-slate-400 dark:hover:bg-white/10 dark:hover:text-slate-200 rounded-md text-sm disabled:opacity-50 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500">
                         <svg viewBox="0 0 24 24" aria-hidden="true" class="w-4 h-4"><path fill="currentColor" d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/></svg>
                     </button>
                 </div>
                 
                 <div class="log-actions-group flex flex-col sm:flex-row gap-2 items-center">
                     <div class="log-auto-refresh">
-                        <label for="log-auto-refresh" class="checkbox-label flex items-center gap-2 text-xs font-medium cursor-pointer">
-                            <input type="checkbox" id="log-auto-refresh" class="rounded w-4 h-4">
+                        <label for="log-auto-refresh" class="checkbox-label flex items-center gap-2 text-xs font-medium cursor-pointer dark:text-slate-400">
+                            <input type="checkbox" id="log-auto-refresh" class="rounded w-4 h-4 dark:bg-black/30 dark:border-white/20">
                             <span>Auto-refresh (30s)</span>
                         </label>
                     </div>
                     
                     <div class="log-export-dropdown relative">
-                        <button type="button" id="log-export-toggle" class="log-button outline inline-flex items-center gap-2 px-3 py-2 rounded-md text-xs font-medium bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500" aria-expanded="false" aria-controls="log-export-menu">
+                        <button type="button" id="log-export-toggle" class="log-button outline inline-flex items-center gap-2 px-3 py-2 rounded-md text-xs font-medium bg-white dark:bg-[#1a2332] border border-gray-300 dark:border-white/10 text-gray-700 dark:text-slate-200 hover:bg-gray-50 dark:hover:bg-white/10 focus:outline-none focus:ring-2 focus:ring-blue-500" aria-expanded="false" aria-controls="log-export-menu">
                             <svg viewBox="0 0 24 24" aria-hidden="true" class="w-4 h-4"><path fill="currentColor" d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6z"/><path d="M14 2v6h6M16 13H8M16 17H8M10 9H8"/></svg>
                             <span>Export</span>
                             <svg viewBox="0 0 24 24" aria-hidden="true" class="w-4 h-4"><path fill="currentColor" d="M7 10l5 5 5-5z"/></svg>
                         </button>
-                        <div class="log-export-menu absolute right-0 mt-1 w-40 bg-white border border-gray-200 rounded-md shadow-lg z-10" id="log-export-menu" aria-hidden="true" hidden>
-                            <button type="button" id="log-export-csv" class="log-export-option px-3 py-2 text-xs w-full text-left hover:bg-gray-50 focus:outline-none flex items-center gap-2">
+                        <div class="log-export-menu absolute right-0 mt-1 w-40 bg-white dark:bg-[#1a2332] border border-gray-200 dark:border-white/10 rounded-md shadow-lg dark:shadow-black/50 z-10" id="log-export-menu" aria-hidden="true" hidden>
+                            <button type="button" id="log-export-csv" class="log-export-option px-3 py-2 text-xs w-full text-left hover:bg-gray-50 dark:hover:bg-white/10 dark:text-slate-200 focus:outline-none flex items-center gap-2">
                                 <svg viewBox="0 0 24 24" aria-hidden="true" class="w-4 h-4"><path fill="currentColor" d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6z"/><path d="M14 2v6h6M16 13H8M16 17H8M10 9H8"/></svg>
                                 <span>Export CSV</span>
                             </button>
-                            <button type="button" id="log-export-json" class="log-export-option px-3 py-2 text-xs w-full text-left hover:bg-gray-50 focus:outline-none flex items-center gap-2">
+                            <button type="button" id="log-export-json" class="log-export-option px-3 py-2 text-xs w-full text-left hover:bg-gray-50 dark:hover:bg-white/10 dark:text-slate-200 focus:outline-none flex items-center gap-2">
                                 <svg viewBox="0 0 24 24" aria-hidden="true" class="w-4 h-4"><path fill="currentColor" d="M5 3h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2zm7 4v2h2V7h-2zm0 4v2h2v-2h-2zm0 4v2h2v-2h-2z"/></svg>
                                 <span>Export JSON</span>
                             </button>
@@ -369,12 +369,12 @@
                 </div>
             </div>
             
-            <div class="log-error text-xs text-red-600 mt-2" id="log-error" role="alert" hidden></div>
+            <div class="log-error text-xs text-red-600 dark:text-red-400 mt-2" id="log-error" role="alert" hidden></div>
         </div>
-        <footer class="log-actions flex flex-col sm:flex-row justify-between gap-3 border-t border-gray-100 bg-gray-50 px-6 py-3 rounded-b-lg flex-shrink-0">
+        <footer class="log-actions flex flex-col sm:flex-row justify-between gap-3 border-t border-gray-100 dark:border-white/10 bg-gray-50 dark:bg-black/20 px-6 py-3 rounded-b-lg flex-shrink-0">
             <div class="log-actions-left">
                 <div class="log-cleanup-group flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
-                    <select id="log-cleanup-days" class="log-cleanup-select border border-gray-300 rounded-md px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <select id="log-cleanup-days" class="log-cleanup-select border border-gray-300 dark:border-white/10 dark:bg-black/30 dark:text-slate-200 rounded-md px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500">
                         <option value="7">7 hari</option>
                         <option value="30" selected>30 hari</option>
                     </select>
@@ -385,7 +385,7 @@
                 </div>
             </div>
             <div class="log-actions-right flex flex-col sm:flex-row gap-2">
-                <button type="button" class="log-button outline px-3 py-2 rounded-md text-xs font-medium bg-white border border-gray-300 text-gray-700 inline-flex items-center justify-center gap-2 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500" id="log-refresh">
+                <button type="button" class="log-button outline px-3 py-2 rounded-md text-xs font-medium bg-white dark:bg-[#1a2332] border border-gray-300 dark:border-white/10 text-gray-700 dark:text-slate-200 inline-flex items-center justify-center gap-2 hover:bg-gray-50 dark:hover:bg-white/10 focus:outline-none focus:ring-2 focus:ring-blue-500" id="log-refresh">
                     <svg viewBox="0 0 24 24" aria-hidden="true" class="w-4 h-4"><path fill="currentColor" d="M12 6V3L8 7l4 4V8c2.76 0 5 2.24 5 5a5 5 0 0 1-5 5 5 5 0 0 1-4.33-2.5h-2.3A7 7 0 0 0 12 20a7 7 0 0 0 7-7c0-3.87-3.13-7-7-7z"/></svg>
                     <span>Refresh</span>
                 </button>

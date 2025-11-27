@@ -49,14 +49,16 @@
 }
 
 /* Primary Button */
-.btn.primary {
+.btn.primary,
+.btn-primary {
   background: linear-gradient(180deg, var(--accent), #245ecf);
   color: #fff;
   border: none;
   box-shadow: 0 4px 12px rgba(57, 120, 255, 0.3);
 }
 
-.btn.primary:hover {
+.btn.primary:hover,
+.btn-primary:hover {
   box-shadow: 0 6px 16px rgba(57, 120, 255, 0.4);
   transform: translateY(-2px);
 }
