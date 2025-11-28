@@ -550,18 +550,29 @@ function renderItemRow(item, state, params) {
 
     // Actions cell
     const actionCell = document.createElement('td');
-    actionCell.classList.add('actions-cell','w-36','pr-2','text-right');
+    actionCell.classList.add('actions-cell','w-auto','pr-2','text-right');
     try { actionCell.setAttribute('role', 'gridcell'); } catch (e) {}
     const actionGroup = document.createElement('div');
-    actionGroup.classList.add('row-actions','inline-flex','items-center','gap-2','justify-end');
+    actionGroup.classList.add('row-actions','inline-flex','items-center','gap-1','justify-end');
 
-    // View button
-    const viewBtn = document.createElement('button');
-    viewBtn.classList.add('p-1', 'text-blue-600');
-    viewBtn.innerHTML = '<i class="ri-eye-line"></i>';
-    viewBtn.addEventListener('click', (event) => {
-        event.stopPropagation();
-        if (isPreviewable) {
+    // Helper function to create action button with tooltip
+    const createActionBtn = (icon, title, colorClass, onClick) => {
+        const btn = document.createElement('button');
+        btn.classList.add('action-icon-btn', 'p-1.5', 'rounded', 'transition-colors', 'hover:bg-gray-100', 'dark:hover:bg-white/10', colorClass);
+        btn.innerHTML = `<i class="${icon} text-base"></i>`;
+        btn.setAttribute('title', title);
+        btn.addEventListener('click', (event) => {
+            event.stopPropagation();
+            onClick(event);
+        });
+        return btn;
+    };
+
+    // 1. Open/Preview button
+    const openBtn = createActionBtn('ri-folder-open-line', 'Buka', 'text-blue-600 dark:text-blue-400', () => {
+        if (item.type === 'folder') {
+            navigateTo(item.path);
+        } else if (isPreviewable) {
             openTextPreview(item);
         } else if (isMediaPreviewable) {
             openMediaPreview(item);
@@ -576,28 +587,37 @@ function renderItemRow(item, state, params) {
             }
         }
     });
-    actionGroup.appendChild(viewBtn);
+    actionGroup.appendChild(openBtn);
 
-    // Edit button
-    const editBtn = document.createElement('button');
-    editBtn.classList.add('p-1', 'text-blue-600');
-    editBtn.innerHTML = '<i class="ri-edit-line"></i>';
-    editBtn.addEventListener('click', (event) => {
-        event.stopPropagation();
-        if (isPreviewable) {
-            openTextPreview(item);
-        } else {
-            openRenameOverlay(item);
-        }
+    // 2. Download button (only for files)
+    if (item.type === 'file') {
+        const downloadBtn = createActionBtn('ri-download-line', 'Unduh', 'text-green-600 dark:text-green-400', () => {
+            const url = buildFileUrl(item.path);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = item.name;
+            a.style.display = 'none';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+        });
+        actionGroup.appendChild(downloadBtn);
+    }
+
+    // 3. Rename button
+    const renameBtn = createActionBtn('ri-edit-line', 'Ganti Nama', 'text-amber-600 dark:text-amber-400', () => {
+        openRenameOverlay(item);
     });
-    actionGroup.appendChild(editBtn);
+    actionGroup.appendChild(renameBtn);
 
-    // Delete button
-    const deleteBtn = document.createElement('button');
-    deleteBtn.classList.add('p-1', 'text-red-500');
-    deleteBtn.innerHTML = '<i class="ri-delete-bin-line"></i>';
-    deleteBtn.addEventListener('click', (event) => {
-        event.stopPropagation();
+    // 4. Move button
+    const moveBtn = createActionBtn('ri-folder-transfer-line', 'Pindahkan', 'text-purple-600 dark:text-purple-400', () => {
+        openMoveOverlay([item.path]);
+    });
+    actionGroup.appendChild(moveBtn);
+
+    // 5. Delete button
+    const deleteBtn = createActionBtn('ri-delete-bin-line', 'Hapus', 'text-red-500 dark:text-red-400', () => {
         if (hasUnsavedChanges(state.preview)) {
             confirmDiscardChanges('Perubahan belum disimpan. Tetap hapus item terpilih?')
                 .then((proceed) => {

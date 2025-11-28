@@ -118,3 +118,99 @@ tbody tr:hover {
 .table-compact td {
   padding: 8px 12px;
 }
+
+/* Action Icon Buttons */
+.action-icon-btn {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  border-radius: 6px;
+  transition: all 0.15s ease;
+}
+
+.action-icon-btn:hover {
+  transform: scale(1.1);
+}
+
+.action-icon-btn:active {
+  transform: scale(0.95);
+}
+
+/* Tooltip on hover */
+.action-icon-btn::after {
+  content: attr(title);
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 4px 8px;
+  background: #1f2937;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 500;
+  white-space: nowrap;
+  border-radius: 4px;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.15s ease;
+  pointer-events: none;
+  z-index: 50;
+  margin-bottom: 4px;
+}
+
+.action-icon-btn::before {
+  content: '';
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border: 4px solid transparent;
+  border-top-color: #1f2937;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.15s ease;
+  pointer-events: none;
+  z-index: 50;
+}
+
+.action-icon-btn:hover::after,
+.action-icon-btn:hover::before {
+  opacity: 1;
+  visibility: visible;
+}
+
+/* Dark mode tooltip */
+[data-theme="dark"] .action-icon-btn::after {
+  background: #e5e7eb;
+  color: #1f2937;
+}
+
+[data-theme="dark"] .action-icon-btn::before {
+  border-top-color: #e5e7eb;
+}
+
+/* Row actions container */
+.row-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+}
+
+/* Hide some actions on smaller screens */
+@media (max-width: 1024px) {
+  .row-actions .action-icon-btn:nth-child(n+4) {
+    display: none;
+  }
+}
+
+@media (max-width: 768px) {
+  .row-actions .action-icon-btn:nth-child(n+3) {
+    display: none;
+  }
+}

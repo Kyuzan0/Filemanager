@@ -441,8 +441,25 @@ function render() {
       <td class="px-3 py-3 text-sm">${f.date}</td>
       <td class="px-3 py-3 text-right text-sm">${f.size}</td>
       <td class="px-3 py-3 text-sm">
-        <button class="btn" data-action="preview" data-path="${f.path}">Preview</button>
-        <button class="btn" data-action="share" data-path="${f.path}">Share</button>
+        <div class="row-actions inline-flex items-center gap-1 justify-end">
+          <button class="action-icon-btn p-1.5 rounded transition-colors hover:bg-gray-100 dark:hover:bg-white/10 text-blue-600 dark:text-blue-400" data-action="preview" data-path="${f.path}" title="Buka">
+            <i class="ri-folder-open-line text-base"></i>
+          </button>
+          ${f.type === 'file' ? `
+          <button class="action-icon-btn p-1.5 rounded transition-colors hover:bg-gray-100 dark:hover:bg-white/10 text-green-600 dark:text-green-400" data-action="download" data-path="${f.path}" title="Unduh">
+            <i class="ri-download-line text-base"></i>
+          </button>
+          ` : ''}
+          <button class="action-icon-btn p-1.5 rounded transition-colors hover:bg-gray-100 dark:hover:bg-white/10 text-amber-600 dark:text-amber-400" data-action="rename" data-path="${f.path}" title="Ganti Nama">
+            <i class="ri-edit-line text-base"></i>
+          </button>
+          <button class="action-icon-btn p-1.5 rounded transition-colors hover:bg-gray-100 dark:hover:bg-white/10 text-purple-600 dark:text-purple-400" data-action="move" data-path="${f.path}" title="Pindahkan">
+            <i class="ri-folder-transfer-line text-base"></i>
+          </button>
+          <button class="action-icon-btn p-1.5 rounded transition-colors hover:bg-gray-100 dark:hover:bg-white/10 text-red-500 dark:text-red-400" data-action="delete" data-path="${f.path}" title="Hapus">
+            <i class="ri-delete-bin-line text-base"></i>
+          </button>
+        </div>
       </td>
     `;
     
@@ -468,6 +485,60 @@ function render() {
       if (selectedCount) selectedCount.textContent = `${selected.size} selected`;
     })
   );
+
+  // Wire action button events
+  document.querySelectorAll('.action-icon-btn[data-action]').forEach(btn => {
+    btn.addEventListener('click', async (e) => {
+      e.stopPropagation();
+      const action = btn.dataset.action;
+      const path = btn.dataset.path;
+      const fileData = files.find(f => f.path === path);
+      
+      if (action === 'preview') {
+        if (fileData?.type === 'folder') {
+          await loadFiles(path);
+        } else if (window.openPreviewModal) {
+          window.openPreviewModal(path, fileData?.name);
+        }
+      } else if (action === 'download') {
+        // Direct download
+        const a = document.createElement('a');
+        a.href = `api.php?action=raw&path=${encodeURIComponent(path)}`;
+        a.download = fileData?.name || 'download';
+        a.style.display = 'none';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+      } else if (action === 'rename') {
+        if (window.openRenameModal) {
+          window.openRenameModal(path, fileData?.name);
+        } else if (window.openRenameOverlay) {
+          window.openRenameOverlay({ ...fileData, path });
+        } else {
+          const newName = prompt('Nama baru:', fileData?.name);
+          if (newName) await renameItem(path, newName);
+        }
+      } else if (action === 'move') {
+        if (window.openMoveModal) {
+          window.openMoveModal([path]);
+        } else if (window.openMoveOverlay) {
+          window.openMoveOverlay([path]);
+        }
+      } else if (action === 'delete') {
+        if (window.openDeleteOverlay) {
+          window.openDeleteOverlay(
+            [{ ...fileData, path }],
+            async (items) => {
+              const paths = items.map(item => item.path);
+              await deleteItems(paths);
+            }
+          );
+        } else if (confirm(`Hapus "${fileData?.name}"?`)) {
+          await deleteItems([path]);
+        }
+      }
+    });
+  });
 }
 
 // ============= Drag & Drop =============
