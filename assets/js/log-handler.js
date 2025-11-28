@@ -19,7 +19,7 @@
     filters: {
       search: '',
       action: '',
-      targetType: ''
+      filename: ''
     },
     autoRefreshInterval: null,
     isLoading: false
@@ -82,8 +82,8 @@ async function loadLogs() {
     if (logState.filters.action) {
       params.append('filterAction', logState.filters.action);
     }
-    if (logState.filters.targetType) {
-      params.append('filterType', logState.filters.targetType);
+    if (logState.filters.filename) {
+      params.append('filterFilename', logState.filters.filename);
     }
     
     const response = await fetch(`${LOG_API_BASE}?${params.toString()}`);
@@ -121,18 +121,14 @@ function renderLogs() {
     tbody.innerHTML = logState.logs.map(log => `
       <tr class="border-b border-gray-100 dark:border-white/5 hover:bg-gray-50 dark:hover:bg-white/5">
         <td class="px-3 py-2 text-xs text-gray-900 dark:text-slate-200">${formatLogTime(log.timestamp)}</td>
+        <td class="px-3 py-2 text-xs text-gray-900 dark:text-slate-200" title="${log.path || ''}">${log.filename || log.target || '-'}</td>
         <td class="px-3 py-2">
           <span class="inline-block px-2 py-0.5 rounded text-xs font-medium ${getActionColor(log.action)}">
             ${translateAction(log.action)}
           </span>
         </td>
-        <td class="px-3 py-2 text-xs hidden sm:table-cell text-gray-900 dark:text-slate-200" title="${log.path || ''}">${log.target || '-'}</td>
-        <td class="px-3 py-2 text-xs hidden sm:table-cell">
-          <span class="inline-block px-2 py-0.5 rounded bg-gray-100 dark:bg-white/10 text-gray-700 dark:text-slate-300">
-            ${log.targetType === 'file' ? 'file' : log.targetType === 'folder' ? 'folder' : log.targetType || '-'}
-          </span>
-        </td>
-        <td class="px-3 py-2 text-xs hidden md:table-cell text-gray-600 dark:text-slate-400">${log.ip || '-'}</td>
+        <td class="px-3 py-2 text-xs hidden sm:table-cell text-gray-600 dark:text-slate-400">${log.ip || '-'}</td>
+        <td class="px-3 py-2 text-xs hidden md:table-cell text-gray-500 dark:text-slate-500 truncate max-w-[200px]" title="${escapeHtml(log.userAgent || '-')}">${truncateUserAgent(log.userAgent)}</td>
       </tr>
     `).join('');
   }
@@ -157,6 +153,27 @@ function formatLogTime(timestamp) {
     hour: '2-digit',
     minute: '2-digit'
   });
+}
+
+function escapeHtml(text) {
+  if (!text) return '';
+  const div = document.createElement('div');
+  div.textContent = text;
+  return div.innerHTML;
+}
+
+function truncateUserAgent(userAgent) {
+  if (!userAgent || userAgent === 'unknown') return '-';
+  // Extract browser name from user agent
+  const ua = userAgent.toLowerCase();
+  if (ua.includes('chrome') && !ua.includes('edg')) return 'Chrome';
+  if (ua.includes('firefox')) return 'Firefox';
+  if (ua.includes('safari') && !ua.includes('chrome')) return 'Safari';
+  if (ua.includes('edg')) return 'Edge';
+  if (ua.includes('opera') || ua.includes('opr')) return 'Opera';
+  if (ua.includes('msie') || ua.includes('trident')) return 'IE';
+  // If can't detect, truncate
+  return userAgent.length > 30 ? userAgent.substring(0, 30) + '...' : userAgent;
 }
 
 function translateAction(action) {

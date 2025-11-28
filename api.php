@@ -143,8 +143,8 @@ try {
         if (isset($_GET['filterAction']) && $_GET['filterAction'] !== '') {
             $filters['action'] = $_GET['filterAction'];
         }
-        if (isset($_GET['filterType']) && $_GET['filterType'] !== '') {
-            $filters['targetType'] = $_GET['filterType'];
+        if (isset($_GET['filterFilename']) && $_GET['filterFilename'] !== '') {
+            $filters['filename'] = $_GET['filterFilename'];
         }
         if (isset($_GET['search']) && $_GET['search'] !== '') {
             $filters['search'] = $_GET['search'];

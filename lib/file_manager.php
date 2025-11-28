@@ -1079,21 +1079,28 @@ function read_activity_logs(int $limit = 0, int $offset = 0, array $filters = []
             return false;
         }
         
-        // Target type filter
-        if (!empty($filters['targetType']) && ($log['targetType'] ?? '') !== $filters['targetType']) {
-            return false;
+        // Filename filter
+        if (!empty($filters['filename'])) {
+            $filename = strtolower($log['filename'] ?? $log['target'] ?? '');
+            if (strpos($filename, strtolower($filters['filename'])) === false) {
+                return false;
+            }
         }
         
-        // Search filter (search in target name and path)
+        // Search filter (search in filename, path, action, ip, userAgent)
         if (!empty($filters['search'])) {
             $search = strtolower($filters['search']);
-            $target = strtolower($log['target'] ?? '');
+            $filename = strtolower($log['filename'] ?? $log['target'] ?? '');
             $path = strtolower($log['path'] ?? '');
             $action = strtolower($log['action'] ?? '');
+            $ip = strtolower($log['ip'] ?? '');
+            $userAgent = strtolower($log['userAgent'] ?? '');
             
-            if (strpos($target, $search) === false && 
+            if (strpos($filename, $search) === false && 
                 strpos($path, $search) === false &&
-                strpos($action, $search) === false) {
+                strpos($action, $search) === false &&
+                strpos($ip, $search) === false &&
+                strpos($userAgent, $search) === false) {
                 return false;
             }
         }
@@ -1165,12 +1172,12 @@ function write_activity_log(string $action, string $target, string $targetType, 
         'id' => uniqid('log_', true),
         'timestamp' => time(),
         'datetime' => date('Y-m-d H:i:s'),
+        'filename' => $target,
         'action' => $action,
-        'target' => $target,
-        'targetType' => $targetType,
-        'path' => $path,
         'ip' => $_SERVER['REMOTE_ADDR'] ?? 'unknown',
-        'userAgent' => $_SERVER['HTTP_USER_AGENT'] ?? 'unknown'
+        'userAgent' => substr($_SERVER['HTTP_USER_AGENT'] ?? 'unknown', 0, 150),
+        'path' => $path,
+        'targetType' => $targetType
     ];
     
     // Merge extra data

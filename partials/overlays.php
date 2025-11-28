@@ -356,10 +356,10 @@
                     <thead class="bg-gray-50 dark:bg-black/30 sticky top-0">
                         <tr>
                             <th class="px-3 py-2 text-left font-medium text-gray-700 dark:text-slate-400 text-xs">Waktu</th>
+                            <th class="px-3 py-2 text-left font-medium text-gray-700 dark:text-slate-400 text-xs">Nama File</th>
                             <th class="px-3 py-2 text-left font-medium text-gray-700 dark:text-slate-400 text-xs">Aksi</th>
-                            <th class="px-3 py-2 text-left font-medium text-gray-700 dark:text-slate-400 text-xs hidden sm:table-cell">Target</th>
-                            <th class="px-3 py-2 text-left font-medium text-gray-700 dark:text-slate-400 text-xs hidden sm:table-cell">Tipe</th>
-                            <th class="px-3 py-2 text-left font-medium text-gray-700 dark:text-slate-400 text-xs hidden md:table-cell">IP Address</th>
+                            <th class="px-3 py-2 text-left font-medium text-gray-700 dark:text-slate-400 text-xs hidden sm:table-cell">IP Address</th>
+                            <th class="px-3 py-2 text-left font-medium text-gray-700 dark:text-slate-400 text-xs hidden md:table-cell">User Agent</th>
                         </tr>
                     </thead>
                     <tbody id="log-table-body" class="dark:text-slate-200">
