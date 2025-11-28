@@ -70,27 +70,35 @@
             </section>
 
             <!-- HEADER ACTIONS -->
-            <section class="header-actions mb-3 flex items-center justify-between gap-2">
+            <section class="header-actions mb-4 p-1.5 bg-white dark:bg-[#1a2332] border border-gray-200 dark:border-white/10 rounded-lg shadow-sm flex items-center justify-between gap-2 sticky top-0 z-20">
+                <!-- Left Group: Primary Actions -->
                 <div class="flex items-center gap-2">
-                    <button class="btn btn-primary px-3 py-2 rounded-xl font-medium text-sm flex items-center gap-2" id="newBtn">
+                    <button class="flex items-center gap-1.5 px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-md transition-colors shadow-sm" id="newBtn">
                         <i class="ri-add-line text-lg"></i>
-                        <span class="hidden sm:inline">New</span>
+                        <span class="text-sm font-medium">New</span>
                     </button>
-                    <button class="btn px-3 py-2 rounded-xl text-sm flex items-center gap-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700" id="uploadBtn">
+                    <button class="flex items-center gap-1.5 px-3 py-1.5 bg-white dark:bg-white/5 hover:bg-gray-50 dark:hover:bg-white/10 text-gray-700 dark:text-gray-200 border border-gray-200 dark:border-white/10 rounded-md transition-colors" id="uploadBtn">
                         <i class="ri-upload-cloud-2-line text-lg"></i>
-                        <span class="hidden sm:inline">Upload</span>
+                        <span class="text-sm font-medium">Upload</span>
                     </button>
                 </div>
 
-                <button class="btn px-3 py-2 rounded-xl text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors" id="toggleTheme">
-                    <i class="ri-moon-line text-xl"></i>
-                </button>
-
+                <!-- Right Group: Utilities -->
                 <div class="flex items-center gap-2">
-                    <div class="badge px-2 py-1 rounded-full text-xs bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700" id="selectedCount">0 selected</div>
-                    <button class="btn px-3 py-2 rounded-xl text-sm flex items-center gap-2 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20" id="deleteSel">
-                        <i class="ri-delete-bin-line text-lg"></i>
-                        <span class="hidden sm:inline">Hapus</span>
+                    <!-- Selection Info & Actions -->
+                    <div class="flex items-center gap-2 px-3 py-1.5 bg-gray-50 dark:bg-white/5 rounded-md border border-gray-100 dark:border-white/5">
+                        <span class="text-xs font-medium text-gray-500 dark:text-gray-400" id="selectedCount">0 selected</span>
+                        <div class="h-4 w-px bg-gray-300 dark:bg-white/10 mx-1"></div>
+                        <button class="text-gray-400 hover:text-red-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed" id="deleteSel" title="Hapus">
+                            <i class="ri-delete-bin-line text-lg"></i>
+                        </button>
+                    </div>
+
+                    <div class="h-6 w-px bg-gray-200 dark:bg-white/10 mx-1 hidden sm:block"></div>
+
+                    <!-- Theme Toggle -->
+                    <button class="p-1.5 text-gray-500 hover:bg-gray-100 dark:hover:bg-white/5 rounded-md transition-colors" id="toggleTheme" title="Toggle Theme">
+                        <i class="ri-moon-line text-lg"></i>
                     </button>
                 </div>
             </section>
