@@ -35,7 +35,7 @@ export function fileKindFromExtension(ext) {
 }
 
 // Helper to create an SVG element from path data (supports single or multiple paths)
-function createSvg(viewBox, pathDs) {
+function createSvg(viewBox, pathDs, fillColor = 'currentColor') {
     const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
     svg.setAttribute('viewBox', viewBox);
     svg.setAttribute('aria-hidden', 'true');
@@ -43,7 +43,7 @@ function createSvg(viewBox, pathDs) {
     if (!Array.isArray(pathDs)) pathDs = [pathDs];
     pathDs.forEach(d => {
         const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-        path.setAttribute('fill', 'currentColor');
+        path.setAttribute('fill', fillColor);
         path.setAttribute('d', d);
         svg.appendChild(path);
     });
@@ -52,18 +52,18 @@ function createSvg(viewBox, pathDs) {
 
 // SVG icons for each kind (return Element nodes via factory functions)
 export const itemTypeIcons = {
-    folder: () => createSvg('0 0 24 24', 'M10 4l2 2h7a2 2 0 0 1 2 2v1H3V6a2 2 0 0 1 2-2h5zm11 6v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-8h18z'),
-    file: () => createSvg('0 0 24 24', 'M6 2h9l5 5v15a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2zm8 1v5h5'),
-    image: () => createSvg('0 0 24 24', ['M21 19V5a2 2 0 0 0-2-2H5C3.9 3 3 3.9 3 5v14c0 1.1.9 2 2 2h14a2 2 0 0 0 2-2zM8.5 11.5A2.5 2.5 0 1 0 8.5 6a2.5 2.5 0 0 0 0 5.5zM5 19l5.5-7 4 5 3-4L19 19H5z']),
-    pdf: () => createSvg('0 0 24 24', ['M14 2H6a2 2 0 0 0-2 2v16c0 1.1.9 2 2 2h12a2 2 0 0 0 2-2V8l-6-6z', 'M14 2v6h6', 'M7 14h2.5a1.5 1.5 0 0 0 0-3H7v3zm0 1v3h1.5v-1H10a2.5 2.5 0 1 0 0-5H7v3zm7.5-4H12v7h1.5v-2.5h1.4c1.38 0 2.6-1.12 2.6-2.5s-1.22-2-2.5-2z']),
-    code: () => createSvg('0 0 24 24', 'm9.4 16.6-1.4 1.4L2 12l6-6 1.4 1.4L4.8 12l4.6 4.6zm5.2 0 1.4 1.4 6-6-6-6-1.4 1.4L19.2 12l-4.6 4.6z'),
-    archive: () => createSvg('0 0 24 24', 'M20.5 5.5l-2-2h-13l-2 2V9h17V5.5zM3.5 20.5a2 2 0 0 0 2 2h13a2 2 0 0 0 2-2V10.5h-17v10zM11 6h2v2h-2V6z'),
-    text: () => createSvg('0 0 24 24', 'M6 2h9l5 5v15a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2zm2 8h8v2H8v-2zm0 4h8v2H8v-2z'),
-    sheet: () => createSvg('0 0 24 24', 'M6 2h9l5 5v15a2 2 0 0 1-2 2H6c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2zm10 7H8V5h8v4zm0 2H8v2h8v-2zm0 4H8v4h8v-4z'),
-    doc: () => createSvg('0 0 24 24', ['M14 2H6a2 2 0 0 0-2 2v16c0 1.1.9 2 2 2h12a2 2 0 0 0 2-2V8l-6-6z', 'M14 2v6h6', 'M7 12h10v2H7zm0 4h7v2H7z']),
-    ppt: () => createSvg('0 0 24 24', 'M3 5h18v14H3zM5 7h10v2H5zm0 4h8v2H5zm0 4h6v2H6zm12-6h3v8h-3z'),
-    audio: () => createSvg('0 0 24 24', 'M12 3v10.55A4 4 0 1 0 14 17V7h4V3h-6z'),
-    video: () => createSvg('0 0 24 24', 'M17 10.5V6c0-1.1-.9-2-2-2H5C3.9 4 3 4.9 3 6v12c0 1.1.9 2 2 2h10c1.1 0 2-.9 2-2v-4.5l4 4v-11l-4 4z'),
+    folder: () => createSvg('0 0 24 24', 'M10 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2h-8l-2-2z', '#f59e0b'),
+    file: () => createSvg('0 0 24 24', 'M14 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8l-6-6zm-1 2l5 5h-5V4zM6 20V4h6v6h6v10H6z', '#94a3b8'),
+    image: () => createSvg('0 0 24 24', 'M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z', '#ef4444'),
+    pdf: () => createSvg('0 0 24 24', 'M14 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8l-6-6zm-1 2l5 5h-5V4zM6 20V4h6v6h6v10H6z', '#ef4444'),
+    code: () => createSvg('0 0 24 24', 'M9.4 16.6L4.8 12l4.6-4.6L8 6l-6 6 6 6 1.4-1.4zm5.2 0l4.6-4.6-4.6-4.6L16 6l6 6-6 6-1.4-1.4z', '#3b82f6'),
+    archive: () => createSvg('0 0 24 24', 'M20 6h-8l-2-2H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm-2 6h-2v2h2v2h-2v2h-2v-2h2v-2h-2v-2h2v-2h-2V8h2v2h2v2z', '#8b5cf6'),
+    text: () => createSvg('0 0 24 24', 'M14 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8l-6-6zm-1 2l5 5h-5V4zM6 20V4h6v6h6v10H6zm2-6h8v2H8v-2zm0 4h5v2H8v-2z', '#94a3b8'),
+    sheet: () => createSvg('0 0 24 24', 'M14 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8l-6-6zm-1 2l5 5h-5V4zM6 20V4h6v6h6v10H6zm2-8h2v2H8v-2zm4 0h2v2h-2v-2zm-4 4h2v2H8v-2zm4 0h2v2h-2v-2z', '#22c55e'),
+    doc: () => createSvg('0 0 24 24', 'M14 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8l-6-6zm-1 2l5 5h-5V4zM6 20V4h6v6h6v10H6zm2-8h8v2H8v-2zm0 4h5v2H8v-2z', '#2563eb'),
+    ppt: () => createSvg('0 0 24 24', 'M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zM8 17H6v-4h2v4zm0-6H6V9h2v2zm4 6h-2v-4h2v4zm0-6h-2V9h2v2zm4 6h-2v-4h2v4zm0-6h-2V9h2v2z', '#f97316'),
+    audio: () => createSvg('0 0 24 24', 'M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z', '#ec4899'),
+    video: () => createSvg('0 0 24 24', 'M17 10.5V7c0-.55-.45-1-1-1H4c-.55 0-1 .45-1 1v10c0 .55.45 1 1 1h12c.55 0 1-.45 1-1v-3.5l4 4v-11l-4 4z', '#a855f7'),
 };
 
 // Get icon info { className, svg } for an item with caching

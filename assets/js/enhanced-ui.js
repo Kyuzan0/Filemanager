@@ -288,52 +288,180 @@ function getLanguageBadge(ext) {
 
 function getFileIcon(filename, type) {
   const ext = getFileExtension(filename);
-  const badge = getLanguageBadge(ext);
   
-  const svgIcons = {
-    folder: `<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M10 4l2 2h7a2 2 0 0 1 2 2v1H3V6a2 2 0 0 1 2-2h5zm11 6v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-8h18z"></path></svg>`,
-    file: `<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M6 2h9l5 5v15a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2zm8 1v5h5"></path></svg>`,
-    image: `<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M21 19V5a2 2 0 0 0-2-2H5C3.9 3 3 3.9 3 5v14c0 1.1.9 2 2 2h14a2 2 0 0 0 2-2zM8.5 11.5A2.5 2.5 0 1 0 8.5 6a2.5 2.5 0 0 0 0 5.5zM5 19l5.5-7 4 5 3-4L19 19H5z"></path></svg>`,
-    pdf: `<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M14 2H6a2 2 0 0 0-2 2v16c0 1.1.9 2 2 2h12a2 2 0 0 0 2-2V8l-6-6zm0 18H6V4h8v16zm-2-3h-2v-2h2v2zm0-4h-2V9h2v4zm4 4h-2v-2h2v2zm0-4h-2V9h2v4z"></path></svg>`,
-    archive: `<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V5h14v14zm-6-10h-2V9h2v4z"></path></svg>`,
-    text: `<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M14 2H6a2 2 0 0 0-2 2v16c0 1.1.9 2 2 2h12a2 2 0 0 0 2-2V8l-6-6zm-2 16H8v-2h4v2zm4-4H8v-2h8v2zm0-4H8V8h8v2z"></path></svg>`,
-    sheet: `<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V5h14v14zM7 9h2v2H7V9zm4 0h2v2h-2V9zm4 0h2v2h-2V9zM7 13h2v2H7v-2zm4 0h2v2h-2v-2zm4 0h2v2h-2v-2z"></path></svg>`,
-    doc: `<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M14 2H6a2 2 0 0 0-2 2v16c0 1.1.9 2 2 2h12a2 2 0 0 0 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm0-4H8V8h8v2z"></path></svg>`,
-    ppt: `<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 9h-2V9h2v3zm4 0h-2V9h2v3zM9 9v3H7V9h2z"></path></svg>`,
-    audio: `<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 3v10.55c-.5-.3-1-.5-1.5-.5-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"></path></svg>`,
-    video: `<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M17 10.5V7c0-.55-.45-1-1-1H4c-.55 0-1 .45-1 1v10c0 .55.45 1 1 1h12c.55 0 1-.45 1-1v-3.5l4 4v-11l-4 4z"></path></svg>`,
-    markdown: `<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-2 10h-2v2h-2v-2h-2v-2h2V9h2v2h2v2zm-8-2h2v6H9v-6z"></path></svg>`,
+  // Icon dengan warna dan background berbeda untuk setiap tipe
+  const iconConfig = {
+    // Folders
+    folder: { 
+      icon: `<svg viewBox="0 0 24 24"><path fill="#f59e0b" d="M10 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2h-8l-2-2z"/></svg>`,
+      bg: '#fef3c7'
+    },
+    // Default file
+    file: { 
+      icon: `<svg viewBox="0 0 24 24"><path fill="#64748b" d="M14 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8l-6-6zm-1 2l5 5h-5V4zM6 20V4h6v6h6v10H6z"/></svg>`,
+      bg: '#f1f5f9'
+    },
+    // Code files dengan warna berbeda
+    php: { 
+      icon: `<svg viewBox="0 0 24 24"><path fill="#777bb4" d="M9.4 16.6L4.8 12l4.6-4.6L8 6l-6 6 6 6 1.4-1.4zm5.2 0l4.6-4.6-4.6-4.6L16 6l6 6-6 6-1.4-1.4z"/></svg>`,
+      bg: '#ede9fe'
+    },
+    js: { 
+      icon: `<svg viewBox="0 0 24 24"><path fill="#f7df1e" d="M9.4 16.6L4.8 12l4.6-4.6L8 6l-6 6 6 6 1.4-1.4zm5.2 0l4.6-4.6-4.6-4.6L16 6l6 6-6 6-1.4-1.4z"/></svg>`,
+      bg: '#fef9c3'
+    },
+    jsx: { 
+      icon: `<svg viewBox="0 0 24 24"><path fill="#61dafb" d="M9.4 16.6L4.8 12l4.6-4.6L8 6l-6 6 6 6 1.4-1.4zm5.2 0l4.6-4.6-4.6-4.6L16 6l6 6-6 6-1.4-1.4z"/></svg>`,
+      bg: '#cffafe'
+    },
+    ts: { 
+      icon: `<svg viewBox="0 0 24 24"><path fill="#3178c6" d="M9.4 16.6L4.8 12l4.6-4.6L8 6l-6 6 6 6 1.4-1.4zm5.2 0l4.6-4.6-4.6-4.6L16 6l6 6-6 6-1.4-1.4z"/></svg>`,
+      bg: '#dbeafe'
+    },
+    tsx: { 
+      icon: `<svg viewBox="0 0 24 24"><path fill="#3178c6" d="M9.4 16.6L4.8 12l4.6-4.6L8 6l-6 6 6 6 1.4-1.4zm5.2 0l4.6-4.6-4.6-4.6L16 6l6 6-6 6-1.4-1.4z"/></svg>`,
+      bg: '#dbeafe'
+    },
+    html: { 
+      icon: `<svg viewBox="0 0 24 24"><path fill="#e34c26" d="M9.4 16.6L4.8 12l4.6-4.6L8 6l-6 6 6 6 1.4-1.4zm5.2 0l4.6-4.6-4.6-4.6L16 6l6 6-6 6-1.4-1.4z"/></svg>`,
+      bg: '#fee2e2'
+    },
+    htm: { 
+      icon: `<svg viewBox="0 0 24 24"><path fill="#e34c26" d="M9.4 16.6L4.8 12l4.6-4.6L8 6l-6 6 6 6 1.4-1.4zm5.2 0l4.6-4.6-4.6-4.6L16 6l6 6-6 6-1.4-1.4z"/></svg>`,
+      bg: '#fee2e2'
+    },
+    css: { 
+      icon: `<svg viewBox="0 0 24 24"><path fill="#264de4" d="M9.4 16.6L4.8 12l4.6-4.6L8 6l-6 6 6 6 1.4-1.4zm5.2 0l4.6-4.6-4.6-4.6L16 6l6 6-6 6-1.4-1.4z"/></svg>`,
+      bg: '#dbeafe'
+    },
+    scss: { 
+      icon: `<svg viewBox="0 0 24 24"><path fill="#c6538c" d="M9.4 16.6L4.8 12l4.6-4.6L8 6l-6 6 6 6 1.4-1.4zm5.2 0l4.6-4.6-4.6-4.6L16 6l6 6-6 6-1.4-1.4z"/></svg>`,
+      bg: '#fce7f3'
+    },
+    less: { 
+      icon: `<svg viewBox="0 0 24 24"><path fill="#1d365d" d="M9.4 16.6L4.8 12l4.6-4.6L8 6l-6 6 6 6 1.4-1.4zm5.2 0l4.6-4.6-4.6-4.6L16 6l6 6-6 6-1.4-1.4z"/></svg>`,
+      bg: '#e0e7ff'
+    },
+    py: { 
+      icon: `<svg viewBox="0 0 24 24"><path fill="#3776ab" d="M9.4 16.6L4.8 12l4.6-4.6L8 6l-6 6 6 6 1.4-1.4zm5.2 0l4.6-4.6-4.6-4.6L16 6l6 6-6 6-1.4-1.4z"/></svg>`,
+      bg: '#dbeafe'
+    },
+    java: { 
+      icon: `<svg viewBox="0 0 24 24"><path fill="#f89820" d="M9.4 16.6L4.8 12l4.6-4.6L8 6l-6 6 6 6 1.4-1.4zm5.2 0l4.6-4.6-4.6-4.6L16 6l6 6-6 6-1.4-1.4z"/></svg>`,
+      bg: '#ffedd5'
+    },
+    json: { 
+      icon: `<svg viewBox="0 0 24 24"><path fill="#fbbf24" d="M9.4 16.6L4.8 12l4.6-4.6L8 6l-6 6 6 6 1.4-1.4zm5.2 0l4.6-4.6-4.6-4.6L16 6l6 6-6 6-1.4-1.4z"/></svg>`,
+      bg: '#fef3c7'
+    },
+    xml: { 
+      icon: `<svg viewBox="0 0 24 24"><path fill="#ff6b35" d="M9.4 16.6L4.8 12l4.6-4.6L8 6l-6 6 6 6 1.4-1.4zm5.2 0l4.6-4.6-4.6-4.6L16 6l6 6-6 6-1.4-1.4z"/></svg>`,
+      bg: '#ffedd5'
+    },
+    yaml: { 
+      icon: `<svg viewBox="0 0 24 24"><path fill="#cb171e" d="M9.4 16.6L4.8 12l4.6-4.6L8 6l-6 6 6 6 1.4-1.4zm5.2 0l4.6-4.6-4.6-4.6L16 6l6 6-6 6-1.4-1.4z"/></svg>`,
+      bg: '#fee2e2'
+    },
+    yml: { 
+      icon: `<svg viewBox="0 0 24 24"><path fill="#cb171e" d="M9.4 16.6L4.8 12l4.6-4.6L8 6l-6 6 6 6 1.4-1.4zm5.2 0l4.6-4.6-4.6-4.6L16 6l6 6-6 6-1.4-1.4z"/></svg>`,
+      bg: '#fee2e2'
+    },
+    conf: { 
+      icon: `<svg viewBox="0 0 24 24"><path fill="#6b7280" d="M9.4 16.6L4.8 12l4.6-4.6L8 6l-6 6 6 6 1.4-1.4zm5.2 0l4.6-4.6-4.6-4.6L16 6l6 6-6 6-1.4-1.4z"/></svg>`,
+      bg: '#f3f4f6'
+    },
+    ini: { 
+      icon: `<svg viewBox="0 0 24 24"><path fill="#6b7280" d="M9.4 16.6L4.8 12l4.6-4.6L8 6l-6 6 6 6 1.4-1.4zm5.2 0l4.6-4.6-4.6-4.6L16 6l6 6-6 6-1.4-1.4z"/></svg>`,
+      bg: '#f3f4f6'
+    },
+    env: { 
+      icon: `<svg viewBox="0 0 24 24"><path fill="#16a34a" d="M9.4 16.6L4.8 12l4.6-4.6L8 6l-6 6 6 6 1.4-1.4zm5.2 0l4.6-4.6-4.6-4.6L16 6l6 6-6 6-1.4-1.4z"/></svg>`,
+      bg: '#dcfce7'
+    },
+    c: { 
+      icon: `<svg viewBox="0 0 24 24"><path fill="#a8b9cc" d="M9.4 16.6L4.8 12l4.6-4.6L8 6l-6 6 6 6 1.4-1.4zm5.2 0l4.6-4.6-4.6-4.6L16 6l6 6-6 6-1.4-1.4z"/></svg>`,
+      bg: '#f1f5f9'
+    },
+    cpp: { 
+      icon: `<svg viewBox="0 0 24 24"><path fill="#00599c" d="M9.4 16.6L4.8 12l4.6-4.6L8 6l-6 6 6 6 1.4-1.4zm5.2 0l4.6-4.6-4.6-4.6L16 6l6 6-6 6-1.4-1.4z"/></svg>`,
+      bg: '#dbeafe'
+    },
+    vue: { 
+      icon: `<svg viewBox="0 0 24 24"><path fill="#42b883" d="M9.4 16.6L4.8 12l4.6-4.6L8 6l-6 6 6 6 1.4-1.4zm5.2 0l4.6-4.6-4.6-4.6L16 6l6 6-6 6-1.4-1.4z"/></svg>`,
+      bg: '#d1fae5'
+    },
+    // Images
+    image: { 
+      icon: `<svg viewBox="0 0 24 24"><path fill="#ef4444" d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/></svg>`,
+      bg: '#fee2e2'
+    },
+    // PDF
+    pdf: { 
+      icon: `<svg viewBox="0 0 24 24"><path fill="#ef4444" d="M14 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8l-6-6zm-1 2l5 5h-5V4zM6 20V4h6v6h6v10H6z"/></svg>`,
+      bg: '#fee2e2'
+    },
+    // Archives
+    archive: { 
+      icon: `<svg viewBox="0 0 24 24"><path fill="#8b5cf6" d="M20 6h-8l-2-2H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm-2 6h-2v2h2v2h-2v2h-2v-2h2v-2h-2v-2h2v-2h-2V8h2v2h2v2z"/></svg>`,
+      bg: '#ede9fe'
+    },
+    // Text
+    text: { 
+      icon: `<svg viewBox="0 0 24 24"><path fill="#64748b" d="M14 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8l-6-6zm-1 2l5 5h-5V4zM6 20V4h6v6h6v10H6zm2-6h8v2H8v-2zm0 4h5v2H8v-2z"/></svg>`,
+      bg: '#f1f5f9'
+    },
+    // Markdown
+    md: { 
+      icon: `<svg viewBox="0 0 24 24"><path fill="#8b5cf6" d="M14 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8l-6-6zm-1 2l5 5h-5V4zM6 20V4h6v6h6v10H6z"/></svg>`,
+      bg: '#ede9fe'
+    },
+    markdown: { 
+      icon: `<svg viewBox="0 0 24 24"><path fill="#8b5cf6" d="M14 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8l-6-6zm-1 2l5 5h-5V4zM6 20V4h6v6h6v10H6z"/></svg>`,
+      bg: '#ede9fe'
+    },
+    // Sheets
+    sheet: { 
+      icon: `<svg viewBox="0 0 24 24"><path fill="#22c55e" d="M14 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8l-6-6zm-1 2l5 5h-5V4zM6 20V4h6v6h6v10H6zm2-8h2v2H8v-2zm4 0h2v2h-2v-2zm-4 4h2v2H8v-2zm4 0h2v2h-2v-2z"/></svg>`,
+      bg: '#dcfce7'
+    },
+    // Documents
+    doc: { 
+      icon: `<svg viewBox="0 0 24 24"><path fill="#2563eb" d="M14 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8l-6-6zm-1 2l5 5h-5V4zM6 20V4h6v6h6v10H6zm2-8h8v2H8v-2zm0 4h5v2H8v-2z"/></svg>`,
+      bg: '#dbeafe'
+    },
+    // PPT
+    ppt: { 
+      icon: `<svg viewBox="0 0 24 24"><path fill="#f97316" d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zM8 17H6v-4h2v4zm0-6H6V9h2v2zm4 6h-2v-4h2v4zm0-6h-2V9h2v2zm4 6h-2v-4h2v4zm0-6h-2V9h2v2z"/></svg>`,
+      bg: '#ffedd5'
+    },
+    // Audio
+    audio: { 
+      icon: `<svg viewBox="0 0 24 24"><path fill="#ec4899" d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/></svg>`,
+      bg: '#fce7f3'
+    },
+    // Video
+    video: { 
+      icon: `<svg viewBox="0 0 24 24"><path fill="#a855f7" d="M17 10.5V7c0-.55-.45-1-1-1H4c-.55 0-1 .45-1 1v10c0 .55.45 1 1 1h12c.55 0 1-.45 1-1v-3.5l4 4v-11l-4 4z"/></svg>`,
+      bg: '#f3e8ff'
+    },
   };
   
-  const iconMap = {
-    // Folders
-    'folder': 'folder',
-    
+  // Map extension ke icon config
+  const extToType = {
     // Images
     'png': 'image', 'jpg': 'image', 'jpeg': 'image', 
     'gif': 'image', 'webp': 'image', 'svg': 'image',
     'bmp': 'image', 'ico': 'image',
-    
     // Documents
     'pdf': 'pdf',
     'doc': 'doc', 'docx': 'doc',
     'xls': 'sheet', 'xlsx': 'sheet', 'csv': 'sheet', 'ods': 'sheet',
     'ppt': 'ppt', 'pptx': 'ppt', 'odp': 'ppt',
-    
-    // Text/Code
-    'txt': 'text',
-    'md': 'markdown', 'markdown': 'markdown',
-    'html': 'code', 'htm': 'code',
-    'css': 'code', 'scss': 'code', 'less': 'code',
-    'js': 'code', 'jsx': 'code', 'ts': 'code', 'tsx': 'code',
-    'php': 'code', 'py': 'code', 'java': 'code', 'c': 'code', 'cpp': 'code',
-    'json': 'code', 'xml': 'code', 'yaml': 'code',
-    'yml': 'code', 'conf': 'code', 'ini': 'code', 'env': 'code',
-    
+    // Text
+    'txt': 'text', 'log': 'text',
     // Archives
     'zip': 'archive', 'rar': 'archive', '7z': 'archive',
     'tar': 'archive', 'gz': 'archive', 'bz2': 'archive', 'tgz': 'archive',
-    
     // Media
     'mp3': 'audio', 'wav': 'audio', 'flac': 'audio',
     'ogg': 'audio', 'm4a': 'audio', 'aac': 'audio',
@@ -341,15 +469,21 @@ function getFileIcon(filename, type) {
     'mov': 'video', 'avi': 'video', 'm4v': 'video', 'flv': 'video',
   };
   
-  const iconKey = iconMap[ext] || iconMap[type] || 'file';
-  const baseSvg = svgIcons[iconKey] || svgIcons.file;
+  // Cek apakah extension punya config langsung
+  let config = iconConfig[ext];
   
-  // Return icon with badge if available
-  if (badge && iconKey === 'code') {
-    return `<span class="icon-with-badge" style="--badge-color: ${badge.bg}; --badge-text: ${badge.color};" data-badge="${badge.label}">${baseSvg}</span>`;
+  // Jika tidak, cek mapping
+  if (!config) {
+    const mappedType = extToType[ext];
+    config = mappedType ? iconConfig[mappedType] : iconConfig.file;
   }
   
-  return baseSvg;
+  // Return object dengan icon dan background
+  return {
+    html: config.icon,
+    type: ext || 'file',
+    bg: config.bg
+  };
 }
 
 function render() {
@@ -432,11 +566,13 @@ function render() {
     tr.draggable = true;
 
     const checked = selected.has(f.path);
-    const icon = f.type === 'folder' ? '<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M10 4l2 2h7a2 2 0 0 1 2 2v1H3V6a2 2 0 0 1 2-2h5zm11 6v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-8h18z"></path></svg>' : getFileIcon(f.name, f.type);
+    const iconData = f.type === 'folder' 
+      ? { html: '<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="#f59e0b" d="M10 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2h-8l-2-2z"></path></svg>', type: 'folder', bg: '#fef3c7' }
+      : getFileIcon(f.name, f.type);
 
     tr.innerHTML = `
       <td class="px-3 py-3"><input type="checkbox" class="sel" data-path="${f.path}" ${checked ? 'checked' : ''}></td>
-      <td class="px-3 py-3"><span class="file-name file-icon-cell"><span class="file-icon">${icon}</span><span class="text-dark">${f.name}</span></span></td>
+      <td class="px-3 py-3"><span class="file-name file-icon-cell"><span class="file-icon ${iconData.type}" style="background-color: ${iconData.bg}; padding: 6px; border-radius: 6px;">${iconData.html}</span><span class="text-dark">${f.name}</span></span></td>
       <td class="px-3 py-3 text-sm">${f.type}</td>
       <td class="px-3 py-3 text-sm">${f.date}</td>
       <td class="px-3 py-3 text-right text-sm">${f.size}</td>

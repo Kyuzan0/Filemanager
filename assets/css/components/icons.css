@@ -115,7 +115,7 @@
 .file-icon-cell {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
   position: relative;
 }
 
@@ -123,16 +123,16 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 24px;
-  height: 24px;
+  width: 32px;
+  height: 32px;
   flex-shrink: 0;
-  color: var(--accent);
   position: relative;
+  border-radius: 6px;
 }
 
 .file-icon svg {
-  width: 100%;
-  height: 100%;
+  width: 18px;
+  height: 18px;
   display: block;
 }
 
@@ -142,8 +142,69 @@
   height: 100%;
 }
 
+/* Folder - Kuning */
+.file-icon.folder {
+  color: #f59e0b;
+}
+
+/* Code files - Biru */
+.file-icon.code {
+  color: #3b82f6;
+}
+
+/* Image files - Merah/Pink */
+.file-icon.image {
+  color: #ef4444;
+}
+
+/* PDF - Merah */
+.file-icon.pdf {
+  color: #dc2626;
+}
+
+/* Text files - Abu-abu */
+.file-icon.text {
+  color: #6b7280;
+}
+
+/* Archive - Ungu */
+.file-icon.archive {
+  color: #8b5cf6;
+}
+
+/* Spreadsheet - Hijau */
+.file-icon.sheet {
+  color: #22c55e;
+}
+
+/* Document - Biru */
+.file-icon.doc {
+  color: #2563eb;
+}
+
+/* Presentation - Orange */
+.file-icon.ppt {
+  color: #f97316;
+}
+
+/* Audio - Pink */
+.file-icon.audio {
+  color: #ec4899;
+}
+
+/* Video - Ungu */
+.file-icon.video {
+  color: #a855f7;
+}
+
+/* Markdown - Ungu muda */
+.file-icon.markdown {
+  color: #8b5cf6;
+}
+
+/* Dark mode - background lebih gelap */
 [data-theme="dark"] .file-icon {
-  color: #60a5fa;
+  filter: brightness(0.85);
 }
 
 /* Language badge for code files */
