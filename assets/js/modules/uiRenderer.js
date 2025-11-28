@@ -178,6 +178,160 @@ function getIconColors(item) {
     return { backgroundColor: '#e0e7ff', color: '#4f46e5' };
 }
 
+// ============= Mobile Context Menu =============
+
+/**
+ * Shows mobile context menu for file actions
+ * @param {Event} event - Click event
+ * @param {Object} item - File/folder item data
+ */
+function showMobileContextMenu(event, item) {
+    // Remove existing mobile context menu
+    const existingMenu = document.getElementById('mobile-context-menu');
+    if (existingMenu) existingMenu.remove();
+
+    const menu = document.createElement('div');
+    menu.id = 'mobile-context-menu';
+    menu.className = 'mobile-context-menu fixed z-50 bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 py-1 min-w-[160px]';
+    
+    const menuItems = [
+        { action: 'preview', icon: 'ri-folder-open-line', label: 'Buka', color: 'text-blue-600 dark:text-blue-400' },
+        ...(item.type === 'file' ? [{ action: 'download', icon: 'ri-download-line', label: 'Unduh', color: 'text-green-600 dark:text-green-400' }] : []),
+        { action: 'rename', icon: 'ri-edit-line', label: 'Ganti Nama', color: 'text-amber-600 dark:text-amber-400' },
+        { action: 'move', icon: 'ri-folder-transfer-line', label: 'Pindahkan', color: 'text-purple-600 dark:text-purple-400' },
+        { divider: true },
+        { action: 'delete', icon: 'ri-delete-bin-line', label: 'Hapus', color: 'text-red-500 dark:text-red-400' }
+    ];
+
+    menu.innerHTML = menuItems.map(menuItem => {
+        if (menuItem.divider) {
+            return '<div class="border-t border-gray-200 dark:border-gray-700 my-1"></div>';
+        }
+        return `
+            <button class="mobile-context-item w-full flex items-center gap-3 px-4 py-2.5 text-left hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors" data-action="${menuItem.action}">
+                <i class="${menuItem.icon} ${menuItem.color} text-lg"></i>
+                <span class="text-sm text-gray-700 dark:text-gray-200">${menuItem.label}</span>
+            </button>
+        `;
+    }).join('');
+
+    document.body.appendChild(menu);
+
+    // Position the menu
+    const rect = event.target.closest('button').getBoundingClientRect();
+    const menuRect = menu.getBoundingClientRect();
+    
+    let top = rect.bottom + 4;
+    let left = rect.left;
+
+    // Adjust if menu goes off screen
+    if (left + menuRect.width > window.innerWidth) {
+        left = window.innerWidth - menuRect.width - 8;
+    }
+    if (top + menuRect.height > window.innerHeight) {
+        top = rect.top - menuRect.height - 4;
+    }
+
+    menu.style.top = `${top}px`;
+    menu.style.left = `${left}px`;
+
+    // Handle menu item clicks
+    menu.querySelectorAll('.mobile-context-item').forEach(menuBtn => {
+        menuBtn.addEventListener('click', async (e) => {
+            e.stopPropagation();
+            const action = menuBtn.dataset.action;
+            closeMobileContextMenu();
+            await handleMobileContextAction(action, item);
+        });
+    });
+
+    // Close menu when clicking outside
+    setTimeout(() => {
+        document.addEventListener('click', closeMobileContextMenu, { once: true });
+    }, 0);
+}
+
+/**
+ * Closes mobile context menu
+ */
+function closeMobileContextMenu() {
+    const menu = document.getElementById('mobile-context-menu');
+    if (menu) menu.remove();
+}
+
+/**
+ * Handles mobile context menu action
+ * @param {string} action - Action type
+ * @param {Object} item - File/folder item
+ */
+async function handleMobileContextAction(action, item) {
+    const { path, type, name } = item;
+    
+    if (action === 'preview') {
+        if (type === 'folder') {
+            // Use global navigateTo if available
+            if (window.navigateTo) {
+                window.navigateTo(path);
+            }
+        } else {
+            // Check if previewable
+            const ext = getFileExtension(name);
+            const textExts = new Set(['txt','md','json','js','jsx','ts','tsx','css','scss','less','html','htm','xml','php','py','java','c','cpp','h','hpp','cs','go','rs','rb','swift','kt','sql','sh','bash','yml','yaml','toml','ini','cfg','conf','log','env']);
+            const mediaExts = new Set(['png','jpg','jpeg','gif','webp','svg','bmp','mp4','webm','mp3','wav','ogg','pdf']);
+            
+            if (textExts.has(ext) && window.openPreviewModal) {
+                window.openPreviewModal(path, name);
+            } else if (mediaExts.has(ext) && window.openPreviewModal) {
+                window.openPreviewModal(path, name);
+            } else {
+                const url = `api.php?action=raw&path=${encodeURIComponent(path)}`;
+                window.open(url, '_blank');
+            }
+        }
+    } else if (action === 'download') {
+        const url = `api.php?action=raw&path=${encodeURIComponent(path)}`;
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = name || 'download';
+        a.style.display = 'none';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+    } else if (action === 'rename') {
+        if (window.openRenameModal) {
+            window.openRenameModal(path, name);
+        } else if (window.openRenameOverlay) {
+            window.openRenameOverlay(item);
+        }
+    } else if (action === 'move') {
+        if (window.openMoveModal) {
+            window.openMoveModal([path]);
+        } else if (window.openMoveOverlay) {
+            window.openMoveOverlay([path]);
+        }
+    } else if (action === 'delete') {
+        if (window.openDeleteOverlay) {
+            window.openDeleteOverlay(
+                [item],
+                async (items) => {
+                    const paths = items.map(i => i.path);
+                    if (window.deleteItems) {
+                        await window.deleteItems(paths);
+                    }
+                }
+            );
+        } else if (window.openConfirmOverlay) {
+            window.openConfirmOverlay({
+                message: `Hapus "${name}"?`,
+                description: 'Item yang dihapus tidak dapat dikembalikan.',
+                paths: [path],
+                showList: false,
+                confirmLabel: 'Hapus',
+            });
+        }
+    }
+}
+
 /**
  * Moves a row in the DOM immediately for optimistic UI update
  * @param {string} itemPath - Path of the item being moved
@@ -555,6 +709,10 @@ function renderItemRow(item, state, params) {
     const actionGroup = document.createElement('div');
     actionGroup.classList.add('row-actions','inline-flex','items-center','gap-1','justify-end');
 
+    // Desktop action buttons wrapper
+    const desktopActions = document.createElement('div');
+    desktopActions.classList.add('hidden', 'sm:flex', 'items-center', 'gap-1');
+
     // Helper function to create action button with tooltip
     const createActionBtn = (icon, title, colorClass, onClick) => {
         const btn = document.createElement('button');
@@ -587,7 +745,7 @@ function renderItemRow(item, state, params) {
             }
         }
     });
-    actionGroup.appendChild(openBtn);
+    desktopActions.appendChild(openBtn);
 
     // 2. Download button (only for files)
     if (item.type === 'file') {
@@ -601,20 +759,20 @@ function renderItemRow(item, state, params) {
             a.click();
             document.body.removeChild(a);
         });
-        actionGroup.appendChild(downloadBtn);
+        desktopActions.appendChild(downloadBtn);
     }
 
     // 3. Rename button
     const renameBtn = createActionBtn('ri-edit-line', 'Ganti Nama', 'text-amber-600 dark:text-amber-400', () => {
         openRenameOverlay(item);
     });
-    actionGroup.appendChild(renameBtn);
+    desktopActions.appendChild(renameBtn);
 
     // 4. Move button
     const moveBtn = createActionBtn('ri-folder-transfer-line', 'Pindahkan', 'text-purple-600 dark:text-purple-400', () => {
         openMoveOverlay([item.path]);
     });
-    actionGroup.appendChild(moveBtn);
+    desktopActions.appendChild(moveBtn);
 
     // 5. Delete button
     const deleteBtn = createActionBtn('ri-delete-bin-line', 'Hapus', 'text-red-500 dark:text-red-400', () => {
@@ -641,8 +799,25 @@ function renderItemRow(item, state, params) {
             confirmLabel: 'Hapus',
         });
     });
-    actionGroup.appendChild(deleteBtn);
+    desktopActions.appendChild(deleteBtn);
     
+    // Add desktop actions to action group
+    actionGroup.appendChild(desktopActions);
+
+    // Mobile more button
+    const mobileMoreBtn = document.createElement('button');
+    mobileMoreBtn.classList.add('mobile-more-btn', 'sm:hidden', 'p-1.5', 'rounded', 'transition-colors', 'hover:bg-gray-100', 'dark:hover:bg-white/10', 'text-gray-600', 'dark:text-gray-400');
+    mobileMoreBtn.innerHTML = '<i class="ri-more-2-fill text-lg"></i>';
+    mobileMoreBtn.setAttribute('title', 'Menu');
+    mobileMoreBtn.dataset.path = item.path;
+    mobileMoreBtn.dataset.type = item.type;
+    mobileMoreBtn.dataset.name = item.name;
+    mobileMoreBtn.addEventListener('click', (event) => {
+        event.stopPropagation();
+        showMobileContextMenu(event, item);
+    });
+    actionGroup.appendChild(mobileMoreBtn);
+
     actionCell.appendChild(actionGroup);
     row.appendChild(cellName);
     row.appendChild(cellModified);

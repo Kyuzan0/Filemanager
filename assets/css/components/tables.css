@@ -202,15 +202,66 @@ tbody tr:hover {
   gap: 2px;
 }
 
-/* Hide some actions on smaller screens */
-@media (max-width: 1024px) {
-  .row-actions .action-icon-btn:nth-child(n+4) {
-    display: none;
+/* Mobile More Button */
+.mobile-more-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  border-radius: 6px;
+  transition: all 0.15s ease;
+}
+
+.mobile-more-btn:hover {
+  background: rgba(0, 0, 0, 0.05);
+}
+
+[data-theme="dark"] .mobile-more-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.mobile-more-btn:active {
+  transform: scale(0.95);
+}
+
+/* Mobile Context Menu */
+.mobile-context-menu {
+  animation: mobileMenuFadeIn 0.15s ease-out;
+}
+
+@keyframes mobileMenuFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
 }
 
-@media (max-width: 768px) {
-  .row-actions .action-icon-btn:nth-child(n+3) {
-    display: none;
-  }
+.mobile-context-item {
+  border: none;
+  background: transparent;
+  cursor: pointer;
+}
+
+.mobile-context-item:first-child {
+  border-radius: 8px 8px 0 0;
+}
+
+.mobile-context-item:last-child {
+  border-radius: 0 0 8px 8px;
+}
+
+.mobile-context-item:active {
+  background: rgba(0, 0, 0, 0.1);
+}
+
+[data-theme="dark"] .mobile-context-item:active {
+  background: rgba(255, 255, 255, 0.15);
 }

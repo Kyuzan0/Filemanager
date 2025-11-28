@@ -442,22 +442,29 @@ function render() {
       <td class="px-3 py-3 text-right text-sm">${f.size}</td>
       <td class="px-3 py-3 text-sm">
         <div class="row-actions inline-flex items-center gap-1 justify-end">
-          <button class="action-icon-btn p-1.5 rounded transition-colors hover:bg-gray-100 dark:hover:bg-white/10 text-blue-600 dark:text-blue-400" data-action="preview" data-path="${f.path}" title="Buka">
-            <i class="ri-folder-open-line text-base"></i>
-          </button>
-          ${f.type === 'file' ? `
-          <button class="action-icon-btn p-1.5 rounded transition-colors hover:bg-gray-100 dark:hover:bg-white/10 text-green-600 dark:text-green-400" data-action="download" data-path="${f.path}" title="Unduh">
-            <i class="ri-download-line text-base"></i>
-          </button>
-          ` : ''}
-          <button class="action-icon-btn p-1.5 rounded transition-colors hover:bg-gray-100 dark:hover:bg-white/10 text-amber-600 dark:text-amber-400" data-action="rename" data-path="${f.path}" title="Ganti Nama">
-            <i class="ri-edit-line text-base"></i>
-          </button>
-          <button class="action-icon-btn p-1.5 rounded transition-colors hover:bg-gray-100 dark:hover:bg-white/10 text-purple-600 dark:text-purple-400" data-action="move" data-path="${f.path}" title="Pindahkan">
-            <i class="ri-folder-transfer-line text-base"></i>
-          </button>
-          <button class="action-icon-btn p-1.5 rounded transition-colors hover:bg-gray-100 dark:hover:bg-white/10 text-red-500 dark:text-red-400" data-action="delete" data-path="${f.path}" title="Hapus">
-            <i class="ri-delete-bin-line text-base"></i>
+          <!-- Desktop: Show all action buttons -->
+          <div class="hidden sm:flex items-center gap-1">
+            <button class="action-icon-btn p-1.5 rounded transition-colors hover:bg-gray-100 dark:hover:bg-white/10 text-blue-600 dark:text-blue-400" data-action="preview" data-path="${f.path}" title="Buka">
+              <i class="ri-folder-open-line text-base"></i>
+            </button>
+            ${f.type === 'file' ? `
+            <button class="action-icon-btn p-1.5 rounded transition-colors hover:bg-gray-100 dark:hover:bg-white/10 text-green-600 dark:text-green-400" data-action="download" data-path="${f.path}" title="Unduh">
+              <i class="ri-download-line text-base"></i>
+            </button>
+            ` : ''}
+            <button class="action-icon-btn p-1.5 rounded transition-colors hover:bg-gray-100 dark:hover:bg-white/10 text-amber-600 dark:text-amber-400" data-action="rename" data-path="${f.path}" title="Ganti Nama">
+              <i class="ri-edit-line text-base"></i>
+            </button>
+            <button class="action-icon-btn p-1.5 rounded transition-colors hover:bg-gray-100 dark:hover:bg-white/10 text-purple-600 dark:text-purple-400" data-action="move" data-path="${f.path}" title="Pindahkan">
+              <i class="ri-folder-transfer-line text-base"></i>
+            </button>
+            <button class="action-icon-btn p-1.5 rounded transition-colors hover:bg-gray-100 dark:hover:bg-white/10 text-red-500 dark:text-red-400" data-action="delete" data-path="${f.path}" title="Hapus">
+              <i class="ri-delete-bin-line text-base"></i>
+            </button>
+          </div>
+          <!-- Mobile: Show more button -->
+          <button class="mobile-more-btn sm:hidden p-1.5 rounded transition-colors hover:bg-gray-100 dark:hover:bg-white/10 text-gray-600 dark:text-gray-400" data-path="${f.path}" data-type="${f.type}" data-name="${f.name}" title="Menu">
+            <i class="ri-more-2-fill text-lg"></i>
           </button>
         </div>
       </td>
@@ -539,6 +546,138 @@ function render() {
       }
     });
   });
+
+  // Wire mobile more button events
+  document.querySelectorAll('.mobile-more-btn').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      e.preventDefault();
+      const path = btn.dataset.path;
+      const type = btn.dataset.type;
+      const name = btn.dataset.name;
+      showMobileContextMenu(e, { path, type, name });
+    });
+  });
+}
+
+// ============= Mobile Context Menu =============
+
+function showMobileContextMenu(event, fileData) {
+  // Remove existing mobile context menu
+  const existingMenu = document.getElementById('mobile-context-menu');
+  if (existingMenu) existingMenu.remove();
+
+  const menu = document.createElement('div');
+  menu.id = 'mobile-context-menu';
+  menu.className = 'mobile-context-menu fixed z-50 bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 py-1 min-w-[160px]';
+  
+  const menuItems = [
+    { action: 'preview', icon: 'ri-folder-open-line', label: 'Buka', color: 'text-blue-600 dark:text-blue-400' },
+    ...(fileData.type === 'file' ? [{ action: 'download', icon: 'ri-download-line', label: 'Unduh', color: 'text-green-600 dark:text-green-400' }] : []),
+    { action: 'rename', icon: 'ri-edit-line', label: 'Ganti Nama', color: 'text-amber-600 dark:text-amber-400' },
+    { action: 'move', icon: 'ri-folder-transfer-line', label: 'Pindahkan', color: 'text-purple-600 dark:text-purple-400' },
+    { divider: true },
+    { action: 'delete', icon: 'ri-delete-bin-line', label: 'Hapus', color: 'text-red-500 dark:text-red-400' }
+  ];
+
+  menu.innerHTML = menuItems.map(item => {
+    if (item.divider) {
+      return '<div class="border-t border-gray-200 dark:border-gray-700 my-1"></div>';
+    }
+    return `
+      <button class="mobile-context-item w-full flex items-center gap-3 px-4 py-2.5 text-left hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors" data-action="${item.action}">
+        <i class="${item.icon} ${item.color} text-lg"></i>
+        <span class="text-sm text-gray-700 dark:text-gray-200">${item.label}</span>
+      </button>
+    `;
+  }).join('');
+
+  document.body.appendChild(menu);
+
+  // Position the menu
+  const rect = event.target.closest('button').getBoundingClientRect();
+  const menuRect = menu.getBoundingClientRect();
+  
+  let top = rect.bottom + 4;
+  let left = rect.left;
+
+  // Adjust if menu goes off screen
+  if (left + menuRect.width > window.innerWidth) {
+    left = window.innerWidth - menuRect.width - 8;
+  }
+  if (top + menuRect.height > window.innerHeight) {
+    top = rect.top - menuRect.height - 4;
+  }
+
+  menu.style.top = `${top}px`;
+  menu.style.left = `${left}px`;
+
+  // Handle menu item clicks
+  menu.querySelectorAll('.mobile-context-item').forEach(item => {
+    item.addEventListener('click', async (e) => {
+      e.stopPropagation();
+      const action = item.dataset.action;
+      closeMobileContextMenu();
+      await handleMobileAction(action, fileData);
+    });
+  });
+
+  // Close menu when clicking outside
+  setTimeout(() => {
+    document.addEventListener('click', closeMobileContextMenu, { once: true });
+  }, 0);
+}
+
+function closeMobileContextMenu() {
+  const menu = document.getElementById('mobile-context-menu');
+  if (menu) menu.remove();
+}
+
+async function handleMobileAction(action, fileData) {
+  const { path, type, name } = fileData;
+  
+  if (action === 'preview') {
+    if (type === 'folder') {
+      await loadFiles(path);
+    } else if (window.openPreviewModal) {
+      window.openPreviewModal(path, name);
+    }
+  } else if (action === 'download') {
+    const a = document.createElement('a');
+    a.href = `api.php?action=raw&path=${encodeURIComponent(path)}`;
+    a.download = name || 'download';
+    a.style.display = 'none';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+  } else if (action === 'rename') {
+    if (window.openRenameModal) {
+      window.openRenameModal(path, name);
+    } else if (window.openRenameOverlay) {
+      window.openRenameOverlay({ name, type, path });
+    } else {
+      const newName = prompt('Nama baru:', name);
+      if (newName) await renameItem(path, newName);
+    }
+  } else if (action === 'move') {
+    if (window.openMoveModal) {
+      window.openMoveModal([path]);
+    } else if (window.openMoveOverlay) {
+      window.openMoveOverlay([path]);
+    }
+  } else if (action === 'delete') {
+    if (window.openDeleteOverlay) {
+      window.openDeleteOverlay(
+        [{ name, type, path }],
+        async (items) => {
+          const paths = items.map(item => item.path);
+          await deleteItems(paths);
+        }
+      );
+    } else if (confirm(`Hapus "${name}"?`)) {
+      await deleteItems([path]);
+    }
+  }
 }
 
 // ============= Drag & Drop =============
