@@ -41,6 +41,11 @@ button {
   padding: 0;
 }
 
+button:focus,
+button:focus-visible {
+  outline: none;
+}
+
 input,
 select,
 textarea {

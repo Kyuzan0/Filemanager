@@ -94,7 +94,7 @@
         </div>
         <div class="confirm-actions flex gap-2 border-t border-gray-100 bg-gray-50 px-6 py-3 rounded-b-lg">
             <button type="button" class="confirm-button outline flex-1 inline-flex items-center justify-center gap-2 px-3 py-2 rounded-md text-sm btn" id="confirm-cancel" data-action="confirm-cancel">Batal</button>
-            <button type="button" class="confirm-button danger flex-1 inline-flex items-center justify-center gap-2 px-3 py-2 rounded-md text-sm bg-red-600 text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 font-medium" id="confirm-confirm" data-action="confirm-confirm">Hapus</button>
+            <button type="button" class="confirm-button danger flex-1 inline-flex items-center justify-center gap-2 px-3 py-2 rounded-md text-sm bg-red-600 text-white hover:bg-red-700 focus:outline-none font-medium transition-colors" id="confirm-confirm" data-action="confirm-confirm">Hapus</button>
         </div>
     </div>
 </div>
@@ -155,7 +155,7 @@
         <form class="rename-form px-6 py-4" id="rename-form">
             <div class="form-field mb-4">
                 <label for="rename-name" id="rename-label" class="text-sm font-medium block mb-2">Nama Baru</label>
-                <input type="text" id="rename-name" name="rename-name" autocomplete="off" required class="rename-input rounded-md px-3 py-2 w-full focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm" />
+                <input type="text" id="rename-name" name="rename-name" autocomplete="off" required class="rename-input rounded-md px-3 py-2 w-full border border-gray-200 dark:border-white/10 dark:bg-black/30 dark:text-gray-200 focus:outline-none focus:border-blue-500 dark:focus:border-blue-400 text-sm transition-colors" />
                 <p class="form-hint text-xs mt-1" id="rename-hint">Gunakan huruf, angka, titik, atau garis bawah.</p>
             </div>
         </form>
@@ -180,9 +180,9 @@
             </div>
         </div>
         <div class="unsaved-actions flex flex-col sm:flex-row items-stretch sm:items-end gap-2">
-            <button type="button" class="unsaved-button outline inline-flex items-center justify-center gap-2 px-3 py-2 rounded-md text-sm bg-white border border-gray-200 text-slate-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500" id="unsaved-save" data-action="unsaved-save">Simpan Perubahan</button>
+            <button type="button" class="unsaved-button outline inline-flex items-center justify-center gap-2 px-3 py-2 rounded-md text-sm bg-white dark:bg-white/5 hover:bg-gray-50 dark:hover:bg-white/10 text-gray-700 dark:text-gray-200 border border-gray-200 dark:border-white/10 focus:outline-none transition-colors" id="unsaved-save" data-action="unsaved-save">Simpan Perubahan</button>
             <button type="button" class="unsaved-button outline inline-flex items-center justify-center gap-2 px-3 py-2 rounded-md text-sm bg-white border border-gray-200 text-slate-700 hover:bg-gray-50 focus:outline-none" id="unsaved-discard" data-action="unsaved-discard">Tutup Tanpa Simpan</button>
-            <button type="button" class="unsaved-button primary inline-flex items-center justify-center gap-2 px-3 py-2 rounded-md text-sm bg-blue-600 text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500" id="unsaved-cancel" data-action="unsaved-cancel">Batal</button>
+            <button type="button" class="unsaved-button primary inline-flex items-center justify-center gap-2 px-3 py-2 rounded-md text-sm bg-blue-600 text-white hover:bg-blue-700 focus:outline-none transition-colors" id="unsaved-cancel" data-action="unsaved-cancel">Batal</button>
         </div>
     </div>
 </div>
@@ -323,11 +323,11 @@
                         <svg viewBox="0 0 24 24" aria-hidden="true" class="search-icon absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 dark:text-slate-500">
                             <path fill="currentColor" d="M15.5 14h-.79l-.28-.27a6 6 0 1 0-.71.71l.27.28v.79l4.5 4.5a1 1 0 0 0 1.41-1.41L15.5 14zm-6 0a4 4 0 1 1 0-8 4 4 0 0 1 0 8z"/>
                         </svg>
-                        <input type="text" id="log-path-search" class="filter-search-input pl-10 pr-3 py-2 border border-gray-300 dark:border-white/10 dark:bg-black/30 dark:text-slate-200 dark:placeholder-slate-500 rounded-md w-full text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Cari aktivitas...">
+                        <input type="text" id="log-path-search" class="filter-search-input pl-10 pr-3 py-2 border border-gray-200 dark:border-white/10 dark:bg-black/30 dark:text-slate-200 dark:placeholder-slate-500 rounded-md w-full text-sm focus:outline-none focus:border-blue-500 dark:focus:border-blue-400 transition-colors" placeholder="Cari aktivitas...">
                     </div>
                     
                     <div class="filter-quick-actions flex flex-col sm:flex-row gap-2">
-                        <select id="log-filter" class="filter-select-compact border border-gray-300 dark:border-white/10 dark:bg-black/30 dark:text-slate-200 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <select id="log-filter" class="filter-select-compact border border-gray-200 dark:border-white/10 dark:bg-black/30 dark:text-slate-200 rounded-md px-3 py-2 text-sm focus:outline-none focus:border-blue-500 dark:focus:border-blue-400 transition-colors">
                             <option value="">Semua Aktivitas</option>
                             <option value="create">Buat</option>
                             <option value="delete">Hapus</option>
@@ -337,7 +337,7 @@
                             <option value="download">Unduh</option>
                         </select>
                         
-                        <select id="log-target-type" class="filter-select-compact border border-gray-300 dark:border-white/10 dark:bg-black/30 dark:text-slate-200 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <select id="log-target-type" class="filter-select-compact border border-gray-200 dark:border-white/10 dark:bg-black/30 dark:text-slate-200 rounded-md px-3 py-2 text-sm focus:outline-none focus:border-blue-500 dark:focus:border-blue-400 transition-colors">
                             <option value="">Semua Tipe</option>
                             <option value="file">File</option>
                             <option value="folder">Folder</option>
@@ -372,11 +372,11 @@
             
             <div class="log-controls-bottom flex flex-col sm:flex-row justify-between items-center gap-3 mt-4 flex-shrink-0">
                 <div class="log-pagination flex items-center gap-2">
-                    <button id="log-prev" type="button" class="log-pagination-btn p-2 border border-gray-300 dark:border-white/10 dark:bg-[#1a2332] dark:text-slate-400 dark:hover:bg-white/10 dark:hover:text-slate-200 rounded-md text-sm disabled:opacity-50 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <button id="log-prev" type="button" class="log-pagination-btn p-2 border border-gray-200 dark:border-white/10 dark:bg-white/5 dark:text-slate-400 dark:hover:bg-white/10 dark:hover:text-slate-200 rounded-md text-sm disabled:opacity-50 hover:bg-gray-50 focus:outline-none transition-colors">
                         <svg viewBox="0 0 24 24" aria-hidden="true" class="w-4 h-4"><path fill="currentColor" d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/></svg>
                     </button>
                     <span id="log-page-info" class="text-xs font-medium text-gray-700 dark:text-slate-400">Halaman 1</span>
-                    <button id="log-next" type="button" class="log-pagination-btn p-2 border border-gray-300 dark:border-white/10 dark:bg-[#1a2332] dark:text-slate-400 dark:hover:bg-white/10 dark:hover:text-slate-200 rounded-md text-sm disabled:opacity-50 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <button id="log-next" type="button" class="log-pagination-btn p-2 border border-gray-200 dark:border-white/10 dark:bg-white/5 dark:text-slate-400 dark:hover:bg-white/10 dark:hover:text-slate-200 rounded-md text-sm disabled:opacity-50 hover:bg-gray-50 focus:outline-none transition-colors">
                         <svg viewBox="0 0 24 24" aria-hidden="true" class="w-4 h-4"><path fill="currentColor" d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/></svg>
                     </button>
                 </div>
@@ -390,7 +390,7 @@
                     </div>
                     
                     <div class="log-export-dropdown relative">
-                        <button type="button" id="log-export-toggle" class="log-button outline inline-flex items-center gap-2 px-3 py-2 rounded-md text-xs font-medium bg-white dark:bg-[#1a2332] border border-gray-300 dark:border-white/10 text-gray-700 dark:text-slate-200 hover:bg-gray-50 dark:hover:bg-white/10 focus:outline-none focus:ring-2 focus:ring-blue-500" aria-expanded="false" aria-controls="log-export-menu">
+                        <button type="button" id="log-export-toggle" class="log-button outline inline-flex items-center gap-2 px-3 py-2 rounded-md text-xs font-medium bg-white dark:bg-white/5 hover:bg-gray-50 dark:hover:bg-white/10 text-gray-700 dark:text-gray-200 border border-gray-200 dark:border-white/10 focus:outline-none transition-colors" aria-expanded="false" aria-controls="log-export-menu">
                             <svg viewBox="0 0 24 24" aria-hidden="true" class="w-4 h-4"><path fill="currentColor" d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6z"/><path d="M14 2v6h6M16 13H8M16 17H8M10 9H8"/></svg>
                             <span>Export</span>
                             <svg viewBox="0 0 24 24" aria-hidden="true" class="w-4 h-4"><path fill="currentColor" d="M7 10l5 5 5-5z"/></svg>
@@ -414,22 +414,22 @@
         <footer class="log-actions flex flex-col sm:flex-row justify-between gap-3 border-t border-gray-100 dark:border-white/10 bg-gray-50 dark:bg-black/20 px-6 py-3 rounded-b-lg flex-shrink-0">
             <div class="log-actions-left">
                 <div class="log-cleanup-group flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
-                    <select id="log-cleanup-days" class="log-cleanup-select border border-gray-300 dark:border-white/10 dark:bg-black/30 dark:text-slate-200 rounded-md px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <select id="log-cleanup-days" class="log-cleanup-select border border-gray-200 dark:border-white/10 dark:bg-black/30 dark:text-slate-200 rounded-md px-3 py-2 text-xs focus:outline-none focus:border-blue-500 dark:focus:border-blue-400 transition-colors">
                         <option value="7">7 hari</option>
                         <option value="30" selected>30 hari</option>
                     </select>
-                    <button type="button" class="log-button danger px-3 py-2 rounded-md text-xs font-medium bg-red-600 text-white inline-flex items-center justify-center gap-2 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500" id="log-cleanup">
+                    <button type="button" class="log-button danger px-3 py-2 rounded-md text-xs font-medium bg-red-600 text-white inline-flex items-center justify-center gap-2 hover:bg-red-700 focus:outline-none transition-colors" id="log-cleanup">
                         <svg viewBox="0 0 24 24" aria-hidden="true" class="w-4 h-4"><path fill="currentColor" d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg>
                         <span>Cleanup</span>
                     </button>
                 </div>
             </div>
             <div class="log-actions-right flex flex-col sm:flex-row gap-2">
-                <button type="button" class="log-button outline px-3 py-2 rounded-md text-xs font-medium bg-white dark:bg-[#1a2332] border border-gray-300 dark:border-white/10 text-gray-700 dark:text-slate-200 inline-flex items-center justify-center gap-2 hover:bg-gray-50 dark:hover:bg-white/10 focus:outline-none focus:ring-2 focus:ring-blue-500" id="log-refresh">
+                <button type="button" class="log-button outline px-3 py-2 rounded-md text-xs font-medium bg-white dark:bg-white/5 hover:bg-gray-50 dark:hover:bg-white/10 text-gray-700 dark:text-gray-200 border border-gray-200 dark:border-white/10 inline-flex items-center justify-center gap-2 focus:outline-none transition-colors" id="log-refresh">
                     <svg viewBox="0 0 24 24" aria-hidden="true" class="w-4 h-4"><path fill="currentColor" d="M12 6V3L8 7l4 4V8c2.76 0 5 2.24 5 5a5 5 0 0 1-5 5 5 5 0 0 1-4.33-2.5h-2.3A7 7 0 0 0 12 20a7 7 0 0 0 7-7c0-3.87-3.13-7-7-7z"/></svg>
                     <span>Refresh</span>
                 </button>
-                <button type="button" class="log-button primary px-3 py-2 rounded-md text-xs font-medium bg-blue-600 text-white inline-flex items-center justify-center gap-2 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500" id="log-close">Tutup</button>
+                <button type="button" class="log-button primary px-3 py-2 rounded-md text-xs font-medium bg-blue-600 text-white inline-flex items-center justify-center gap-2 hover:bg-blue-700 focus:outline-none transition-colors" id="log-close">Tutup</button>
             </div>
         </footer>
     </div>
@@ -466,14 +466,14 @@
     <div class="search-dialog bg-white rounded-lg p-4 md:p-6 w-full max-w-md shadow-lg" role="dialog" aria-modal="true" aria-labelledby="search-title">
         <header class="search-header mb-4 flex items-center justify-between">
             <h2 id="search-title" class="text-lg md:text-xl font-semibold">Cari File atau Folder</h2>
-            <button type="button" id="search-close" aria-label="Tutup pencarian" class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">✕</button>
+            <button type="button" id="search-close" aria-label="Tutup pencarian" class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-gray-100 dark:bg-white/10 hover:bg-gray-200 dark:hover:bg-white/20 text-gray-700 dark:text-gray-200 focus:outline-none transition-colors">✕</button>
         </header>
         <div class="search-body mb-4">
-            <input id="search-modal-input" type="search" placeholder="Masukkan nama file atau folder" autocomplete="off" class="w-full px-4 py-2 rounded-md border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 text-base" />
+            <input id="search-modal-input" type="search" placeholder="Masukkan nama file atau folder" autocomplete="off" class="w-full px-4 py-2 rounded-md border border-gray-200 dark:border-white/10 bg-white dark:bg-black/30 dark:text-gray-200 focus:outline-none focus:border-blue-500 dark:focus:border-blue-400 text-base transition-colors" />
         </div>
         <footer class="search-footer flex flex-col sm:flex-row gap-2 justify-end">
-            <button type="button" id="search-clear" class="search-button outline px-4 py-2 rounded-md text-sm bg-white border border-gray-200 text-slate-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">Hapus</button>
-            <button type="button" id="search-apply" class="search-button primary px-4 py-2 rounded-md text-sm bg-blue-600 text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">Cari</button>
+            <button type="button" id="search-clear" class="search-button outline px-4 py-2 rounded-md text-sm bg-white dark:bg-white/5 hover:bg-gray-50 dark:hover:bg-white/10 text-gray-700 dark:text-gray-200 border border-gray-200 dark:border-white/10 focus:outline-none transition-colors">Hapus</button>
+            <button type="button" id="search-apply" class="search-button primary px-4 py-2 rounded-md text-sm bg-blue-600 text-white hover:bg-blue-700 focus:outline-none transition-colors">Cari</button>
         </footer>
     </div>
 </div>
@@ -483,7 +483,7 @@
     <div class="settings-dialog bg-white rounded-lg p-4 md:p-6 w-full max-w-xl shadow-lg" role="dialog" aria-modal="true" aria-labelledby="settings-title">
         <header class="settings-header mb-4 flex items-center justify-between">
             <h2 id="settings-title" class="text-lg md:text-xl font-semibold">Pengaturan</h2>
-            <button type="button" id="settings-close" data-action="settings-close" aria-label="Tutup pengaturan" class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">✕</button>
+            <button type="button" id="settings-close" data-action="settings-close" aria-label="Tutup pengaturan" class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-gray-100 dark:bg-white/10 hover:bg-gray-200 dark:hover:bg-white/20 text-gray-700 dark:text-gray-200 focus:outline-none transition-colors">✕</button>
         </header>
         <div class="settings-body mb-4">
             <div class="setting-row">
@@ -498,8 +498,8 @@
             </div>
         </div>
         <footer class="settings-footer flex flex-col sm:flex-row gap-2">
-            <button type="button" id="settings-save" data-action="settings-save" class="settings-button primary px-3 py-2 rounded-md text-sm bg-blue-600 text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">Simpan</button>
-            <button type="button" id="settings-cancel" data-action="settings-cancel" class="settings-button outline px-3 py-2 rounded-md text-sm bg-white border border-gray-200 text-slate-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">Batal</button>
+            <button type="button" id="settings-save" data-action="settings-save" class="settings-button primary px-3 py-2 rounded-md text-sm bg-blue-600 text-white hover:bg-blue-700 focus:outline-none transition-colors">Simpan</button>
+            <button type="button" id="settings-cancel" data-action="settings-cancel" class="settings-button outline px-3 py-2 rounded-md text-sm bg-white dark:bg-white/5 hover:bg-gray-50 dark:hover:bg-white/10 text-gray-700 dark:text-gray-200 border border-gray-200 dark:border-white/10 focus:outline-none transition-colors">Batal</button>
         </footer>
     </div>
 </div>

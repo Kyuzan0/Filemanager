@@ -175,7 +175,7 @@ function renderSimplePagination(container, onPageChange) {
     perPageLabel.textContent = 'Item per halaman';
 
     const perPageSelect = document.createElement('select');
-    perPageSelect.className = 'pagination-page-size-select px-3 py-1.5 text-sm rounded border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/60 focus:border-blue-500';
+    perPageSelect.className = 'pagination-page-size-select px-3 py-1.5 text-sm rounded border border-gray-200 dark:border-white/10 bg-white dark:bg-white/5 dark:text-gray-200 focus:outline-none focus:border-blue-500 dark:focus:border-blue-400 transition-colors';
     perPageSelect.setAttribute('aria-label', 'Item per halaman');
 
     PAGE_SIZE_OPTIONS.forEach((size) => {

@@ -183,9 +183,9 @@
 [data-theme="dark"] .preview-button.outline,
 [data-theme="dark"] .unsaved-button.outline,
 [data-theme="dark"] .settings-button.outline {
-  background: var(--card);
-  border-color: rgba(255, 255, 255, 0.1);
-  color: var(--muted);
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #e5e7eb;
 }
 
 [data-theme="dark"] .create-button.outline:hover,
@@ -196,8 +196,18 @@
 [data-theme="dark"] .preview-button.outline:hover,
 [data-theme="dark"] .unsaved-button.outline:hover,
 [data-theme="dark"] .settings-button.outline:hover {
-  background: rgba(255, 255, 255, 0.08);
-  border-color: rgba(255, 255, 255, 0.15);
+  background: rgba(255, 255, 255, 0.1);
+}
+
+[data-theme="dark"] .create-button.outline:focus,
+[data-theme="dark"] .rename-button.outline:focus,
+[data-theme="dark"] .confirm-button.outline:focus,
+[data-theme="dark"] .log-button.outline:focus,
+[data-theme="dark"] .move-button.outline:focus,
+[data-theme="dark"] .preview-button.outline:focus,
+[data-theme="dark"] .unsaved-button.outline:focus,
+[data-theme="dark"] .settings-button.outline:focus {
+  outline: none;
 }
 
 /* ============================================================================

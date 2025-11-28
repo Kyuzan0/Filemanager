@@ -48,6 +48,10 @@
   cursor: not-allowed;
 }
 
+.btn:focus {
+  outline: none;
+}
+
 /* Primary Button */
 .btn.primary,
 .btn-primary {
