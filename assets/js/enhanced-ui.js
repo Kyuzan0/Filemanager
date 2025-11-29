@@ -851,6 +851,14 @@ function handleDragEnd(e) {
 }
 
 function handleDragOver(e) {
+  // Check if this is an internal drag (file move) or external drag (file upload from computer)
+  const isExternalDrag = e.dataTransfer.types.includes('Files') && !isDragging;
+  
+  if (isExternalDrag) {
+    // Allow external file drops - will be handled by card drop handler
+    return;
+  }
+  
   if (!isDragging) return;
   e.preventDefault();
   const row = e.currentTarget;
@@ -864,6 +872,18 @@ function handleDragOver(e) {
 }
 
 async function handleDrop(e) {
+  // Check if this is an external file drop (from computer)
+  const hasFiles = e.dataTransfer.types.includes('Files');
+  const isExternalDrop = hasFiles && !isDragging && e.dataTransfer.files.length > 0;
+  
+  if (isExternalDrop) {
+    // Don't handle here - let it bubble up to card drop handler
+    return;
+  }
+  
+  // This is an internal drag (moving files between folders)
+  if (!isDragging) return;
+  
   e.preventDefault();
   const row = e.currentTarget;
   if (!isValidDropTarget(row)) {
@@ -1219,6 +1239,333 @@ function initializeEventHandlers() {
       showLoader(false);
     }
   });
+
+  // --- Drag-drop to .card upload (new modal - wait for user confirmation) ---
+  let pendingUploadFiles = []; // Store files waiting to be uploaded
+  let isUploadInProgress = false; // Flag to prevent duplicate uploads
+  let isUploadCompleted = false; // Flag to track if upload has completed
+
+  // Create card upload modal dynamically
+  function createCardUploadModal() {
+    if (document.getElementById('cardUploadModal')) return;
+    const container = document.createElement('div');
+    container.id = 'cardUploadModal';
+    container.style.position = 'fixed';
+    container.style.inset = '0';
+    container.style.display = 'flex';
+    container.style.alignItems = 'center';
+    container.style.justifyContent = 'center';
+    container.style.zIndex = '1200';
+    container.style.background = 'rgba(0,0,0,0.45)';
+    container.innerHTML = `
+      <div class="card-upload-modal" style="width:90%;max-width:680px;background:var(--bg, #fff);border-radius:10px;padding:18px;box-shadow:0 8px 30px rgba(0,0,0,0.25);">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+          <div style="display:flex;align-items:center;gap:12px;">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 3v10" stroke="#0ea5e9" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"></path><path d="M8 9l4-4 4 4" stroke="#0ea5e9" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"></path><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" stroke="#0ea5e9" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+            <div>
+              <div style="font-weight:600;font-size:16px;">Upload Files</div>
+              <div style="font-size:12px;color:var(--muted,#6b7280)">Klik tombol "Upload" untuk memulai unggahan</div>
+            </div>
+          </div>
+          <div>
+            <button id="cardUploadClose" class="btn" style="background:transparent;border:0;font-size:20px;color:var(--muted,#374151);cursor:pointer;">×</button>
+          </div>
+        </div>
+        <div id="cardUploadList" style="max-height:320px;overflow:auto;display:flex;flex-direction:column;gap:8px;padding-right:6px;margin-bottom:12px;"></div>
+        <div id="cardUploadSummary" style="padding:10px;background:#f0f9ff;border-radius:8px;margin-bottom:12px;display:none;">
+          <div style="font-size:13px;color:#0369a1;font-weight:500;" id="cardUploadSummaryText"></div>
+        </div>
+        <div style="display:flex;justify-content:flex-end;gap:10px;">
+          <button id="cardUploadCancel" class="btn" style="padding:8px 16px;border-radius:6px;background:#f3f4f6;color:#374151;border:1px solid #e5e7eb;cursor:pointer;">Batal</button>
+          <button id="cardUploadStart" class="btn btn-primary" style="padding:8px 16px;border-radius:6px;background:#0ea5e9;color:#fff;border:none;cursor:pointer;font-weight:500;">
+            <span style="display:flex;align-items:center;gap:6px;">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path><path d="M17 8l-5-5-5 5M12 3v12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+              Upload
+            </span>
+          </button>
+        </div>
+      </div>
+    `;
+    document.body.appendChild(container);
+
+    // Close modal handler
+    const closeModal = () => {
+      const el = document.getElementById('cardUploadModal');
+      el?.parentNode?.removeChild(el);
+      pendingUploadFiles = [];
+      isUploadInProgress = false;
+      isUploadCompleted = false;
+    };
+
+    document.getElementById('cardUploadClose')?.addEventListener('click', closeModal);
+    document.getElementById('cardUploadCancel')?.addEventListener('click', closeModal);
+
+    // Upload button handler
+    document.getElementById('cardUploadStart')?.addEventListener('click', async () => {
+      // If upload already completed, just close the modal
+      if (isUploadCompleted) {
+        closeModal();
+        return;
+      }
+      
+      // Prevent duplicate upload
+      if (isUploadInProgress || pendingUploadFiles.length === 0) return;
+      
+      isUploadInProgress = true;
+      
+      const uploadBtn = document.getElementById('cardUploadStart');
+      const cancelBtn = document.getElementById('cardUploadCancel');
+      if (uploadBtn) {
+        uploadBtn.disabled = true;
+        uploadBtn.innerHTML = '<span style="display:flex;align-items:center;gap:6px;">Mengupload...</span>';
+      }
+      if (cancelBtn) cancelBtn.disabled = true;
+
+      const list = document.getElementById('cardUploadList');
+      const rows = list?.querySelectorAll('.card-upload-row') || [];
+      let successCount = 0;
+      let errorCount = 0;
+
+      for (let i = 0; i < pendingUploadFiles.length; i++) {
+        const file = pendingUploadFiles[i];
+        const row = rows[i];
+        const progressEl = row?.querySelector('.card-upload-progress');
+        const statusEl = row?.querySelector('.card-upload-status');
+
+        if (statusEl) statusEl.textContent = 'Mengupload...';
+        
+        const result = await uploadFileWithProgress(file, progressEl, statusEl);
+        
+        if (result.success) {
+          successCount++;
+          if (statusEl) {
+            statusEl.textContent = 'Selesai ✓';
+            statusEl.style.color = '#16a34a';
+          }
+          if (progressEl) progressEl.style.background = '#22c55e';
+        } else {
+          errorCount++;
+          if (statusEl) {
+            statusEl.textContent = `Gagal: ${result.error || 'error'}`;
+            statusEl.style.color = '#dc2626';
+          }
+          if (progressEl) progressEl.style.background = '#ef4444';
+        }
+      }
+
+      // Show summary
+      const summary = document.getElementById('cardUploadSummary');
+      const summaryText = document.getElementById('cardUploadSummaryText');
+      if (summary && summaryText) {
+        summary.style.display = 'block';
+        if (successCount > 0 && errorCount === 0) {
+          summary.style.background = '#dcfce7';
+          summaryText.style.color = '#166534';
+          summaryText.textContent = `✓ ${successCount} file berhasil diupload`;
+        } else if (successCount > 0 && errorCount > 0) {
+          summary.style.background = '#fef3c7';
+          summaryText.style.color = '#92400e';
+          summaryText.textContent = `${successCount} berhasil, ${errorCount} gagal`;
+        } else {
+          summary.style.background = '#fee2e2';
+          summaryText.style.color = '#991b1b';
+          summaryText.textContent = `✗ Semua file gagal diupload`;
+        }
+      }
+
+      // Update buttons
+      if (uploadBtn) {
+        uploadBtn.innerHTML = '<span>Selesai</span>';
+        uploadBtn.disabled = false;
+      }
+      if (cancelBtn) cancelBtn.style.display = 'none';
+      
+      // Mark upload as completed
+      isUploadCompleted = true;
+      isUploadInProgress = false;
+
+      // Reload file list
+      await loadFiles(currentPath);
+    });
+  }
+
+  // Show modal with file list (no auto-upload)
+  function showCardUploadModal(files) {
+    // Remove existing modal if any
+    const existingModal = document.getElementById('cardUploadModal');
+    if (existingModal) existingModal.parentNode?.removeChild(existingModal);
+
+    createCardUploadModal();
+    const list = document.getElementById('cardUploadList');
+    if (!list) return;
+    list.innerHTML = '';
+
+    pendingUploadFiles = Array.from(files);
+    let totalSize = 0;
+
+    pendingUploadFiles.forEach((file, idx) => {
+      totalSize += file.size;
+      const row = document.createElement('div');
+      row.className = 'card-upload-row';
+      row.style.cssText = 'display:flex;align-items:center;gap:12px;padding:10px;background:#f9fafb;border-radius:8px;border:1px solid #e5e7eb;';
+      
+      // Get file icon based on extension
+      const ext = file.name.split('.').pop()?.toLowerCase() || '';
+      const iconColor = getFileIconColor(ext);
+      
+      row.innerHTML = `
+        <div style="width:36px;height:36px;border-radius:6px;background:${iconColor.bg};display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" stroke="${iconColor.stroke}" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            <polyline points="14 2 14 8 20 8" stroke="${iconColor.stroke}" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <div style="flex:1;min-width:0;">
+          <div style="font-weight:500;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#1f2937;">${file.name}</div>
+          <div style="font-size:11px;color:#6b7280;">${formatFileSize(file.size)}</div>
+        </div>
+        <div style="width:140px;flex-shrink:0;">
+          <div style="height:6px;background:#e5e7eb;border-radius:4px;overflow:hidden;margin-bottom:4px;">
+            <div class="card-upload-progress" style="width:0%;height:100%;background:#0ea5e9;border-radius:4px;transition:width 0.2s;"></div>
+          </div>
+          <div style="font-size:11px;color:#6b7280;text-align:right;" class="card-upload-status">Siap upload</div>
+        </div>
+        <button class="card-upload-remove" data-index="${idx}" style="width:28px;height:28px;border-radius:6px;background:transparent;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;color:#9ca3af;transition:all 0.15s;" onmouseover="this.style.background='#fee2e2';this.style.color='#dc2626';" onmouseout="this.style.background='transparent';this.style.color='#9ca3af';">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M18 6L6 18M6 6l12 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+      `;
+      list.appendChild(row);
+
+      // Remove file handler
+      row.querySelector('.card-upload-remove')?.addEventListener('click', (e) => {
+        const index = parseInt(e.currentTarget.dataset.index);
+        pendingUploadFiles.splice(index, 1);
+        showCardUploadModal(pendingUploadFiles); // Refresh modal
+      });
+    });
+
+    // Update summary text
+    const summaryText = document.getElementById('cardUploadSummaryText');
+    const summary = document.getElementById('cardUploadSummary');
+    if (summary && summaryText && pendingUploadFiles.length > 0) {
+      summary.style.display = 'block';
+      summary.style.background = '#f0f9ff';
+      summaryText.style.color = '#0369a1';
+      summaryText.textContent = `${pendingUploadFiles.length} file (${formatFileSize(totalSize)}) siap diupload`;
+    }
+  }
+
+  // Helper: get icon color based on file extension
+  function getFileIconColor(ext) {
+    const colorMap = {
+      // Images
+      'jpg': { bg: '#fee2e2', stroke: '#ef4444' },
+      'jpeg': { bg: '#fee2e2', stroke: '#ef4444' },
+      'png': { bg: '#fee2e2', stroke: '#ef4444' },
+      'gif': { bg: '#fee2e2', stroke: '#ef4444' },
+      'svg': { bg: '#fee2e2', stroke: '#ef4444' },
+      'webp': { bg: '#fee2e2', stroke: '#ef4444' },
+      // Code
+      'js': { bg: '#fef3c7', stroke: '#f59e0b' },
+      'ts': { bg: '#dbeafe', stroke: '#3b82f6' },
+      'php': { bg: '#ede9fe', stroke: '#8b5cf6' },
+      'html': { bg: '#fee2e2', stroke: '#ef4444' },
+      'css': { bg: '#dbeafe', stroke: '#3b82f6' },
+      'json': { bg: '#fef3c7', stroke: '#f59e0b' },
+      // Documents
+      'pdf': { bg: '#fee2e2', stroke: '#dc2626' },
+      'doc': { bg: '#dbeafe', stroke: '#2563eb' },
+      'docx': { bg: '#dbeafe', stroke: '#2563eb' },
+      'xls': { bg: '#dcfce7', stroke: '#22c55e' },
+      'xlsx': { bg: '#dcfce7', stroke: '#22c55e' },
+      // Archives
+      'zip': { bg: '#fef3c7', stroke: '#d97706' },
+      'rar': { bg: '#fef3c7', stroke: '#d97706' },
+      '7z': { bg: '#fef3c7', stroke: '#d97706' },
+    };
+    return colorMap[ext] || { bg: '#f3f4f6', stroke: '#6b7280' };
+  }
+
+  // Helper: format file size
+  function formatFileSize(bytes) {
+    if (bytes < 1024) return bytes + ' B';
+    if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+    return (bytes / 1024 / 1024).toFixed(2) + ' MB';
+  }
+
+  // Upload single file using XHR to have progress events
+  function uploadFileWithProgress(file, progressEl, statusEl) {
+    return new Promise((resolve) => {
+      const xhr = new XMLHttpRequest();
+      const url = `${API_BASE}?action=upload&path=${encodeURIComponent(currentPath)}`;
+      xhr.open('POST', url, true);
+
+      xhr.upload.onprogress = function (e) {
+        if (e.lengthComputable) {
+          const percent = Math.round((e.loaded / e.total) * 100);
+          if (progressEl) progressEl.style.width = percent + '%';
+          if (statusEl) statusEl.textContent = percent + '%';
+        }
+      };
+
+      xhr.onload = function () {
+        try {
+          const data = JSON.parse(xhr.responseText || '{}');
+          if (data.success) {
+            if (progressEl) progressEl.style.width = '100%';
+            resolve({ success: true, data });
+          } else {
+            resolve({ success: false, error: data.error || 'Server error' });
+          }
+        } catch (err) {
+          resolve({ success: false, error: 'Invalid response' });
+        }
+      };
+
+      xhr.onerror = function () {
+        resolve({ success: false, error: 'Network error' });
+      };
+
+      const fd = new FormData();
+      fd.append('files[]', file);
+      xhr.send(fd);
+    });
+  }
+
+  // Attach drag/drop listeners to elements with class 'card'
+  function attachCardDropHandlers() {
+    const cards = document.querySelectorAll('.card');
+    cards.forEach(card => {
+      // prevent duplicate listeners
+      if (card.dataset.dropAttached === '1') return;
+      card.dataset.dropAttached = '1';
+
+      card.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        card.classList.add('card-drag-over');
+      });
+      card.addEventListener('dragleave', (e) => {
+        e.preventDefault();
+        card.classList.remove('card-drag-over');
+      });
+      card.addEventListener('drop', (e) => {
+        e.preventDefault();
+        card.classList.remove('card-drag-over');
+        const dt = e.dataTransfer;
+        if (!dt) return;
+        if (dt.files && dt.files.length > 0) {
+          showCardUploadModal(dt.files);
+        }
+      });
+    });
+  }
+
+  // Initial attach and observe DOM changes to attach to new cards
+  attachCardDropHandlers();
+  const mo = new MutationObserver((mutations) => {
+    attachCardDropHandlers();
+  });
+  mo.observe(document.body, { childList: true, subtree: true });
 
   // New button - Open create modal
   document.getElementById('newBtn')?.addEventListener('click', () => {

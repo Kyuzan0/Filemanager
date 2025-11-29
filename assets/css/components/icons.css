@@ -142,6 +142,13 @@
   height: 100%;
 }
 
+/* Visual for card drag over */
+.card-drag-over {
+  outline: 2px dashed rgba(14,165,233,0.9);
+  background: rgba(14,165,233,0.04);
+  transition: background-color 120ms ease, outline-color 120ms ease;
+}
+
 /* Folder - Kuning */
 .file-icon.folder {
   color: #f59e0b;
