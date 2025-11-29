@@ -42,7 +42,7 @@
                 <li class="px-2 py-2.5 rounded-lg text-slate-600 cursor-pointer hover:bg-slate-100 transition-colors flex items-center gap-2">
                     <i class="ri-upload-cloud-line"></i> Uploads
                 </li>
-                <li class="px-2 py-2.5 rounded-lg text-slate-600 cursor-pointer hover:bg-slate-100 transition-colors flex items-center gap-2" id="sidebar-log-activity">
+                <li class="px-2 py-2.5 rounded-lg text-slate-600 cursor-pointer hover:bg-slate-100 transition-colors flex items-center gap-2" onclick="window.location.href='logs.php'">
                     <i class="ri-file-list-3-line"></i> Log Activity
                 </li>
                 <li class="px-2 py-2.5 rounded-lg text-slate-600 cursor-pointer hover:bg-slate-100 transition-colors flex items-center gap-2">

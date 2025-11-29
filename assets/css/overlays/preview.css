@@ -239,8 +239,8 @@
   overflow: hidden;
   background: var(--card);
   flex: 1;
-  min-height: 400px;
-  max-height: 60vh;
+  min-height: 200px;
+  /* Remove max-height to allow wrapper to fill available space */
 }
 
 /* Ensure perfect alignment between editor and line numbers */
@@ -349,7 +349,6 @@
   
   .preview-editor-wrapper {
     min-height: 200px;
-    max-height: calc(100vh - 200px);
     border-radius: 0.375rem;
   }
   
@@ -425,7 +424,6 @@
   
   .preview-editor-wrapper {
     min-height: 250px;
-    max-height: calc(100vh - 220px);
   }
   
   .preview-line-numbers {
@@ -472,7 +470,6 @@
   
   .preview-editor-wrapper {
     min-height: 300px;
-    max-height: 55vh;
   }
   
   .preview-footer-actions {
@@ -555,7 +552,6 @@
   
   .preview-editor-wrapper {
     min-height: 150px;
-    max-height: calc(100vh - 120px);
   }
   
   .preview-footer-status {
