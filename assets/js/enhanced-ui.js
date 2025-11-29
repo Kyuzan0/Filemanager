@@ -486,13 +486,98 @@ function getFileIcon(filename, type) {
   };
 }
 
+/**
+ * Generate page numbers with ellipsis for pagination
+ * @param {number} currentPage - Current page number
+ * @param {number} totalPages - Total number of pages
+ * @returns {Array} Array of page numbers and ellipsis
+ */
+function getPageRange(currentPage, totalPages) {
+  if (totalPages <= 7) {
+    return Array.from({ length: totalPages }, (_, i) => i + 1);
+  }
+  
+  const pages = [1];
+  
+  if (currentPage > 3) {
+    pages.push('...');
+  }
+  
+  const start = Math.max(2, currentPage - 1);
+  const end = Math.min(totalPages - 1, currentPage + 1);
+  
+  for (let i = start; i <= end; i++) {
+    pages.push(i);
+  }
+  
+  if (currentPage < totalPages - 2) {
+    pages.push('...');
+  }
+  
+  if (totalPages > 1) {
+    pages.push(totalPages);
+  }
+  
+  return pages;
+}
+
+/**
+ * Render pagination page numbers
+ * @param {number} currentPage - Current page number
+ * @param {number} totalPages - Total number of pages
+ */
+function renderPageNumbers(currentPage, totalPages) {
+  const container = document.getElementById('page-numbers');
+  if (!container) return;
+  
+  container.innerHTML = '';
+  
+  if (totalPages <= 1) {
+    // Single page - show "1" button
+    const btn = document.createElement('button');
+    btn.className = 'page-num-btn px-2.5 py-1.5 rounded-md text-sm font-medium bg-blue-600 text-white';
+    btn.textContent = '1';
+    btn.disabled = true;
+    container.appendChild(btn);
+    return;
+  }
+  
+  const pageRange = getPageRange(currentPage, totalPages);
+  
+  pageRange.forEach(p => {
+    if (p === '...') {
+      const dots = document.createElement('span');
+      dots.className = 'px-1.5 text-gray-400 dark:text-gray-500';
+      dots.textContent = '...';
+      container.appendChild(dots);
+    } else {
+      const btn = document.createElement('button');
+      const isActive = p === currentPage;
+      btn.className = isActive
+        ? 'page-num-btn px-2.5 py-1.5 rounded-md text-sm font-medium bg-blue-600 text-white'
+        : 'page-num-btn px-2.5 py-1.5 rounded-md text-sm font-medium border border-slate-200 dark:border-white/10 dark:bg-slate-800 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors';
+      btn.textContent = p;
+      btn.disabled = isActive;
+      
+      if (!isActive) {
+        btn.addEventListener('click', () => {
+          page = p;
+          render();
+        });
+      }
+      
+      container.appendChild(btn);
+    }
+  });
+}
+
 function render() {
   if (!tbody) {
     console.error('[render] tbody not initialized');
     return;
   }
 
-  pageSize = parseInt(document.getElementById('pageSize')?.value || 5);
+  pageSize = parseInt(document.getElementById('pageSize')?.value || 10);
   const filter = document.getElementById('search')?.value.toLowerCase() || '';
   const filtered = files.filter(f =>
     f.name.toLowerCase().includes(filter) || f.type.toLowerCase().includes(filter)
@@ -645,6 +730,15 @@ function render() {
 
   if (showing) showing.textContent = `Menampilkan ${start + 1}–${Math.min(end, total)} dari ${total} item`;
   if (selectedCount) selectedCount.textContent = `${selected.size} selected`;
+  
+  // Render page numbers
+  renderPageNumbers(page, pages);
+  
+  // Update prev/next button states
+  const prevBtn = document.getElementById('prevPage');
+  const nextBtn = document.getElementById('nextPage');
+  if (prevBtn) prevBtn.disabled = page <= 1;
+  if (nextBtn) nextBtn.disabled = page >= pages;
 
   // Wire checkbox events
   document.querySelectorAll('.sel').forEach(el =>
@@ -1078,17 +1172,19 @@ function initializeEventHandlers() {
     render();
   });
 
-  document.querySelectorAll('.footer button').forEach(btn => {
-    if (btn.textContent.includes('Prev')) {
-      btn.addEventListener('click', () => {
-        if (page > 1) page--;
-        render();
-      });
-    } else if (btn.textContent.includes('Next')) {
-      btn.addEventListener('click', () => {
-        page++;
-        render();
-      });
+  // Prev/Next buttons with specific IDs
+  document.getElementById('prevPage')?.addEventListener('click', () => {
+    if (page > 1) {
+      page--;
+      render();
+    }
+  });
+  
+  document.getElementById('nextPage')?.addEventListener('click', () => {
+    const totalPages = Math.max(1, Math.ceil(files.length / pageSize));
+    if (page < totalPages) {
+      page++;
+      render();
     }
   });
 

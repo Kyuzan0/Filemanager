@@ -343,6 +343,53 @@
   color: #94a3b8;
 }
 
+/* Log Page Number Buttons */
+[data-theme="dark"] .log-page-btn {
+  background: var(--card);
+  border-color: rgba(255, 255, 255, 0.1);
+  color: #e2e8f0;
+}
+
+[data-theme="dark"] .log-page-btn:hover:not(:disabled):not([aria-current="page"]) {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+/* Main Table Pagination */
+[data-theme="dark"] .pagination-controls {
+  background: var(--card);
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+[data-theme="dark"] .pagination-controls .text-gray-700 {
+  color: #e2e8f0;
+}
+
+[data-theme="dark"] .pagination-btn,
+[data-theme="dark"] .pagination-page-btn {
+  background: var(--card);
+  border-color: rgba(255, 255, 255, 0.1);
+  color: #e2e8f0;
+}
+
+[data-theme="dark"] .pagination-btn:hover:not(:disabled),
+[data-theme="dark"] .pagination-page-btn:hover:not(:disabled):not(.bg-blue-600) {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+[data-theme="dark"] .pagination-btn:disabled {
+  opacity: 0.4;
+}
+
+[data-theme="dark"] .pagination-page-size-select {
+  background: var(--card);
+  border-color: rgba(255, 255, 255, 0.1);
+  color: #e2e8f0;
+}
+
+[data-theme="dark"] .pagination-page-size-select:focus {
+  border-color: #3b82f6;
+}
+
 /* Log Auto Refresh */
 [data-theme="dark"] .log-auto-refresh label {
   color: #94a3b8;

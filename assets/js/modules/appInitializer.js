@@ -113,17 +113,20 @@ function renderSimplePagination(container, onPageChange) {
     const showNavigation = totalPages > 1;
 
     container.innerHTML = '';
-    container.classList.toggle('hidden', !hasItems);
-
+    
+    // Don't hide the container, let the wrapper handle visibility
     if (!hasItems) {
+        container.classList.add('hidden');
         return;
     }
+    
+    container.classList.remove('hidden');
 
     const wrapper = document.createElement('div');
-    wrapper.className = 'pagination-controls hidden md:flex flex-col gap-3 border-t border-gray-200 bg-white px-4 py-3 md:flex-row md:items-center md:justify-between';
+    wrapper.className = 'pagination-controls flex flex-col gap-3 border-t border-gray-200 dark:border-white/10 bg-white dark:bg-slate-900 px-4 py-3 md:flex-row md:items-center md:justify-between rounded-b-lg';
 
     const info = document.createElement('div');
-    info.className = 'text-sm text-gray-700';
+    info.className = 'text-sm text-gray-700 dark:text-gray-300';
     const startItem = (currentPage - 1) * itemsPerPage + 1;
     const endItem = Math.min(currentPage * itemsPerPage, totalItems);
     info.textContent = `Menampilkan ${startItem}-${endItem} dari ${totalItems.toLocaleString('id-ID')} items`;
@@ -218,11 +221,13 @@ function renderMobilePagination(container, onPageChange) {
     const hasItems = totalItems > 0;
 
     container.innerHTML = '';
-    container.classList.toggle('hidden', !hasItems);
-
+    
     if (!hasItems) {
+        container.classList.add('hidden');
         return;
     }
+    
+    container.classList.remove('hidden');
 
     // Top row: Info text with dropdown
     const topRow = document.createElement('div');
@@ -265,7 +270,7 @@ function renderMobilePagination(container, onPageChange) {
     topRow.appendChild(select);
     container.appendChild(topRow);
 
-    // Bottom row: Navigation with page info
+    // Bottom row: Navigation with page numbers
     const bottomRow = document.createElement('div');
     bottomRow.className = 'pagination-mobile-bottom-row-new';
     
@@ -281,11 +286,44 @@ function renderMobilePagination(container, onPageChange) {
     });
     bottomRow.appendChild(prevBtn);
     
-    // Page info in center
-    const pageInfo = document.createElement('span');
-    pageInfo.className = 'pagination-mobile-page-info-new';
-    pageInfo.textContent = `Page ${currentPage} of ${totalPages}`;
-    bottomRow.appendChild(pageInfo);
+    // Page numbers in center
+    const pageNumbersContainer = document.createElement('div');
+    pageNumbersContainer.className = 'pagination-mobile-page-numbers flex items-center gap-1';
+    
+    if (totalPages > 1) {
+        const pageRange = getPageRange(currentPage, totalPages);
+        pageRange.forEach(page => {
+            if (page === '...') {
+                const dots = document.createElement('span');
+                dots.className = 'px-1 text-gray-400 text-sm';
+                dots.textContent = '...';
+                pageNumbersContainer.appendChild(dots);
+            } else {
+                const pageBtn = document.createElement('button');
+                const isActive = page === currentPage;
+                pageBtn.className = isActive
+                    ? 'pagination-mobile-page-btn min-w-[28px] px-2 py-1 text-xs rounded bg-blue-600 text-white font-medium'
+                    : 'pagination-mobile-page-btn min-w-[28px] px-2 py-1 text-xs rounded border border-gray-300 bg-white hover:bg-gray-50 text-gray-700 transition-colors';
+                pageBtn.textContent = page;
+                pageBtn.disabled = isActive;
+                if (!isActive) {
+                    pageBtn.addEventListener('click', () => {
+                        goToPageAndUpdate(page, onPageChange);
+                    });
+                }
+                pageNumbersContainer.appendChild(pageBtn);
+            }
+        });
+    } else {
+        // Single page - show "1" button
+        const pageBtn = document.createElement('button');
+        pageBtn.className = 'pagination-mobile-page-btn min-w-[28px] px-2 py-1 text-xs rounded bg-blue-600 text-white font-medium';
+        pageBtn.textContent = '1';
+        pageBtn.disabled = true;
+        pageNumbersContainer.appendChild(pageBtn);
+    }
+    
+    bottomRow.appendChild(pageNumbersContainer);
     
     // Right arrow button
     const nextBtn = document.createElement('button');

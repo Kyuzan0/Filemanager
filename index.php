@@ -109,18 +109,25 @@
             </div>
 
             <!-- PAGINATION FOOTER -->
-            <div class="footer mt-3 flex items-center justify-between text-sm text-slate-600 flex-wrap gap-2">
-                <div id="showing">Menampilkan 0 dari 0 item</div>
-                <div class="flex items-center gap-2">
-                    <span>Item per halaman:</span>
-                    <select id="pageSize" class="px-2 py-1 border border-slate-200 rounded-md text-sm">
-                        <option value="10">10</option>
-                        <option value="25">25</option>
-                        <option value="50">50</option>
-                        <option value="100">100</option>
-                    </select>
-                    <button class="btn px-2 py-1 rounded-md text-sm">‹ Prev</button>
-                    <button class="btn px-2 py-1 rounded-md text-sm">Next ›</button>
+            <div class="footer mt-3 flex flex-col sm:flex-row items-center justify-between text-sm text-slate-600 dark:text-slate-400 gap-3 p-3 bg-white dark:bg-slate-900 border border-gray-200 dark:border-white/10 rounded-lg">
+                <div id="showing" class="text-center sm:text-left">Menampilkan 0 dari 0 item</div>
+                <div class="flex flex-wrap items-center justify-center gap-2">
+                    <div class="flex items-center gap-2">
+                        <span class="hidden sm:inline">Item per halaman:</span>
+                        <select id="pageSize" class="px-2 py-1.5 border border-slate-200 dark:border-white/10 dark:bg-slate-800 dark:text-slate-200 rounded-md text-sm focus:outline-none focus:border-blue-500">
+                            <option value="10">10</option>
+                            <option value="25">25</option>
+                            <option value="50">50</option>
+                            <option value="100">100</option>
+                        </select>
+                    </div>
+                    <div class="flex items-center gap-1" id="pagination-buttons">
+                        <button id="prevPage" class="pagination-nav-btn px-2 py-1.5 rounded-md text-sm border border-slate-200 dark:border-white/10 dark:bg-slate-800 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">‹ Prev</button>
+                        <div id="page-numbers" class="flex items-center gap-1">
+                            <!-- Page numbers will be rendered by JavaScript -->
+                        </div>
+                        <button id="nextPage" class="pagination-nav-btn px-2 py-1.5 rounded-md text-sm border border-slate-200 dark:border-white/10 dark:bg-slate-800 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">Next ›</button>
+                    </div>
                 </div>
             </div>
 

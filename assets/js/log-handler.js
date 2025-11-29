@@ -114,6 +114,7 @@ function renderLogs() {
   const pageInfo = document.getElementById('log-page-info');
   const prevBtn = document.getElementById('log-prev');
   const nextBtn = document.getElementById('log-next');
+  const pageNumbersContainer = document.getElementById('log-page-numbers');
   
   if (logState.logs.length === 0) {
     tbody.innerHTML = '<tr><td colspan="5" class="px-3 py-4 text-center text-gray-500 dark:text-slate-400">Tidak ada log yang ditemukan</td></tr>';
@@ -136,11 +137,103 @@ function renderLogs() {
     `}).join('');
   }
   
-  pageInfo.textContent = `Halaman ${logState.currentPage} dari ${logState.totalPages || 1}`;
+  // Update page info text
+  pageInfo.textContent = `(${logState.filteredCount || logState.totalLogs} log)`;
+  
+  // Update prev/next buttons
   prevBtn.disabled = logState.currentPage <= 1;
   nextBtn.disabled = logState.currentPage >= logState.totalPages;
   
+  // Render page numbers
+  renderPageNumbers(pageNumbersContainer);
+  
   updateActiveFilters();
+}
+
+/**
+ * Generate page numbers with ellipsis for pagination
+ * Shows: 1 ... (current-1) current (current+1) ... lastPage
+ */
+function generatePageNumbers(currentPage, totalPages) {
+  const pages = [];
+  const delta = 1; // Number of pages to show around current page
+  
+  if (totalPages <= 7) {
+    // Show all pages if total is small
+    for (let i = 1; i <= totalPages; i++) {
+      pages.push(i);
+    }
+  } else {
+    // Always show first page
+    pages.push(1);
+    
+    // Calculate range around current page
+    const rangeStart = Math.max(2, currentPage - delta);
+    const rangeEnd = Math.min(totalPages - 1, currentPage + delta);
+    
+    // Add ellipsis after first page if needed
+    if (rangeStart > 2) {
+      pages.push('...');
+    }
+    
+    // Add pages in range
+    for (let i = rangeStart; i <= rangeEnd; i++) {
+      pages.push(i);
+    }
+    
+    // Add ellipsis before last page if needed
+    if (rangeEnd < totalPages - 1) {
+      pages.push('...');
+    }
+    
+    // Always show last page
+    if (totalPages > 1) {
+      pages.push(totalPages);
+    }
+  }
+  
+  return pages;
+}
+
+/**
+ * Render page number buttons
+ */
+function renderPageNumbers(container) {
+  if (!container) return;
+  
+  const totalPages = logState.totalPages || 1;
+  const currentPage = logState.currentPage;
+  
+  if (totalPages <= 1) {
+    container.innerHTML = '<span class="px-3 py-1.5 text-xs font-medium text-gray-700 dark:text-slate-300 bg-blue-100 dark:bg-blue-900/40 rounded-md">1</span>';
+    return;
+  }
+  
+  const pages = generatePageNumbers(currentPage, totalPages);
+  
+  container.innerHTML = pages.map(page => {
+    if (page === '...') {
+      return '<span class="px-2 py-1 text-xs text-gray-400 dark:text-slate-500">...</span>';
+    }
+    
+    const isActive = page === currentPage;
+    const baseClasses = 'log-page-btn min-w-[32px] px-2 py-1.5 text-xs font-medium rounded-md transition-colors focus:outline-none';
+    const activeClasses = 'bg-blue-600 text-white';
+    const inactiveClasses = 'bg-white dark:bg-white/5 text-gray-700 dark:text-slate-300 border border-gray-200 dark:border-white/10 hover:bg-gray-50 dark:hover:bg-white/10';
+    
+    return `<button type="button" class="${baseClasses} ${isActive ? activeClasses : inactiveClasses}" data-page="${page}" ${isActive ? 'aria-current="page"' : ''}>${page}</button>`;
+  }).join('');
+  
+  // Add click handlers
+  container.querySelectorAll('.log-page-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const page = parseInt(btn.dataset.page, 10);
+      if (page !== currentPage && !isNaN(page)) {
+        logState.currentPage = page;
+        loadLogs();
+      }
+    });
+  });
 }
 
 function formatLogTime(timestamp) {
@@ -330,8 +423,33 @@ async function exportLogs(format) {
 }
 
 async function cleanupLogs(days) {
-  if (!confirm(`Hapus log lebih dari ${days} hari? Tindakan ini tidak dapat dibatalkan.`)) {
+  // Validasi input
+  days = parseInt(days, 10);
+  if (isNaN(days) || days < 0) {
+    if (window.showError) {
+      window.showError('Pilihan hari tidak valid');
+    }
     return;
+  }
+  
+  // Pesan konfirmasi berdasarkan pilihan
+  let confirmMessage;
+  if (days === 0) {
+    confirmMessage = 'Hapus SEMUA log aktivitas? Tindakan ini tidak dapat dibatalkan.';
+  } else {
+    confirmMessage = `Hapus log lebih dari ${days} hari? Tindakan ini tidak dapat dibatalkan.`;
+  }
+  
+  if (!confirm(confirmMessage)) {
+    return;
+  }
+  
+  // Show loading state
+  const cleanupBtn = document.getElementById('log-cleanup');
+  const originalContent = cleanupBtn?.innerHTML;
+  if (cleanupBtn) {
+    cleanupBtn.disabled = true;
+    cleanupBtn.innerHTML = '<svg class="animate-spin w-4 h-4" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" fill="none"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg><span>Menghapus...</span>';
   }
   
   try {
@@ -343,6 +461,10 @@ async function cleanupLogs(days) {
       body: JSON.stringify({ days: days })
     });
     
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    
     const data = await response.json();
     
     if (!data.success) {
@@ -353,13 +475,32 @@ async function cleanupLogs(days) {
     logState.currentPage = 1;
     await loadLogs();
     
-    if (window.showSuccess) {
-      window.showSuccess(`${data.deleted} log lebih dari ${days} hari telah dihapus`);
+    // Show success message
+    if (data.deleted > 0) {
+      if (window.showSuccess) {
+        if (days === 0) {
+          window.showSuccess(`${data.deleted} log telah dihapus`);
+        } else {
+          window.showSuccess(`${data.deleted} log lebih dari ${days} hari telah dihapus`);
+        }
+      }
+    } else {
+      if (window.showInfo) {
+        window.showInfo('Tidak ada log yang perlu dihapus');
+      } else if (window.showSuccess) {
+        window.showSuccess('Tidak ada log yang perlu dihapus');
+      }
     }
   } catch (err) {
     console.error('Error cleaning up logs:', err);
     if (window.showError) {
       window.showError('Gagal menghapus log: ' + err.message);
+    }
+  } finally {
+    // Restore button state
+    if (cleanupBtn && originalContent) {
+      cleanupBtn.disabled = false;
+      cleanupBtn.innerHTML = originalContent;
     }
   }
 }

@@ -397,14 +397,17 @@
             </div>
             
             <div class="log-controls-bottom flex flex-col sm:flex-row justify-between items-center gap-3 mt-4 flex-shrink-0">
-                <div class="log-pagination flex items-center gap-2">
-                    <button id="log-prev" type="button" class="log-pagination-btn p-2 border border-gray-200 dark:border-white/10 dark:bg-white/5 dark:text-slate-400 dark:hover:bg-white/10 dark:hover:text-slate-200 rounded-md text-sm disabled:opacity-50 hover:bg-gray-50 focus:outline-none transition-colors">
+                <div class="log-pagination flex items-center gap-1" id="log-pagination-container">
+                    <button id="log-prev" type="button" class="log-pagination-btn p-2 border border-gray-200 dark:border-white/10 dark:bg-white/5 dark:text-slate-400 dark:hover:bg-white/10 dark:hover:text-slate-200 rounded-md text-sm disabled:opacity-50 hover:bg-gray-50 focus:outline-none transition-colors" title="Halaman sebelumnya">
                         <svg viewBox="0 0 24 24" aria-hidden="true" class="w-4 h-4"><path fill="currentColor" d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/></svg>
                     </button>
-                    <span id="log-page-info" class="text-xs font-medium text-gray-700 dark:text-slate-400">Halaman 1</span>
-                    <button id="log-next" type="button" class="log-pagination-btn p-2 border border-gray-200 dark:border-white/10 dark:bg-white/5 dark:text-slate-400 dark:hover:bg-white/10 dark:hover:text-slate-200 rounded-md text-sm disabled:opacity-50 hover:bg-gray-50 focus:outline-none transition-colors">
+                    <div id="log-page-numbers" class="flex items-center gap-1">
+                        <!-- Page numbers will be rendered here by JavaScript -->
+                    </div>
+                    <button id="log-next" type="button" class="log-pagination-btn p-2 border border-gray-200 dark:border-white/10 dark:bg-white/5 dark:text-slate-400 dark:hover:bg-white/10 dark:hover:text-slate-200 rounded-md text-sm disabled:opacity-50 hover:bg-gray-50 focus:outline-none transition-colors" title="Halaman berikutnya">
                         <svg viewBox="0 0 24 24" aria-hidden="true" class="w-4 h-4"><path fill="currentColor" d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/></svg>
                     </button>
+                    <span id="log-page-info" class="text-xs text-gray-500 dark:text-slate-500 ml-2 hidden sm:inline"></span>
                 </div>
                 
                 <div class="log-actions-group flex flex-col sm:flex-row gap-2 items-center">
@@ -441,10 +444,15 @@
             <div class="log-actions-left">
                 <div class="log-cleanup-group flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
                     <select id="log-cleanup-days" class="log-cleanup-select border border-gray-200 dark:border-white/10 dark:bg-black/30 dark:text-slate-200 rounded-md px-3 py-2 text-xs focus:outline-none focus:border-blue-500 dark:focus:border-blue-400 transition-colors">
+                        <option value="1">1 hari</option>
                         <option value="7">7 hari</option>
+                        <option value="14">14 hari</option>
                         <option value="30" selected>30 hari</option>
+                        <option value="60">60 hari</option>
+                        <option value="90">90 hari</option>
+                        <option value="0">Hapus semua</option>
                     </select>
-                    <button type="button" class="log-button danger px-3 py-2 rounded-md text-xs font-medium bg-red-600 text-white inline-flex items-center justify-center gap-2 hover:bg-red-700 focus:outline-none transition-colors" id="log-cleanup">
+                    <button type="button" class="log-button danger px-3 py-2 rounded-md text-xs font-medium bg-red-600 text-white inline-flex items-center justify-center gap-2 hover:bg-red-700 focus:outline-none transition-colors disabled:opacity-50 disabled:cursor-not-allowed" id="log-cleanup">
                         <svg viewBox="0 0 24 24" aria-hidden="true" class="w-4 h-4"><path fill="currentColor" d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg>
                         <span>Cleanup</span>
                     </button>

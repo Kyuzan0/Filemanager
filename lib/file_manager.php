@@ -1230,21 +1230,29 @@ function cleanup_activity_logs(int $days): int
         return 0;
     }
     
-    $cutoffTimestamp = time() - ($days * 24 * 60 * 60);
     $originalCount = count($logs);
     
-    $logs = array_filter($logs, function($log) use ($cutoffTimestamp) {
-        return ($log['timestamp'] ?? 0) >= $cutoffTimestamp;
-    });
-    
-    $logs = array_values($logs);
-    $deletedCount = $originalCount - count($logs);
+    // If days is 0, delete all logs
+    if ($days === 0) {
+        $logs = [];
+        $deletedCount = $originalCount;
+    } else {
+        $cutoffTimestamp = time() - ($days * 24 * 60 * 60);
+        
+        $logs = array_filter($logs, function($log) use ($cutoffTimestamp) {
+            return ($log['timestamp'] ?? 0) >= $cutoffTimestamp;
+        });
+        
+        $logs = array_values($logs);
+        $deletedCount = $originalCount - count($logs);
+    }
     
     if ($deletedCount > 0) {
         $json = json_encode($logs, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
-        if ($json !== false) {
-            file_put_contents($logFile, $json, LOCK_EX);
+        if ($json === false) {
+            $json = '[]';
         }
+        file_put_contents($logFile, $json, LOCK_EX);
     }
     
     return $deletedCount;

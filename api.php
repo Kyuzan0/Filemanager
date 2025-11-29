@@ -184,15 +184,19 @@ try {
         $rawBody = file_get_contents('php://input');
         $payload = json_decode($rawBody, true);
         
-        $days = isset($payload['days']) ? max(1, (int)$payload['days']) : 30;
+        // Allow days = 0 for "delete all", otherwise minimum 1 day
+        $days = isset($payload['days']) ? max(0, (int)$payload['days']) : 30;
         
         $deletedCount = cleanup_activity_logs($days);
         
-        // Log the cleanup action itself
-        write_activity_log('cleanup', 'activity_logs', 'system', '', [
-            'days' => $days,
-            'deleted' => $deletedCount
-        ]);
+        // Log the cleanup action itself (only if not deleting all logs)
+        if ($days > 0 || $deletedCount > 0) {
+            write_activity_log('cleanup', 'activity_logs', 'system', '', [
+                'days' => $days,
+                'deleted' => $deletedCount,
+                'type' => $days === 0 ? 'all' : 'by_age'
+            ]);
+        }
         
         echo json_encode([
             'success' => true,
