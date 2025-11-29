@@ -283,7 +283,6 @@
         /* Column widths */
         .col-time { width: 110px; }
         .col-action { width: 90px; }
-        .col-file { }
         .col-browser { width: 80px; }
         .col-ip { width: 100px; }
         
@@ -503,8 +502,6 @@
             .log-subtitle { display: none; }
             .search-box { max-width: none; }
             .btn-text { display: none; }
-            .col-browser { display: none; }
-            .col-ip { display: none; }
             .file-cell { max-width: 180px; }
         }
         
