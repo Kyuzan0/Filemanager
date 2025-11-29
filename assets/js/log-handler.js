@@ -118,10 +118,13 @@ function renderLogs() {
   if (logState.logs.length === 0) {
     tbody.innerHTML = '<tr><td colspan="5" class="px-3 py-4 text-center text-gray-500 dark:text-slate-400">Tidak ada log yang ditemukan</td></tr>';
   } else {
-    tbody.innerHTML = logState.logs.map(log => `
+    tbody.innerHTML = logState.logs.map(log => {
+      const fileName = log.filename || log.target || '-';
+      const displayName = truncateLogFileName(fileName);
+      return `
       <tr class="border-b border-gray-100 dark:border-white/5 hover:bg-gray-50 dark:hover:bg-white/5">
         <td class="px-3 py-2 text-xs text-gray-900 dark:text-slate-200">${formatLogTime(log.timestamp)}</td>
-        <td class="px-3 py-2 text-xs text-gray-900 dark:text-slate-200" title="${log.path || ''}">${log.filename || log.target || '-'}</td>
+        <td class="px-3 py-2 text-xs text-gray-900 dark:text-slate-200" title="${escapeHtml(fileName)}">${displayName}</td>
         <td class="px-3 py-2">
           <span class="inline-block px-2 py-0.5 rounded text-xs font-medium ${getActionColor(log.action)}">
             ${translateAction(log.action)}
@@ -130,7 +133,7 @@ function renderLogs() {
         <td class="px-3 py-2 text-xs hidden sm:table-cell text-gray-600 dark:text-slate-400">${log.ip || '-'}</td>
         <td class="px-3 py-2 text-xs hidden md:table-cell text-gray-500 dark:text-slate-500 truncate max-w-[200px]" title="${escapeHtml(log.userAgent || '-')}">${truncateUserAgent(log.userAgent)}</td>
       </tr>
-    `).join('');
+    `}).join('');
   }
   
   pageInfo.textContent = `Halaman ${logState.currentPage} dari ${logState.totalPages || 1}`;
@@ -160,6 +163,34 @@ function escapeHtml(text) {
   const div = document.createElement('div');
   div.textContent = text;
   return div.innerHTML;
+}
+
+// Truncate long filenames: start...last5chars.ext
+function truncateLogFileName(name, maxLength = 30) {
+  if (!name || name === '-') return '-';
+  if (name.length <= maxLength) return name;
+  
+  const lastDot = name.lastIndexOf('.');
+  const hasExtension = lastDot > 0 && lastDot > name.length - 10;
+  
+  if (hasExtension) {
+    const ext = name.substring(lastDot);
+    const baseName = name.substring(0, lastDot);
+    const tailLength = 5;
+    
+    if (baseName.length <= maxLength - ext.length - 3 - tailLength) return name;
+    
+    const availableForStart = maxLength - ext.length - 3 - tailLength;
+    const start = baseName.substring(0, Math.max(availableForStart, 8));
+    const end = baseName.substring(baseName.length - tailLength);
+    
+    return `${start}...${end}${ext}`;
+  } else {
+    const tailLength = 5;
+    const start = name.substring(0, maxLength - 3 - tailLength);
+    const end = name.substring(name.length - tailLength);
+    return `${start}...${end}`;
+  }
 }
 
 function truncateUserAgent(userAgent) {

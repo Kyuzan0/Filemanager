@@ -329,7 +329,7 @@
 </div>
 
 <div class="log-overlay fixed inset-0 items-center justify-center bg-black/45 p-2 md:p-4 z-50 hidden" id="log-overlay" aria-hidden="true">
-    <div class="log-dialog bg-white dark:bg-[#1a2332] rounded-lg shadow-lg w-full max-w-sm md:max-w-4xl max-h-[90vh] md:max-h-[85vh] overflow-hidden flex flex-col" role="dialog" aria-modal="true" aria-labelledby="log-title">
+    <div class="log-dialog bg-white dark:bg-[#1a2332] rounded-lg shadow-lg max-h-[90vh] overflow-hidden flex flex-col" role="dialog" aria-modal="true" aria-labelledby="log-title">
         <header class="log-header bg-gradient-to-r from-blue-50 to-blue-50 dark:from-blue-900/30 dark:to-blue-900/20 border-b border-gray-100 dark:border-white/10 px-6 py-4 flex items-center gap-4 flex-shrink-0">
             <div class="log-icon w-12 h-12 rounded-full bg-blue-100 dark:bg-blue-500/20 text-blue-600 dark:text-blue-400 flex items-center justify-center flex-shrink-0" aria-hidden="true">
                 <svg viewBox="0 0 24 24" fill="currentColor" class="w-6 h-6"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6z"/><path d="M14 2v6h6M16 13H8M16 17H8M10 9H8"/></svg>
@@ -378,7 +378,7 @@
             </div>
             
             <div class="log-table-wrapper flex-1 overflow-auto border border-gray-200 dark:border-white/10 rounded-md">
-                <table class="log-table min-w-full w-full text-xs">
+                <table class="log-table w-full text-xs">
                     <thead class="bg-gray-50 dark:bg-black/30 sticky top-0">
                         <tr>
                             <th class="px-3 py-2 text-left font-medium text-gray-700 dark:text-slate-400 text-xs">Waktu</th>
