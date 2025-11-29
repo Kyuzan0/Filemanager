@@ -520,7 +520,7 @@ export function renderLogTable(logs, logTableBody, logEmpty) {
             row.appendChild(ipAddressCell);
         }
         
-        row.className = 'border-b border-gray-200 hover:bg-gray-50 text-gray-900';
+        row.className = 'log-table-row border-b border-gray-200 text-gray-900';
         logTableBody.appendChild(row);
     });
     

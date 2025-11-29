@@ -123,7 +123,7 @@ function renderLogs() {
       const fileName = log.filename || log.target || '-';
       const displayName = truncateLogFileName(fileName);
       return `
-      <tr class="border-b border-gray-100 dark:border-white/5 hover:bg-gray-50 dark:hover:bg-white/5">
+      <tr class="log-table-row border-b border-gray-100 dark:border-white/5">
         <td class="px-3 py-2 text-xs text-gray-900 dark:text-slate-200">${formatLogTime(log.timestamp)}</td>
         <td class="px-3 py-2 text-xs text-gray-900 dark:text-slate-200" title="${escapeHtml(fileName)}">${displayName}</td>
         <td class="px-3 py-2">
@@ -132,7 +132,7 @@ function renderLogs() {
           </span>
         </td>
         <td class="px-3 py-2 text-xs hidden sm:table-cell text-gray-600 dark:text-slate-400">${log.ip || '-'}</td>
-        <td class="px-3 py-2 text-xs hidden md:table-cell text-gray-500 dark:text-slate-500 truncate max-w-[200px]" title="${escapeHtml(log.userAgent || '-')}">${truncateUserAgent(log.userAgent)}</td>
+        <td class="px-3 py-2 text-xs hidden md:table-cell text-gray-500 dark:text-slate-500" title="${escapeHtml(log.userAgent || '-')}">${truncateUserAgent(log.userAgent)}</td>
       </tr>
     `}).join('');
   }

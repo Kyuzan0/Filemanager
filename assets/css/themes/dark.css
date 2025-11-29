@@ -308,15 +308,19 @@
 
 [data-theme="dark"] .log-table tbody tr {
   border-bottom-color: rgba(255, 255, 255, 0.04);
+  box-sizing: border-box;
 }
 
-[data-theme="dark"] .log-table tbody tr:hover {
+[data-theme="dark"] .log-table tbody tr:hover,
+[data-theme="dark"] .log-table-row:hover {
   background: rgba(255, 255, 255, 0.04);
+  box-sizing: border-box;
 }
 
 [data-theme="dark"] .log-table td {
   color: #e2e8f0;
   border-bottom-color: rgba(255, 255, 255, 0.04);
+  box-sizing: border-box;
 }
 
 [data-theme="dark"] .log-loading {
