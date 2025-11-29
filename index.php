@@ -52,41 +52,41 @@
         </aside>
 
         <main class="main flex-1 h-full overflow-y-auto relative">
-            <!-- TOPBAR -->
-            <section class="topbar">
-                <div class="topbar-left">
-                    <!-- Mobile Menu Toggle -->
-                    <button class="mobile-menu-toggle md:hidden p-2 hover:bg-slate-100 rounded-lg" id="mobile-menu-toggle" title="Menu">
-                        <i class="ri-menu-line text-xl text-slate-600"></i>
-                    </button>
-                    <div class="breadcrumbs text-sm text-slate-600" id="breadcrumbs">Home</div>
-                </div>
-                <div class="controls flex items-center gap-2">
-                    <div class="search hidden md:flex items-center gap-2 px-2 py-1.5 rounded-2xl border">
-                        <span>🔎</span>
-                        <input type="search" id="search" placeholder="Find files..." class="border-0 outline-none bg-transparent text-sm" />
-                    </div>
-                </div>
-            </section>
-
             <!-- HEADER ACTIONS -->
             <section class="header-actions mb-4 p-1.5 bg-white dark:bg-[#1a2332] border border-gray-200 dark:border-white/10 rounded-lg shadow-sm flex items-center justify-between gap-2 sticky top-0 z-20">
-                <!-- Left Group: Primary Actions -->
-                <div class="flex items-center gap-2">
+                <!-- Left Group: Navigation & Search -->
+                <div class="flex items-center gap-2 flex-1 min-w-0">
+                    <!-- Mobile Menu Toggle -->
+                    <button class="mobile-menu-toggle md:hidden p-2 hover:bg-slate-100 dark:hover:bg-white/5 rounded-lg flex-shrink-0" id="mobile-menu-toggle" title="Menu">
+                        <i class="ri-menu-line text-xl text-slate-600 dark:text-gray-400"></i>
+                    </button>
+                    
+                    <!-- Breadcrumbs - Hidden on mobile, visible on desktop -->
+                    <div class="breadcrumbs hidden md:flex text-sm text-slate-600 dark:text-gray-400 min-w-0 flex-shrink" id="breadcrumbs">Home</div>
+                    
+                    <!-- Search - Compact version for desktop -->
+                    <div class="search hidden md:flex items-center gap-2 px-2 py-1.5 rounded-lg border border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-white/5 flex-shrink-0 ml-auto">
+                        <span class="text-sm">🔎</span>
+                        <input type="search" id="search" placeholder="Find files..." class="border-0 outline-none bg-transparent text-sm w-32 placeholder-gray-400 dark:placeholder-gray-500" />
+                    </div>
+                </div>
+
+                <!-- Primary Actions (Left side of right group) -->
+                <div class="flex items-center gap-2 flex-shrink-0">
                     <button class="flex items-center gap-1.5 px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-md transition-colors shadow-sm" id="newBtn">
                         <i class="ri-add-line text-lg"></i>
-                        <span class="text-sm font-medium">New</span>
+                        <span class="text-sm font-medium hidden sm:inline">New</span>
                     </button>
                     <button class="flex items-center gap-1.5 px-3 py-1.5 bg-white dark:bg-white/5 hover:bg-gray-50 dark:hover:bg-white/10 text-gray-700 dark:text-gray-200 border border-gray-200 dark:border-white/10 rounded-md transition-colors" id="uploadBtn">
                         <i class="ri-upload-cloud-2-line text-lg"></i>
-                        <span class="text-sm font-medium">Upload</span>
+                        <span class="text-sm font-medium hidden sm:inline">Upload</span>
                     </button>
                 </div>
 
                 <!-- Right Group: Utilities -->
-                <div class="flex items-center gap-2">
+                <div class="flex items-center gap-2 flex-shrink-0">
                     <!-- Selection Info & Actions -->
-                    <div class="flex items-center gap-2 px-3 py-1.5 bg-gray-50 dark:bg-white/5 rounded-md border border-gray-100 dark:border-white/5">
+                    <div class="items-center gap-2 px-2 py-1.5 bg-gray-50 dark:bg-white/5 rounded-md border border-gray-100 dark:border-white/5 hidden sm:flex">
                         <span class="text-xs font-medium text-gray-500 dark:text-gray-400" id="selectedCount">0 selected</span>
                         <div class="h-4 w-px bg-gray-300 dark:bg-white/10 mx-1"></div>
                         <button class="text-gray-400 hover:text-red-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed" id="deleteSel" title="Hapus">
@@ -97,7 +97,7 @@
                     <div class="h-6 w-px bg-gray-200 dark:bg-white/10 mx-1 hidden sm:block"></div>
 
                     <!-- Theme Toggle -->
-                    <button class="p-1.5 text-gray-500 hover:bg-gray-100 dark:hover:bg-white/5 rounded-md transition-colors" id="toggleTheme" title="Toggle Theme">
+                    <button class="p-1.5 text-gray-500 hover:bg-gray-100 dark:hover:bg-white/5 rounded-md transition-colors flex-shrink-0" id="toggleTheme" title="Toggle Theme">
                         <i class="ri-moon-line text-lg"></i>
                     </button>
                 </div>

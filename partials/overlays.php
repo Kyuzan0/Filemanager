@@ -4,7 +4,7 @@
 ?>
 
 <div class="preview-overlay fixed inset-0 items-center justify-center bg-black/45 p-2 md:p-4 z-50 hidden" id="preview-overlay" aria-hidden="true" data-action="preview" data-open="preview">
-    <div class="preview-dialog bg-white dark:bg-[#1a2332] rounded-lg p-4 md:p-8 w-full max-w-3xl md:max-w-6xl shadow-lg max-h-[90vh] md:max-h-[92vh] flex flex-col" role="dialog" aria-modal="true" aria-labelledby="preview-title">
+    <div class="preview-dialog" role="dialog" aria-modal="true" aria-labelledby="preview-title">
         <header class="preview-header mb-4 flex-shrink-0">
             <div class="preview-title-group">
                 <span class="preview-label text-sm text-gray-600 dark:text-slate-400" id="preview-label">Editor</span>
@@ -12,36 +12,62 @@
             </div>
             <p class="preview-meta text-sm text-gray-500 dark:text-slate-400" id="preview-meta"></p>
         </header>
-        <div class="preview-body mb-0 flex-1 overflow-hidden">
+        <div class="preview-body">
             <!-- Text Editor View -->
-            <div class="preview-editor-wrapper flex flex-row" id="preview-editor-wrapper">
+            <div class="preview-editor-wrapper" id="preview-editor-wrapper">
                 <div class="preview-line-numbers" id="preview-line-numbers">
                     <div class="preview-line-numbers-inner" id="preview-line-numbers-inner"><span>1</span></div>
                 </div>
-                <textarea class="preview-editor block bg-white dark:bg-[#0d1117] dark:text-slate-200 border-0 rounded-md text-sm md:text-base" id="preview-editor" spellcheck="false"></textarea>
+                <textarea class="preview-editor" id="preview-editor" spellcheck="false"></textarea>
             </div>
             <!-- Image Preview View -->
-            <div class="preview-image-wrapper items-center justify-center h-full" id="preview-image-wrapper" style="display: none;">
-                <img id="preview-image" src="" alt="Preview" class="max-w-full max-h-full object-contain rounded-lg shadow-md" />
+            <div class="preview-image-wrapper" id="preview-image-wrapper" style="display: none;">
+                <div class="preview-image-controls" id="preview-image-controls">
+                    <button type="button" class="preview-zoom-btn" id="preview-zoom-out" title="Zoom Out">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="11" cy="11" r="8"/>
+                            <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                            <line x1="8" y1="11" x2="14" y2="11"/>
+                        </svg>
+                    </button>
+                    <span class="preview-zoom-level" id="preview-zoom-level">100%</span>
+                    <button type="button" class="preview-zoom-btn" id="preview-zoom-in" title="Zoom In">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="11" cy="11" r="8"/>
+                            <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                            <line x1="11" y1="8" x2="11" y2="14"/>
+                            <line x1="8" y1="11" x2="14" y2="11"/>
+                        </svg>
+                    </button>
+                    <button type="button" class="preview-zoom-btn" id="preview-zoom-reset" title="Reset Zoom">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
+                            <path d="M3 3v5h5"/>
+                        </svg>
+                    </button>
+                </div>
+                <div class="preview-image-container" id="preview-image-container">
+                    <img id="preview-image" src="" alt="Preview" />
+                </div>
             </div>
             <!-- Video Preview View -->
-            <div class="preview-video-wrapper items-center justify-center h-full" id="preview-video-wrapper" style="display: none;">
-                <video id="preview-video" controls class="max-w-full max-h-full rounded-lg shadow-md">
+            <div class="preview-video-wrapper" id="preview-video-wrapper" style="display: none;">
+                <video id="preview-video" controls>
                     Your browser does not support the video tag.
                 </video>
             </div>
             <!-- Audio Preview View -->
-            <div class="preview-audio-wrapper flex-col items-center justify-center h-full gap-4" id="preview-audio-wrapper" style="display: none;">
-                <div class="audio-icon w-24 h-24 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center">
-                    <svg class="w-12 h-12 text-white" viewBox="0 0 24 24" fill="currentColor"><path d="M12 3v10.55c-.5-.3-1-.5-1.5-.5-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/></svg>
+            <div class="preview-audio-wrapper" id="preview-audio-wrapper" style="display: none;">
+                <div class="audio-icon">
+                    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 3v10.55c-.5-.3-1-.5-1.5-.5-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/></svg>
                 </div>
-                <audio id="preview-audio" controls class="w-full max-w-md">
+                <audio id="preview-audio" controls>
                     Your browser does not support the audio element.
                 </audio>
             </div>
             <!-- PDF Preview View -->
-            <div class="preview-pdf-wrapper h-full" id="preview-pdf-wrapper" style="display: none;">
-                <iframe id="preview-pdf" src="" class="w-full h-full rounded-lg border-0" title="PDF Preview"></iframe>
+            <div class="preview-pdf-wrapper" id="preview-pdf-wrapper" style="display: none;">
+                <iframe id="preview-pdf" src="" title="PDF Preview"></iframe>
             </div>
         </div>
         <footer class="preview-footer flex-shrink-0">

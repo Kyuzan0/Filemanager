@@ -49,6 +49,81 @@ function getPreviewType(filename) {
   return 'text';
 }
 
+// ============= Image Zoom Functions =============
+let currentZoom = 100;
+const ZOOM_STEP = 25;
+const MIN_ZOOM = 25;
+const MAX_ZOOM = 400;
+
+function updateZoomLevel() {
+  const zoomLabel = document.getElementById('preview-zoom-level');
+  if (zoomLabel) {
+    zoomLabel.textContent = `${currentZoom}%`;
+  }
+  
+  const img = document.getElementById('preview-image');
+  if (img) {
+    if (currentZoom === 100) {
+      img.style.transform = '';
+      img.classList.remove('zoomed');
+    } else {
+      img.style.transform = `scale(${currentZoom / 100})`;
+      img.classList.add('zoomed');
+    }
+  }
+}
+
+function zoomIn() {
+  if (currentZoom < MAX_ZOOM) {
+    currentZoom = Math.min(currentZoom + ZOOM_STEP, MAX_ZOOM);
+    updateZoomLevel();
+  }
+}
+
+function zoomOut() {
+  if (currentZoom > MIN_ZOOM) {
+    currentZoom = Math.max(currentZoom - ZOOM_STEP, MIN_ZOOM);
+    updateZoomLevel();
+  }
+}
+
+function resetImageZoom() {
+  currentZoom = 100;
+  updateZoomLevel();
+}
+
+// Initialize zoom controls
+function initImageZoomControls() {
+  const zoomInBtn = document.getElementById('preview-zoom-in');
+  const zoomOutBtn = document.getElementById('preview-zoom-out');
+  const zoomResetBtn = document.getElementById('preview-zoom-reset');
+  const imageContainer = document.getElementById('preview-image-container');
+  
+  if (zoomInBtn) {
+    zoomInBtn.addEventListener('click', zoomIn);
+  }
+  if (zoomOutBtn) {
+    zoomOutBtn.addEventListener('click', zoomOut);
+  }
+  if (zoomResetBtn) {
+    zoomResetBtn.addEventListener('click', resetImageZoom);
+  }
+  
+  // Mouse wheel zoom
+  if (imageContainer) {
+    imageContainer.addEventListener('wheel', (e) => {
+      if (e.ctrlKey || e.metaKey) {
+        e.preventDefault();
+        if (e.deltaY < 0) {
+          zoomIn();
+        } else {
+          zoomOut();
+        }
+      }
+    }, { passive: false });
+  }
+}
+
 function hideAllPreviewWrappers() {
   const wrappers = ['preview-editor-wrapper', 'preview-image-wrapper', 'preview-video-wrapper', 'preview-audio-wrapper', 'preview-pdf-wrapper'];
   wrappers.forEach(id => {
@@ -71,6 +146,16 @@ function showPreviewWrapper(type) {
   const wrapper = document.getElementById(wrapperMap[type]);
   if (wrapper) {
     wrapper.style.display = type === 'audio' ? 'flex' : (type === 'text' ? 'flex' : 'flex');
+  }
+  
+  // Toggle audio mode class on dialog for compact size
+  const dialog = document.querySelector('.preview-dialog');
+  if (dialog) {
+    if (type === 'audio') {
+      dialog.classList.add('preview-audio-mode');
+    } else {
+      dialog.classList.remove('preview-audio-mode');
+    }
   }
 }
 
@@ -174,6 +259,9 @@ function openPreviewModal(filePath, fileName) {
     // Image Preview Mode
     const img = document.getElementById('preview-image');
     const rawUrl = `api.php?action=raw&path=${encodeURIComponent(filePath)}`;
+    
+    // Reset zoom state
+    resetImageZoom();
     
     img.onload = function() {
       meta.textContent = `${this.naturalWidth} × ${this.naturalHeight} piksel`;
@@ -651,6 +739,9 @@ function saveSettings() {
 // ============= Event Listeners Setup =============
 
 document.addEventListener('DOMContentLoaded', () => {
+  // Initialize image zoom controls
+  initImageZoomControls();
+  
   // Preview Modal
   document.getElementById('preview-close')?.addEventListener('click', closePreviewModal);
   document.getElementById('preview-save')?.addEventListener('click', savePreviewContent);
