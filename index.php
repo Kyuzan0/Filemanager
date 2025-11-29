@@ -190,6 +190,8 @@
     <?php include 'partials/overlays.php'; ?>
 
     <script src="assets/js/modules/toast.js"></script>
+    <!-- CodeMirror 6 Editor Module -->
+    <script type="module" src="assets/js/modules/codemirror-editor.js"></script>
     <script src="assets/js/enhanced-ui.js"></script>
     <script src="assets/js/modals-handler.js"></script>
     <script src="assets/js/log-handler.js"></script>

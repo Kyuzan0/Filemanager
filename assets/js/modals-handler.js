@@ -169,7 +169,7 @@ function openPreviewModal(filePath, fileName) {
   const loader = document.getElementById('preview-loader');
   const openRaw = document.getElementById('preview-open-raw');
   const downloadBtn = document.getElementById('preview-download');
-  const lineNumbersInner = document.getElementById('preview-line-numbers-inner');
+  const cmContainer = document.getElementById('codemirror-container');
   
   // Detect file type
   const previewType = getPreviewType(fileName);
@@ -201,55 +201,61 @@ function openPreviewModal(filePath, fileName) {
   showPreviewWrapper(previewType);
   
   if (previewType === 'text') {
-    // Text/Code Editor Mode
-    editor.value = '';
-    editor.disabled = true;
-    saveBtn.disabled = true;
+    // Text/Code Editor Mode with CodeMirror
+    if (editor) editor.value = '';
+    if (saveBtn) saveBtn.disabled = true;
     
-    // Setup direct scroll synchronization
-    if (previewScrollHandler) {
-      editor.removeEventListener('scroll', previewScrollHandler);
+    // Clear CodeMirror container
+    if (cmContainer) cmContainer.innerHTML = '';
+    
+    // Destroy existing CodeMirror instance
+    if (window.CodeMirrorEditor && window.CodeMirrorEditor.isInitialized()) {
+      window.CodeMirrorEditor.destroy();
     }
-    
-    previewScrollHandler = function() {
-      if (lineNumbersInner) {
-        lineNumbersInner.style.transform = `translateY(${-editor.scrollTop}px)`;
-      }
-    };
-    
-    editor.addEventListener('scroll', previewScrollHandler, { passive: true });
     
     // Load file content
     fetch(`${API_BASE}?action=content&path=${encodeURIComponent(filePath)}`)
       .then(res => res.json())
-      .then(data => {
+      .then(async data => {
         if (data.success) {
-          editor.value = data.content || '';
-          modalState.preview.originalContent = data.content || '';
+          const content = data.content || '';
+          modalState.preview.originalContent = content;
           meta.textContent = `${formatSize(data.size)} • Terakhir diubah: ${formatDate(data.modified)}`;
-          editor.disabled = false;
           openRaw.href = `api.php?action=content&path=${encodeURIComponent(filePath)}`;
           
-          // Update line numbers after a small delay to ensure DOM is ready
-          setTimeout(() => {
-            updateLineNumbers();
-            // Reset scroll position and sync
-            editor.scrollTop = 0;
-            if (lineNumbersInner) {
-              lineNumbersInner.style.transform = 'translateY(0px)';
+          // Store in hidden textarea for fallback
+          if (editor) editor.value = content;
+          
+          // Initialize CodeMirror
+          if (window.CodeMirrorEditor && cmContainer) {
+            try {
+              await window.CodeMirrorEditor.init(cmContainer, content, fileName, (newContent) => {
+                // On change callback
+                modalState.preview.isDirty = newContent !== modalState.preview.originalContent;
+                if (saveBtn) saveBtn.disabled = !modalState.preview.isDirty;
+                // Sync to hidden textarea
+                if (editor) editor.value = newContent;
+              });
+            } catch (e) {
+              console.warn('CodeMirror failed to load, using fallback:', e);
+              // Show fallback textarea
+              if (editor) {
+                editor.style.display = 'block';
+                cmContainer.style.display = 'none';
+              }
             }
-            // Ensure consistent styling
-            if (typeof window.ensureConsistentStyling === 'function') {
-              try { window.ensureConsistentStyling(); } catch (e) { /* ignore */ }
-            }
-          }, 50);
+          } else {
+            // Fallback to regular textarea
+            if (editor) editor.style.display = 'block';
+            if (cmContainer) cmContainer.style.display = 'none';
+          }
         } else {
           throw new Error(data.error || 'Gagal memuat file');
         }
       })
       .catch(error => {
         meta.textContent = 'Error: ' + error.message;
-        editor.value = 'Gagal memuat konten file.';
+        if (editor) editor.value = 'Gagal memuat konten file.';
       })
       .finally(() => {
         loader.hidden = true;
@@ -341,6 +347,11 @@ function closePreviewModal() {
   overlay.style.display = 'none';
   overlay.setAttribute('aria-hidden', 'true');
   
+  // Cleanup CodeMirror editor
+  if (window.CodeMirrorEditor && window.CodeMirrorEditor.isInitialized()) {
+    window.CodeMirrorEditor.destroy();
+  }
+  
   // Cleanup media elements to stop playback
   const video = document.getElementById('preview-video');
   const audio = document.getElementById('preview-audio');
@@ -373,9 +384,17 @@ function closePreviewModal() {
 }
 
 function savePreviewContent() {
-  const editor = document.getElementById('preview-editor');
   const saveBtn = document.getElementById('preview-save');
   const status = document.getElementById('preview-status');
+  
+  // Get content from CodeMirror or fallback textarea
+  let content = '';
+  if (window.CodeMirrorEditor && window.CodeMirrorEditor.isInitialized()) {
+    content = window.CodeMirrorEditor.getContent();
+  } else {
+    const editor = document.getElementById('preview-editor');
+    content = editor ? editor.value : '';
+  }
   
   saveBtn.disabled = true;
   status.textContent = 'Menyimpan...';
@@ -383,13 +402,13 @@ function savePreviewContent() {
   fetch(`${API_BASE}?action=save&path=${encodeURIComponent(modalState.preview.currentFile)}`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ content: editor.value })
+    body: JSON.stringify({ content: content })
   })
     .then(res => res.json())
     .then(data => {
       if (data.success) {
         modalState.preview.isDirty = false;
-        modalState.preview.originalContent = editor.value;
+        modalState.preview.originalContent = content;
         status.textContent = 'Tersimpan • ' + new Date().toLocaleTimeString('id-ID');
         saveBtn.disabled = true;
         showSuccess('File berhasil disimpan');
@@ -746,15 +765,25 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('preview-close')?.addEventListener('click', closePreviewModal);
   document.getElementById('preview-save')?.addEventListener('click', savePreviewContent);
   document.getElementById('preview-copy')?.addEventListener('click', () => {
-    const editor = document.getElementById('preview-editor');
-    navigator.clipboard?.writeText(editor.value);
+    // Get content from CodeMirror or fallback textarea
+    let content = '';
+    if (window.CodeMirrorEditor && window.CodeMirrorEditor.isInitialized()) {
+      content = window.CodeMirrorEditor.getContent();
+    } else {
+      const editor = document.getElementById('preview-editor');
+      content = editor ? editor.value : '';
+    }
+    navigator.clipboard?.writeText(content);
     showSuccess('Konten disalin ke clipboard');
   });
   
+  // Fallback textarea input handler (when CodeMirror fails to load)
   document.getElementById('preview-editor')?.addEventListener('input', (e) => {
-    modalState.preview.isDirty = e.target.value !== modalState.preview.originalContent;
-    document.getElementById('preview-save').disabled = !modalState.preview.isDirty;
-    updateLineNumbers();
+    // Only handle if CodeMirror is not initialized
+    if (!window.CodeMirrorEditor || !window.CodeMirrorEditor.isInitialized()) {
+      modalState.preview.isDirty = e.target.value !== modalState.preview.originalContent;
+      document.getElementById('preview-save').disabled = !modalState.preview.isDirty;
+    }
   });
   
   // Confirm Modal

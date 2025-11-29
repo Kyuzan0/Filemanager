@@ -243,6 +243,80 @@
   /* Remove max-height to allow wrapper to fill available space */
 }
 
+/* ========================================
+   CodeMirror 6 Container Styles
+   ======================================== */
+.codemirror-container {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  min-height: 100%;
+}
+
+.codemirror-container .cm-editor {
+  flex: 1;
+  overflow: auto;
+  height: 100%;
+}
+
+.codemirror-container .cm-editor.cm-focused {
+  outline: none;
+}
+
+.codemirror-container .cm-scroller {
+  font-family: 'Consolas', 'Monaco', 'Courier New', monospace !important;
+  font-size: 14px !important;
+  line-height: 1.6 !important;
+  overflow: auto !important;
+}
+
+.codemirror-container .cm-content {
+  padding: 0.75rem 0 !important;
+}
+
+.codemirror-container .cm-line {
+  padding: 0 1rem !important;
+}
+
+.codemirror-container .cm-gutters {
+  min-width: 3.5rem;
+}
+
+.codemirror-container .cm-lineNumbers .cm-gutterElement {
+  min-width: 2.5rem;
+  padding: 0 8px 0 12px !important;
+}
+
+/* Fallback textarea hidden state */
+.preview-editor-hidden {
+  display: none !important;
+}
+
+/* Fallback textarea visible state */
+.preview-editor-fallback {
+  width: 100%;
+  height: 100%;
+  min-height: 300px;
+  border: none;
+  padding: 0.75rem 1rem;
+  font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+  font-size: 14px;
+  line-height: 1.6;
+  resize: none;
+  background: var(--card);
+  color: var(--foreground);
+}
+
+.preview-editor-fallback:focus {
+  outline: none;
+}
+
+[data-theme="dark"] .preview-editor-fallback {
+  background: #1a2332;
+  color: #e2e8f0;
+}
+
 /* Ensure perfect alignment between editor and line numbers */
 .preview-editor-wrapper .preview-editor {
   border: none;

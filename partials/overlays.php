@@ -13,12 +13,12 @@
             <p class="preview-meta text-sm text-gray-500 dark:text-slate-400" id="preview-meta"></p>
         </header>
         <div class="preview-body">
-            <!-- Text Editor View -->
+            <!-- Text Editor View (CodeMirror 6) -->
             <div class="preview-editor-wrapper" id="preview-editor-wrapper">
-                <div class="preview-line-numbers" id="preview-line-numbers">
-                    <div class="preview-line-numbers-inner" id="preview-line-numbers-inner"><span>1</span></div>
-                </div>
-                <textarea class="preview-editor" id="preview-editor" spellcheck="false"></textarea>
+                <!-- CodeMirror container - editor will be initialized here -->
+                <div class="codemirror-container" id="codemirror-container"></div>
+                <!-- Fallback textarea (hidden, used for copy/legacy support) -->
+                <textarea class="preview-editor preview-editor-hidden" id="preview-editor" spellcheck="false" style="display:none;"></textarea>
             </div>
             <!-- Image Preview View -->
             <div class="preview-image-wrapper" id="preview-image-wrapper" style="display: none;">
