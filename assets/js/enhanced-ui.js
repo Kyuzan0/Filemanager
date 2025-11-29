@@ -556,6 +556,33 @@ function render() {
     emptyState?.classList.add('hidden');
   }
 
+  // Function to truncate long filenames
+  function truncateFileName(name, maxLength = 35) {
+    if (name.length <= maxLength) return name;
+    
+    const lastDot = name.lastIndexOf('.');
+    const hasExtension = lastDot > 0 && lastDot > name.length - 10;
+    
+    if (hasExtension) {
+      const ext = name.substring(lastDot);
+      const baseName = name.substring(0, lastDot);
+      const tailLength = 5;
+      
+      if (baseName.length <= maxLength - ext.length - 3 - tailLength) return name;
+      
+      const availableForStart = maxLength - ext.length - 3 - tailLength;
+      const start = baseName.substring(0, Math.max(availableForStart, 10));
+      const end = baseName.substring(baseName.length - tailLength);
+      
+      return `${start}...${end}${ext}`;
+    } else {
+      const tailLength = 5;
+      const start = name.substring(0, maxLength - 3 - tailLength);
+      const end = name.substring(name.length - tailLength);
+      return `${start}...${end}`;
+    }
+  }
+
   console.log(`[render] Rendering ${pageItems.length} items (total: ${total})`);
 
   for (const f of pageItems) {
@@ -572,7 +599,7 @@ function render() {
 
     tr.innerHTML = `
       <td class="px-3 py-3"><input type="checkbox" class="sel" data-path="${f.path}" ${checked ? 'checked' : ''}></td>
-      <td class="px-3 py-3"><span class="file-name file-icon-cell"><span class="file-icon ${iconData.type}" style="background-color: ${iconData.bg}; padding: 6px; border-radius: 6px;">${iconData.html}</span><span class="text-dark">${f.name}</span></span></td>
+      <td class="px-3 py-3"><span class="file-name file-icon-cell" title="${f.name}"><span class="file-icon ${iconData.type}" style="background-color: ${iconData.bg}; padding: 6px; border-radius: 6px;">${iconData.html}</span><span class="text-dark">${truncateFileName(f.name)}</span></span></td>
       <td class="px-3 py-3 text-sm">${f.type}</td>
       <td class="px-3 py-3 text-sm">${f.date}</td>
       <td class="px-3 py-3 text-right text-sm">${f.size}</td>

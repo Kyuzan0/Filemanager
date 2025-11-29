@@ -10,6 +10,7 @@ table {
   width: 100%;
   border-collapse: collapse;
   font-size: 14px;
+  table-layout: fixed;
 }
 
 th,
@@ -19,6 +20,36 @@ td {
   border-bottom: 1px solid rgba(0, 0, 0, 0.04);
   color: var(--muted);
   transition: background-color 0.2s ease;
+}
+
+/* Fixed column widths */
+th:nth-child(1), td:nth-child(1) { width: 10px; padding-left: 8px; padding-right: 4px; } /* Checkbox */
+th:nth-child(2), td:nth-child(2) { width: 180px; padding-left: 4px; }  /* Name */
+th:nth-child(3), td:nth-child(3) { width: 80px; }  /* Type */
+th:nth-child(4), td:nth-child(4) { width: 80px; }  /* Date Modified */
+th:nth-child(5), td:nth-child(5) { width: 50px; }  /* Size */
+th:nth-child(6), td:nth-child(6) { width: 160px; }  /* Actions */
+
+/* File name truncation */
+td:nth-child(2) {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.file-name {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.file-name > span:not(.file-icon) {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
 }
 
 [data-theme="dark"] th,
