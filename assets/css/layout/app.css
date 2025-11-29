@@ -42,6 +42,45 @@
   transition: background-color 0.3s ease;
 }
 
+/* Scrollbar styling with hover effect */
+.main::-webkit-scrollbar {
+  width: 8px;
+}
+
+.main::-webkit-scrollbar-track {
+  background: transparent;
+  transition: background-color 0.2s ease;
+}
+
+.main::-webkit-scrollbar-thumb {
+  background: rgba(100, 116, 139, 0.3);
+  border-radius: 4px;
+  transition: background-color 0.2s ease, width 0.2s ease;
+}
+
+.main::-webkit-scrollbar-thumb:hover {
+  background: rgba(100, 116, 139, 0.6);
+  width: 10px;
+}
+
+[data-theme="dark"] .main::-webkit-scrollbar-thumb {
+  background: rgba(148, 163, 184, 0.2);
+}
+
+[data-theme="dark"] .main::-webkit-scrollbar-thumb:hover {
+  background: rgba(148, 163, 184, 0.5);
+}
+
+/* Firefox scrollbar */
+.main {
+  scrollbar-color: rgba(100, 116, 139, 0.3) transparent;
+  scrollbar-width: thin;
+}
+
+.main:hover {
+  scrollbar-color: rgba(100, 116, 139, 0.6) transparent;
+}
+
 /* Mobile compact padding */
 @media (max-width: 767px) {
   .main {

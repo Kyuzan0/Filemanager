@@ -1250,36 +1250,30 @@ function initializeEventHandlers() {
     if (document.getElementById('cardUploadModal')) return;
     const container = document.createElement('div');
     container.id = 'cardUploadModal';
-    container.style.position = 'fixed';
-    container.style.inset = '0';
-    container.style.display = 'flex';
-    container.style.alignItems = 'center';
-    container.style.justifyContent = 'center';
-    container.style.zIndex = '1200';
-    container.style.background = 'rgba(0,0,0,0.45)';
+    container.className = 'card-upload-modal-backdrop';
     container.innerHTML = `
-      <div class="card-upload-modal" style="width:90%;max-width:680px;background:var(--bg, #fff);border-radius:10px;padding:18px;box-shadow:0 8px 30px rgba(0,0,0,0.25);">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
-          <div style="display:flex;align-items:center;gap:12px;">
-            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 3v10" stroke="#0ea5e9" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"></path><path d="M8 9l4-4 4 4" stroke="#0ea5e9" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"></path><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" stroke="#0ea5e9" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+      <div class="card-upload-modal">
+        <div class="card-upload-modal__header">
+          <div class="card-upload-modal__title-group">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" aria-hidden="true" class="card-upload-modal__icon"><path d="M12 3v10" stroke="#0ea5e9" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"></path><path d="M8 9l4-4 4 4" stroke="#0ea5e9" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"></path><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" stroke="#0ea5e9" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"></path></svg>
             <div>
-              <div style="font-weight:600;font-size:16px;">Upload Files</div>
-              <div style="font-size:12px;color:var(--muted,#6b7280)">Klik tombol "Upload" untuk memulai unggahan</div>
+              <div class="card-upload-modal__title">Upload Files</div>
+              <div class="card-upload-modal__subtitle">Klik tombol "Upload" untuk memulai unggahan</div>
             </div>
           </div>
           <div>
-            <button id="cardUploadClose" class="btn" style="background:transparent;border:0;font-size:20px;color:var(--muted,#374151);cursor:pointer;">×</button>
+            <button id="cardUploadClose" class="btn card-upload-modal__close-btn">×</button>
           </div>
         </div>
-        <div id="cardUploadList" style="max-height:320px;overflow:auto;display:flex;flex-direction:column;gap:8px;padding-right:6px;margin-bottom:12px;"></div>
-        <div id="cardUploadSummary" style="padding:10px;background:#f0f9ff;border-radius:8px;margin-bottom:12px;display:none;">
-          <div style="font-size:13px;color:#0369a1;font-weight:500;" id="cardUploadSummaryText"></div>
+        <div id="cardUploadList" class="card-upload-modal__file-list"></div>
+        <div id="cardUploadSummary" class="card-upload-modal__summary" style="display:none;">
+          <div id="cardUploadSummaryText"></div>
         </div>
-        <div style="display:flex;justify-content:flex-end;gap:10px;">
-          <button id="cardUploadCancel" class="btn" style="padding:8px 16px;border-radius:6px;background:#f3f4f6;color:#374151;border:1px solid #e5e7eb;cursor:pointer;">Batal</button>
-          <button id="cardUploadStart" class="btn btn-primary" style="padding:8px 16px;border-radius:6px;background:#0ea5e9;color:#fff;border:none;cursor:pointer;font-weight:500;">
-            <span style="display:flex;align-items:center;gap:6px;">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path><path d="M17 8l-5-5-5 5M12 3v12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+        <div class="card-upload-modal__footer">
+          <button id="cardUploadCancel" class="btn">Batal</button>
+          <button id="cardUploadStart" class="btn btn-primary">
+            <span class="flex items-center gap-1.5">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" class="text-white"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path><path d="M17 8l-5-5-5 5M12 3v12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg>
               Upload
             </span>
           </button>
@@ -1317,7 +1311,7 @@ function initializeEventHandlers() {
       const cancelBtn = document.getElementById('cardUploadCancel');
       if (uploadBtn) {
         uploadBtn.disabled = true;
-        uploadBtn.innerHTML = '<span style="display:flex;align-items:center;gap:6px;">Mengupload...</span>';
+        uploadBtn.innerHTML = '<span class="flex items-center gap-1.5">Mengupload...</span>';
       }
       if (cancelBtn) cancelBtn.disabled = true;
 
@@ -1338,18 +1332,8 @@ function initializeEventHandlers() {
         
         if (result.success) {
           successCount++;
-          if (statusEl) {
-            statusEl.textContent = 'Selesai ✓';
-            statusEl.style.color = '#16a34a';
-          }
-          if (progressEl) progressEl.style.background = '#22c55e';
         } else {
           errorCount++;
-          if (statusEl) {
-            statusEl.textContent = `Gagal: ${result.error || 'error'}`;
-            statusEl.style.color = '#dc2626';
-          }
-          if (progressEl) progressEl.style.background = '#ef4444';
         }
       }
 
@@ -1359,16 +1343,13 @@ function initializeEventHandlers() {
       if (summary && summaryText) {
         summary.style.display = 'block';
         if (successCount > 0 && errorCount === 0) {
-          summary.style.background = '#dcfce7';
-          summaryText.style.color = '#166534';
+          summary.className = 'card-upload-modal__summary summary-success';
           summaryText.textContent = `✓ ${successCount} file berhasil diupload`;
         } else if (successCount > 0 && errorCount > 0) {
-          summary.style.background = '#fef3c7';
-          summaryText.style.color = '#92400e';
+          summary.className = 'card-upload-modal__summary summary-warning';
           summaryText.textContent = `${successCount} berhasil, ${errorCount} gagal`;
         } else {
-          summary.style.background = '#fee2e2';
-          summaryText.style.color = '#991b1b';
+          summary.className = 'card-upload-modal__summary summary-danger';
           summaryText.textContent = `✗ Semua file gagal diupload`;
         }
       }
@@ -1407,30 +1388,29 @@ function initializeEventHandlers() {
       totalSize += file.size;
       const row = document.createElement('div');
       row.className = 'card-upload-row';
-      row.style.cssText = 'display:flex;align-items:center;gap:12px;padding:10px;background:#f9fafb;border-radius:8px;border:1px solid #e5e7eb;';
       
       // Get file icon based on extension
       const ext = file.name.split('.').pop()?.toLowerCase() || '';
-      const iconColor = getFileIconColor(ext);
+      const iconInfo = getFileIconColor(ext);
       
       row.innerHTML = `
-        <div style="width:36px;height:36px;border-radius:6px;background:${iconColor.bg};display:flex;align-items:center;justify-content:center;flex-shrink:0;">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" stroke="${iconColor.stroke}" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-            <polyline points="14 2 14 8 20 8" stroke="${iconColor.stroke}" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        <div class="card-upload-row__icon-container ${iconInfo.bgClass}">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" class="${iconInfo.strokeClass}">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            <polyline points="14 2 14 8 20 8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
           </svg>
         </div>
-        <div style="flex:1;min-width:0;">
-          <div style="font-weight:500;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#1f2937;">${file.name}</div>
-          <div style="font-size:11px;color:#6b7280;">${formatFileSize(file.size)}</div>
+        <div class="card-upload-row__info">
+          <div class="card-upload-row__name">${file.name}</div>
+          <div class="card-upload-row__size">${formatFileSize(file.size)}</div>
         </div>
-        <div style="width:140px;flex-shrink:0;">
-          <div style="height:6px;background:#e5e7eb;border-radius:4px;overflow:hidden;margin-bottom:4px;">
-            <div class="card-upload-progress" style="width:0%;height:100%;background:#0ea5e9;border-radius:4px;transition:width 0.2s;"></div>
+        <div class="card-upload-row__progress-container">
+          <div class="card-upload-row__progress-bar">
+            <div class="card-upload-progress" style="width:0%;"></div>
           </div>
-          <div style="font-size:11px;color:#6b7280;text-align:right;" class="card-upload-status">Siap upload</div>
+          <div class="card-upload-status">Siap upload</div>
         </div>
-        <button class="card-upload-remove" data-index="${idx}" style="width:28px;height:28px;border-radius:6px;background:transparent;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;color:#9ca3af;transition:all 0.15s;" onmouseover="this.style.background='#fee2e2';this.style.color='#dc2626';" onmouseout="this.style.background='transparent';this.style.color='#9ca3af';">
+        <button class="card-upload-remove" data-index="${idx}">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M18 6L6 18M6 6l12 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
         </button>
       `;
@@ -1449,8 +1429,7 @@ function initializeEventHandlers() {
     const summary = document.getElementById('cardUploadSummary');
     if (summary && summaryText && pendingUploadFiles.length > 0) {
       summary.style.display = 'block';
-      summary.style.background = '#f0f9ff';
-      summaryText.style.color = '#0369a1';
+      summary.className = 'card-upload-modal__summary summary-info'; // Reset and add class
       summaryText.textContent = `${pendingUploadFiles.length} file (${formatFileSize(totalSize)}) siap diupload`;
     }
   }
@@ -1459,31 +1438,31 @@ function initializeEventHandlers() {
   function getFileIconColor(ext) {
     const colorMap = {
       // Images
-      'jpg': { bg: '#fee2e2', stroke: '#ef4444' },
-      'jpeg': { bg: '#fee2e2', stroke: '#ef4444' },
-      'png': { bg: '#fee2e2', stroke: '#ef4444' },
-      'gif': { bg: '#fee2e2', stroke: '#ef4444' },
-      'svg': { bg: '#fee2e2', stroke: '#ef4444' },
-      'webp': { bg: '#fee2e2', stroke: '#ef4444' },
+      'jpg': { bgClass: 'bg-red-100 dark:bg-red-900/30', strokeClass: 'text-red-500' },
+      'jpeg': { bgClass: 'bg-red-100 dark:bg-red-900/30', strokeClass: 'text-red-500' },
+      'png': { bgClass: 'bg-red-100 dark:bg-red-900/30', strokeClass: 'text-red-500' },
+      'gif': { bgClass: 'bg-red-100 dark:bg-red-900/30', strokeClass: 'text-red-500' },
+      'svg': { bgClass: 'bg-red-100 dark:bg-red-900/30', strokeClass: 'text-red-500' },
+      'webp': { bgClass: 'bg-red-100 dark:bg-red-900/30', strokeClass: 'text-red-500' },
       // Code
-      'js': { bg: '#fef3c7', stroke: '#f59e0b' },
-      'ts': { bg: '#dbeafe', stroke: '#3b82f6' },
-      'php': { bg: '#ede9fe', stroke: '#8b5cf6' },
-      'html': { bg: '#fee2e2', stroke: '#ef4444' },
-      'css': { bg: '#dbeafe', stroke: '#3b82f6' },
-      'json': { bg: '#fef3c7', stroke: '#f59e0b' },
+      'js': { bgClass: 'bg-yellow-100 dark:bg-yellow-900/30', strokeClass: 'text-yellow-500' },
+      'ts': { bgClass: 'bg-blue-100 dark:bg-blue-900/30', strokeClass: 'text-blue-500' },
+      'php': { bgClass: 'bg-purple-100 dark:bg-purple-900/30', strokeClass: 'text-purple-500' },
+      'html': { bgClass: 'bg-orange-100 dark:bg-orange-900/30', strokeClass: 'text-orange-500' },
+      'css': { bgClass: 'bg-sky-100 dark:bg-sky-900/30', strokeClass: 'text-sky-500' },
+      'json': { bgClass: 'bg-yellow-100 dark:bg-yellow-900/30', strokeClass: 'text-yellow-500' },
       // Documents
-      'pdf': { bg: '#fee2e2', stroke: '#dc2626' },
-      'doc': { bg: '#dbeafe', stroke: '#2563eb' },
-      'docx': { bg: '#dbeafe', stroke: '#2563eb' },
-      'xls': { bg: '#dcfce7', stroke: '#22c55e' },
-      'xlsx': { bg: '#dcfce7', stroke: '#22c55e' },
+      'pdf': { bgClass: 'bg-red-100 dark:bg-red-900/30', strokeClass: 'text-red-600' },
+      'doc': { bgClass: 'bg-blue-100 dark:bg-blue-900/30', strokeClass: 'text-blue-600' },
+      'docx': { bgClass: 'bg-blue-100 dark:bg-blue-900/30', strokeClass: 'text-blue-600' },
+      'xls': { bgClass: 'bg-green-100 dark:bg-green-900/30', strokeClass: 'text-green-600' },
+      'xlsx': { bgClass: 'bg-green-100 dark:bg-green-900/30', strokeClass: 'text-green-600' },
       // Archives
-      'zip': { bg: '#fef3c7', stroke: '#d97706' },
-      'rar': { bg: '#fef3c7', stroke: '#d97706' },
-      '7z': { bg: '#fef3c7', stroke: '#d97706' },
+      'zip': { bgClass: 'bg-amber-100 dark:bg-amber-900/30', strokeClass: 'text-amber-600' },
+      'rar': { bgClass: 'bg-amber-100 dark:bg-amber-900/30', strokeClass: 'text-amber-600' },
+      '7z': { bgClass: 'bg-amber-100 dark:bg-amber-900/30', strokeClass: 'text-amber-600' },
     };
-    return colorMap[ext] || { bg: '#f3f4f6', stroke: '#6b7280' };
+    return colorMap[ext] || { bgClass: 'bg-gray-100 dark:bg-gray-700', strokeClass: 'text-gray-500' };
   }
 
   // Helper: format file size
@@ -1512,17 +1491,48 @@ function initializeEventHandlers() {
         try {
           const data = JSON.parse(xhr.responseText || '{}');
           if (data.success) {
-            if (progressEl) progressEl.style.width = '100%';
+            if (progressEl) {
+                progressEl.style.width = '100%';
+                progressEl.classList.add('bg-green-500');
+            }
+            if (statusEl) {
+                statusEl.textContent = 'Selesai ✓';
+                statusEl.classList.add('text-green-600');
+            }
             resolve({ success: true, data });
           } else {
+            if (progressEl) {
+                progressEl.style.width = '100%';
+                progressEl.classList.add('bg-red-500');
+            }
+            if (statusEl) {
+                statusEl.textContent = `Gagal: ${data.error || 'error'}`;
+                statusEl.classList.add('text-red-600');
+            }
             resolve({ success: false, error: data.error || 'Server error' });
           }
         } catch (err) {
-          resolve({ success: false, error: 'Invalid response' });
+            if (progressEl) {
+                progressEl.style.width = '100%';
+                progressEl.classList.add('bg-red-500');
+            }
+            if (statusEl) {
+                statusEl.textContent = 'Gagal: Invalid response';
+                statusEl.classList.add('text-red-600');
+            }
+            resolve({ success: false, error: 'Invalid response' });
         }
       };
 
       xhr.onerror = function () {
+        if (progressEl) {
+            progressEl.style.width = '100%';
+            progressEl.classList.add('bg-red-500');
+        }
+        if (statusEl) {
+            statusEl.textContent = 'Gagal: Network error';
+            statusEl.classList.add('text-red-600');
+        }
         resolve({ success: false, error: 'Network error' });
       };
 
@@ -1621,7 +1631,7 @@ function initializeEventHandlers() {
     }
   });
 
-  // Folder double-click
+  // Double-click to open folder or preview file
   tbody?.addEventListener('dblclick', async (e) => {
     const row = e.target.closest('tr');
     if (!row) return;
@@ -1629,8 +1639,18 @@ function initializeEventHandlers() {
     const path = row.dataset.path;
     const file = files.find(f => f.path === path);
     
-    if (file?.type === 'folder') {
+    if (!file) return;
+    
+    if (file.type === 'folder') {
+      // Open folder
       await loadFiles(path);
+    } else {
+      // Open file in preview modal
+      if (window.openPreviewModal) {
+        window.openPreviewModal(path, file.name);
+      } else {
+        console.log('Preview modal not available, file:', file.name);
+      }
     }
   });
 }
