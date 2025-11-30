@@ -5,11 +5,31 @@
  */
 ?>
 <!DOCTYPE html>
-<html lang="id" data-theme="light">
+<html lang="id">
 <head>
+    <!-- Anti-flash: Set theme before anything else -->
+    <script>
+        (function() {
+            const theme = localStorage.getItem('theme') || 'light';
+            document.documentElement.setAttribute('data-theme', theme);
+            if (theme === 'dark') {
+                document.documentElement.style.backgroundColor = '#0f172a';
+                document.documentElement.style.colorScheme = 'dark';
+            }
+        })();
+    </script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Log Aktivitas - File Manager</title>
+    <!-- Tailwind CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: ['class', '[data-theme="dark"]'],
+        }
+    </script>
+    <!-- Modular CSS untuk sidebar -->
+    <link rel="stylesheet" href="assets/css/main.css">
     <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
     <style>
         :root {
@@ -40,22 +60,26 @@
         html, body {
             height: 100%;
             overflow: hidden;
+            overflow-x: hidden;
         }
+        
+        html[data-theme="dark"] { background-color: #0f172a; }
+        html[data-theme="dark"] body { background-color: #0f172a; }
         
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: var(--bg);
-            color: var(--text);
             font-size: 13px;
         }
         
         .log-container {
             display: flex;
             flex-direction: column;
+            flex: 1;
             height: 100vh;
             max-width: 1600px;
-            margin: 0 auto;
             padding: 0.75rem 1rem;
+            overflow: hidden;
+            overflow-x: hidden;
         }
         
         /* Header */
@@ -119,34 +143,49 @@
             gap: 0.5rem;
             padding-bottom: 0.75rem;
             flex-shrink: 0;
+            align-items: center;
+            justify-content: space-between;
             flex-wrap: wrap;
+        }
+        
+        .toolbar-left {
+            display: flex;
+            gap: 0.5rem;
+            align-items: center;
+            flex: 0 1 auto;
+        }
+        
+        .toolbar-right {
+            display: flex;
+            gap: 0.5rem;
+            align-items: center;
+            flex: 0 1 auto;
         }
         
         .search-box {
             position: relative;
-            flex: 1;
-            min-width: 180px;
-            max-width: 280px;
+            min-width: 200px;
+            max-width: 350px;
         }
         
         .search-box i {
             position: absolute;
-            left: 0.625rem;
+            left: 0.75rem;
             top: 50%;
             transform: translateY(-50%);
             color: var(--muted);
-            font-size: 14px;
+            font-size: 16px;
         }
         
         .search-box input {
             width: 100%;
-            height: 32px;
-            padding: 0 0.625rem 0 2rem;
+            height: 36px;
+            padding: 0.625rem 0.75rem 0.625rem 2.5rem;
             border: 1px solid var(--border);
             border-radius: 6px;
             background: var(--card);
             color: var(--text);
-            font-size: 12px;
+            font-size: 13px;
             outline: none;
         }
         
@@ -155,13 +194,13 @@
         }
         
         .filter-select {
-            height: 32px;
-            padding: 0 1.75rem 0 0.625rem;
+            height: 36px;
+            padding: 0 1.75rem 0 0.75rem;
             border: 1px solid var(--border);
             border-radius: 6px;
             background: var(--card);
             color: var(--text);
-            font-size: 12px;
+            font-size: 13px;
             cursor: pointer;
             outline: none;
             appearance: none;
@@ -172,28 +211,37 @@
         
         .toolbar-spacer { flex: 1; }
         
+        @media (max-width: 768px) {
+            .log-toolbar {
+                flex-wrap: wrap;
+            }
+            .toolbar-left, .toolbar-right {
+                flex: 1 1 auto;
+            }
+        }
+        
         .btn {
             display: inline-flex;
             align-items: center;
             justify-content: center;
             gap: 0.25rem;
-            height: 32px;
-            padding: 0 0.75rem;
+            height: 36px;
+            padding: 0 0.875rem;
             border: 1px solid var(--border);
             border-radius: 6px;
             background: var(--card);
             color: var(--text);
-            font-size: 12px;
+            font-size: 13px;
             cursor: pointer;
             transition: all 0.15s;
             white-space: nowrap;
         }
         
         .btn:hover { background: var(--bg); }
-        .btn i { font-size: 14px; }
+        .btn i { font-size: 16px; }
         
         .btn-icon {
-            width: 32px;
+            width: 36px;
             padding: 0;
         }
         
@@ -220,12 +268,16 @@
         .table-wrapper {
             flex: 1;
             overflow: auto;
+            overflow-x: auto;
+            max-width: 100%;
         }
         
         .log-table {
             width: 100%;
+            min-width: 500px;
             border-collapse: collapse;
             font-size: 12px;
+            table-layout: fixed;
         }
         
         .log-table th {
@@ -283,6 +335,7 @@
         /* Column widths */
         .col-time { width: 110px; }
         .col-action { width: 90px; }
+        .col-file { width: auto; }
         .col-browser { width: 80px; }
         .col-ip { width: 100px; }
         
@@ -421,8 +474,8 @@
         }
         
         @keyframes modalIn {
-            from { opacity: 0; transform: scale(0.95) translateY(-10px); }
-            to { opacity: 1; transform: scale(1) translateY(0); }
+            from { opacity: 0; }
+            to { opacity: 1; }
         }
         
         .modal-header {
@@ -495,75 +548,134 @@
         }
         .btn-primary:hover { background: var(--accent-hover); }
         
+        /* Mobile Menu Toggle Button */
+        #mobile-menu-toggle {
+            display: none;
+        }
+        
         /* Responsive */
         @media (max-width: 768px) {
+            #mobile-menu-toggle { display: flex; }
             .log-container { padding: 0.5rem; }
+            .log-toolbar {
+                gap: 0.375rem;
+                padding-bottom: 0.5rem;
+            }
+            .toolbar-left {
+                gap: 0.375rem;
+                flex-wrap: wrap;
+            }
+            .toolbar-right {
+                gap: 0.375rem;
+            }
+            .search-box {
+                min-width: 120px;
+                max-width: none;
+                flex: 1;
+            }
+            .filter-select {
+                height: 32px;
+                padding: 0 1.5rem 0 0.625rem;
+                font-size: 12px;
+            }
+            .btn {
+                height: 32px;
+                padding: 0 0.625rem;
+                font-size: 12px;
+            }
+            .btn i { font-size: 14px; }
+            .btn-icon { width: 32px; }
+            .search-box input {
+                height: 32px;
+                padding: 0.5rem 0.625rem 0.5rem 2.25rem;
+                font-size: 12px;
+            }
+            .search-box i { font-size: 14px; left: 0.625rem; }
             .log-title { font-size: 1rem; }
             .log-subtitle { display: none; }
-            .search-box { max-width: none; }
             .btn-text { display: none; }
+            .col-browser { display: none; }
+            .col-ip { display: none; }
             .file-cell { max-width: 180px; }
         }
         
         @media (max-width: 480px) {
-            .col-time { width: 80px; }
+            .log-toolbar {
+                gap: 0.25rem;
+                padding-bottom: 0.375rem;
+            }
+            .toolbar-left {
+                gap: 0.25rem;
+                width: 100%;
+            }
+            .toolbar-right {
+                gap: 0.25rem;
+                width: 100%;
+            }
+            .search-box {
+                min-width: 100px;
+                flex: 1;
+            }
+            .filter-select {
+                display: none;
+            }
+            .col-time { width: 70px; }
             .time-cell { font-size: 10px; }
             .file-cell { max-width: 120px; }
         }
     </style>
 </head>
-<body>
-    <div class="log-container">
-        <!-- Header -->
-        <div class="log-header">
-            <div class="log-header-left">
-                <a href="index.php" class="back-btn" title="Kembali">
-                    <i class="ri-arrow-left-line"></i>
-                </a>
-                <div>
-                    <div class="log-title"><i class="ri-history-line"></i>Log Aktivitas</div>
-                    <div class="log-subtitle">Riwayat aktivitas file manager</div>
+<body class="bg-slate-50 text-slate-900 dark:bg-[#0f172a] dark:text-slate-300 overflow-hidden">
+    <div class="app h-screen flex overflow-hidden" id="app">
+        <?php $activePage = 'logs'; include 'partials/sidebar.php'; ?>
+        
+        <div class="log-container">
+        
+        <!-- Toolbar -->
+        <div class="log-toolbar">
+            <!-- Left Group: Mobile Toggle, Search, Filters -->
+            <div class="toolbar-left">
+                <!-- Mobile Menu Toggle -->
+                <button class="btn btn-icon md:hidden p-0.5 hover:bg-slate-100 dark:hover:bg-white/5 rounded flex-shrink-0" id="mobile-menu-toggle" title="Menu">
+                    <i class="ri-menu-line text-base text-slate-600 dark:text-gray-400"></i>
+                </button>
+                <div class="search-box">
+                    <i class="ri-search-line"></i>
+                    <input type="text" id="log-search" placeholder="Cari...">
                 </div>
+                <select id="filter-action" class="filter-select">
+                    <option value="">Semua Aksi</option>
+                    <option value="upload">Upload</option>
+                    <option value="download">Download</option>
+                    <option value="delete">Delete</option>
+                    <option value="create">Create</option>
+                    <option value="rename">Rename</option>
+                    <option value="move">Move</option>
+                </select>
+                <select id="filter-type" class="filter-select">
+                    <option value="">Semua Tipe</option>
+                    <option value="file">File</option>
+                    <option value="folder">Folder</option>
+                </select>
             </div>
-            <div class="header-actions">
+            
+            <!-- Right Group: Action Buttons -->
+            <div class="toolbar-right">
+                <button class="btn btn-icon" id="btn-refresh" title="Refresh">
+                    <i class="ri-refresh-line"></i>
+                </button>
+                <button class="btn" id="btn-export" title="Export CSV">
+                    <i class="ri-download-2-line"></i>
+                    <span class="btn-text">Export</span>
+                </button>
+                <button class="btn btn-danger" id="btn-cleanup" title="Hapus log lama">
+                    <i class="ri-delete-bin-line"></i>
+                    <span class="btn-text">Cleanup</span>
+                </button>
                 <button class="btn btn-icon" id="theme-toggle" title="Toggle tema">
                     <i class="ri-moon-line"></i>
                 </button>
             </div>
-        </div>
-        
-        <!-- Toolbar -->
-        <div class="log-toolbar">
-            <div class="search-box">
-                <i class="ri-search-line"></i>
-                <input type="text" id="log-search" placeholder="Cari...">
-            </div>
-            <select id="filter-action" class="filter-select">
-                <option value="">Semua Aksi</option>
-                <option value="upload">Upload</option>
-                <option value="download">Download</option>
-                <option value="delete">Delete</option>
-                <option value="create">Create</option>
-                <option value="rename">Rename</option>
-                <option value="move">Move</option>
-            </select>
-            <select id="filter-type" class="filter-select">
-                <option value="">Semua Tipe</option>
-                <option value="file">File</option>
-                <option value="folder">Folder</option>
-            </select>
-            <div class="toolbar-spacer"></div>
-            <button class="btn btn-icon" id="btn-refresh" title="Refresh">
-                <i class="ri-refresh-line"></i>
-            </button>
-            <button class="btn" id="btn-export" title="Export CSV">
-                <i class="ri-download-2-line"></i>
-                <span class="btn-text">Export</span>
-            </button>
-            <button class="btn btn-danger" id="btn-cleanup" title="Hapus log lama">
-                <i class="ri-delete-bin-line"></i>
-                <span class="btn-text">Cleanup</span>
-            </button>
         </div>
         
         <!-- Table Card -->
@@ -590,6 +702,7 @@
             </div>
         </div>
     </div>
+    </div><!-- End app wrapper -->
     
     <!-- Detail Modal -->
     <div class="modal-overlay" id="modal">
@@ -614,7 +727,7 @@
     </div>
 
     <script>
-    const state = { logs: [], page: 1, perPage: 20, total: 0, totalPages: 1, search: '', action: '', type: '', loading: false };
+    const state = { logs: [], page: 1, perPage: 15, total: 0, totalPages: 1, search: '', action: '', type: '', loading: false };
     const $ = id => document.getElementById(id);
     
     // Theme
@@ -796,5 +909,53 @@
         document.addEventListener('keydown', e => { if (e.key === 'Escape') hideModal(); });
     });
     </script>
+
+    <!-- Mobile sidebar fallback: ensure menu button opens sidebar if main script didn't attach -->
+    <script>
+    (function(){
+        function bindMobileToggleFallback(){
+            const toggle = document.getElementById('mobile-menu-toggle');
+            if (!toggle) return;
+
+            // Avoid double-binding
+            if (toggle.__mobileFallbackBound) return;
+            toggle.__mobileFallbackBound = true;
+
+            toggle.addEventListener('click', function(e){
+                // Prevent normal behavior if any
+                e && e.preventDefault && e.preventDefault();
+
+                // If sidebar script exposed the function, call it
+                if (window.openSidebar && typeof window.openSidebar === 'function') {
+                    try { window.openSidebar(); } catch (err) { console.debug('openSidebar error', err); }
+                    return;
+                }
+
+                // Retry for a short period while the main script attaches
+                let attempts = 0;
+                const max = 12; // ~1.2s total
+                const id = setInterval(() => {
+                    attempts++;
+                    if (window.openSidebar && typeof window.openSidebar === 'function') {
+                        try { window.openSidebar(); } catch (err) { console.debug('openSidebar error', err); }
+                        clearInterval(id);
+                        return;
+                    }
+                    if (attempts >= max) {
+                        clearInterval(id);
+                        console.debug('Mobile sidebar fallback: openSidebar not available');
+                    }
+                }, 100);
+            });
+        }
+
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', bindMobileToggleFallback);
+        } else {
+            bindMobileToggleFallback();
+        }
+    })();
+    </script>
 </body>
 </html>
+

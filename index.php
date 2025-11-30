@@ -1,6 +1,22 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
+    <!-- Anti-flash: Set theme before anything else -->
+    <script>
+        (function() {
+            const theme = localStorage.getItem('theme') || 'light';
+            document.documentElement.setAttribute('data-theme', theme);
+            if (theme === 'dark') {
+                document.documentElement.style.backgroundColor = '#0f1419';
+                document.documentElement.style.colorScheme = 'dark';
+            }
+        })();
+    </script>
+    <style>
+        /* Prevent flash of white background */
+        html[data-theme="dark"] { background-color: #0f1419; }
+        html[data-theme="dark"] body { background-color: #0f1419; }
+    </style>
     <!-- Using Tailwind CDN (reverted to CDN-based workflow) -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -23,33 +39,8 @@
     <title>File Manager — SiyNLic Pro</title>
 </head>
 <body class="bg-slate-50 text-slate-900 dark:bg-[#0f1419] dark:text-slate-300 overflow-hidden">
-    <!-- Sidebar Overlay for Mobile -->
-    <div class="sidebar-overlay" id="sidebar-overlay"></div>
-    
     <div class="app h-screen flex overflow-hidden" id="app">
-        <!-- SIDEBAR -->
-        <aside class="sidebar w-56 px-5 py-5 bg-white border-r border-slate-200 hidden md:block h-full overflow-y-auto" id="sidebar">
-            <div class="sidebar-header flex items-center justify-between mb-4">
-                <div class="logo text-lg font-bold text-blue-600">Filemanager</div>
-                <button class="sidebar-close md:hidden p-2 hover:bg-slate-100 rounded-lg" id="sidebar-close">
-                    <i class="ri-close-line text-xl"></i>
-                </button>
-            </div>
-            <ul class="side-list space-y-2">
-                <li class="px-2 py-2.5 rounded-lg text-slate-600 cursor-pointer hover:bg-slate-100 transition-colors flex items-center gap-2">
-                    <i class="ri-folder-line"></i> My Files
-                </li>
-                <li class="px-2 py-2.5 rounded-lg text-slate-600 cursor-pointer hover:bg-slate-100 transition-colors flex items-center gap-2">
-                    <i class="ri-upload-cloud-line"></i> Uploads
-                </li>
-                <li class="px-2 py-2.5 rounded-lg text-slate-600 cursor-pointer hover:bg-slate-100 transition-colors flex items-center gap-2" onclick="window.location.href='logs.php'">
-                    <i class="ri-file-list-3-line"></i> Log Activity
-                </li>
-                <li class="px-2 py-2.5 rounded-lg text-slate-600 cursor-pointer hover:bg-slate-100 transition-colors flex items-center gap-2">
-                    <i class="ri-delete-bin-line"></i> Trash
-                </li>
-            </ul>
-        </aside>
+        <?php $activePage = 'dashboard'; include 'partials/sidebar.php'; ?>
 
         <main class="main flex-1 h-full overflow-y-auto relative">
             <!-- HEADER ACTIONS -->
@@ -57,8 +48,8 @@
                 <!-- Left Group: Navigation & Search -->
                 <div class="flex items-center gap-2 flex-1 min-w-0">
                     <!-- Mobile Menu Toggle -->
-                    <button class="mobile-menu-toggle md:hidden p-2 hover:bg-slate-100 dark:hover:bg-white/5 rounded-lg flex-shrink-0" id="mobile-menu-toggle" title="Menu">
-                        <i class="ri-menu-line text-xl text-slate-600 dark:text-gray-400"></i>
+                    <button class="btn btn-icon md:hidden p-0.5 hover:bg-slate-100 dark:hover:bg-white/5 rounded flex-shrink-0" id="mobile-menu-toggle" title="Menu">
+                        <i class="ri-menu-line text-base text-slate-600 dark:text-gray-400"></i>
                     </button>
                     
                     <!-- Breadcrumbs - Hidden on mobile, visible on desktop -->
@@ -195,89 +186,8 @@
     <script src="assets/js/enhanced-ui.js"></script>
     <script src="assets/js/modals-handler.js"></script>
     <script src="assets/js/log-handler.js"></script>
-    
-    <!-- Mobile Sidebar Toggle Script -->
-    <script>
-    (function() {
-        const mobileMenuToggle = document.getElementById('mobile-menu-toggle');
-        const sidebarClose = document.getElementById('sidebar-close');
-        const sidebar = document.getElementById('sidebar');
-        const sidebarOverlay = document.getElementById('sidebar-overlay');
-        
-        function openSidebar() {
-            if (sidebar) {
-                sidebar.classList.add('active');
-                sidebar.style.display = 'block';
-            }
-            if (sidebarOverlay) {
-                sidebarOverlay.classList.add('active');
-            }
-            document.body.style.overflow = 'hidden';
-        }
-        
-        function closeSidebar() {
-            if (sidebar) {
-                sidebar.classList.remove('active');
-                // Only hide on mobile
-                if (window.innerWidth < 768) {
-                    setTimeout(() => {
-                        if (!sidebar.classList.contains('active')) {
-                            sidebar.style.display = '';
-                        }
-                    }, 300);
-                }
-            }
-            if (sidebarOverlay) {
-                sidebarOverlay.classList.remove('active');
-            }
-            document.body.style.overflow = '';
-        }
-        
-        if (mobileMenuToggle) {
-            mobileMenuToggle.addEventListener('click', openSidebar);
-        }
-        
-        if (sidebarClose) {
-            sidebarClose.addEventListener('click', closeSidebar);
-        }
-        
-        if (sidebarOverlay) {
-            sidebarOverlay.addEventListener('click', closeSidebar);
-        }
-        
-        // Close sidebar on window resize to desktop
-        window.addEventListener('resize', function() {
-            if (window.innerWidth >= 768) {
-                closeSidebar();
-                if (sidebar) {
-                    sidebar.style.display = '';
-                }
-            }
-        });
-        
-        // Close sidebar on escape key
-        document.addEventListener('keydown', function(e) {
-            if (e.key === 'Escape' && sidebar && sidebar.classList.contains('active')) {
-                closeSidebar();
-            }
-        });
-
-        // Log Activity button handler
-        const logActivityBtn = document.getElementById('sidebar-log-activity');
-        if (logActivityBtn) {
-            logActivityBtn.addEventListener('click', function() {
-                // Close sidebar on mobile
-                if (window.innerWidth < 768) {
-                    closeSidebar();
-                }
-                // Open log modal
-                if (typeof openLogModal === 'function') {
-                    openLogModal();
-                }
-            });
-        }
-    })();
-    </script>
+    <!-- SPA Router -->
+    <script src="assets/js/modules/router.js"></script>
 </body>
 </html>
 

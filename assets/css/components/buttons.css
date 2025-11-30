@@ -124,3 +124,10 @@
   width: 18px;
   height: 18px;
 }
+
+/* Special case for mobile menu toggle - make it smaller */
+#mobile-menu-toggle.btn-icon {
+  padding: 2px !important;
+  min-width: 28px !important;
+  min-height: 28px !important;
+}

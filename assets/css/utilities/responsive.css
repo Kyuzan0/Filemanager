@@ -99,9 +99,6 @@
    ============================================================================ */
 
 @media (max-width: 900px) {
-  .sidebar {
-    display: none;
-  }
   .main {
     padding: 12px;
   }
@@ -123,9 +120,6 @@
   }
   
   /* Mobile menu adjustments */
-  .sidebar {
-    display: none;
-  }
   
   .main {
     padding: 12px;
@@ -795,39 +789,17 @@
    MOBILE HAMBURGER MENU (for sidebar toggle)
    ============================================================================ */
 
-.mobile-menu-toggle {
+#mobile-menu-toggle {
   display: none;
-  padding: 8px;
-  background: transparent;
-  border: none;
-  cursor: pointer;
-  color: var(--muted);
 }
 
 @media (max-width: 900px) {
-  .mobile-menu-toggle {
+  #mobile-menu-toggle {
     display: flex;
     align-items: center;
     justify-content: center;
   }
   
-  /* Sidebar overlay for mobile */
-  .sidebar-overlay {
-    display: none;
-    position: fixed;
-    inset: 0;
-    background: rgba(0, 0, 0, 0.5);
-    z-index: 998;
-  }
-  
-  .sidebar-overlay.active {
-    display: block;
-  }
-  
-  .sidebar.active {
-    transform: translateX(0);
-    box-shadow: 4px 0 20px rgba(0, 0, 0, 0.15);
-  }
 }
 
 /* ============================================================================

@@ -151,3 +151,47 @@
 .animate-scaleIn {
   animation: scaleIn 0.2s ease-out;
 }
+
+/* SPA Router Loading Bar */
+@keyframes loading-bar {
+  0% {
+    width: 0%;
+    left: 0;
+  }
+  50% {
+    width: 60%;
+    left: 20%;
+  }
+  100% {
+    width: 100%;
+    left: 0;
+  }
+}
+
+.animate-loading-bar {
+  animation: loading-bar 1s ease-in-out infinite;
+}
+
+#page-loader {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: rgba(59, 130, 246, 0.3);
+  z-index: 9999;
+  overflow: hidden;
+}
+
+#page-loader > div {
+  height: 100%;
+  background: linear-gradient(90deg, #3b82f6, #60a5fa, #3b82f6);
+  background-size: 200% 100%;
+  animation: loading-bar 0.8s ease-in-out infinite;
+}
+
+/* Page transition */
+.page-loading main {
+  pointer-events: none;
+  opacity: 0.7;
+}

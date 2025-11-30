@@ -6,6 +6,16 @@
  * Extracted from: style.css (lines 23-32)
  */
 
+/* Critical: Prevent flash of wrong background color */
+html {
+  background: var(--bg);
+}
+
+html[data-theme="dark"] {
+  background: #0f1419;
+  color-scheme: dark;
+}
+
 body {
   margin: 0;
   font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
