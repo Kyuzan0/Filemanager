@@ -114,6 +114,10 @@ export async function deleteItems(paths) {
  * @returns {Promise<Object>} Promise yang resolve dengan hasil pemindahan
  */
 export async function moveItem(sourcePath, targetPath) {
+    console.log('DEBUG - moveItem called with:', {
+        sourcePath,
+        targetPath
+    });
     try {
         const response = await fetch('api.php?action=move', {
             method: 'POST',

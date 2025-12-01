@@ -927,7 +927,13 @@ function move_item(string $root, string $oldRelativePath, string $newRelativePat
     
     // Validasi path baru
     $segments = explode('/', $newRelativePath);
-    $newName = array_pop($segments);
+    
+    // If targetPath is empty (moving to root), extract filename from old path
+    if ($newRelativePath === '') {
+        $newName = basename($oldRealPath); // Use basename from real path
+    } else {
+        $newName = array_pop($segments);
+    }
     
     if ($newName === null || $newName === '') {
         throw new RuntimeException('Nama baru wajib diisi.');
