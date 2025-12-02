@@ -657,6 +657,84 @@
     </div>
 </div>
 
+<!-- Details overlay modal -->
+<div class="details-overlay fixed inset-0 items-center justify-center bg-black/45 p-2 md:p-4 z-50 hidden"
+    id="details-overlay" aria-hidden="true">
+    <div class="details-dialog rounded-lg shadow-lg w-full max-w-md" role="dialog" aria-modal="true"
+        aria-labelledby="details-title">
+        <header class="details-header px-6 py-4 flex items-center gap-4">
+            <div class="details-icon w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0"
+                id="details-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="currentColor" class="w-6 h-6">
+                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/>
+                </svg>
+            </div>
+            <div class="details-title-group flex-1 min-w-0">
+                <h2 class="details-title text-base font-semibold" id="details-title">Detail Item</h2>
+                <p class="details-subtitle text-xs mt-0.5 truncate" id="details-subtitle">Informasi lengkap</p>
+            </div>
+            <button type="button" class="details-close-btn" id="details-close-btn" data-action="details-close" aria-label="Tutup">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-5 h-5">
+                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+            </button>
+        </header>
+        <div class="details-body px-6 py-4">
+            <div class="details-info-list">
+                <div class="details-info-item">
+                    <span class="details-info-label">Nama</span>
+                    <span class="details-info-value" id="details-name">-</span>
+                </div>
+                <div class="details-info-item">
+                    <span class="details-info-label">Tipe</span>
+                    <span class="details-info-value" id="details-type">-</span>
+                </div>
+                <div class="details-info-item">
+                    <span class="details-info-label">Terakhir Diubah</span>
+                    <span class="details-info-value" id="details-modified">-</span>
+                </div>
+                <div class="details-info-item">
+                    <span class="details-info-label">Ukuran</span>
+                    <span class="details-info-value" id="details-size">-</span>
+                </div>
+                <div class="details-info-item">
+                    <span class="details-info-label">Lokasi</span>
+                    <span class="details-info-value details-path" id="details-path">-</span>
+                </div>
+            </div>
+        </div>
+        <footer class="details-actions px-6 py-3 rounded-b-lg">
+            <div class="details-actions-grid">
+                <button type="button" class="details-action-btn" id="details-open" data-action="details-open">
+                    <svg viewBox="0 0 24 24" fill="currentColor" class="w-4 h-4">
+                        <path d="M19 19H5V5h7V3H5a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7h-2v7zM14 3v2h3.59l-9.83 9.83 1.41 1.41L19 6.41V10h2V3h-7z"/>
+                    </svg>
+                    <span>Buka</span>
+                </button>
+                <button type="button" class="details-action-btn" id="details-rename" data-action="details-rename">
+                    <svg viewBox="0 0 24 24" fill="currentColor" class="w-4 h-4">
+                        <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04a.996.996 0 000-1.41l-2.34-2.34a.996.996 0 00-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/>
+                    </svg>
+                    <span>Rename</span>
+                </button>
+                <button type="button" class="details-action-btn" id="details-move" data-action="details-move">
+                    <svg viewBox="0 0 24 24" fill="currentColor" class="w-4 h-4">
+                        <path d="M20 6h-8l-2-2H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm-6 12l-4-4h3V10h2v4h3l-4 4z"/>
+                    </svg>
+                    <span>Pindahkan</span>
+                </button>
+                <button type="button" class="details-action-btn details-action-btn-danger" id="details-delete" data-action="details-delete">
+                    <svg viewBox="0 0 24 24" fill="currentColor" class="w-4 h-4">
+                        <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/>
+                    </svg>
+                    <span>Hapus</span>
+                </button>
+            </div>
+        </footer>
+    </div>
+</div>
+
 <div class="context-menu absolute bg-white rounded-md shadow-lg z-50 hidden min-w-[180px] max-w-[280px]"
     id="context-menu" aria-hidden="true">
     <div class="context-menu-inner" role="menu">

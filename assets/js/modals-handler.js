@@ -1071,6 +1071,210 @@ async function confirmDownload() {
   closeDownloadOverlay();
 }
 
+// ============= Details Overlay =============
+
+let detailsState = {
+  item: null,
+  actionCallback: null
+};
+
+function openDetailsOverlay(item, onAction = null) {
+  console.log('[modals-handler] openDetailsOverlay called with:', item);
+  const overlay = document.getElementById('details-overlay');
+  console.log('[modals-handler] details-overlay element:', overlay);
+  if (!overlay) {
+    console.error('[modals-handler] details-overlay element not found!');
+    return;
+  }
+  
+  // Store state
+  detailsState.item = item;
+  detailsState.actionCallback = onAction;
+  
+  // Update details info
+  const nameEl = document.getElementById('details-name');
+  const typeEl = document.getElementById('details-type');
+  const modifiedEl = document.getElementById('details-modified');
+  const sizeEl = document.getElementById('details-size');
+  const pathEl = document.getElementById('details-path');
+  const subtitleEl = document.getElementById('details-subtitle');
+  const iconEl = document.getElementById('details-icon');
+  
+  if (nameEl) nameEl.textContent = item.name || '-';
+  
+  if (typeEl) {
+    if (item.type === 'folder') {
+      typeEl.textContent = 'Folder';
+    } else {
+      const ext = item.name?.split('.').pop()?.toUpperCase() || '-';
+      typeEl.textContent = ext + ' File';
+    }
+  }
+  
+  if (modifiedEl) {
+    // Format timestamp to readable date
+    let dateValue = item.modified || item.date || item.mtime;
+    if (dateValue) {
+      // Check if it's a unix timestamp (number or numeric string)
+      if (typeof dateValue === 'number' || /^\d+$/.test(dateValue)) {
+        const timestamp = parseInt(dateValue, 10);
+        // Unix timestamp is in seconds, JS Date expects milliseconds
+        const date = new Date(timestamp * 1000);
+        dateValue = date.toLocaleDateString('id-ID', {
+          day: 'numeric',
+          month: 'long', 
+          year: 'numeric',
+          hour: '2-digit',
+          minute: '2-digit'
+        });
+      }
+    }
+    modifiedEl.textContent = dateValue || '-';
+  }
+  
+  if (sizeEl) {
+    if (item.type === 'folder') {
+      sizeEl.textContent = '-';
+    } else {
+      sizeEl.textContent = item.size || formatFileSize(item.sizeBytes || 0);
+    }
+  }
+  
+  if (pathEl) {
+    const path = item.path || '-';
+    pathEl.textContent = path;
+    pathEl.title = path;
+  }
+  
+  if (subtitleEl) {
+    subtitleEl.textContent = item.name || 'Informasi lengkap';
+  }
+  
+  // Update icon based on type
+  if (iconEl) {
+    if (item.type === 'folder') {
+      iconEl.innerHTML = `<svg viewBox="0 0 24 24" fill="currentColor" class="w-6 h-6">
+        <path d="M10 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2h-8l-2-2z"/>
+      </svg>`;
+      iconEl.classList.add('details-icon-folder');
+      iconEl.classList.remove('details-icon-file');
+    } else {
+      iconEl.innerHTML = `<svg viewBox="0 0 24 24" fill="currentColor" class="w-6 h-6">
+        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6z"/>
+        <path d="M14 2v6h6"/>
+      </svg>`;
+      iconEl.classList.add('details-icon-file');
+      iconEl.classList.remove('details-icon-folder');
+    }
+  }
+  
+  // Show overlay
+  overlay.hidden = false;
+  overlay.classList.remove('hidden');
+  overlay.classList.add('visible');
+  overlay.setAttribute('aria-hidden', 'false');
+  overlay.style.display = 'flex';
+  
+  // Focus close button
+  setTimeout(() => {
+    document.getElementById('details-close-btn')?.focus();
+  }, 100);
+}
+
+function closeDetailsOverlay() {
+  const overlay = document.getElementById('details-overlay');
+  if (!overlay) return;
+  
+  overlay.classList.remove('visible');
+  overlay.classList.add('hidden');
+  overlay.setAttribute('aria-hidden', 'true');
+  overlay.hidden = true;
+  overlay.style.display = 'none';
+  
+  // Clear state
+  detailsState = { item: null, actionCallback: null };
+}
+
+function handleDetailsAction(action) {
+  const item = detailsState.item;
+  if (!item) return;
+  
+  closeDetailsOverlay();
+  
+  switch (action) {
+    case 'details-open':
+      if (item.type === 'folder') {
+        // Navigate to folder using loadFiles if available
+        if (typeof window.loadFiles === 'function') {
+          window.loadFiles(item.path);
+        } else {
+          window.location.hash = item.path || '';
+        }
+      } else {
+        // Open file in preview modal
+        if (typeof window.openPreviewModal === 'function') {
+          window.openPreviewModal(item.path, item.name);
+        } else {
+          // Fallback - open in new tab
+          const baseUrl = window.location.origin + window.location.pathname.replace('index.php', '');
+          window.open(baseUrl + 'api.php?action=raw&path=' + encodeURIComponent(item.path), '_blank');
+        }
+      }
+      break;
+    case 'details-rename':
+      if (typeof window.openRenameModal === 'function') {
+        window.openRenameModal(item.path, item.name);
+      } else if (typeof window.openRenameOverlay === 'function') {
+        window.openRenameOverlay(item);
+      }
+      break;
+    case 'details-move':
+      if (typeof window.openMoveModal === 'function') {
+        window.openMoveModal([item.path]);
+      } else if (typeof window.openMoveOverlay === 'function') {
+        window.openMoveOverlay([item.path]);
+      }
+      break;
+    case 'details-delete':
+      if (typeof window.openDeleteOverlay === 'function') {
+        window.openDeleteOverlay([item], async (items) => {
+          // Delete handler - use deleteItems from enhanced-ui
+          if (typeof window.deleteItems === 'function') {
+            const paths = items.map(i => i.path || i);
+            await window.deleteItems(paths);
+          }
+        });
+      }
+      break;
+  }
+}
+
+// Setup details overlay event listeners
+document.addEventListener('DOMContentLoaded', () => {
+  // Close button
+  document.getElementById('details-close-btn')?.addEventListener('click', closeDetailsOverlay);
+  
+  // Click outside to close
+  document.getElementById('details-overlay')?.addEventListener('click', function(e) {
+    if (e.target === this) closeDetailsOverlay();
+  });
+  
+  // Action buttons
+  ['details-open', 'details-rename', 'details-move', 'details-delete'].forEach(action => {
+    document.getElementById(action)?.addEventListener('click', () => handleDetailsAction(action));
+  });
+  
+  // Escape key to close
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+      const detailsOverlay = document.getElementById('details-overlay');
+      if (detailsOverlay && !detailsOverlay.classList.contains('hidden')) {
+        closeDetailsOverlay();
+      }
+    }
+  });
+});
+
 // ============= Helper Functions =============
 
 function formatFileSize(bytes) {
@@ -1119,3 +1323,6 @@ window.confirmDelete = confirmDelete;
 window.openDownloadOverlay = openDownloadOverlay;
 window.closeDownloadOverlay = closeDownloadOverlay;
 window.confirmDownload = confirmDownload;
+window.openDetailsOverlay = openDetailsOverlay;
+window.closeDetailsOverlay = closeDetailsOverlay;
+window.handleDetailsAction = handleDetailsAction;

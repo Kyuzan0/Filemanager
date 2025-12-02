@@ -10,7 +10,7 @@
     <!-- Anti-flash: Set theme before anything else -->
     <script>
         (function() {
-            const theme = localStorage.getItem('theme') || 'light';
+            const theme = localStorage.getItem('theme') || 'dark';
             document.documentElement.setAttribute('data-theme', theme);
             if (theme === 'dark') {
                 document.documentElement.style.backgroundColor = '#0f172a';
@@ -141,7 +141,7 @@
     
     // Theme
     function initTheme() {
-        const t = localStorage.getItem('theme') || 'light';
+        const t = localStorage.getItem('theme') || 'dark';
         document.documentElement.setAttribute('data-theme', t);
         $('theme-toggle').querySelector('i').className = t === 'dark' ? 'ri-sun-line' : 'ri-moon-line';
     }

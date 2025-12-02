@@ -765,14 +765,31 @@ function render() {
           window.openPreviewModal(path, fileData?.name);
         }
       } else if (action === 'download') {
-        // Direct download
-        const a = document.createElement('a');
-        a.href = `api.php?action=raw&path=${encodeURIComponent(path)}`;
-        a.download = fileData?.name || 'download';
-        a.style.display = 'none';
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
+        // Show download modal first
+        if (window.openDownloadOverlay) {
+          window.openDownloadOverlay(
+            { ...fileData, path },
+            async (file) => {
+              const downloadUrl = `api.php?action=raw&path=${encodeURIComponent(file.path)}`;
+              const a = document.createElement('a');
+              a.href = downloadUrl;
+              a.download = file.name || 'download';
+              a.style.display = 'none';
+              document.body.appendChild(a);
+              a.click();
+              document.body.removeChild(a);
+            }
+          );
+        } else {
+          // Fallback: Direct download
+          const a = document.createElement('a');
+          a.href = `api.php?action=raw&path=${encodeURIComponent(path)}`;
+          a.download = fileData?.name || 'download';
+          a.style.display = 'none';
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+        }
       } else if (action === 'rename') {
         if (window.openRenameModal) {
           window.openRenameModal(path, fileData?.name);
@@ -833,6 +850,8 @@ function showMobileContextMenu(event, fileData) {
     ...(fileData.type === 'file' ? [{ action: 'download', icon: 'ri-download-line', label: 'Unduh', color: 'text-green-600 dark:text-green-400' }] : []),
     { action: 'rename', icon: 'ri-edit-line', label: 'Ganti Nama', color: 'text-amber-600 dark:text-amber-400' },
     { action: 'move', icon: 'ri-folder-transfer-line', label: 'Pindahkan', color: 'text-purple-600 dark:text-purple-400' },
+    { divider: true },
+    { action: 'details', icon: 'ri-information-line', label: 'Detail', color: 'text-blue-500 dark:text-blue-400' },
     { divider: true },
     { action: 'delete', icon: 'ri-delete-bin-line', label: 'Hapus', color: 'text-red-500 dark:text-red-400' }
   ];
@@ -900,13 +919,31 @@ async function handleMobileAction(action, fileData) {
       window.openPreviewModal(path, name);
     }
   } else if (action === 'download') {
-    const a = document.createElement('a');
-    a.href = `api.php?action=raw&path=${encodeURIComponent(path)}`;
-    a.download = name || 'download';
-    a.style.display = 'none';
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
+    // Show download modal first
+    if (window.openDownloadOverlay) {
+      window.openDownloadOverlay(
+        { name, type, path, ...fileData },
+        async (file) => {
+          const downloadUrl = `api.php?action=raw&path=${encodeURIComponent(file.path)}`;
+          const a = document.createElement('a');
+          a.href = downloadUrl;
+          a.download = file.name || 'download';
+          a.style.display = 'none';
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+        }
+      );
+    } else {
+      // Fallback: Direct download
+      const a = document.createElement('a');
+      a.href = `api.php?action=raw&path=${encodeURIComponent(path)}`;
+      a.download = name || 'download';
+      a.style.display = 'none';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+    }
   } else if (action === 'rename') {
     if (window.openRenameModal) {
       window.openRenameModal(path, name);
@@ -933,6 +970,10 @@ async function handleMobileAction(action, fileData) {
       );
     } else if (confirm(`Hapus "${name}"?`)) {
       await deleteItems([path]);
+    }
+  } else if (action === 'details') {
+    if (window.openDetailsOverlay) {
+      window.openDetailsOverlay({ name, type, path, ...fileData });
     }
   }
 }
@@ -1107,17 +1148,32 @@ function initializeEventHandlers() {
         window.openPreviewModal(path, fileData?.name);
       }
     } else if (action === 'download') {
-      // Use download modal
+      // Show download modal first, then download on confirm
       if (window.openDownloadOverlay) {
         window.openDownloadOverlay(
           { ...fileData, path },
           async (file) => {
-            window.open(`api.php?action=content&path=${encodeURIComponent(file.path)}`);
+            // Direct download using raw action
+            const downloadUrl = `api.php?action=raw&path=${encodeURIComponent(file.path)}`;
+            const a = document.createElement('a');
+            a.href = downloadUrl;
+            a.download = file.name || 'download';
+            a.style.display = 'none';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
           }
         );
       } else {
-        // Fallback to direct download
-        window.open(`api.php?action=content&path=${encodeURIComponent(path)}`);
+        // Fallback: Direct download if modal not available
+        const downloadUrl = `api.php?action=raw&path=${encodeURIComponent(path)}`;
+        const a = document.createElement('a');
+        a.href = downloadUrl;
+        a.download = fileData?.name || 'download';
+        a.style.display = 'none';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
       }
     } else if (action === 'rename') {
       // Use rename modal
@@ -1152,6 +1208,15 @@ function initializeEventHandlers() {
         window.openMoveModal([path]);
       } else if (window.openMoveOverlay) {
         window.openMoveOverlay([path]);
+      }
+    } else if (action === 'details') {
+      // Open details overlay
+      console.log('[enhanced-ui] details action triggered, fileData:', fileData);
+      console.log('[enhanced-ui] window.openDetailsOverlay:', typeof window.openDetailsOverlay);
+      if (window.openDetailsOverlay) {
+        window.openDetailsOverlay({ ...fileData, path });
+      } else {
+        console.error('[enhanced-ui] openDetailsOverlay not available on window');
       }
     }
   });
@@ -1719,7 +1784,7 @@ function initializeEventHandlers() {
   });
 
   // Load saved theme
-  const savedTheme = localStorage.getItem('theme') || 'light';
+  const savedTheme = localStorage.getItem('theme') || 'dark';
   document.documentElement.setAttribute('data-theme', savedTheme);
   app.setAttribute('data-theme', savedTheme);
   document.getElementById('toggleTheme').textContent = savedTheme === 'light' ? '🌙' : '☀️';
@@ -1813,6 +1878,10 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
   
   console.log('[enhanced-ui] DOM elements initialized successfully');
+  
+  // Export functions to window for use by modals-handler
+  window.loadFiles = loadFiles;
+  window.deleteItems = deleteItems;
   
   // Initialize event handlers
   initializeEventHandlers();

@@ -4,7 +4,7 @@
     <!-- Anti-flash: Set theme before anything else -->
     <script>
         (function() {
-            const theme = localStorage.getItem('theme') || 'light';
+            const theme = localStorage.getItem('theme') || 'dark';
             document.documentElement.setAttribute('data-theme', theme);
             if (theme === 'dark') {
                 document.documentElement.style.backgroundColor = '#0f1419';
@@ -178,6 +178,11 @@
         <button data-action="move" class="context-menu-item" role="menuitem">
             <i class="ri-folder-transfer-line context-menu-icon"></i>
             <span>Pindahkan</span>
+        </button>
+        <div class="context-menu-divider"></div>
+        <button data-action="details" class="context-menu-item" role="menuitem">
+            <i class="ri-information-line context-menu-icon"></i>
+            <span>Detail</span>
         </button>
         <div class="context-menu-divider"></div>
         <button data-action="delete" class="context-menu-item context-menu-item-danger" role="menuitem">

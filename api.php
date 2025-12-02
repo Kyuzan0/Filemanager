@@ -69,10 +69,20 @@ try {
             'wma' => 'audio/x-ms-wma',
             // Documents
             'pdf' => 'application/pdf',
+            // Archives
+            'zip' => 'application/zip',
+            'rar' => 'application/x-rar-compressed',
+            '7z' => 'application/x-7z-compressed',
+            'tar' => 'application/x-tar',
+            'gz' => 'application/gzip',
         ];
         
         $ext = strtolower(pathinfo($realFile, PATHINFO_EXTENSION));
         $mimeType = isset($mimeTypes[$ext]) ? $mimeTypes[$ext] : 'application/octet-stream';
+        
+        // Determine if file should be downloaded as attachment (not displayed inline)
+        $forceDownload = in_array($ext, ['zip', 'rar', '7z', 'tar', 'gz', 'exe', 'msi', 'dmg', 'iso']);
+        $disposition = $forceDownload ? 'attachment' : 'inline';
         
         // Clear any previous output
         if (ob_get_level()) {
@@ -82,7 +92,7 @@ try {
         // Set appropriate headers
         header('Content-Type: ' . $mimeType);
         header('Content-Length: ' . filesize($realFile));
-        header('Content-Disposition: inline; filename="' . basename($realFile) . '"');
+        header('Content-Disposition: ' . $disposition . '; filename="' . basename($realFile) . '"');
         header('Cache-Control: public, max-age=3600');
         header('Accept-Ranges: bytes');
         

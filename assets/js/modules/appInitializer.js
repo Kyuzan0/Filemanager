@@ -990,6 +990,17 @@ function handleContextMenuAction(action) {
         case 'copy-path':
             copyPathToClipboard(targetItem.path);
             break;
+        case 'details':
+            if (typeof window.openDetailsOverlay === 'function') {
+                window.openDetailsOverlay(targetItem);
+            }
+            break;
+        case 'download':
+            downloadFile(targetItem);
+            break;
+        case 'move':
+            openMoveOverlayWrapper([targetItem.path]);
+            break;
     }
 }
 
@@ -2295,7 +2306,7 @@ function setupAnalytics() {
  */
 function setupTheme() {
     // Check for saved theme preference or default to light
-    const savedTheme = localStorage.getItem('theme') || 'light';
+    const savedTheme = localStorage.getItem('theme') || 'dark';
     document.documentElement.setAttribute('data-theme', savedTheme);
     
     // Add theme toggle button if needed
