@@ -12,6 +12,12 @@
                 <h2 class="preview-title text-lg md:text-xl font-semibold dark:text-slate-200" id="preview-title">
                     Pratinjau</h2>
             </div>
+            <div class="preview-controls flex items-center gap-2">
+                <button class="btn-word-wrap" id="previewWordWrapToggle" title="Toggle Word Wrap">
+                    <i class="ri-text-wrap"></i>
+                    <span class="hidden sm:inline text-xs">Wrap</span>
+                </button>
+            </div>
             <p class="preview-meta text-sm text-gray-500 dark:text-slate-400" id="preview-meta"></p>
         </header>
         <div class="preview-body">

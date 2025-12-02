@@ -310,6 +310,24 @@
     text-overflow: ellipsis;
   }
   
+  /* Word wrap enabled state overrides */
+  .word-wrap-enabled #fileTable tbody tr td:nth-child(2) {
+    white-space: normal;
+    overflow: visible;
+    text-overflow: clip;
+    flex: 1 1 auto;
+    min-width: 200px;
+  }
+  
+  .word-wrap-enabled #fileTable tbody tr td:nth-child(2) .file-name,
+  .word-wrap-enabled #fileTable tbody tr td:nth-child(2) a {
+    white-space: normal;
+    overflow: visible;
+    text-overflow: clip;
+    word-break: break-word;
+    overflow-wrap: break-word;
+  }
+  
   /* Type - hide */
   #fileTable tbody tr td:nth-child(3) {
     display: none;
@@ -849,5 +867,91 @@
     .preview-footer {
       padding-bottom: calc(1rem + env(safe-area-inset-bottom));
     }
+  }
+}
+
+/* ============================================================================
+   PREVIEW DIALOG WORD WRAP
+   ============================================================================ */
+
+/* Word wrap for preview dialog */
+.preview-dialog.word-wrap-enabled .preview-editor-wrapper {
+  overflow-x: auto;
+  max-width: 100%;
+}
+
+.preview-dialog.word-wrap-enabled .preview-editor-wrapper .cm-editor {
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  word-break: break-word;
+}
+
+.preview-dialog.word-wrap-enabled .preview-editor-wrapper .cm-content {
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  word-break: break-word;
+}
+
+.preview-dialog.word-wrap-enabled .preview-editor-wrapper .cm-line {
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  word-break: break-word;
+}
+
+/* Fallback for textarea editor */
+.preview-dialog.word-wrap-enabled .preview-editor {
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  word-break: break-word;
+}
+
+/* Preview dialog word wrap button positioning */
+.preview-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.preview-controls .btn-word-wrap {
+  padding: 6px 10px;
+  font-size: 12px;
+  border-radius: 6px;
+  background: var(--glass);
+  border: 1px solid var(--border);
+  color: var(--muted);
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.preview-controls .btn-word-wrap:hover {
+  background: var(--hover);
+  color: var(--text);
+}
+
+.preview-controls .btn-word-wrap.active {
+  background: var(--accent);
+  color: white;
+  border-color: var(--accent);
+}
+
+/* Mobile preview dialog adjustments */
+@media (max-width: 767px) {
+  .preview-controls {
+    gap: 6px;
+  }
+  
+  .preview-controls .btn-word-wrap {
+    padding: 5px 8px;
+    font-size: 11px;
+  }
+  
+  .preview-controls .btn-word-wrap span {
+    display: none;
   }
 }

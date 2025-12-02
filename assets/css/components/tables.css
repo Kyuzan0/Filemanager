@@ -52,6 +52,47 @@ td:nth-child(2) {
   min-width: 0;
 }
 
+/* Word wrap enabled state overrides */
+.word-wrap-enabled td:nth-child(2) {
+  white-space: normal;
+  overflow: visible;
+  text-overflow: clip;
+  word-break: break-word;
+  overflow-wrap: break-word;
+}
+
+.word-wrap-enabled .file-name {
+  overflow: visible;
+}
+
+.word-wrap-enabled .file-name > span:not(.file-icon) {
+  white-space: normal;
+  overflow: visible;
+  text-overflow: clip;
+  word-break: break-word;
+  overflow-wrap: break-word;
+}
+
+/* Table container for horizontal scrolling when word wrap is enabled */
+.word-wrap-enabled #fileTable {
+  overflow-x: auto;
+  display: block;
+  width: 100%;
+}
+
+.word-wrap-enabled #fileTable thead,
+.word-wrap-enabled #fileTable tbody,
+.word-wrap-enabled #fileTable tr {
+  display: table;
+  width: 100%;
+}
+
+.word-wrap-enabled #fileTable thead {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
 [data-theme="dark"] th,
 [data-theme="dark"] td {
   border-color: rgba(255, 255, 255, 0.08);

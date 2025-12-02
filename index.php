@@ -74,6 +74,14 @@
                     </button>
                 </div>
 
+                <!-- Word Wrap Toggle (Mobile Only) -->
+                <div class="flex items-center gap-2 flex-shrink-0 md:hidden">
+                    <button class="btn-word-wrap" id="wordWrapToggle" title="Toggle Word Wrap">
+                        <i class="ri-text-wrap"></i>
+                        <span class="hidden sm:inline text-xs">Wrap</span>
+                    </button>
+                </div>
+
                 <!-- Right Group: Utilities -->
                 <div class="flex items-center gap-2 flex-shrink-0">
                     <!-- Selection Info & Actions -->
@@ -186,6 +194,8 @@
     <script src="assets/js/enhanced-ui.js"></script>
     <script src="assets/js/modals-handler.js"></script>
     <script src="assets/js/log-handler.js"></script>
+    <!-- Word Wrap Toggle Module -->
+    <script type="module" src="assets/js/modules/wordWrapToggle.js"></script>
     <!-- SPA Router -->
     <script src="assets/js/modules/router.js"></script>
 </body>

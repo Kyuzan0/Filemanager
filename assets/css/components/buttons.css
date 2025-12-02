@@ -131,3 +131,88 @@
   min-width: 28px !important;
   min-height: 28px !important;
 }
+
+/* Word Wrap Toggle Button */
+.btn-word-wrap {
+  padding: 6px 10px;
+  font-size: 12px;
+  border-radius: 6px;
+  background: var(--glass);
+  border: 1px solid var(--border);
+  color: var(--muted);
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.btn-word-wrap:hover {
+  background: var(--bg-secondary);
+  transform: translateY(-1px);
+}
+
+.btn-word-wrap.active {
+  background: var(--accent);
+  color: white;
+  border-color: var(--accent);
+}
+
+.btn-word-wrap i {
+  font-size: 14px;
+}
+
+/* Word wrap states */
+.word-wrap-enabled .file-name-cell,
+.word-wrap-enabled .file-name,
+.word-wrap-enabled td:nth-child(2) {
+  white-space: normal !important;
+  overflow: visible !important;
+  text-overflow: clip !important;
+}
+
+.word-wrap-enabled #fileTable {
+  overflow-x: auto !important;
+  display: block !important;
+}
+
+.word-wrap-enabled #fileTable tbody {
+  display: table-row-group !important;
+}
+
+.word-wrap-enabled #fileTable tbody tr {
+  display: table-row !important;
+}
+
+.word-wrap-enabled #fileTable tbody tr td {
+  display: table-cell !important;
+}
+
+/* Mobile specific word wrap styles */
+@media (max-width: 767px) {
+  .word-wrap-enabled #fileTable tbody tr {
+    flex-wrap: wrap !important;
+    min-height: auto !important;
+    padding: 8px !important;
+  }
+  
+  .word-wrap-enabled #fileTable tbody tr td:nth-child(2) {
+    flex: 1 1 100% !important;
+    order: 2 !important;
+    margin-bottom: 4px !important;
+    white-space: normal !important;
+    overflow: visible !important;
+    text-overflow: clip !important;
+  }
+  
+  .word-wrap-enabled #fileTable tbody tr td:nth-child(1) {
+    order: 1 !important;
+  }
+  
+  .word-wrap-enabled #fileTable tbody tr td:nth-child(5) {
+    order: 3 !important;
+  }
+  
+  .word-wrap-enabled #fileTable tbody tr td:nth-child(6) {
+    order: 4 !important;
+  }
+}

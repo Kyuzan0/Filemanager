@@ -184,6 +184,9 @@ async function initCodeMirror(container, content, filename, onChange) {
     // Syntax highlighting theme (VS Code-like)
     const syntaxTheme = await createSyntaxHighlightingTheme(isDarkMode);
     
+    // Check if word wrap is enabled from localStorage
+    const wordWrapEnabled = localStorage.getItem('fileManagerWordWrap') === 'true';
+    
     // Build extensions array
     const extensions = [
       lineNumbers(),
@@ -218,7 +221,8 @@ async function initCodeMirror(container, content, filename, onChange) {
           onChange(update.state.doc.toString());
         }
       }),
-      EditorView.lineWrapping
+      // Conditionally add line wrapping based on saved preference
+      ...(wordWrapEnabled ? [EditorView.lineWrapping] : [])
     ];
     
     // Create editor state
@@ -232,6 +236,9 @@ async function initCodeMirror(container, content, filename, onChange) {
       state,
       parent: container
     });
+    
+    // Store reference to the editor view for dynamic word wrap control
+    cmEditorView.state.wordWrapEnabled = wordWrapEnabled;
     
     // Focus editor
     cmEditorView.focus();
