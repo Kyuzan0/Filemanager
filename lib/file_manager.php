@@ -998,6 +998,60 @@ function move_item(string $root, string $oldRelativePath, string $newRelativePat
     }
 }
 
+function move_items(string $root, array $sourcePaths, string $targetPath): array
+{
+    $moved = [];
+    $errors = [];
+    
+    // Sanitize target path
+    $sanitizedTargetPath = sanitize_relative_path($targetPath);
+    
+    foreach ($sourcePaths as $sourcePath) {
+        try {
+            // Sanitize source path for comparison
+            $sanitizedSourcePath = sanitize_relative_path($sourcePath);
+            
+            // Prevent moving a folder into itself
+            if ($sanitizedSourcePath === $sanitizedTargetPath) {
+                throw new RuntimeException('Tidak dapat memindahkan folder ke dalam dirinya sendiri.');
+            }
+            
+            // Prevent moving a folder into its own subdirectory
+            if ($sanitizedTargetPath !== '' && strpos($sanitizedTargetPath, $sanitizedSourcePath . '/') === 0) {
+                throw new RuntimeException('Tidak dapat memindahkan folder ke dalam subdirektori-nya sendiri.');
+            }
+            
+            // Extract filename from source path
+            $sourceSegments = explode('/', $sourcePath);
+            $fileName = end($sourceSegments);
+            
+            // Build new full path
+            // If target path is empty, it means move to root
+            $newPath = $sanitizedTargetPath === '' ? $fileName : $sanitizedTargetPath . '/' . $fileName;
+            
+            // Move the item
+            $result = move_item($root, $sourcePath, $newPath);
+            $moved[] = $result;
+            
+            // Log activity
+            write_activity_log('move', $result['name'], $result['type'], $result['path'], [
+                'oldPath' => $sourcePath,
+                'newPath' => $result['path']
+            ]);
+        } catch (Throwable $e) {
+            $errors[] = [
+                'path' => $sourcePath,
+                'error' => $e->getMessage(),
+            ];
+        }
+    }
+    
+    return [
+        'moved' => $moved,
+        'errors' => $errors,
+    ];
+}
+
 // ============================================================================
 // ACTIVITY LOGGING FUNCTIONS
 // ============================================================================

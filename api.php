@@ -604,74 +604,62 @@ try {
     }
 
     if ($action === 'move') {
-        error_log('[DEBUG] Move action triggered');
-        
         if (strtoupper($method) !== 'POST') {
-            error_log('[DEBUG] Invalid method: ' . $method);
             throw new RuntimeException('Metode HTTP tidak diizinkan.');
         }
 
         $rawBody = file_get_contents('php://input');
         if ($rawBody === false) {
-            error_log('[DEBUG] Failed to read payload');
             throw new RuntimeException('Payload tidak dapat dibaca.');
         }
 
-        error_log('[DEBUG] Raw payload: ' . $rawBody);
-
         $payload = json_decode($rawBody, true);
         if (!is_array($payload)) {
-            error_log('[DEBUG] Invalid payload format');
             throw new RuntimeException('Payload tidak valid.');
         }
 
-        $sourcePath = isset($payload['sourcePath']) && is_string($payload['sourcePath']) ? trim($payload['sourcePath']) : '';
         $targetPath = isset($payload['targetPath']) && is_string($payload['targetPath']) ? trim($payload['targetPath']) : '';
+        
+        // Support both single path and multiple paths
+        $sourcePaths = [];
+        
+        if (isset($payload['sourcePaths']) && is_array($payload['sourcePaths'])) {
+            // New format: multiple paths
+            $sourcePaths = array_filter(array_map(function($path) {
+                if (!is_string($path)) return '';
+                return sanitize_relative_path(rawurldecode(trim($path)));
+            }, $payload['sourcePaths']), function($path) {
+                return $path !== '';
+            });
+        } elseif (isset($payload['sourcePath']) && is_string($payload['sourcePath'])) {
+            // Legacy format: single path
+            $sanitizedPath = sanitize_relative_path(rawurldecode(trim($payload['sourcePath'])));
+            if ($sanitizedPath !== '') {
+                $sourcePaths = [$sanitizedPath];
+            }
+        }
 
-        error_log('[DEBUG] Source path: "' . $sourcePath . '"');
-        error_log('[DEBUG] Target path: "' . $targetPath . '"');
-
-        if ($sourcePath === '') {
-            error_log('[DEBUG] Empty source path');
+        if (empty($sourcePaths)) {
             throw new RuntimeException('Path sumber wajib diisi.');
         }
 
-        // Allow empty target path (means move to root)
-        // But we need to handle it properly in the move_item function
-        error_log('[DEBUG] Target path validation passed');
-
-        $sanitizedSourcePath = sanitize_relative_path(rawurldecode($sourcePath));
+        // Sanitize target path
         $sanitizedTargetPath = sanitize_relative_path(rawurldecode($targetPath));
 
-        error_log('[DEBUG] Sanitized source path: "' . $sanitizedSourcePath . '"');
-        error_log('[DEBUG] Sanitized target path: "' . $sanitizedTargetPath . '"');
-
-        if ($sanitizedSourcePath === '') {
-            throw new RuntimeException('Path sumber tidak valid.');
+        // Move items
+        $result = move_items($root, $sourcePaths, $sanitizedTargetPath);
+        
+        $success = count($result['errors']) === 0;
+        
+        if (!$success) {
+            http_response_code(207); // Multi-Status for partial success
         }
 
-        // Extract the filename from source path
-        $sourceSegments = explode('/', $sanitizedSourcePath);
-        $fileName = end($sourceSegments);
-        
-        // Build the new full path
-        // If target path is empty, it means move to root
-        $newPath = $sanitizedTargetPath === '' ? $fileName : $sanitizedTargetPath . '/' . $fileName;
-        
-        error_log('[DEBUG] Final new path: "' . $newPath . '"');
-
-        $moved = move_item($root, $sanitizedSourcePath, $newPath);
-
-        // Log activity
-        write_activity_log('move', $moved['name'], $moved['type'], $moved['path'], [
-            'oldPath' => $sanitizedSourcePath,
-            'newPath' => $moved['path']
-        ]);
-
         echo json_encode([
-            'success' => true,
+            'success' => $success,
             'type' => 'move',
-            'item' => $moved,
+            'moved' => $result['moved'],
+            'errors' => $result['errors'],
             'generated_at' => time(),
         ], JSON_UNESCAPED_UNICODE);
         exit;

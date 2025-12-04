@@ -128,25 +128,38 @@ async function createFolder(folderName) {
 async function moveItems(sourcePaths, destPath) {
   showLoader(true);
   try {
-    for (const srcPath of sourcePaths) {
-      const url = `${API_BASE}?action=move`;
-      const response = await fetch(url, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          sourcePath: srcPath,
-          targetPath: destPath
-        })
-      });
-      
-      const data = await response.json();
-      if (!data.success) throw new Error(data.error || 'Move failed');
+    // Kirim semua paths dalam satu request untuk efisiensi
+    const url = `${API_BASE}?action=move`;
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        sourcePaths: sourcePaths, // Array of paths
+        targetPath: destPath || '' // Ensure empty string instead of undefined
+      })
+    });
+    
+    const data = await response.json();
+    if (!data.success) {
+      // Jika ada error dari server, tampilkan pesan error
+      const errorMsg = data.error || (data.errors && data.errors.length > 0 ? data.errors[0].error : 'Move failed');
+      throw new Error(errorMsg);
     }
     
     await loadFiles(currentPath);
     selected.clear();
-    showSuccess(`${sourcePaths.length} item(s) moved`);
+    
+    // Tampilkan pesan sukses dengan jumlah item yang dipindahkan
+    const movedCount = data.moved ? data.moved.length : sourcePaths.length;
+    const errorCount = data.errors ? data.errors.length : 0;
+    
+    if (errorCount > 0) {
+      showSuccess(`${movedCount} item(s) moved, ${errorCount} failed`);
+    } else {
+      showSuccess(`${movedCount} item(s) moved`);
+    }
   } catch (error) {
+    console.error('[moveItems] Error:', error);
     showError(error.message);
   } finally {
     showLoader(false);
@@ -1057,6 +1070,20 @@ async function handleDrop(e) {
   
   const sourcePaths = Array.from(draggedItems);
   row.classList.remove('drop-active');
+  
+  // Prevent dropping a folder into itself or its own subdirectory
+  for (const sourcePath of sourcePaths) {
+    // Check if dropping onto itself
+    if (sourcePath === targetPath) {
+      // Silently ignore - no toast needed
+      return;
+    }
+    // Check if dropping into a subdirectory of itself
+    if (targetPath.startsWith(sourcePath + '/')) {
+      // Silently ignore - no toast needed
+      return;
+    }
+  }
   
   await moveItems(sourcePaths, targetPath);
 }
