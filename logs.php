@@ -1,8 +1,9 @@
 <?php
 /**
- * Log Aktivitas Page - Compact Version
+ * Log Aktivitas Page
  * Halaman terpisah untuk menampilkan riwayat aktivitas file manager
  */
+require_once __DIR__ . '/lib/log_manager.php';
 ?>
 <!DOCTYPE html>
 <html lang="id">
@@ -369,66 +370,23 @@
     
     async function exportCSV() {
         try {
-            const p = new URLSearchParams({ action: 'logs', page: 1, limit: 10000 });
+            const p = new URLSearchParams({ action: 'logs-export', format: 'csv' });
             if (state.search) p.append('search', state.search);
             if (state.action) p.append('filterAction', state.action);
+            if (state.type) p.append('filterType', state.type);
             
-            const res = await fetch('api.php?' + p);
-            const data = await res.json();
-            if (!data.success) throw new Error(data.error);
-            
-            const rows = [['Waktu', 'Aksi', 'File', 'Tipe', 'Path', 'IP', 'Browser']];
-            (data.logs || []).forEach(l => {
-                let fileDisplay = l.filename || l.target || '';
-                let actionDisplay = l.action;
-                
-                if (l.action === 'bulk_trash') {
-                    actionDisplay = 'Hapus Massal';
-                    fileDisplay = l.filename || `${l.count || 0} item`;
-                    
-                    // Add item names to CSV if available - check multiple possible field names
-                    let itemsArray = null;
-                    if (l.items && Array.isArray(l.items)) {
-                        itemsArray = l.items;
-                    } else if (l.all_items && Array.isArray(l.all_items)) {
-                        itemsArray = l.all_items;
-                    }
-                    
-                    if (itemsArray && itemsArray.length > 0) {
-                        const itemsList = itemsArray.join(', ');
-                        fileDisplay += ` (${itemsList})`;
-                    }
-                } else if (l.action === 'bulk_upload') {
-                    actionDisplay = 'Upload Massal';
-                    fileDisplay = l.filename || `${l.count || 0} file`;
-                    
-                    // Add item names to CSV if available - check multiple possible field names
-                    let itemsArray = null;
-                    if (l.items && Array.isArray(l.items)) {
-                        itemsArray = l.items;
-                    } else if (l.all_items && Array.isArray(l.all_items)) {
-                        itemsArray = l.all_items;
-                    }
-                    
-                    if (itemsArray && itemsArray.length > 0) {
-                        const itemsList = itemsArray.join(', ');
-                        fileDisplay += ` (${itemsList})`;
-                    }
-                }
-                
-                rows.push([formatFull(l.timestamp), actionDisplay, fileDisplay, l.targetType || '', l.path || '', l.ip || '', getBrowser(l.userAgent)]);
-            });
-            
-            const csv = rows.map(r => r.map(c => `"${String(c).replace(/"/g, '""')}"`).join(',')).join('\n');
-            const blob = new Blob([csv], { type: 'text/csv' });
-            const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `log-${new Date().toISOString().slice(0,10)}.csv`; a.click();
+            const url = 'api.php?' + p;
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `log-${new Date().toISOString().slice(0,10)}.csv`;
+            a.click();
         } catch (e) { alert('Export gagal: ' + e.message); }
     }
     
     async function cleanup() {
         if (!confirm('Hapus log lebih dari 30 hari?')) return;
         try {
-            const res = await fetch('api.php', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'cleanup_logs', days: 30 }) });
+            const res = await fetch('api.php?action=logs-cleanup', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ days: 30 }) });
             const data = await res.json();
             if (!data.success) throw new Error(data.error);
             alert(`${data.deleted || 0} log dihapus`);

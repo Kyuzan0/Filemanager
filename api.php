@@ -1,6 +1,7 @@
 <?php
 require_once __DIR__ . '/lib/file_manager.php';
 require_once __DIR__ . '/lib/trash_manager.php';
+require_once __DIR__ . '/lib/log_manager.php';
 
 header('Content-Type: application/json; charset=utf-8');
 
@@ -148,28 +149,19 @@ try {
         // Get activity logs with optional filtering and pagination
         $page = isset($_GET['page']) ? max(1, (int)$_GET['page']) : 1;
         $limit = isset($_GET['limit']) ? max(1, min(100, (int)$_GET['limit'])) : 20;
-        $offset = ($page - 1) * $limit;
         
         $filters = [];
         if (isset($_GET['filterAction']) && $_GET['filterAction'] !== '') {
             $filters['action'] = $_GET['filterAction'];
         }
-        if (isset($_GET['filterFilename']) && $_GET['filterFilename'] !== '') {
-            $filters['filename'] = $_GET['filterFilename'];
+        if (isset($_GET['filterType']) && $_GET['filterType'] !== '') {
+            $filters['type'] = $_GET['filterType'];
         }
         if (isset($_GET['search']) && $_GET['search'] !== '') {
             $filters['search'] = $_GET['search'];
         }
-        if (isset($_GET['startDate']) && $_GET['startDate'] !== '') {
-            $filters['startDate'] = $_GET['startDate'];
-        }
-        if (isset($_GET['endDate']) && $_GET['endDate'] !== '') {
-            $filters['endDate'] = $_GET['endDate'];
-        }
         
-        $result = read_activity_logs($limit, $offset, $filters);
-        
-        $totalPages = $limit > 0 ? ceil($result['filtered'] / $limit) : 1;
+        $result = read_activity_logs($limit, $page, $filters);
         
         echo json_encode([
             'success' => true,
@@ -179,8 +171,7 @@ try {
                 'page' => $page,
                 'limit' => $limit,
                 'total' => $result['total'],
-                'filtered' => $result['filtered'],
-                'totalPages' => $totalPages
+                'totalPages' => $result['totalPages']
             ],
             'generated_at' => time(),
         ], JSON_UNESCAPED_UNICODE);
@@ -227,20 +218,38 @@ try {
             $filters['action'] = $_GET['filterAction'];
         }
         if (isset($_GET['filterType']) && $_GET['filterType'] !== '') {
-            $filters['targetType'] = $_GET['filterType'];
+            $filters['type'] = $_GET['filterType'];
         }
         if (isset($_GET['search']) && $_GET['search'] !== '') {
             $filters['search'] = $_GET['search'];
         }
         
+        $logs = export_activity_logs($filters, 10000);
+        
         if ($format === 'csv') {
             header('Content-Type: text/csv; charset=utf-8');
             header('Content-Disposition: attachment; filename="activity_logs_' . date('Y-m-d_His') . '.csv"');
-            echo export_logs_csv($filters);
+            
+            // CSV header
+            echo "Waktu,Aksi,File,Tipe,Path,IP,Browser\n";
+            
+            foreach ($logs as $log) {
+                $actionDisplay = $log['action'] ?? 'unknown';
+                $fileDisplay = $log['filename'] ?? '-';
+                $type = $log['targetType'] ?? '-';
+                $path = $log['path'] ?? '-';
+                $ip = $log['ip'] ?? '-';
+                $browser = $log['userAgent'] ?? '-';
+                $time = isset($log['timestamp']) ? date('Y-m-d H:i:s', $log['timestamp']) : '-';
+                
+                // Escape CSV values
+                $row = [$time, $actionDisplay, $fileDisplay, $type, $path, $ip, $browser];
+                echo '"' . implode('","', array_map(function($v) { return str_replace('"', '""', $v); }, $row)) . "\"\n";
+            }
         } else {
             header('Content-Type: application/json; charset=utf-8');
             header('Content-Disposition: attachment; filename="activity_logs_' . date('Y-m-d_His') . '.json"');
-            echo export_logs_json($filters);
+            echo json_encode(['logs' => $logs], JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
         }
         exit;
     }
