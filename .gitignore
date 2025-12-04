@@ -12,3 +12,5 @@ bak2/
 node_modules/
 
 docs/
+
+.trash/*

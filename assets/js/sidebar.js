@@ -12,7 +12,7 @@
     const NAV_PAGES = {
         'dashboard': 'index.php',
         'logs': 'logs.php',
-        'trash': 'index.php?view=trash'
+        'trash': 'trash.php'
     };
     
     // Initialize sidebar functionality

@@ -1,5 +1,6 @@
 <?php
 require_once __DIR__ . '/lib/file_manager.php';
+require_once __DIR__ . '/lib/trash_manager.php';
 
 header('Content-Type: application/json; charset=utf-8');
 
@@ -241,6 +242,148 @@ try {
             header('Content-Disposition: attachment; filename="activity_logs_' . date('Y-m-d_His') . '.json"');
             echo export_logs_json($filters);
         }
+        exit;
+    }
+    
+    // =========================================================================
+    // TRASH API ENDPOINTS
+    // =========================================================================
+    
+    if ($action === 'trash-list') {
+        $items = list_trash_items();
+        
+        echo json_encode([
+            'success' => true,
+            'type' => 'trash-list',
+            'items' => $items,
+            'count' => count($items),
+            'generated_at' => time(),
+        ], JSON_UNESCAPED_UNICODE);
+        exit;
+    }
+    
+    if ($action === 'trash-restore') {
+        if (strtoupper($method) !== 'POST') {
+            throw new RuntimeException('Metode HTTP tidak diizinkan.');
+        }
+        
+        $rawBody = file_get_contents('php://input');
+        if ($rawBody === false) {
+            throw new RuntimeException('Payload tidak dapat dibaca.');
+        }
+        
+        $payload = json_decode($rawBody, true);
+        if (!is_array($payload)) {
+            throw new RuntimeException('Payload tidak valid.');
+        }
+        
+        $ids = [];
+        if (isset($payload['ids']) && is_array($payload['ids'])) {
+            $ids = array_filter($payload['ids'], 'is_string');
+        } elseif (isset($payload['id']) && is_string($payload['id'])) {
+            $ids = [$payload['id']];
+        }
+        
+        if (empty($ids)) {
+            throw new RuntimeException('ID trash wajib diisi.');
+        }
+        
+        $result = restore_from_trash($root, $ids);
+        $success = count($result['errors']) === 0;
+        
+        if (!$success) {
+            http_response_code(207);
+        }
+        
+        echo json_encode([
+            'success' => $success,
+            'type' => 'trash-restore',
+            'restored' => $result['restored'],
+            'errors' => $result['errors'],
+            'generated_at' => time(),
+        ], JSON_UNESCAPED_UNICODE);
+        exit;
+    }
+    
+    if ($action === 'trash-delete') {
+        if (strtoupper($method) !== 'POST') {
+            throw new RuntimeException('Metode HTTP tidak diizinkan.');
+        }
+        
+        $rawBody = file_get_contents('php://input');
+        if ($rawBody === false) {
+            throw new RuntimeException('Payload tidak dapat dibaca.');
+        }
+        
+        $payload = json_decode($rawBody, true);
+        if (!is_array($payload)) {
+            throw new RuntimeException('Payload tidak valid.');
+        }
+        
+        $ids = [];
+        if (isset($payload['ids']) && is_array($payload['ids'])) {
+            $ids = array_filter($payload['ids'], 'is_string');
+        } elseif (isset($payload['id']) && is_string($payload['id'])) {
+            $ids = [$payload['id']];
+        }
+        
+        if (empty($ids)) {
+            throw new RuntimeException('ID trash wajib diisi.');
+        }
+        
+        $result = delete_from_trash_permanently($ids);
+        $success = count($result['errors']) === 0;
+        
+        if (!$success) {
+            http_response_code(207);
+        }
+        
+        echo json_encode([
+            'success' => $success,
+            'type' => 'trash-delete',
+            'deleted' => $result['deleted'],
+            'errors' => $result['errors'],
+            'generated_at' => time(),
+        ], JSON_UNESCAPED_UNICODE);
+        exit;
+    }
+    
+    if ($action === 'trash-empty') {
+        if (strtoupper($method) !== 'POST') {
+            throw new RuntimeException('Metode HTTP tidak diizinkan.');
+        }
+        
+        $result = empty_trash();
+        
+        echo json_encode([
+            'success' => true,
+            'type' => 'trash-empty',
+            'deleted' => $result['deleted'],
+            'count' => count($result['deleted']),
+            'generated_at' => time(),
+        ], JSON_UNESCAPED_UNICODE);
+        exit;
+    }
+    
+    if ($action === 'trash-cleanup') {
+        if (strtoupper($method) !== 'POST') {
+            throw new RuntimeException('Metode HTTP tidak diizinkan.');
+        }
+        
+        $rawBody = file_get_contents('php://input');
+        $payload = json_decode($rawBody, true);
+        $days = isset($payload['days']) ? max(1, (int)$payload['days']) : 30;
+        
+        $result = cleanup_old_trash($days);
+        
+        echo json_encode([
+            'success' => true,
+            'type' => 'trash-cleanup',
+            'deleted' => $result['deleted'],
+            'count' => count($result['deleted']),
+            'days' => $days,
+            'generated_at' => time(),
+        ], JSON_UNESCAPED_UNICODE);
         exit;
     }
     
@@ -524,16 +667,9 @@ try {
             throw new RuntimeException('Path yang akan dihapus wajib diisi.');
         }
 
-        error_log('[DEBUG] Calling delete_paths with paths: ' . implode(', ', $paths));
-        $result = delete_paths($root, $paths);
-        error_log('[DEBUG] Delete result: ' . json_encode($result));
-
-        // Log activity for successful deletions
-        if (!empty($result['deleted'])) {
-            foreach ($result['deleted'] as $deleted) {
-                write_activity_log('delete', $deleted['name'] ?? basename($deleted['path'] ?? ''), $deleted['type'] ?? 'file', $deleted['path'] ?? '');
-            }
-        }
+        error_log('[DEBUG] Moving items to trash: ' . implode(', ', $paths));
+        $result = move_to_trash($root, $paths);
+        error_log('[DEBUG] Trash result: ' . json_encode($result));
         
         $success = count($result['errors']) === 0;
 
@@ -544,7 +680,7 @@ try {
         echo json_encode([
             'success' => $success,
             'type' => 'delete',
-            'deleted' => $result['deleted'],
+            'deleted' => $result['trashed'],
             'failed' => $result['errors'],
             'generated_at' => time(),
         ], JSON_UNESCAPED_UNICODE);
