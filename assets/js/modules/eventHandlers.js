@@ -325,6 +325,112 @@ export function setupUploadDesktopHandler(
 }
 
 /**
+ * Mengatur event handler untuk tombol upload folder (mobile)
+ * @param {HTMLElement} btnUploadFolder - Tombol upload folder
+ * @param {HTMLElement} uploadFolderInput - Input upload folder
+ * @param {Object} state - State aplikasi
+ * @param {Function} hasUnsavedChanges - Fungsi cek perubahan belum disimpan
+ * @param {Function} confirmDiscardChanges - Fungsi konfirmasi perubahan
+ * @param {Function} uploadFolderWrapper - Fungsi upload folder
+ */
+export function setupUploadFolderHandler(
+    btnUploadFolder,
+    uploadFolderInput,
+    state,
+    hasUnsavedChanges,
+    confirmDiscardChanges,
+    uploadFolderWrapper
+) {
+    // Prevent multiple event listeners
+    if (btnUploadFolder._uploadFolderHandlerAttached) {
+        return;
+    }
+    btnUploadFolder._uploadFolderHandlerAttached = true;
+    
+    btnUploadFolder.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        
+        if (state.isLoading) {
+            return;
+        }
+        uploadFolderInput.value = '';
+        uploadFolderInput.click();
+    });
+
+    uploadFolderInput.addEventListener('change', async (event) => {
+        const { files } = event.target;
+        if (!files || files.length === 0) {
+            return;
+        }
+
+        if (hasUnsavedChanges()) {
+            const proceed = await confirmDiscardChanges('Perubahan belum disimpan. Tetap unggah folder baru?');
+            if (!proceed) {
+                uploadFolderInput.value = '';
+                return;
+            }
+        }
+
+        await uploadFolderWrapper(files);
+        uploadFolderInput.value = '';
+    });
+}
+
+/**
+ * Mengatur event handler untuk tombol upload folder desktop
+ * @param {HTMLElement} btnUploadFolderDesktop - Tombol upload folder desktop
+ * @param {HTMLElement} uploadFolderInputDesktop - Input upload folder desktop
+ * @param {Object} state - State aplikasi
+ * @param {Function} hasUnsavedChanges - Fungsi cek perubahan belum disimpan
+ * @param {Function} confirmDiscardChanges - Fungsi konfirmasi perubahan
+ * @param {Function} uploadFolderWrapper - Fungsi upload folder
+ */
+export function setupUploadFolderDesktopHandler(
+    btnUploadFolderDesktop,
+    uploadFolderInputDesktop,
+    state,
+    hasUnsavedChanges,
+    confirmDiscardChanges,
+    uploadFolderWrapper
+) {
+    // Prevent multiple event listeners
+    if (btnUploadFolderDesktop._uploadFolderHandlerAttached) {
+        return;
+    }
+    btnUploadFolderDesktop._uploadFolderHandlerAttached = true;
+    
+    btnUploadFolderDesktop.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        
+        if (state.isLoading) {
+            return;
+        }
+        uploadFolderInputDesktop.value = '';
+        uploadFolderInputDesktop.click();
+    });
+
+    uploadFolderInputDesktop.addEventListener('change', async (event) => {
+        const { files } = event.target;
+        if (!files || files.length === 0) {
+            return;
+        }
+
+        if (hasUnsavedChanges()) {
+            const proceed = await confirmDiscardChanges('Perubahan belum disimpan. Tetap unggah folder baru?');
+            if (!proceed) {
+                uploadFolderInputDesktop.value = '';
+                return;
+            }
+        }
+
+        await uploadFolderWrapper(files);
+        uploadFolderInputDesktop.value = '';
+    });
+}
+
+/**
  * Mengatur event handler untuk tombol delete selected desktop
  * @param {HTMLElement} btnDeleteSelectedDesktop - Tombol delete selected desktop
  * @param {Object} state - State aplikasi

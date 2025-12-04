@@ -33,6 +33,8 @@ import {
     setupSplitActionHandler,
     setupLogExportHandler,
     setupUploadDesktopHandler,
+    setupUploadFolderHandler,
+    setupUploadFolderDesktopHandler,
     setupDeleteSelectedDesktopHandler,
     setupSearchModalHandler,
     setupSelectAllMobileButtonHandler,
@@ -483,7 +485,8 @@ import {
     moveItem, 
     renameItem, 
     createItem, 
-    uploadFiles 
+    uploadFiles,
+    uploadFolder 
 } from './fileOperations.js';
 import {
     hasUnsavedChanges,
@@ -1455,6 +1458,24 @@ async function uploadFilesWrapper(files) {
 }
 
 /**
+ * Wrapper function untuk upload folder dengan parameter lengkap
+ * @param {FileList} files - Daftar file dari folder yang akan diunggah
+ */
+async function uploadFolderWrapper(files) {
+    console.log('[DEBUG] uploadFolderWrapper called with files:', files);
+    
+    await uploadFolder(
+        files,
+        state,
+        setLoading,
+        setError,
+        fetchDirectoryWrapper,
+        flashStatus,
+        elements.btnUploadFolder
+    );
+}
+
+/**
  * Wrapper function untuk create item dengan parameter lengkap
  * @param {string} kind - Jenis item ('file' atau 'folder')
  * @param {string} name - Nama item
@@ -1942,6 +1963,42 @@ function setupEventHandlers() {
             () => hasUnsavedChanges(state.preview),
             confirmDiscardChanges,
             uploadFilesWrapper
+        );
+    }
+
+    // Setup folder upload handler (mobile)
+    if (!warnIfMissing('uploadFolder', elements.btnUploadFolder) && !warnIfMissing('uploadFolderInput', elements.uploadFolderInput)) {
+        setupUploadFolderHandler(
+            elements.btnUploadFolder,
+            elements.uploadFolderInput,
+            state,
+            () => hasUnsavedChanges(state.preview),
+            confirmDiscardChanges,
+            uploadFolderWrapper
+        );
+    }
+
+    // Setup folder upload handler (top bar - new buttons)
+    if (!warnIfMissing('uploadFolderBtn', elements.uploadFolderBtn) && !warnIfMissing('folderInput', elements.folderInput)) {
+        setupUploadFolderHandler(
+            elements.uploadFolderBtn,
+            elements.folderInput,
+            state,
+            () => hasUnsavedChanges(state.preview),
+            confirmDiscardChanges,
+            uploadFolderWrapper
+        );
+    }
+
+    // Setup folder upload handler (desktop)
+    if (!warnIfMissing('uploadFolderDesktop', elements.btnUploadFolderDesktop) && !warnIfMissing('uploadFolderInputDesktop', elements.uploadFolderInputDesktop)) {
+        setupUploadFolderDesktopHandler(
+            elements.btnUploadFolderDesktop,
+            elements.uploadFolderInputDesktop,
+            state,
+            () => hasUnsavedChanges(state.preview),
+            confirmDiscardChanges,
+            uploadFolderWrapper
         );
     }
 

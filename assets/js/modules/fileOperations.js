@@ -618,6 +618,210 @@ async function uploadFilesIndividually(fileArray, state, CHUNK_SIZE, sendFormDat
 }
 
 /**
+ * Mengunggah folder beserta isinya ke server
+ * @param {FileList} files - Daftar file dari folder (dengan webkitRelativePath)
+ * @param {Object} state - State aplikasi
+ * @param {Function} setLoading - Fungsi set loading
+ * @param {Function} setError - Fungsi set error
+ * @param {Function} fetchDirectory - Fungsi fetch directory
+ * @param {Function} flashStatus - Fungsi flash status
+ * @param {HTMLElement} btnUpload - Tombol upload
+ */
+export async function uploadFolder(
+    files,
+    state,
+    setLoading,
+    setError,
+    fetchDirectory,
+    flashStatus,
+    btnUpload
+) {
+    if (!files || files.length === 0) {
+        return;
+    }
+
+    // Chunk threshold: files larger than this will be uploaded in chunks (5 MB)
+    const CHUNK_SIZE = 5 * 1024 * 1024;
+
+    // Helper to upload FormData
+    async function sendFormData(fd) {
+        const data = await apiUploadFiles(fd);
+        return data;
+    }
+
+    try {
+        setLoading(true);
+        if (btnUpload) btnUpload.disabled = true;
+
+        const fileArray = Array.from(files);
+        let anyUploadedNames = [];
+        let anyFailures = [];
+
+        // Group files by their relative folder path
+        const folderGroups = new Map();
+        for (const file of fileArray) {
+            const relativePath = file.webkitRelativePath || file.name;
+            const folderPath = relativePath.includes('/') 
+                ? relativePath.substring(0, relativePath.lastIndexOf('/'))
+                : '';
+            
+            if (!folderGroups.has(folderPath)) {
+                folderGroups.set(folderPath, []);
+            }
+            folderGroups.get(folderPath).push(file);
+        }
+
+        // Get root folder name for display
+        const rootFolderName = fileArray[0]?.webkitRelativePath?.split('/')[0] || 'folder';
+        if (flashStatus) flashStatus(`Mengunggah folder: ${rootFolderName}...`);
+
+        // Process each folder group
+        for (const [folderPath, folderFiles] of folderGroups) {
+            // Calculate target path including subfolders
+            const targetPath = folderPath 
+                ? (state.currentPath ? `${state.currentPath}/${folderPath}` : folderPath)
+                : state.currentPath;
+
+            // Separate small and large files
+            const smallFiles = folderFiles.filter(file => file.size <= CHUNK_SIZE);
+            const largeFiles = folderFiles.filter(file => file.size > CHUNK_SIZE);
+
+            // Upload small files in batch
+            if (smallFiles.length > 0) {
+                const fd = new FormData();
+                smallFiles.forEach(file => {
+                    fd.append('files[]', file, file.name);
+                    fd.append('relativePaths[]', file.webkitRelativePath || file.name);
+                });
+                fd.append('path', state.currentPath);
+                fd.append('folderUpload', 'true');
+
+                try {
+                    const data = await sendFormData(fd);
+                    const uploaded = Array.isArray(data.uploaded) ? data.uploaded : [];
+                    const failures = Array.isArray(data.errors) ? data.errors : [];
+                    
+                    if (uploaded.length > 0) {
+                        anyUploadedNames = anyUploadedNames.concat(uploaded.map(u => u.name));
+                    }
+                    if (failures.length > 0) {
+                        anyFailures = anyFailures.concat(failures);
+                    }
+                } catch (e) {
+                    console.warn('Batch folder upload failed, falling back to individual:', e);
+                    // Fall back to individual uploads
+                    for (const file of smallFiles) {
+                        const individualFd = new FormData();
+                        individualFd.append('files[]', file, file.name);
+                        individualFd.append('relativePaths[]', file.webkitRelativePath || file.name);
+                        individualFd.append('path', state.currentPath);
+                        individualFd.append('folderUpload', 'true');
+
+                        try {
+                            const data = await sendFormData(individualFd);
+                            const uploaded = Array.isArray(data.uploaded) ? data.uploaded : [];
+                            const failures = Array.isArray(data.errors) ? data.errors : [];
+                            if (uploaded.length > 0) {
+                                anyUploadedNames.push(...uploaded.map(u => u.name));
+                            }
+                            if (failures.length > 0) {
+                                anyFailures.push(...failures);
+                            }
+                        } catch (err) {
+                            anyFailures.push({ 
+                                name: file.webkitRelativePath || file.name, 
+                                error: err instanceof Error ? err.message : String(err) 
+                            });
+                        }
+                    }
+                }
+            }
+
+            // Upload large files individually (chunked) with relative path
+            for (const file of largeFiles) {
+                const totalChunks = Math.ceil(file.size / CHUNK_SIZE);
+                let finished = false;
+
+                for (let chunkIndex = 0; chunkIndex < totalChunks; chunkIndex++) {
+                    const start = chunkIndex * CHUNK_SIZE;
+                    const end = Math.min(start + CHUNK_SIZE, file.size);
+                    const blob = file.slice(start, end);
+
+                    const fd = new FormData();
+                    fd.append('file', blob, file.name);
+                    fd.append('originalName', file.name);
+                    fd.append('relativePath', file.webkitRelativePath || file.name);
+                    fd.append('chunkIndex', String(chunkIndex));
+                    fd.append('totalChunks', String(totalChunks));
+                    fd.append('path', state.currentPath);
+                    fd.append('folderUpload', 'true');
+
+                    try {
+                        const data = await sendFormData(fd);
+                        finished = !!(data && data.finished);
+                        const uploaded = Array.isArray(data.uploaded) ? data.uploaded : [];
+                        const failures = Array.isArray(data.errors) ? data.errors : [];
+
+                        if (uploaded.length > 0) {
+                            anyUploadedNames.push(...uploaded.map(u => u.name));
+                        }
+                        if (failures.length > 0) {
+                            anyFailures.push(...failures);
+                            break;
+                        }
+
+                        if (flashStatus) {
+                            const percent = Math.round(((chunkIndex + 1) / totalChunks) * 100);
+                            flashStatus(`Mengunggah ${file.webkitRelativePath || file.name}: ${percent}%`);
+                        }
+
+                        if (finished) break;
+                    } catch (e) {
+                        anyFailures.push({ 
+                            name: file.webkitRelativePath || file.name, 
+                            error: e instanceof Error ? e.message : String(e) 
+                        });
+                        break;
+                    }
+                }
+
+                if (!finished && !anyFailures.find(f => f.name === (file.webkitRelativePath || file.name))) {
+                    anyFailures.push({ 
+                        name: file.webkitRelativePath || file.name, 
+                        error: 'Upload chunked tidak selesai.' 
+                    });
+                }
+            }
+        }
+
+        // Prepare user feedback
+        if (anyUploadedNames.length > 0) {
+            if (flashStatus) flashStatus(`Folder "${rootFolderName}" berhasil diunggah (${anyUploadedNames.length} file)`);
+        } else {
+            if (flashStatus) flashStatus('Tidak ada file yang diunggah dari folder.');
+        }
+
+        if (anyFailures.length > 0) {
+            const example = anyFailures[0];
+            const detail = example && typeof example === 'object'
+                ? `${example.name || 'File'}: ${example.error || 'Tidak diketahui'}`
+                : 'Beberapa file gagal diunggah.';
+            setError(`Sebagian file gagal diunggah. ${detail}`);
+        } else {
+            setError('');
+        }
+
+        await fetchDirectory(state.currentPath, { silent: true });
+    } catch (error) {
+        const message = error instanceof Error ? error.message : 'Terjadi kesalahan saat mengunggah folder.';
+        setError(message);
+    } finally {
+        setLoading(false);
+        if (btnUpload) btnUpload.disabled = false;
+    }
+}
+
+/**
  * Membuka dokumen di Microsoft Word
  * @param {Object} item - Item yang akan dibuka
  * @param {Function} buildAbsoluteFileUrl - Fungsi build absolute file URL

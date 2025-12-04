@@ -12,10 +12,17 @@
         </button>
 
         <div class="relative">
-            <button id="btn-upload" data-action="upload" type="button" class="action-btn-mobile p-1.5 bg-blue-500 text-white rounded-md flex items-center justify-center" title="Upload">
+            <button id="btn-upload" data-action="upload" type="button" class="action-btn-mobile p-1.5 bg-blue-500 text-white rounded-md flex items-center justify-center" title="Upload File">
                 <i class="ri-upload-cloud-line text-base"></i>
             </button>
             <input id="upload-input" type="file" class="hidden" multiple>
+        </div>
+
+        <div class="relative">
+            <button id="btn-upload-folder" data-action="upload-folder" type="button" class="action-btn-mobile p-1.5 bg-cyan-500 text-white rounded-md flex items-center justify-center" title="Upload Folder">
+                <i class="ri-folder-upload-line text-base"></i>
+            </button>
+            <input id="upload-folder-input" type="file" class="hidden" webkitdirectory directory multiple>
         </div>
 
         <button type="button" class="action-btn-mobile p-1.5 bg-green-500 text-white rounded-md flex items-center justify-center" data-action="add-modal" data-kind="folder" title="Folder Baru">
@@ -52,6 +59,14 @@
                 <span>Upload File</span>
             </button>
             <input id="upload-input-desktop" type="file" class="hidden" multiple>
+        </div>
+
+        <div class="relative">
+            <button id="btn-upload-folder-desktop" data-action="upload-folder" type="button" class="px-4 py-2 bg-cyan-500 text-white rounded flex items-center gap-2" title="Unggah folder">
+                <i class="ri-folder-upload-line"></i>
+                <span>Upload Folder</span>
+            </button>
+            <input id="upload-folder-input-desktop" type="file" class="hidden" webkitdirectory directory multiple>
         </div>
 
         <button type="button" class="px-4 py-2 bg-green-500 text-white rounded flex items-center gap-2" data-action="add-modal" data-kind="folder" title="Folder Baru">

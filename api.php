@@ -471,7 +471,18 @@ try {
             $totalChunks = isset($_POST['totalChunks']) ? (int) $_POST['totalChunks'] : 1;
             $fileEntry = $_FILES['file'];
 
-            $result = upload_chunk($root, $targetPath, $fileEntry, $originalName, $chunkIndex, $totalChunks);
+            // Check if this is a folder upload with relative path
+            $isFolderUpload = isset($_POST['folderUpload']) && $_POST['folderUpload'] === 'true';
+            $relativePath = '';
+            if ($isFolderUpload && isset($_POST['relativePath']) && is_string($_POST['relativePath'])) {
+                $relativePath = $_POST['relativePath'];
+            }
+
+            if ($isFolderUpload && !empty($relativePath)) {
+                $result = upload_chunk_with_folder($root, $targetPath, $fileEntry, $originalName, $chunkIndex, $totalChunks, $relativePath);
+            } else {
+                $result = upload_chunk($root, $targetPath, $fileEntry, $originalName, $chunkIndex, $totalChunks);
+            }
 
             $hasErrors = !empty($result['errors'] ?? []);
             if ($hasErrors) {
@@ -528,7 +539,29 @@ try {
             throw new RuntimeException('Tidak ada file yang diunggah.');
         }
 
-        $result = upload_files($root, $targetPath, $_FILES['files']);
+        // Check if this is a folder upload with relative paths
+        $isFolderUpload = isset($_POST['folderUpload']) && $_POST['folderUpload'] === 'true';
+        $relativePaths = [];
+        if ($isFolderUpload && isset($_POST['relativePaths'])) {
+            // Handle both JSON string and array format
+            if (is_string($_POST['relativePaths'])) {
+                $decoded = json_decode($_POST['relativePaths'], true);
+                if (is_array($decoded)) {
+                    $relativePaths = $decoded;
+                }
+            } elseif (is_array($_POST['relativePaths'])) {
+                $relativePaths = $_POST['relativePaths'];
+            }
+        }
+
+        if ($isFolderUpload && !empty($relativePaths)) {
+            // Folder upload: use upload_files_with_folders
+            $result = upload_files_with_folders($root, $targetPath, $_FILES['files'], $relativePaths);
+        } else {
+            // Regular file upload
+            $result = upload_files($root, $targetPath, $_FILES['files']);
+        }
+        
         $hasUploads = !empty($result['uploaded']);
         $hasErrors = !empty($result['errors']);
 

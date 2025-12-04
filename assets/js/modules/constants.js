@@ -17,12 +17,21 @@ export const elements = {
     
     // Buttons
     btnUpload: document.getElementById('btn-upload'),
+    btnUploadFolder: document.getElementById('btn-upload-folder'),
     btnDeleteSelected: document.getElementById('btn-delete-selected'),
     btnMoveSelected: document.getElementById('btn-move-selected'),
+    
+    // New top bar buttons
+    uploadBtn: document.getElementById('uploadBtn'),
+    fileInput: document.getElementById('fileInput'),
+    uploadFolderBtn: document.getElementById('uploadFolderBtn'),
+    folderInput: document.getElementById('folderInput'),
     
     // Desktop buttons
     btnUploadDesktop: document.getElementById('btn-upload-desktop'),
     uploadInputDesktop: document.getElementById('upload-input-desktop'),
+    btnUploadFolderDesktop: document.getElementById('btn-upload-folder-desktop'),
+    uploadFolderInputDesktop: document.getElementById('upload-folder-input-desktop'),
     btnDeleteSelectedDesktop: document.getElementById('btn-delete-selected-desktop'),
     
     // Split action
@@ -34,6 +43,7 @@ export const elements = {
     
     // Upload
     uploadInput: document.getElementById('upload-input'),
+    uploadFolderInput: document.getElementById('upload-folder-input'),
     
     // Filter
     filterInput: document.getElementById('filter-input'),

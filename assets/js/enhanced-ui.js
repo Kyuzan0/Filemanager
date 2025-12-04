@@ -1361,8 +1361,57 @@ function initializeEventHandlers() {
 
   // Show modal first when upload button clicked
   document.getElementById('uploadBtn')?.addEventListener('click', () => {
+    modal?.classList.remove('hidden');
     modal?.classList.add('visible');
-    modal.style.display = 'flex';
+  });
+
+  // Upload folder button - directly triggers folder input
+  const folderInput = document.getElementById('folderInput');
+  document.getElementById('uploadFolderBtn')?.addEventListener('click', () => {
+    folderInput?.click();
+  });
+
+  // Handle folder selection
+  folderInput?.addEventListener('change', async (e) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+    
+    showLoader(true);
+    
+    try {
+      const formData = new FormData();
+      const relativePaths = [];
+      
+      for (const file of files) {
+        formData.append('files[]', file);
+        relativePaths.push(file.webkitRelativePath || file.name);
+      }
+      formData.append('relativePaths', JSON.stringify(relativePaths));
+      formData.append('folderUpload', 'true');
+      
+      const response = await fetch(`${API_BASE}?action=upload&path=${encodeURIComponent(currentPath)}`, {
+        method: 'POST',
+        body: formData
+      });
+      const data = await response.json();
+      
+      await loadFiles(currentPath);
+      folderInput.value = '';
+      
+      if (data.success) {
+        const uploadedCount = data.uploaded?.length || 0;
+        const failedCount = data.failed?.length || 0;
+        if (uploadedCount > 0) {
+          showSuccess(`${uploadedCount} file berhasil diunggah${failedCount > 0 ? `, ${failedCount} gagal` : ''}`);
+        }
+      } else {
+        showError(data.message || 'Gagal mengunggah folder');
+      }
+    } catch (err) {
+      showError('Gagal mengunggah folder: ' + err.message);
+    } finally {
+      showLoader(false);
+    }
   });
 
   // Handle file selection from input
@@ -1399,7 +1448,7 @@ function initializeEventHandlers() {
 
   document.getElementById('cancelUpload')?.addEventListener('click', () => {
     modal?.classList.remove('visible');
-    modal.style.display = 'none';
+    modal?.classList.add('hidden');
     fileInput.value = '';
     fileList.innerHTML = '';
   });
@@ -1425,7 +1474,7 @@ function initializeEventHandlers() {
       
       await loadFiles(currentPath);
       modal?.classList.remove('visible');
-      modal.style.display = 'none';
+      modal?.classList.add('hidden');
       fileInput.value = '';
       fileList.innerHTML = '';
       

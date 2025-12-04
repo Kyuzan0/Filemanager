@@ -72,6 +72,10 @@
                         <i class="ri-upload-cloud-2-line text-lg"></i>
                         <span class="text-sm font-medium hidden sm:inline">Upload</span>
                     </button>
+                    <button class="flex items-center gap-1.5 px-3 py-1.5 bg-white dark:bg-white/5 hover:bg-gray-50 dark:hover:bg-white/10 text-gray-700 dark:text-gray-200 border border-gray-200 dark:border-white/10 rounded-md transition-colors" id="uploadFolderBtn" title="Upload Folder">
+                        <i class="ri-folder-upload-line text-lg"></i>
+                        <span class="text-sm font-medium hidden sm:inline">Folder</span>
+                    </button>
                 </div>
 
                 <!-- Word Wrap Toggle (Mobile Only) -->
@@ -143,16 +147,17 @@
     <!-- MODAL UPLOAD -->
     <div class="modal-backdrop fixed inset-0 bg-black/45 hidden items-center justify-center z-50" id="modalBackdrop" role="dialog" aria-modal="true">
         <div class="modal" id="uploadModal" role="dialog" aria-modal="true">
-            <h3 class="text-lg font-semibold mb-2">Upload File</h3>
-            <p class="text-sm mb-4">Pilih satu atau beberapa file untuk diunggah ke direktori saat ini.</p>
+            <h3 class="text-lg font-semibold mb-2" id="uploadModalTitle">Upload File</h3>
+            <p class="text-sm mb-4" id="uploadModalDesc">Pilih satu atau beberapa file untuk diunggah ke direktori saat ini.</p>
             <div class="mb-4 flex items-center justify-center border-2 border-dashed border-slate-300 rounded-lg p-6 cursor-pointer hover:border-slate-400 transition-colors" id="fileDropZone">
                 <div class="text-center">
-                    <i class="ri-upload-cloud-line text-3xl text-slate-400 mb-2 block"></i>
-                    <p class="text-sm text-slate-600">Klik untuk memilih file atau drag & drop di sini</p>
+                    <i class="ri-upload-cloud-line text-3xl text-slate-400 mb-2 block" id="uploadIcon"></i>
+                    <p class="text-sm text-slate-600" id="uploadDropText">Klik untuk memilih file atau drag & drop di sini</p>
                 </div>
             </div>
             <input type="file" id="fileInput" multiple class="hidden">
-            <div class="mb-4 text-sm text-slate-600" id="fileList"></div>
+            <input type="file" id="folderInput" webkitdirectory directory multiple class="hidden">
+            <div class="mb-4 text-sm text-slate-600 max-h-48 overflow-y-auto" id="fileList"></div>
             <div class="flex gap-2 justify-end">
                 <button class="btn px-4 py-2 rounded-lg" id="cancelUpload">Batal</button>
                 <button class="btn btn-primary px-4 py-2 rounded-lg" id="doUpload">Unggah</button>
