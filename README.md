@@ -1,7 +1,7 @@
 # File Manager — Modern Web-Based File Management System
 
-**Version:** 2.0 (Modular Architecture)  
-**Date:** November 25, 2025  
+**Version:** 2.1 (Folder Upload Support)  
+**Date:** December 5, 2025  
 **Status:** ✅ Production Ready
 
 ---
@@ -127,7 +127,8 @@ Filemanager/
 - ✅ **Rename** - In-place renaming with conflict detection
 - ✅ **Move** - Drag & drop or dialog-based file moving
 - ✅ **Delete** - Single or bulk delete with confirmation
-- ✅ **Upload** - Chunked uploads (5MB chunks) for large files
+- ✅ **Upload Files** - Chunked uploads (5MB chunks) for large files
+- ✅ **Upload Folders** - Upload entire folder with subfolder structure preserved
 - ✅ **Download** - Direct file downloads
 - ✅ **Preview** - Text file preview and editing
 - ✅ **Media Preview** - Image and video preview
@@ -277,12 +278,22 @@ POST api.php?action=rename              # Rename item
 POST api.php?action=move                # Move item
 POST api.php?action=delete              # Delete item
 POST api.php?action=upload              # Upload files (chunked)
+POST api.php?action=upload              # Upload folder (with folderUpload=true & relativePaths)
 GET  api.php?action=content&path=...    # Read file content
 POST api.php?action=save                # Save file content
 GET  api.php?action=download&path=...   # Download file
 GET  api.php?action=logs                # Get activity logs
 POST api.php?action=cleanup-logs        # Cleanup old logs
 ```
+
+### Folder Upload Parameters
+
+When uploading folders, include these additional POST parameters:
+- `folderUpload=true` - Flag to indicate folder upload mode
+- `relativePaths` - JSON array of relative paths (from `webkitRelativePath`)
+- `files[]` - Array of files to upload
+
+The backend automatically creates subfolder structure based on relative paths.
 
 ### Core Libraries
 
@@ -293,6 +304,7 @@ POST api.php?action=cleanup-logs        # Cleanup old logs
 - `move_item()` - Move files/folders
 - `delete_item()` - Delete with recursion
 - `handle_upload()` - Chunked upload processing
+- `upload_files_with_folders()` - Upload with folder structure preservation
 - `read_text_file()` - Read editable files
 - `save_text_file()` - Save with backup
 - `sanitize_relative_path()` - Path sanitization
