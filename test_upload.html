@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Bulk Upload</title>
+</head>
+<body>
+    <h1>Test Bulk Upload Logging</h1>
+    <p>Upload multiple files to test if they create a single bulk log entry or individual log entries.</p>
+    
+    <form action="api.php?action=upload" method="post" enctype="multipart/form-data">
+        <input type="hidden" name="path" value="">
+        <input type="file" name="files[]" multiple required>
+        <button type="submit">Upload Files</button>
+    </form>
+    
+    <hr>
+    
+    <h2>Test Results</h2>
+    <p>After uploading, check the logs page to see if multiple small files create a single "bulk_upload" entry.</p>
+    <a href="logs.php">View Logs</a>
+</body>
+</html>

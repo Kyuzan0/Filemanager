@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Bulk Delete</title>
+</head>
+<body>
+    <h1>Test Bulk Delete Logging</h1>
+    <p>Test bulk delete functionality to verify it creates a single log entry for multiple items.</p>
+    
+    <h2>Step 1: Create Test Files</h2>
+    <p>First, create some test files to delete:</p>
+    <form action="api.php?action=create" method="post">
+        <input type="hidden" name="path" value="/">
+        <input type="hidden" name="type" value="file">
+        <p>
+            <label>Test file name:</label><br>
+            <input type="text" name="name" value="test-bulk-delete-1.txt" required>
+        </p>
+        <p>
+            <label>Content:</label><br>
+            <textarea name="content" rows="3">This is a test file for bulk delete testing.</textarea>
+        </p>
+        <button type="submit">Create File</button>
+    </form>
+    
+    <p>Create a few more files with different names (test-bulk-delete-2.txt, test-bulk-delete-3.txt, etc.)</p>
+    
+    <hr>
+    
+    <h2>Step 2: Test Bulk Delete</h2>
+    <p>Use the form below to delete multiple files at once:</p>
+    <form id="bulkDeleteForm" action="api.php?action=delete" method="post" onsubmit="prepareBulkDelete(event)">
+        <input type="hidden" name="paths" value="">
+        <p>
+            <label>Files to delete (one per line):</label><br>
+            <textarea id="pathsTextarea" rows="5" required>test-bulk-delete-1.txt
+test-bulk-delete-2.txt
+test-bulk-delete-3.txt</textarea>
+        </p>
+        <button type="submit">Delete Multiple Files</button>
+    </form>
+    
+    <hr>
+    
+    <h2>Test Results</h2>
+    <p>After deleting, check the logs page to see if multiple files create a single "bulk_trash" entry.</p>
+    <a href="logs.php">View Logs</a>
+    
+    <script>
+        function prepareBulkDelete(event) {
+            event.preventDefault();
+            
+            const pathsText = document.getElementById('pathsTextarea').value;
+            const paths = pathsText.split('\n').filter(path => path.trim());
+            
+            if (paths.length < 2) {
+                alert('Please enter at least 2 files to test bulk delete');
+                return;
+            }
+            
+            const form = document.getElementById('bulkDeleteForm');
+            const pathsInput = form.querySelector('input[name="paths"]');
+            
+            // Create JSON array for paths
+            pathsInput.value = JSON.stringify(paths);
+            
+            // Submit the form
+            form.submit();
+        }
+    </script>
+</body>
+</html>

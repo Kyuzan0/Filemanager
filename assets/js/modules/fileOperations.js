@@ -465,82 +465,40 @@ export async function uploadFiles(
         let anyUploadedNames = [];
         let anyFailures = [];
 
-        // Upload files sequentially to avoid overwhelming the server
-        for (const file of fileArray) {
-            // Small file: send as legacy multi-file field
-            if (file.size <= CHUNK_SIZE) {
-                const fd = new FormData();
+        // Separate small and large files
+        const smallFiles = fileArray.filter(file => file.size <= CHUNK_SIZE);
+        const largeFiles = fileArray.filter(file => file.size > CHUNK_SIZE);
+        
+        // Upload all small files together in a single request for bulk logging
+        if (smallFiles.length > 0) {
+            const fd = new FormData();
+            smallFiles.forEach(file => {
                 fd.append('files[]', file, file.name);
-                fd.append('path', state.currentPath);
+            });
+            fd.append('path', state.currentPath);
 
-                try {
-                    const data = await sendFormData(fd);
-                    const uploaded = Array.isArray(data.uploaded) ? data.uploaded : [];
-                    const failures = Array.isArray(data.errors) ? data.errors : [];
-                    if (uploaded.length > 0) {
-                        anyUploadedNames = anyUploadedNames.concat(uploaded.map(u => u.name));
-                    }
-                    if (failures.length > 0) {
-                        anyFailures = anyFailures.concat(failures);
-                    }
-                } catch (e) {
-                    anyFailures.push({ name: file.name, error: e instanceof Error ? e.message : String(e) });
+            try {
+                const data = await sendFormData(fd);
+                const uploaded = Array.isArray(data.uploaded) ? data.uploaded : [];
+                const failures = Array.isArray(data.errors) ? data.errors : [];
+                
+                if (uploaded.length > 0) {
+                    anyUploadedNames = anyUploadedNames.concat(uploaded.map(u => u.name));
                 }
-            } else {
-                // Large file: chunked upload
-                const totalChunks = Math.ceil(file.size / CHUNK_SIZE);
-                let finished = false;
-
-                for (let chunkIndex = 0; chunkIndex < totalChunks; chunkIndex++) {
-                    const start = chunkIndex * CHUNK_SIZE;
-                    const end = Math.min(start + CHUNK_SIZE, file.size);
-                    const blob = file.slice(start, end);
-
-                    const fd = new FormData();
-                    // Use field name 'file' for chunk upload (server recognizes 'file' + chunk metadata)
-                    fd.append('file', blob, file.name);
-                    fd.append('originalName', file.name);
-                    fd.append('chunkIndex', String(chunkIndex));
-                    fd.append('totalChunks', String(totalChunks));
-                    fd.append('path', state.currentPath);
-
-                    try {
-                        const data = await sendFormData(fd);
-                        finished = !!(data && data.finished);
-                        const uploaded = Array.isArray(data.uploaded) ? data.uploaded : [];
-                        const failures = Array.isArray(data.errors) ? data.errors : [];
-
-                        if (uploaded.length > 0) {
-                            anyUploadedNames = anyUploadedNames.concat(uploaded.map(u => u.name));
-                        }
-                        if (failures.length > 0) {
-                            anyFailures = anyFailures.concat(failures);
-                            // If server reports errors for chunk, break out and treat as failure
-                            break;
-                        }
-
-                        // Optionally report progress per-chunk (coarse)
-                        if (flashStatus) {
-                            const percent = Math.round(((chunkIndex + 1) / totalChunks) * 100);
-                            flashStatus(`Mengunggah ${file.name}: ${percent}%`);
-                        }
-
-                        // If assembly finished on server, break early
-                        if (finished) {
-                            break;
-                        }
-                    } catch (e) {
-                        anyFailures.push({ name: file.name, error: e instanceof Error ? e.message : String(e) });
-                        break;
-                    }
-                } // end chunks loop
-
-                // If not finished and no explicit server error, mark failure
-                if (!finished && !anyFailures.find(f => f.name === file.name)) {
-                    anyFailures.push({ name: file.name, error: 'Upload chunked tidak selesai.' });
+                if (failures.length > 0) {
+                    anyFailures = anyFailures.concat(failures);
                 }
-            } // end large-file handling
-        } // end per-file loop
+            } catch (e) {
+                // If bulk upload fails, fall back to individual uploads for small files
+                console.warn('Bulk upload failed, falling back to individual uploads:', e);
+                await uploadFilesIndividually(smallFiles, state, CHUNK_SIZE, sendFormData, flashStatus, anyUploadedNames, anyFailures);
+            }
+        }
+        
+        // Upload large files individually (chunked)
+        if (largeFiles.length > 0) {
+            await uploadFilesIndividually(largeFiles, state, CHUNK_SIZE, sendFormData, flashStatus, anyUploadedNames, anyFailures);
+        }
 
         // Prepare user feedback
         if (anyUploadedNames.length > 0) {
@@ -568,6 +526,95 @@ export async function uploadFiles(
         setLoading(false);
         if (btnUpload) btnUpload.disabled = false;
     }
+}
+
+/**
+ * Helper function to upload files individually
+ * @param {Array} fileArray - Array of files to upload
+ * @param {Object} state - Application state
+ * @param {number} CHUNK_SIZE - Chunk size threshold
+ * @param {Function} sendFormData - Function to send FormData
+ * @param {Function} flashStatus - Function to show status
+ * @param {Array} anyUploadedNames - Array to store uploaded names
+ * @param {Array} anyFailures - Array to store failures
+ */
+async function uploadFilesIndividually(fileArray, state, CHUNK_SIZE, sendFormData, flashStatus, anyUploadedNames, anyFailures) {
+    // Upload files sequentially to avoid overwhelming the server
+    for (const file of fileArray) {
+        // Small file: send as legacy multi-file field
+        if (file.size <= CHUNK_SIZE) {
+            const fd = new FormData();
+            fd.append('files[]', file, file.name);
+            fd.append('path', state.currentPath);
+
+            try {
+                const data = await sendFormData(fd);
+                const uploaded = Array.isArray(data.uploaded) ? data.uploaded : [];
+                const failures = Array.isArray(data.errors) ? data.errors : [];
+                if (uploaded.length > 0) {
+                    anyUploadedNames.push(...uploaded.map(u => u.name));
+                }
+                if (failures.length > 0) {
+                    anyFailures.push(...failures);
+                }
+            } catch (e) {
+                anyFailures.push({ name: file.name, error: e instanceof Error ? e.message : String(e) });
+            }
+        } else {
+            // Large file: chunked upload
+            const totalChunks = Math.ceil(file.size / CHUNK_SIZE);
+            let finished = false;
+
+            for (let chunkIndex = 0; chunkIndex < totalChunks; chunkIndex++) {
+                const start = chunkIndex * CHUNK_SIZE;
+                const end = Math.min(start + CHUNK_SIZE, file.size);
+                const blob = file.slice(start, end);
+
+                const fd = new FormData();
+                // Use field name 'file' for chunk upload (server recognizes 'file' + chunk metadata)
+                fd.append('file', blob, file.name);
+                fd.append('originalName', file.name);
+                fd.append('chunkIndex', String(chunkIndex));
+                fd.append('totalChunks', String(totalChunks));
+                fd.append('path', state.currentPath);
+
+                try {
+                    const data = await sendFormData(fd);
+                    finished = !!(data && data.finished);
+                    const uploaded = Array.isArray(data.uploaded) ? data.uploaded : [];
+                    const failures = Array.isArray(data.errors) ? data.errors : [];
+
+                    if (uploaded.length > 0) {
+                        anyUploadedNames.push(...uploaded.map(u => u.name));
+                    }
+                    if (failures.length > 0) {
+                        anyFailures.push(...failures);
+                        // If server reports errors for chunk, break out and treat as failure
+                        break;
+                    }
+
+                    // Optionally report progress per-chunk (coarse)
+                    if (flashStatus) {
+                        const percent = Math.round(((chunkIndex + 1) / totalChunks) * 100);
+                        flashStatus(`Mengunggah ${file.name}: ${percent}%`);
+                    }
+
+                    // If assembly finished on server, break early
+                    if (finished) {
+                        break;
+                    }
+                } catch (e) {
+                    anyFailures.push({ name: file.name, error: e instanceof Error ? e.message : String(e) });
+                    break;
+                }
+            } // end chunks loop
+
+            // If not finished and no explicit server error, mark failure
+            if (!finished && !anyFailures.find(f => f.name === file.name)) {
+                anyFailures.push({ name: file.name, error: 'Upload chunked tidak selesai.' });
+            }
+        } // end large-file handling
+    } // end per-file loop
 }
 
 /**

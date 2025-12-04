@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Select Multiple Items</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .file-list {
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 10px;
+            margin: 20px 0;
+        }
+        .file-item {
+            display: flex;
+            align-items: center;
+            padding: 8px;
+            border-bottom: 1px solid #eee;
+        }
+        .file-item:last-child {
+            border-bottom: none;
+        }
+        .file-item input[type="checkbox"] {
+            margin-right: 10px;
+            transform: scale(1.2);
+        }
+        .file-icon {
+            margin-right: 10px;
+            font-size: 18px;
+        }
+        .file-name {
+            flex-grow: 1;
+        }
+        .file-size {
+            color: #666;
+            font-size: 14px;
+        }
+        .actions {
+            margin: 20px 0;
+            padding: 15px;
+            background-color: #f5f5f5;
+            border-radius: 5px;
+        }
+        .btn {
+            padding: 8px 16px;
+            margin: 5px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .btn-primary {
+            background-color: #007bff;
+            color: white;
+        }
+        .btn-danger {
+            background-color: #dc3545;
+            color: white;
+        }
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+        .status {
+            margin-top: 10px;
+            padding: 10px;
+            border-radius: 5px;
+            display: none;
+        }
+        .status.info {
+            background-color: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+    </style>
+</head>
+<body>
+    <h1>Test Select Multiple Items</h1>
+    <p>Test the select multiple items functionality similar to the File Manager interface.</p>
+    
+    <div class="file-list">
+        <div class="file-item">
+            <input type="checkbox" id="selectAll" onchange="toggleSelectAll()">
+            <label for="selectAll" style="margin-right: 10px;">Select All</label>
+            <span style="color: #666;">Click to select/deselect all items</span>
+        </div>
+        
+        <div class="file-item">
+            <input type="checkbox" class="file-checkbox" data-filename="document1.txt" onchange="updateSelection()">
+            <span class="file-icon">📄</span>
+            <span class="file-name">document1.txt</span>
+            <span class="file-size">2.5 KB</span>
+        </div>
+        
+        <div class="file-item">
+            <input type="checkbox" class="file-checkbox" data-filename="image.jpg" onchange="updateSelection()">
+            <span class="file-icon">🖼️</span>
+            <span class="file-name">image.jpg</span>
+            <span class="file-size">1.2 MB</span>
+        </div>
+        
+        <div class="file-item">
+            <input type="checkbox" class="file-checkbox" data-filename="presentation.pptx" onchange="updateSelection()">
+            <span class="file-icon">📊</span>
+            <span class="file-name">presentation.pptx</span>
+            <span class="file-size">5.8 MB</span>
+        </div>
+        
+        <div class="file-item">
+            <input type="checkbox" class="file-checkbox" data-filename="spreadsheet.xlsx" onchange="updateSelection()">
+            <span class="file-icon">📈</span>
+            <span class="file-name">spreadsheet.xlsx</span>
+            <span class="file-size">3.4 MB</span>
+        </div>
+        
+        <div class="file-item">
+            <input type="checkbox" class="file-checkbox" data-filename="archive.zip" onchange="updateSelection()">
+            <span class="file-icon">📦</span>
+            <span class="file-name">archive.zip</span>
+            <span class="file-size">15.7 MB</span>
+        </div>
+    </div>
+    
+    <div class="actions">
+        <button class="btn btn-primary" onclick="createNewFile()">Create New File</button>
+        <button class="btn btn-primary" onclick="createNewFolder()">Create New Folder</button>
+        <button class="btn btn-danger" id="deleteBtn" onclick="deleteSelected()" disabled>Delete (0)</button>
+        <button class="btn btn-primary" id="downloadBtn" onclick="downloadSelected()" disabled>Download (0)</button>
+    </div>
+    
+    <div id="status" class="status"></div>
+    
+    <hr>
+    
+    <h2>Test Instructions</h2>
+    <ol>
+        <li>Test individual selection by clicking checkboxes on each file</li>
+        <li>Test "Select All" to select/deselect all files at once</li>
+        <li>Verify that the Delete and Download buttons show the correct count</li>
+        <li>Test partial selection - "Select All" should show indeterminate state</li>
+        <li>Test that buttons are disabled when no items are selected</li>
+    </ol>
+    
+    <p><a href="index.php">Open File Manager</a> to test the actual implementation</p>
+    
+    <script>
+        function updateSelection() {
+            const checkboxes = document.querySelectorAll('.file-checkbox');
+            const selected = document.querySelectorAll('.file-checkbox:checked');
+            const selectAll = document.getElementById('selectAll');
+            const deleteBtn = document.getElementById('deleteBtn');
+            const downloadBtn = document.getElementById('downloadBtn');
+            
+            // Update button states
+            const count = selected.length;
+            deleteBtn.textContent = `Delete (${count})`;
+            downloadBtn.textContent = `Download (${count})`;
+            deleteBtn.disabled = count === 0;
+            downloadBtn.disabled = count === 0;
+            
+            // Update Select All checkbox state
+            if (selected.length === 0) {
+                selectAll.checked = false;
+                selectAll.indeterminate = false;
+            } else if (selected.length === checkboxes.length) {
+                selectAll.checked = true;
+                selectAll.indeterminate = false;
+            } else {
+                selectAll.checked = false;
+                selectAll.indeterminate = true;
+            }
+            
+            // Show status
+            if (count > 0) {
+                const fileNames = Array.from(selected).map(cb => cb.dataset.filename);
+                showStatus(`Selected: ${fileNames.join(', ')}`);
+            } else {
+                hideStatus();
+            }
+        }
+        
+        function toggleSelectAll() {
+            const selectAll = document.getElementById('selectAll');
+            const checkboxes = document.querySelectorAll('.file-checkbox');
+            
+            checkboxes.forEach(checkbox => {
+                checkbox.checked = selectAll.checked;
+            });
+            
+            updateSelection();
+        }
+        
+        function deleteSelected() {
+            const selected = document.querySelectorAll('.file-checkbox:checked');
+            const fileNames = Array.from(selected).map(cb => cb.dataset.filename);
+            
+            if (confirm(`Delete ${fileNames.length} selected items?\n\n${fileNames.join('\n')}`)) {
+                showStatus(`Deleted: ${fileNames.join(', ')}`);
+                
+                // Simulate deletion by removing items
+                selected.forEach(checkbox => {
+                    checkbox.closest('.file-item').remove();
+                });
+                
+                updateSelection();
+            }
+        }
+        
+        function downloadSelected() {
+            const selected = document.querySelectorAll('.file-checkbox:checked');
+            const fileNames = Array.from(selected).map(cb => cb.dataset.filename);
+            
+            showStatus(`Downloading: ${fileNames.join(', ')}`);
+        }
+        
+        function createNewFile() {
+            showStatus('Create new file dialog would open here');
+        }
+        
+        function createNewFolder() {
+            showStatus('Create new folder dialog would open here');
+        }
+        
+        function showStatus(message) {
+            const status = document.getElementById('status');
+            status.textContent = message;
+            status.style.display = 'block';
+        }
+        
+        function hideStatus() {
+            const status = document.getElementById('status');
+            status.style.display = 'none';
+        }
+        
+        // Initialize
+        updateSelection();
+    </script>
+</body>
+</html>

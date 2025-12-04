@@ -373,18 +373,28 @@ export function formatLogEntry(log) {
     const actionLabels = {
         'create': 'Buat',
         'delete': 'Hapus',
+        'trash': 'Hapus',
+        'bulk_trash': 'Hapus Massal',
+        'restore': 'Pulihkan',
+        'permanent_delete': 'Hapus Permanen',
+        'empty_trash': 'Kosongkan Trash',
         'move': 'Pindah',
         'rename': 'Ubah Nama',
         'upload': 'Unggah',
         'download': 'Unduh',
         'read': 'Baca',
         'copy': 'Salin',
+        'save': 'Simpan',
+        'cleanup': 'Bersihkan',
+        'cleanup_trash': 'Bersihkan Trash',
         'unknown': 'Tidak Diketahui'
     };
     
     const typeLabels = {
         'file': 'File',
         'folder': 'Folder',
+        'bulk': 'Massal',
+        'system': 'Sistem',
         'unknown': 'Tidak Diketahui'
     };
     
@@ -430,6 +440,16 @@ export function renderLogTable(logs, logTableBody, logEmpty) {
         const formattedLog = formatLogEntry(log);
         const row = document.createElement('tr');
         
+        // Handle special display for bulk actions
+        let displayTarget = log.target_path || '-';
+        let displayFilename = log.filename || log.target || '-';
+        
+        if (log.action === 'bulk_trash') {
+            // For bulk actions, show summary instead of individual filename
+            displayTarget = log.filename || `${log.count || 0} items`;
+            displayFilename = log.filename || `${log.count || 0} items`;
+        }
+        
         // Check if the table structure matches overlays.php (with IP Address) or the provided HTML (without IP Address)
         const table = logTableBody.parentElement;
         const headerRow = table.querySelector('thead tr');
@@ -461,7 +481,7 @@ export function renderLogTable(logs, logTableBody, logEmpty) {
             
             // Target cell (hidden on mobile)
             const targetCell = document.createElement('td');
-            targetCell.textContent = log.target_path || '-';
+            targetCell.textContent = displayTarget;
             targetCell.setAttribute('data-label', 'Target');
             targetCell.className = 'px-3 py-2 text-xs hidden sm:table-cell';
             row.appendChild(targetCell);
@@ -505,7 +525,7 @@ export function renderLogTable(logs, logTableBody, logEmpty) {
             
             // Path cell
             const pathCell = document.createElement('td');
-            pathCell.textContent = log.target_path || '-';
+            pathCell.textContent = displayTarget;
             pathCell.setAttribute('data-label', 'Path');
             pathCell.classList.add('log-path');
             pathCell.className = 'px-3 py-2 text-xs';
@@ -559,12 +579,20 @@ export function exportLogsToCSV(logs) {
     logs.forEach(log => {
         const formattedLog = formatLogEntry(log);
         
+        // Handle special display for bulk actions
+        let displayTarget = log.target_path || '-';
+        
+        if (log.action === 'bulk_trash') {
+            // For bulk actions, show summary instead of individual filename
+            displayTarget = log.filename || `${log.count || 0} items`;
+        }
+        
         if (hasIpAddressColumn && hasTargetColumn) {
             // Structure from overlays.php (new responsive structure)
             const row = [
                 `"${formattedLog.formattedDate}"`,
                 `"${formattedLog.actionLabel}"`,
-                `"${log.target_path || '-'}"`,
+                `"${displayTarget}"`,
                 `"${formattedLog.typeLabel}"`,
                 `"${log.ip_address || '-'}"`
             ];
@@ -575,7 +603,7 @@ export function exportLogsToCSV(logs) {
                 `"${formattedLog.formattedDate}"`,
                 `"${formattedLog.actionLabel}"`,
                 `"${formattedLog.typeLabel}"`,
-                `"${log.target_path || '-'}"`,
+                `"${displayTarget}"`,
                 `"${log.ip_address || '-'}"`
             ];
             csv += row.join(',') + '\n';

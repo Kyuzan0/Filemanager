@@ -115,8 +115,6 @@ function move_to_trash(string $root, array $relativePaths): array
                 'type' => $type,
             ];
             
-            write_activity_log('trash', $name, $type, $sanitized, ['trashId' => $trashId]);
-            
         } catch (Throwable $e) {
             $errors[] = [
                 'path' => $relativePath,
@@ -127,6 +125,51 @@ function move_to_trash(string $root, array $relativePaths): array
     
     if (!empty($trashed)) {
         write_trash_metadata($metadata);
+        
+        // Log activity: single entry for bulk delete, individual entry for single delete
+        $trashedCount = count($trashed);
+        if ($trashedCount === 1) {
+            // Single item delete - log with specific filename
+            $item = $trashed[0];
+            write_activity_log('trash', $item['name'], $item['type'], $item['path'], [
+                'trashId' => $item['id']
+            ]);
+        } else {
+            // Bulk delete - log as single bulk action
+            $fileCount = 0;
+            $folderCount = 0;
+            $itemNames = [];
+            $trashIds = [];
+            
+            foreach ($trashed as $item) {
+                if ($item['type'] === 'folder') {
+                    $folderCount++;
+                } else {
+                    $fileCount++;
+                }
+                $itemNames[] = $item['name'];
+                $trashIds[] = $item['id'];
+            }
+            
+            // Build summary description
+            $typeSummary = [];
+            if ($fileCount > 0) {
+                $typeSummary[] = $fileCount . ' file' . ($fileCount > 1 ? 's' : '');
+            }
+            if ($folderCount > 0) {
+                $typeSummary[] = $folderCount . ' folder' . ($folderCount > 1 ? 's' : '');
+            }
+            
+            $bulkFilename = $trashedCount . ' items (' . implode(', ', $typeSummary) . ')';
+            
+            write_activity_log('bulk_trash', $bulkFilename, 'bulk', '', [
+                'count' => $trashedCount,
+                'fileCount' => $fileCount,
+                'folderCount' => $folderCount,
+                'items' => $itemNames,
+                'trashIds' => $trashIds
+            ]);
+        }
     }
     
     return [

@@ -480,9 +480,25 @@ try {
 
             // Log activity when upload is finished
             if (!empty($result['finished']) && !empty($result['uploaded'])) {
-                foreach ($result['uploaded'] as $uploaded) {
+                $uploadedCount = count($result['uploaded']);
+                
+                if ($uploadedCount === 1) {
+                    // Single file upload - log individually
+                    $uploaded = $result['uploaded'][0];
                     write_activity_log('upload', $uploaded['name'] ?? $originalName, 'file', $targetPath, [
                         'size' => $uploaded['size'] ?? 0
+                    ]);
+                } else {
+                    // Multiple files upload - log as bulk action
+                    $totalSize = array_sum(array_column($result['uploaded'], 'size'));
+                    $fileNames = array_column($result['uploaded'], 'name');
+                    
+                    $bulkFilename = $uploadedCount . ' files';
+                    write_activity_log('bulk_upload', $bulkFilename, 'bulk', $targetPath, [
+                        'count' => $uploadedCount,
+                        'fileCount' => $uploadedCount,
+                        'totalSize' => $totalSize,
+                        'items' => $fileNames
                     ]);
                 }
             }
@@ -509,9 +525,25 @@ try {
 
         // Log activity for successful uploads
         if ($hasUploads) {
-            foreach ($result['uploaded'] as $uploaded) {
+            $uploadedCount = count($result['uploaded']);
+            
+            if ($uploadedCount === 1) {
+                // Single file upload - log individually
+                $uploaded = $result['uploaded'][0];
                 write_activity_log('upload', $uploaded['name'] ?? 'unknown', 'file', $targetPath, [
                     'size' => $uploaded['size'] ?? 0
+                ]);
+            } else {
+                // Multiple files upload - log as bulk action
+                $totalSize = array_sum(array_column($result['uploaded'], 'size'));
+                $fileNames = array_column($result['uploaded'], 'name');
+                
+                $bulkFilename = $uploadedCount . ' files';
+                write_activity_log('bulk_upload', $bulkFilename, 'bulk', $targetPath, [
+                    'count' => $uploadedCount,
+                    'fileCount' => $uploadedCount,
+                    'totalSize' => $totalSize,
+                    'items' => $fileNames
                 ]);
             }
         }

@@ -1409,33 +1409,19 @@ function initializeEventHandlers() {
     if (files.length === 0) return showError('Pilih file terlebih dahulu');
     
     showLoader(true);
-    let successCount = 0;
-    let errorCount = 0;
     
     try {
-      // Upload files one by one to ensure proper handling
+      // Upload all files in a single request for bulk logging
+      const formData = new FormData();
       for (const file of files) {
-        const formData = new FormData();
         formData.append('files[]', file);
-        
-        try {
-          const response = await fetch(`${API_BASE}?action=upload&path=${encodeURIComponent(currentPath)}`, {
-            method: 'POST',
-            body: formData
-          });
-          const data = await response.json();
-          
-          if (data.success && data.uploaded?.length > 0) {
-            successCount++;
-          } else {
-            errorCount++;
-            console.error(`Upload failed for ${file.name}:`, data.error);
-          }
-        } catch (error) {
-          errorCount++;
-          console.error(`Upload error for ${file.name}:`, error);
-        }
       }
+      
+      const response = await fetch(`${API_BASE}?action=upload&path=${encodeURIComponent(currentPath)}`, {
+        method: 'POST',
+        body: formData
+      });
+      const data = await response.json();
       
       await loadFiles(currentPath);
       modal?.classList.remove('visible');
@@ -1443,10 +1429,16 @@ function initializeEventHandlers() {
       fileInput.value = '';
       fileList.innerHTML = '';
       
-      if (successCount > 0) {
-        showSuccess(`${successCount} file berhasil diunggah${errorCount > 0 ? `, ${errorCount} gagal` : ''}`);
+      if (data.success) {
+        const uploadedCount = data.uploaded?.length || 0;
+        const failedCount = data.failed?.length || 0;
+        if (uploadedCount > 0) {
+          showSuccess(`${uploadedCount} file berhasil diunggah${failedCount > 0 ? `, ${failedCount} gagal` : ''}`);
+        } else {
+          showError('Semua file gagal diunggah');
+        }
       } else {
-        showError('Semua file gagal diunggah');
+        showError(data.error || 'Upload gagal');
       }
     } catch (error) {
       showError(error.message);
@@ -1532,40 +1524,86 @@ function initializeEventHandlers() {
 
       const list = document.getElementById('cardUploadList');
       const rows = list?.querySelectorAll('.card-upload-row') || [];
-      let successCount = 0;
-      let errorCount = 0;
-
-      for (let i = 0; i < pendingUploadFiles.length; i++) {
-        const file = pendingUploadFiles[i];
-        const row = rows[i];
-        const progressEl = row?.querySelector('.card-upload-progress');
+      
+      // Set all rows to "Mengupload..." status
+      rows.forEach(row => {
         const statusEl = row?.querySelector('.card-upload-status');
-
         if (statusEl) statusEl.textContent = 'Mengupload...';
-        
-        const result = await uploadFileWithProgress(file, progressEl, statusEl);
-        
-        if (result.success) {
-          successCount++;
-        } else {
-          errorCount++;
-        }
+      });
+
+      // Upload all files in a single request for bulk logging
+      const formData = new FormData();
+      for (const file of pendingUploadFiles) {
+        formData.append('files[]', file);
       }
 
-      // Show summary
-      const summary = document.getElementById('cardUploadSummary');
-      const summaryText = document.getElementById('cardUploadSummaryText');
-      if (summary && summaryText) {
-        summary.style.display = 'block';
-        if (successCount > 0 && errorCount === 0) {
-          summary.className = 'card-upload-modal__summary summary-success';
-          summaryText.textContent = `✓ ${successCount} file berhasil diupload`;
-        } else if (successCount > 0 && errorCount > 0) {
-          summary.className = 'card-upload-modal__summary summary-warning';
-          summaryText.textContent = `${successCount} berhasil, ${errorCount} gagal`;
-        } else {
+      try {
+        const response = await fetch(`${API_BASE}?action=upload&path=${encodeURIComponent(currentPath)}`, {
+          method: 'POST',
+          body: formData
+        });
+        const data = await response.json();
+        
+        const uploadedFiles = data.uploaded || [];
+        const failedFiles = data.failed || [];
+        const successCount = uploadedFiles.length;
+        const errorCount = failedFiles.length;
+        
+        // Update individual row statuses
+        rows.forEach((row, i) => {
+          const file = pendingUploadFiles[i];
+          const progressEl = row?.querySelector('.card-upload-progress');
+          const statusEl = row?.querySelector('.card-upload-status');
+          
+          const isUploaded = uploadedFiles.some(f => f.name === file.name || f === file.name);
+          
+          if (progressEl) {
+            progressEl.style.width = '100%';
+            progressEl.classList.add(isUploaded ? 'bg-green-500' : 'bg-red-500');
+          }
+          if (statusEl) {
+            statusEl.textContent = isUploaded ? 'Selesai ✓' : 'Gagal ✗';
+            statusEl.classList.add(isUploaded ? 'text-green-600' : 'text-red-600');
+          }
+        });
+
+        // Show summary
+        const summary = document.getElementById('cardUploadSummary');
+        const summaryText = document.getElementById('cardUploadSummaryText');
+        if (summary && summaryText) {
+          summary.style.display = 'block';
+          if (successCount > 0 && errorCount === 0) {
+            summary.className = 'card-upload-modal__summary summary-success';
+            summaryText.textContent = `✓ ${successCount} file berhasil diupload`;
+          } else if (successCount > 0 && errorCount > 0) {
+            summary.className = 'card-upload-modal__summary summary-warning';
+            summaryText.textContent = `${successCount} berhasil, ${errorCount} gagal`;
+          } else {
+            summary.className = 'card-upload-modal__summary summary-danger';
+            summaryText.textContent = `✗ Semua file gagal diupload`;
+          }
+        }
+      } catch (error) {
+        // On error, mark all as failed
+        rows.forEach(row => {
+          const progressEl = row?.querySelector('.card-upload-progress');
+          const statusEl = row?.querySelector('.card-upload-status');
+          if (progressEl) {
+            progressEl.style.width = '100%';
+            progressEl.classList.add('bg-red-500');
+          }
+          if (statusEl) {
+            statusEl.textContent = 'Gagal ✗';
+            statusEl.classList.add('text-red-600');
+          }
+        });
+        
+        const summary = document.getElementById('cardUploadSummary');
+        const summaryText = document.getElementById('cardUploadSummaryText');
+        if (summary && summaryText) {
+          summary.style.display = 'block';
           summary.className = 'card-upload-modal__summary summary-danger';
-          summaryText.textContent = `✗ Semua file gagal diupload`;
+          summaryText.textContent = `✗ Upload gagal: ${error.message}`;
         }
       }
 

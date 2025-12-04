@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>File Manager - Bulk Operations Test Suite</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        .test-card {
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+            background-color: #f9f9f9;
+        }
+        .test-card h2 {
+            margin-top: 0;
+            color: #333;
+        }
+        .test-link {
+            display: inline-block;
+            padding: 10px 20px;
+            margin: 5px;
+            background-color: #007bff;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            transition: background-color 0.3s;
+        }
+        .test-link:hover {
+            background-color: #0056b3;
+        }
+        .test-link.danger {
+            background-color: #dc3545;
+        }
+        .test-link.danger:hover {
+            background-color: #c82333;
+        }
+        .description {
+            margin-bottom: 15px;
+            color: #555;
+        }
+        .steps {
+            background-color: white;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+        .steps h3 {
+            margin-top: 0;
+        }
+        .steps ol {
+            margin: 10px 0;
+        }
+        .steps li {
+            margin-bottom: 8px;
+        }
+        .note {
+            background-color: #fff3cd;
+            border: 1px solid #ffeaa7;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+        .status {
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+        .status.success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .status.info {
+            background-color: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+    </style>
+</head>
+<body>
+    <h1>File Manager - Bulk Operations Test Suite</h1>
+    <p class="description">Halaman ini berisi kumpulan test untuk memverifikasi fungsi bulk operations pada File Manager.</p>
+    
+    <div class="test-card">
+        <h2>1. Test Select Multiple Items</h2>
+        <p class="description">Test fungsi select multiple items di File Manager interface.</p>
+        
+        <div class="steps">
+            <h3>Yang diuji:</h3>
+            <ol>
+                <li>Checkbox individual untuk memilih item</li>
+                <li>Checkbox "Select All" untuk memilih semua item</li>
+                <li>State indeterminate untuk partial selection</li>
+                <li>Update tombol action berdasarkan jumlah item terpilih</li>
+            </ol>
+        </div>
+        
+        <a href="test_select_multiple.html" class="test-link" target="_blank">Buka Test Select Multiple</a>
+        <a href="index.php" class="test-link" target="_blank">Buka File Manager</a>
+    </div>
+    
+    <div class="test-card">
+        <h2>2. Test Bulk Delete</h2>
+        <p class="description">Test fungsi delete multiple items dan logging-nya.</p>
+        
+        <div class="steps">
+            <h3>Yang diuji:</h3>
+            <ol>
+                <li>Delete multiple items dalam satu request</li>
+                <li>Verifikasi bulk logging di activity log</li>
+                <li>Display informasi bulk action dengan jelas</li>
+            </ol>
+        </div>
+        
+        <div class="note">
+            <strong>Catatan:</strong> Pastikan sudah ada file/folder untuk dihapus. Gunakan test ini untuk membuat file test terlebih dahulu.
+        </div>
+        
+        <a href="test_bulk_delete.html" class="test-link danger" target="_blank">Buka Test Bulk Delete</a>
+        <a href="logs.php" class="test-link" target="_blank">Lihat Activity Log</a>
+    </div>
+    
+    <div class="test-card">
+        <h2>3. Test Bulk Upload</h2>
+        <p class="description">Test fungsi upload multiple files dan logging-nya.</p>
+        
+        <div class="steps">
+            <h3>Yang diuji:</h3>
+            <ol>
+                <li>Upload multiple files dalam satu request</li>
+                <li>Verifikasi bulk logging untuk upload</li>
+                <li>Penanganan file besar vs file kecil</li>
+            </ol>
+        </div>
+        
+        <div class="note">
+            <strong>Catatan:</strong> Upload minimal 2 file untuk test bulk upload. File kecil (<5MB) akan diupload bersamaan, file besar akan diupload individual.
+        </div>
+        
+        <a href="test_upload.html" class="test-link" target="_blank">Buka Test Bulk Upload</a>
+        <a href="logs.php" class="test-link" target="_blank">Lihat Activity Log</a>
+    </div>
+    
+    <div class="test-card">
+        <h2>4. Quick Access</h2>
+        <p class="description">Link cepat ke halaman utama:</p>
+        
+        <a href="index.php" class="test-link" target="_blank">File Manager</a>
+        <a href="logs.php" class="test-link" target="_blank">Activity Log</a>
+        <a href="trash.php" class="test-link" target="_blank">Trash</a>
+    </div>
+    
+    <div class="status info">
+        <strong>Info:</strong> Semua test telah diimplementasikan sesuai dengan analisis bulk operations. Pastikan untuk memeriksa Activity Log setelah melakukan test untuk verifikasi bulk logging.
+    </div>
+    
+    <script>
+        // Add some interactivity
+        document.addEventListener('DOMContentLoaded', function() {
+            const testCards = document.querySelectorAll('.test-card');
+            
+            testCards.forEach(card => {
+                card.addEventListener('mouseenter', function() {
+                    this.style.boxShadow = '0 4px 8px rgba(0,0,0,0.1)';
+                    this.style.transition = 'box-shadow 0.3s';
+                });
+                
+                card.addEventListener('mouseleave', function() {
+                    this.style.boxShadow = '';
+                });
+            });
+        });
+    </script>
+</body>
+</html>

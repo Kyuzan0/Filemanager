@@ -55,8 +55,13 @@
                 <select id="filter-action" class="filter-select">
                     <option value="">Semua Aksi</option>
                     <option value="upload">Upload</option>
+                    <option value="bulk_upload">Upload Massal</option>
                     <option value="download">Download</option>
                     <option value="delete">Delete</option>
+                    <option value="trash">Hapus</option>
+                    <option value="bulk_trash">Hapus Massal</option>
+                    <option value="restore">Pulihkan</option>
+                    <option value="permanent_delete">Hapus Permanen</option>
                     <option value="create">Create</option>
                     <option value="rename">Rename</option>
                     <option value="move">Move</option>
@@ -115,7 +120,7 @@
     
     <!-- Detail Modal -->
     <div class="modal-overlay" id="modal">
-        <div class="modal-dialog">
+        <div class="modal-dialog" style="max-width: 800px; width: 90%;">
             <div class="modal-header">
                 <h3><i class="ri-information-line"></i> Detail Aktivitas</h3>
                 <button class="modal-close" id="modal-close"><i class="ri-close-line"></i></button>
@@ -199,15 +204,57 @@
             return;
         }
         
-        tbody.innerHTML = state.logs.map((log, i) => `
+        tbody.innerHTML = state.logs.map((log, i) => {
+            // Handle bulk action display
+            let actionDisplay = log.action;
+            let fileDisplay = log.filename || log.target || '';
+            let tooltipText = fileDisplay;
+            
+            if (log.action === 'bulk_trash') {
+                actionDisplay = 'Hapus Massal';
+                // For bulk actions, show the summary instead of individual filename
+                fileDisplay = log.filename || `${log.count || 0} item`;
+                
+                // Create detailed tooltip with item names - check multiple possible field names
+                let itemsArray = null;
+                if (log.items && Array.isArray(log.items)) {
+                    itemsArray = log.items;
+                } else if (log.all_items && Array.isArray(log.all_items)) {
+                    itemsArray = log.all_items;
+                }
+                
+                if (itemsArray && itemsArray.length > 0) {
+                    const itemsList = itemsArray.join('\n');
+                    tooltipText = `${fileDisplay}\n\nItems yang dihapus:\n${itemsList}`;
+                }
+            } else if (log.action === 'bulk_upload') {
+                actionDisplay = 'Upload Massal';
+                // For bulk upload, show summary instead of individual filename
+                fileDisplay = log.filename || `${log.count || 0} file`;
+                
+                // Create detailed tooltip with item names - check multiple possible field names
+                let itemsArray = null;
+                if (log.items && Array.isArray(log.items)) {
+                    itemsArray = log.items;
+                } else if (log.all_items && Array.isArray(log.all_items)) {
+                    itemsArray = log.all_items;
+                }
+                
+                if (itemsArray && itemsArray.length > 0) {
+                    const itemsList = itemsArray.join('\n');
+                    tooltipText = `${fileDisplay}\n\nItems yang diupload:\n${itemsList}`;
+                }
+            }
+            
+            return `
             <tr data-i="${i}">
                 <td class="time-cell">${formatTime(log.timestamp)}</td>
-                <td><span class="action-badge ${log.action}">${log.action}</span></td>
-                <td class="file-cell" title="${esc(log.filename || log.target || '')}">${esc(truncate(log.filename || log.target))}</td>
+                <td><span class="action-badge ${log.action}">${actionDisplay}</span></td>
+                <td class="file-cell" title="${esc(tooltipText)}">${esc(truncate(fileDisplay))}</td>
                 <td class="browser-cell">${getBrowser(log.userAgent)}</td>
                 <td class="ip-cell">${esc(log.ip || '-')}</td>
             </tr>
-        `).join('');
+        `}).join('');
         
         // Click handlers
         tbody.querySelectorAll('tr[data-i]').forEach(tr => {
@@ -251,8 +298,65 @@
     }
     
     function showDetail(log) {
-        $('d-file').textContent = log.filename || log.target || '-';
-        $('d-action').innerHTML = `<span class="action-badge ${log.action}">${log.action}</span>`;
+        // Handle bulk action details
+        let fileDisplay = log.filename || log.target || '-';
+        let actionDisplay = log.action;
+        
+        if (log.action === 'bulk_trash') {
+            fileDisplay = log.filename || `${log.count || 0} item`;
+            actionDisplay = 'Hapus Massal';
+            
+            // Show additional details for bulk actions
+            const details = [];
+            if (log.fileCount > 0) details.push(`${log.fileCount} file`);
+            if (log.folderCount > 0) details.push(`${log.folderCount} folder`);
+            
+            if (details.length > 0) {
+                fileDisplay += ` (${details.join(', ')})`;
+            }
+            
+            // Show list of items if available - check multiple possible field names
+            let itemsArray = null;
+            if (log.items && Array.isArray(log.items)) {
+                itemsArray = log.items;
+            } else if (log.all_items && Array.isArray(log.all_items)) {
+                itemsArray = log.all_items;
+            }
+            
+            if (itemsArray && itemsArray.length > 0) {
+                // Create a more detailed display with item names - show all items in scrollable container
+                const itemsList = itemsArray.join(', ');
+                fileDisplay = `${log.count} items (${details.join(', ')})<br><div style="max-height: 200px; overflow-y: auto; padding: 8px; background: rgba(0,0,0,0.05); border-radius: 4px; margin-top: 4px; line-height: 1.5;"><small class="text-gray-500">${itemsList}</small></div>`;
+            }
+        } else if (log.action === 'bulk_upload') {
+            fileDisplay = log.filename || `${log.count || 0} file`;
+            actionDisplay = 'Upload Massal';
+            
+            // Show additional details for bulk upload
+            const details = [];
+            if (log.fileCount > 0) details.push(`${log.fileCount} file`);
+            
+            if (details.length > 0) {
+                fileDisplay += ` (${details.join(', ')})`;
+            }
+            
+            // Show list of items if available - check multiple possible field names
+            let itemsArray = null;
+            if (log.items && Array.isArray(log.items)) {
+                itemsArray = log.items;
+            } else if (log.all_items && Array.isArray(log.all_items)) {
+                itemsArray = log.all_items;
+            }
+            
+            if (itemsArray && itemsArray.length > 0) {
+                // Create a more detailed display with item names - show all items in scrollable container
+                const itemsList = itemsArray.join(', ');
+                fileDisplay = `${log.count} files (${details.join(', ')})<br><div style="max-height: 200px; overflow-y: auto; padding: 8px; background: rgba(0,0,0,0.05); border-radius: 4px; margin-top: 4px; line-height: 1.5;"><small class="text-gray-500">${itemsList}</small></div>`;
+            }
+        }
+        
+        $('d-file').innerHTML = fileDisplay;
+        $('d-action').innerHTML = `<span class="action-badge ${log.action}">${actionDisplay}</span>`;
         $('d-type').textContent = log.targetType || log.type || '-';
         $('d-path').textContent = log.path || '-';
         $('d-ip').textContent = log.ip || '-';
@@ -274,7 +378,46 @@
             if (!data.success) throw new Error(data.error);
             
             const rows = [['Waktu', 'Aksi', 'File', 'Tipe', 'Path', 'IP', 'Browser']];
-            (data.logs || []).forEach(l => rows.push([formatFull(l.timestamp), l.action, l.filename || l.target || '', l.targetType || '', l.path || '', l.ip || '', getBrowser(l.userAgent)]));
+            (data.logs || []).forEach(l => {
+                let fileDisplay = l.filename || l.target || '';
+                let actionDisplay = l.action;
+                
+                if (l.action === 'bulk_trash') {
+                    actionDisplay = 'Hapus Massal';
+                    fileDisplay = l.filename || `${l.count || 0} item`;
+                    
+                    // Add item names to CSV if available - check multiple possible field names
+                    let itemsArray = null;
+                    if (l.items && Array.isArray(l.items)) {
+                        itemsArray = l.items;
+                    } else if (l.all_items && Array.isArray(l.all_items)) {
+                        itemsArray = l.all_items;
+                    }
+                    
+                    if (itemsArray && itemsArray.length > 0) {
+                        const itemsList = itemsArray.join(', ');
+                        fileDisplay += ` (${itemsList})`;
+                    }
+                } else if (l.action === 'bulk_upload') {
+                    actionDisplay = 'Upload Massal';
+                    fileDisplay = l.filename || `${l.count || 0} file`;
+                    
+                    // Add item names to CSV if available - check multiple possible field names
+                    let itemsArray = null;
+                    if (l.items && Array.isArray(l.items)) {
+                        itemsArray = l.items;
+                    } else if (l.all_items && Array.isArray(l.all_items)) {
+                        itemsArray = l.all_items;
+                    }
+                    
+                    if (itemsArray && itemsArray.length > 0) {
+                        const itemsList = itemsArray.join(', ');
+                        fileDisplay += ` (${itemsList})`;
+                    }
+                }
+                
+                rows.push([formatFull(l.timestamp), actionDisplay, fileDisplay, l.targetType || '', l.path || '', l.ip || '', getBrowser(l.userAgent)]);
+            });
             
             const csv = rows.map(r => r.map(c => `"${String(c).replace(/"/g, '""')}"`).join(',')).join('\n');
             const blob = new Blob([csv], { type: 'text/csv' });
