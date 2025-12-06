@@ -1464,6 +1464,495 @@ function get_activity_log_file(): string
     return get_logs_directory() . '/activity.json';
 }
 
+// ============================================================================
+// SECURITY FUNCTIONS
+// ============================================================================
+
+/**
+ * Validate file name for security
+ * @param string $name File name to validate
+ * @return array Validation result with 'valid' and 'error' keys
+ */
+function validate_file_name(string $name): array
+{
+    if (empty($name)) {
+        return ['valid' => false, 'error' => 'File name is required.'];
+    }
+    
+    $name = trim($name);
+    
+    if (strlen($name) > 255) {
+        return ['valid' => false, 'error' => 'File name is too long (max 255 characters).'];
+    }
+    
+    // Check for forbidden characters
+    if (preg_match('/[<>:"\/\\\\|?*\x00-\x1f]/', $name)) {
+        return ['valid' => false, 'error' => 'File name contains invalid characters.'];
+    }
+    
+    // Check for reserved names (Windows)
+    if (preg_match('/^(con|prn|aux|nul|com[1-9]|lpt[1-9])(\.|$)/i', $name)) {
+        return ['valid' => false, 'error' => 'This file name is reserved by the system.'];
+    }
+    
+    // Check for names that are just dots
+    if (preg_match('/^\.+$/', $name)) {
+        return ['valid' => false, 'error' => 'Invalid file name.'];
+    }
+    
+    return ['valid' => true, 'error' => null];
+}
+
+/**
+ * Sanitize file name by removing/replacing invalid characters
+ * @param string $name File name to sanitize
+ * @return string Sanitized file name
+ */
+function sanitize_file_name(string $name): string
+{
+    $name = trim($name);
+    
+    // Replace forbidden characters with underscore
+    $name = preg_replace('/[<>:"\/\\\\|?*\x00-\x1f]/', '_', $name);
+    
+    // Replace multiple consecutive underscores
+    $name = preg_replace('/_+/', '_', $name);
+    
+    // Remove leading/trailing underscores and dots
+    $name = preg_replace('/^[_.]+|[_.]+$/', '', $name);
+    
+    // Handle reserved names
+    if (preg_match('/^(con|prn|aux|nul|com[1-9]|lpt[1-9])$/i', $name)) {
+        $name = '_' . $name;
+    }
+    
+    // Ensure we have something left
+    if (empty($name)) {
+        $name = 'unnamed';
+    }
+    
+    // Truncate if too long
+    if (strlen($name) > 255) {
+        $ext = pathinfo($name, PATHINFO_EXTENSION);
+        $nameWithoutExt = $ext ? substr($name, 0, -(strlen($ext) + 1)) : $name;
+        $maxNameLength = $ext ? 255 - strlen($ext) - 1 : 255;
+        $name = substr($nameWithoutExt, 0, $maxNameLength) . ($ext ? '.' . $ext : '');
+    }
+    
+    return $name;
+}
+
+/**
+ * Check if file extension is allowed
+ * @param string $filename File name to check
+ * @param array|null $allowedExtensions List of allowed extensions (null = use default)
+ * @return array Validation result with 'valid', 'error', and 'extension' keys
+ */
+function validate_file_extension(string $filename, ?array $allowedExtensions = null): array
+{
+    // Dangerous extensions that should never be allowed
+    $dangerousExtensions = [
+        'exe', 'msi', 'dll', 'com', 'scr', 'pif',
+        'vbs', 'vbe', 'jse', 'ws', 'wsf', 'wsc', 'wsh',
+        'ps1', 'ps1xml', 'ps2', 'ps2xml', 'psc1', 'psc2',
+        'lnk', 'inf', 'reg', 'hta', 'cpl', 'msc',
+        'jar', 'jnlp'
+    ];
+    
+    $ext = strtolower(pathinfo($filename, PATHINFO_EXTENSION));
+    
+    if (empty($ext)) {
+        // Files without extensions are allowed
+        return ['valid' => true, 'error' => null, 'extension' => null];
+    }
+    
+    // Check for dangerous extensions
+    if (in_array($ext, $dangerousExtensions, true)) {
+        return [
+            'valid' => false,
+            'error' => "File type .{$ext} is not allowed for security reasons.",
+            'extension' => $ext
+        ];
+    }
+    
+    // If allowed extensions list is provided, check against it
+    if ($allowedExtensions !== null && count($allowedExtensions) > 0) {
+        if (!in_array($ext, $allowedExtensions, true)) {
+            return [
+                'valid' => false,
+                'error' => "File type .{$ext} is not allowed.",
+                'extension' => $ext
+            ];
+        }
+    }
+    
+    return ['valid' => true, 'error' => null, 'extension' => $ext];
+}
+
+/**
+ * Validate file size against limits
+ * @param int $size File size in bytes
+ * @param string $filename File name (for type detection)
+ * @return array Validation result with 'valid', 'error', and 'limit' keys
+ */
+function validate_file_size(int $size, string $filename): array
+{
+    // Maximum file sizes by type (in bytes)
+    $maxSizes = [
+        'image' => 10 * 1024 * 1024,      // 10MB
+        'video' => 500 * 1024 * 1024,     // 500MB
+        'audio' => 50 * 1024 * 1024,      // 50MB
+        'document' => 50 * 1024 * 1024,   // 50MB
+        'archive' => 100 * 1024 * 1024,   // 100MB
+        'code' => 5 * 1024 * 1024,        // 5MB
+        'default' => 25 * 1024 * 1024     // 25MB
+    ];
+    
+    $ext = strtolower(pathinfo($filename, PATHINFO_EXTENSION));
+    $type = get_file_type_category($ext);
+    $limit = $maxSizes[$type] ?? $maxSizes['default'];
+    
+    if ($size > $limit) {
+        $limitMB = round($limit / 1024 / 1024);
+        $sizeMB = round($size / 1024 / 1024, 1);
+        return [
+            'valid' => false,
+            'error' => "File size ({$sizeMB}MB) exceeds limit ({$limitMB}MB).",
+            'limit' => $limit
+        ];
+    }
+    
+    return ['valid' => true, 'error' => null, 'limit' => $limit];
+}
+
+/**
+ * Get file type category from extension
+ * @param string $ext File extension
+ * @return string File type category
+ */
+function get_file_type_category(string $ext): string
+{
+    $imageExts = ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp', 'svg', 'ico', 'tiff', 'tif'];
+    $videoExts = ['mp4', 'webm', 'mkv', 'avi', 'mov', 'wmv', 'flv'];
+    $audioExts = ['mp3', 'wav', 'ogg', 'flac', 'm4a', 'aac', 'wma'];
+    $archiveExts = ['zip', 'rar', '7z', 'tar', 'gz', 'bz2'];
+    $codeExts = ['js', 'ts', 'jsx', 'tsx', 'php', 'py', 'rb', 'java', 'c', 'cpp', 'go', 'rs'];
+    
+    if (in_array($ext, $imageExts, true)) return 'image';
+    if (in_array($ext, $videoExts, true)) return 'video';
+    if (in_array($ext, $audioExts, true)) return 'audio';
+    if (in_array($ext, $archiveExts, true)) return 'archive';
+    if (in_array($ext, $codeExts, true)) return 'code';
+    
+    return 'document';
+}
+
+/**
+ * Enhanced path validation with additional security checks
+ * @param string $path Path to validate
+ * @return array Validation result
+ */
+function validate_path_security(string $path): array
+{
+    // Check for null bytes (path injection)
+    if (strpos($path, "\0") !== false) {
+        return ['valid' => false, 'error' => 'Invalid path: null byte detected.'];
+    }
+    
+    // Check for URL encoded traversal attempts
+    $decodedPath = urldecode($path);
+    if ($decodedPath !== $path && (
+        strpos($decodedPath, '..') !== false ||
+        strpos($decodedPath, '%') !== false
+    )) {
+        return ['valid' => false, 'error' => 'Invalid path: encoded traversal detected.'];
+    }
+    
+    // Check for various traversal patterns
+    $traversalPatterns = [
+        '/\.\./',           // Parent directory
+        '/^\/+/',           // Leading slashes
+        '/^[a-zA-Z]:/',     // Windows drive letters
+        '/%2e%2e/i',        // URL encoded ..
+        '/%252e%252e/i',    // Double URL encoded ..
+        '/\.\.%2f/i',       // Mixed encoding
+        '/\.\.%5c/i'        // Mixed encoding (backslash)
+    ];
+    
+    foreach ($traversalPatterns as $pattern) {
+        if (preg_match($pattern, $path)) {
+            return ['valid' => false, 'error' => 'Invalid path: directory traversal detected.'];
+        }
+    }
+    
+    // Check path length
+    if (strlen($path) > 4096) {
+        return ['valid' => false, 'error' => 'Path is too long.'];
+    }
+    
+    return ['valid' => true, 'error' => null];
+}
+
+/**
+ * Validate upload for all security concerns
+ * @param array $fileEntry Single file entry from $_FILES
+ * @param string $originalName Original file name
+ * @return array Validation result with 'valid' and 'errors' keys
+ */
+function validate_upload_security(array $fileEntry, string $originalName): array
+{
+    $errors = [];
+    
+    // Validate file name
+    $nameResult = validate_file_name($originalName);
+    if (!$nameResult['valid']) {
+        $errors[] = $nameResult['error'];
+    }
+    
+    // Validate extension
+    $extResult = validate_file_extension($originalName);
+    if (!$extResult['valid']) {
+        $errors[] = $extResult['error'];
+    }
+    
+    // Validate size
+    $size = $fileEntry['size'] ?? 0;
+    $sizeResult = validate_file_size($size, $originalName);
+    if (!$sizeResult['valid']) {
+        $errors[] = $sizeResult['error'];
+    }
+    
+    // Check if it's a valid uploaded file
+    $tmpName = $fileEntry['tmp_name'] ?? '';
+    if (!empty($tmpName) && !is_uploaded_file($tmpName)) {
+        $errors[] = 'Invalid upload file.';
+    }
+    
+    return [
+        'valid' => count($errors) === 0,
+        'errors' => $errors
+    ];
+}
+
+// ============================================================================
+// RATE LIMITING
+// ============================================================================
+
+/**
+ * Rate limiting storage (session-based)
+ */
+function get_rate_limit_key(string $action): string
+{
+    $ip = $_SERVER['REMOTE_ADDR'] ?? 'unknown';
+    return 'rate_limit_' . md5($action . '_' . $ip);
+}
+
+/**
+ * Check if action is rate limited
+ * @param string $action Action name
+ * @param int $maxAttempts Maximum attempts allowed
+ * @param int $windowSeconds Time window in seconds
+ * @return bool Whether action is rate limited
+ */
+function is_rate_limited(string $action, int $maxAttempts = 30, int $windowSeconds = 60): bool
+{
+    if (session_status() === PHP_SESSION_NONE) {
+        session_start();
+    }
+    
+    $key = get_rate_limit_key($action);
+    $now = time();
+    
+    if (!isset($_SESSION[$key])) {
+        $_SESSION[$key] = [];
+    }
+    
+    // Remove old entries outside the window
+    $_SESSION[$key] = array_filter($_SESSION[$key], function($timestamp) use ($now, $windowSeconds) {
+        return ($now - $timestamp) < $windowSeconds;
+    });
+    
+    // Check if we've exceeded the limit
+    return count($_SESSION[$key]) >= $maxAttempts;
+}
+
+/**
+ * Record an action attempt for rate limiting
+ * @param string $action Action name
+ */
+function record_rate_limit_attempt(string $action): void
+{
+    if (session_status() === PHP_SESSION_NONE) {
+        session_start();
+    }
+    
+    $key = get_rate_limit_key($action);
+    
+    if (!isset($_SESSION[$key])) {
+        $_SESSION[$key] = [];
+    }
+    
+    $_SESSION[$key][] = time();
+}
+
+/**
+ * Get rate limit status for an action
+ * @param string $action Action name
+ * @param int $maxAttempts Maximum attempts allowed
+ * @param int $windowSeconds Time window in seconds
+ * @return array Status with 'limited', 'remaining', and 'reset' keys
+ */
+function get_rate_limit_status(string $action, int $maxAttempts = 30, int $windowSeconds = 60): array
+{
+    if (session_status() === PHP_SESSION_NONE) {
+        session_start();
+    }
+    
+    $key = get_rate_limit_key($action);
+    $now = time();
+    
+    if (!isset($_SESSION[$key])) {
+        $_SESSION[$key] = [];
+    }
+    
+    // Remove old entries
+    $_SESSION[$key] = array_filter($_SESSION[$key], function($timestamp) use ($now, $windowSeconds) {
+        return ($now - $timestamp) < $windowSeconds;
+    });
+    
+    $currentCount = count($_SESSION[$key]);
+    $remaining = max(0, $maxAttempts - $currentCount);
+    
+    // Calculate reset time
+    $oldestEntry = !empty($_SESSION[$key]) ? min($_SESSION[$key]) : $now;
+    $resetTime = $oldestEntry + $windowSeconds;
+    
+    return [
+        'limited' => $currentCount >= $maxAttempts,
+        'remaining' => $remaining,
+        'reset' => $resetTime,
+        'current' => $currentCount,
+        'max' => $maxAttempts
+    ];
+}
+
+// ============================================================================
+// CONTENT SECURITY
+// ============================================================================
+
+/**
+ * Escape HTML special characters for safe output
+ * @param string $text Text to escape
+ * @return string Escaped text
+ */
+function escape_html(string $text): string
+{
+    return htmlspecialchars($text, ENT_QUOTES | ENT_HTML5, 'UTF-8');
+}
+
+/**
+ * Sanitize HTML content (strip dangerous tags)
+ * @param string $html HTML content
+ * @return string Sanitized HTML
+ */
+function sanitize_html_content(string $html): string
+{
+    // Remove script tags and content
+    $html = preg_replace('/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/is', '', $html);
+    
+    // Remove style tags and content
+    $html = preg_replace('/<style\b[^<]*(?:(?!<\/style>)<[^<]*)*<\/style>/is', '', $html);
+    
+    // Remove event handlers
+    $html = preg_replace('/\s*on\w+\s*=\s*["\'][^"\']*["\']/i', '', $html);
+    
+    // Remove javascript: URLs
+    $html = preg_replace('/javascript\s*:/i', '', $html);
+    
+    return $html;
+}
+
+/**
+ * Check if content is safe to display
+ * @param string $content Content to check
+ * @return array Safety check result with 'safe' and 'warnings' keys
+ */
+function check_content_safety(string $content): array
+{
+    $warnings = [];
+    
+    // Check for script tags
+    if (preg_match('/<script\b/i', $content)) {
+        $warnings[] = 'Content contains script tags.';
+    }
+    
+    // Check for event handlers
+    if (preg_match('/\bon\w+\s*=/i', $content)) {
+        $warnings[] = 'Content contains event handlers.';
+    }
+    
+    // Check for JavaScript URLs
+    if (preg_match('/javascript\s*:/i', $content)) {
+        $warnings[] = 'Content contains JavaScript URLs.';
+    }
+    
+    // Check for embedded objects
+    if (preg_match('/<(object|embed|iframe)\b/i', $content)) {
+        $warnings[] = 'Content contains embedded objects.';
+    }
+    
+    return [
+        'safe' => count($warnings) === 0,
+        'warnings' => $warnings
+    ];
+}
+
+/**
+ * Generate a secure random token
+ * @param int $length Token length in bytes
+ * @return string Hexadecimal token string
+ */
+function generate_secure_token(int $length = 32): string
+{
+    return bin2hex(random_bytes($length));
+}
+
+/**
+ * Verify CSRF token
+ * @param string $token Token to verify
+ * @return bool Whether token is valid
+ */
+function verify_csrf_token(string $token): bool
+{
+    if (session_status() === PHP_SESSION_NONE) {
+        session_start();
+    }
+    
+    $storedToken = $_SESSION['csrf_token'] ?? '';
+    
+    if (empty($storedToken) || empty($token)) {
+        return false;
+    }
+    
+    return hash_equals($storedToken, $token);
+}
+
+/**
+ * Generate and store CSRF token
+ * @return string Generated token
+ */
+function generate_csrf_token(): string
+{
+    if (session_status() === PHP_SESSION_NONE) {
+        session_start();
+    }
+    
+    $token = generate_secure_token();
+    $_SESSION['csrf_token'] = $token;
+    
+    return $token;
+}
+
 /**
  * Ensure logs directory exists and is writable
  * @return void

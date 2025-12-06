@@ -1,14 +1,16 @@
 # File Manager — Modern Web-Based File Management System
 
-**Version:** 2.1 (Folder Upload Support)  
-**Date:** December 5, 2025  
+**Version:** 3.0 (Phase 4 Complete)
+**Date:** December 6, 2025
 **Status:** ✅ Production Ready
+
+📚 **[Documentation](docs/README.md)** | 📖 **[API Reference](docs/API.md)** | 🏗️ **[Architecture](docs/ARCHITECTURE.md)** | 🤝 **[Contributing](docs/CONTRIBUTING.md)**
 
 ---
 
 ## 🎯 Overview
 
-A modern, full-featured web-based file manager built with vanilla JavaScript and PHP. Features include file browsing, upload/download, drag & drop, virtual scrolling, dark mode, activity logging, and comprehensive file operations.
+A modern, full-featured web-based file manager built with vanilla JavaScript and PHP. Features include file browsing, upload/download, drag & drop, virtual scrolling, dark mode, trash system, activity logging, analytics, security hardening, and comprehensive file operations.
 
 ---
 
@@ -93,8 +95,9 @@ Filemanager/
 │       └── log-handler.js    # Legacy log handler
 │
 ├── lib/                   # 🔧 PHP Backend Library
-│   ├── file_manager.php   # Core file operations
-│   └── logger.php         # Activity logging system
+│   ├── file_manager.php   # Core file operations + Security
+│   ├── trash_manager.php  # Trash system operations
+│   └── log_manager.php    # Activity logging system
 │
 ├── partials/              # 📄 HTML Partials
 │   ├── table.php          # File table structure
@@ -104,54 +107,78 @@ Filemanager/
 ├── file/                  # 📂 User file storage directory
 ├── logs/                  # 📊 Activity logs (JSON)
 │   └── activity.json      # Activity log storage
+├── .trash/                # 🗑️ Trash storage (soft delete)
 │
-└── docs/                  # 📚 Comprehensive Documentation
-    ├── DOCUMENTATION_INDEX.md        # Navigation guide (start here)
-    ├── PROJECT_COMPLETE_SUMMARY.md   # Executive overview
-    ├── CSS_ARCHITECTURE.md           # CSS system design
-    ├── BUILD_GUIDE.md                # Development guide
-    ├── MIGRATION_GUIDE.md            # Migration instructions
-    ├── NAMING_CONVENTIONS.md         # Code standards
-    ├── COMPONENT_CATALOG.md          # Component reference
-    ├── PHASE_9_VERIFICATION_REPORT.md # Testing results
-    └── CSS_MODULARIZATION_TRACKER.md # Project history
+├── docs/                  # 📚 Comprehensive Documentation
+│   ├── README.md          # Quick start & feature overview (NEW)
+│   ├── ARCHITECTURE.md    # System architecture guide (NEW)
+│   ├── API.md             # Complete API reference (NEW)
+│   ├── CONTRIBUTING.md    # Developer contribution guide (NEW)
+│   └── [legacy docs...]   # Previous documentation files
+│
+└── CHANGELOG.md           # 📝 Version history (NEW)
 ```
 
 ---
 
-## ✨ Fitur Utama
+## ✨ Features
 
-### File Operations
-- ✅ **Browse & Navigate** - Breadcrumb navigation, folder traversal
-- ✅ **Create** - New files and folders with validation
-- ✅ **Rename** - In-place renaming with conflict detection
-- ✅ **Move** - Drag & drop or dialog-based file moving
-- ✅ **Delete** - Single or bulk delete with confirmation
-- ✅ **Upload Files** - Chunked uploads (5MB chunks) for large files
-- ✅ **Upload Folders** - Upload entire folder with subfolder structure preserved
-- ✅ **Download** - Direct file downloads
-- ✅ **Preview** - Text file preview and editing
-- ✅ **Media Preview** - Image and video preview
+### Core File Operations
+| Feature | Description |
+|---------|-------------|
+| 📁 **Browse & Navigate** | Breadcrumb navigation, folder traversal |
+| ➕ **Create** | New files and folders with validation |
+| ✏️ **Rename** | In-place renaming with conflict detection |
+| 📦 **Move** | Drag & drop or dialog-based file moving |
+| 🗑️ **Delete** | Soft delete with trash system |
+| 📤 **Upload Files** | Chunked uploads (5MB chunks) for large files |
+| 📂 **Upload Folders** | Upload entire folder with subfolder structure |
+| 📥 **Download** | Direct file downloads |
+| 👁️ **Preview** | Text, image, video, audio, PDF preview |
+| ✏️ **Edit** | Built-in code editor with syntax highlighting |
 
 ### UI/UX Features
-- ✅ **Virtual Scrolling** - Smooth performance with 1000+ files
-- ✅ **Pagination** - Hybrid pagination with configurable page size
-- ✅ **Drag & Drop** - File moving with visual feedback
-- ✅ **Context Menu** - Right-click operations
-- ✅ **Keyboard Shortcuts** - Fast keyboard navigation
-- ✅ **Dark Mode** - Complete dark theme with CSS variables
-- ✅ **Responsive Design** - Mobile, tablet, desktop optimized
-- ✅ **Touch Support** - 44px minimum touch targets
+| Feature | Description |
+|---------|-------------|
+| 🚀 **Virtual Scrolling** | Smooth performance with 1000+ files |
+| 📄 **Pagination** | Hybrid pagination with configurable page size |
+| 🖱️ **Drag & Drop** | File moving with visual feedback |
+| 📋 **Context Menu** | Right-click operations |
+| ⌨️ **Keyboard Shortcuts** | Full keyboard navigation |
+| 🌙 **Dark Mode** | Complete dark theme with CSS variables |
+| 📱 **Responsive Design** | Mobile, tablet, desktop optimized |
+| 👆 **Touch Support** | 44px minimum touch targets |
+| ♿ **Accessibility** | WCAG 2.1 AA compliant |
 
 ### Advanced Features
-- ✅ **Activity Logging** - Complete audit trail with filters
-- ✅ **Log Export** - JSON/CSV export capabilities
-- ✅ **Optimistic UI** - Instant feedback before server response
-- ✅ **Request Cancellation** - AbortController for cancelled operations
-- ✅ **State Persistence** - LocalStorage for current path, theme, preferences
-- ✅ **Batch Operations** - Multi-select with bulk actions
-- ✅ **Search & Filter** - Real-time file search
-- ✅ **Sort** - By name, type, date, size
+| Feature | Description |
+|---------|-------------|
+| 🗑️ **Trash System** | Soft delete with restore capability |
+| 📊 **Activity Logging** | Complete audit trail with filters |
+| 📈 **Analytics** | Privacy-respecting usage analytics (local only) |
+| 🔒 **Security** | Input validation, XSS prevention, rate limiting |
+| 📤 **Log Export** | JSON/CSV export capabilities |
+| ⚡ **Optimistic UI** | Instant feedback before server response |
+| 🔗 **State Persistence** | LocalStorage for preferences |
+| 📦 **Batch Operations** | Multi-select with bulk actions |
+| 🔍 **Search & Filter** | Real-time file search |
+| 📊 **Sort** | By name, type, date, size |
+
+### ⌨️ Keyboard Shortcuts
+
+| Shortcut | Action |
+|----------|--------|
+| `Ctrl + N` | Create new file |
+| `Ctrl + Shift + N` | Create new folder |
+| `Ctrl + U` | Upload files |
+| `Ctrl + A` | Select all items |
+| `Ctrl + F` | Focus search |
+| `Delete` | Delete selected items |
+| `Enter` | Open selected item |
+| `Escape` | Close modal / Deselect all |
+| `↑ / ↓` | Navigate items |
+| `Ctrl + Click` | Toggle item selection |
+| `Shift + Click` | Range selection |
 
 ---
 
@@ -322,9 +349,14 @@ The backend automatically creates subfolder structure based on relative paths.
 - ✅ **Path Sanitization** - `sanitize_relative_path()` prevents traversal
 - ✅ **Root Restriction** - `resolve_path()` limits access to `file/` directory
 - ✅ **Extension Whitelist** - Only allowed extensions for editing
-- ✅ **File Size Limits** - Configurable max upload size
+- ✅ **Dangerous Extension Blocking** - Prevents upload of executable files
+- ✅ **File Size Limits** - Configurable max upload size by file type
 - ✅ **MIME Validation** - File type verification
 - ✅ **Input Validation** - All inputs sanitized and validated
+- ✅ **XSS Prevention** - HTML escaping and sanitization
+- ✅ **Rate Limiting** - Session-based rate limiting for API calls
+- ✅ **CSRF Protection** - Token-based request validation
+- ✅ **Security Audit Logging** - Track security events
 - ✅ **Error Handling** - Proper HTTP status codes and error messages
 
 ---
@@ -401,28 +433,25 @@ $resolved = resolve_path($root, $sanitized);
 
 ---
 
-## 📚 Dokumentasi Lengkap
-
-Proyek ini dilengkapi dengan dokumentasi komprehensif (2,400+ baris):
+## 📚 Documentation
 
 ### Quick Start
-1. **[DOCUMENTATION_INDEX.md](docs/DOCUMENTATION_INDEX.md)** - Navigation guide (start here)
-2. **[PROJECT_COMPLETE_SUMMARY.md](docs/PROJECT_COMPLETE_SUMMARY.md)** - Executive summary
+| Document | Description |
+|----------|-------------|
+| 📚 **[docs/README.md](docs/README.md)** | Quick start guide and feature overview |
+| 🏗️ **[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)** | System architecture and design patterns |
+| 📖 **[docs/API.md](docs/API.md)** | Complete API reference with examples |
+| 🤝 **[docs/CONTRIBUTING.md](docs/CONTRIBUTING.md)** | Developer contribution guidelines |
+| 📝 **[CHANGELOG.md](CHANGELOG.md)** | Version history and release notes |
 
-### For Developers
-- **[CSS_ARCHITECTURE.md](docs/CSS_ARCHITECTURE.md)** - 6-layer CSS system (400+ lines)
-- **[BUILD_GUIDE.md](docs/BUILD_GUIDE.md)** - Development workflow (550+ lines)
-- **[NAMING_CONVENTIONS.md](docs/NAMING_CONVENTIONS.md)** - BEM standards (350+ lines)
-- **[COMPONENT_CATALOG.md](docs/COMPONENT_CATALOG.md)** - Component reference (400+ lines)
-
-### For Migration
-- **[MIGRATION_GUIDE.md](docs/MIGRATION_GUIDE.md)** - Step-by-step migration (400+ lines)
-- **[CSS_MODULARIZATION_TRACKER.md](docs/CSS_MODULARIZATION_TRACKER.md)** - Project history
-
-### Testing & Verification
-- **[PHASE_9_VERIFICATION_REPORT.md](docs/PHASE_9_VERIFICATION_REPORT.md)** - Complete testing results
-
-**Total Documentation:** 9 comprehensive guides with examples, diagrams, and references
+### Legacy Documentation
+| Document | Description |
+|----------|-------------|
+| [DOCUMENTATION_INDEX.md](docs/DOCUMENTATION_INDEX.md) | Navigation guide |
+| [CSS_ARCHITECTURE.md](docs/CSS_ARCHITECTURE.md) | 6-layer CSS system |
+| [BUILD_GUIDE.md](docs/BUILD_GUIDE.md) | Development workflow |
+| [NAMING_CONVENTIONS.md](docs/NAMING_CONVENTIONS.md) | BEM standards |
+| [COMPONENT_CATALOG.md](docs/COMPONENT_CATALOG.md) | Component reference |
 
 ---
 
@@ -732,7 +761,7 @@ docs/
 - [ ] **Internationalization (i18n)** - Multi-language support
 - [ ] **User Authentication** - Login system and permissions
 - [ ] **File Sharing** - Generate shareable links
-- [ ] **Search** - Full-text file content search
+- [ ] **Full-text Search** - Search file content
 - [ ] **Compression** - Zip/unzip files
 - [ ] **Cloud Storage** - S3, Google Drive integration
 
@@ -745,31 +774,39 @@ docs/
 ### DevOps
 - [ ] **Docker Support** - Containerized deployment
 - [ ] **CI/CD Pipeline** - Automated testing and deployment
-- [ ] **Monitoring** - Error tracking and analytics
+- [ ] **Monitoring** - Error tracking integration
 - [ ] **Backup System** - Automated file backups
+
+### Recently Completed ✅
+- [x] **Trash System** - Soft delete with restore (Phase 3)
+- [x] **Activity Logging** - Complete audit trail (Phase 3)
+- [x] **Batch Operations** - Multi-select actions (Phase 3)
+- [x] **Documentation** - Comprehensive docs (Phase 4)
+- [x] **Analytics Module** - Privacy-respecting tracking (Phase 4)
+- [x] **Security Module** - XSS prevention, validation (Phase 4)
+- [x] **Rate Limiting** - API abuse prevention (Phase 4)
 
 ---
 
 ## 🤝 Contributing
 
-Contributions are welcome! Please follow these guidelines:
+Contributions are welcome! See **[docs/CONTRIBUTING.md](docs/CONTRIBUTING.md)** for detailed guidelines.
 
+### Quick Start
 1. **Fork the repository**
 2. **Create feature branch** (`git checkout -b feature/amazing-feature`)
-3. **Follow coding standards:**
-   - CSS: BEM naming convention
-   - JavaScript: ES6+ with JSDoc comments
-   - PHP: PSR-12 coding standards
+3. **Follow coding standards** (see CONTRIBUTING.md)
 4. **Test thoroughly** (manual testing checklist)
-5. **Commit changes** (`git commit -m 'Add amazing feature'`)
+5. **Commit changes** (`git commit -m 'feat: add amazing feature'`)
 6. **Push to branch** (`git push origin feature/amazing-feature`)
 7. **Open Pull Request**
 
 ### Code Style
-- **CSS:** Follow `docs/NAMING_CONVENTIONS.md`
-- **JavaScript:** Use ES6+ features, avoid jQuery
-- **PHP:** Follow PSR-12, use type hints
-- **Documentation:** Update relevant docs with changes
+| Language | Standard |
+|----------|----------|
+| CSS | BEM convention, see `docs/NAMING_CONVENTIONS.md` |
+| JavaScript | ES6+ with JSDoc comments |
+| PHP | PSR-12 coding standards |
 
 ---
 
@@ -822,7 +859,16 @@ SOFTWARE.
   - Completed: November 25, 2025
   - 10-phase modularization project
   - 100% backward compatible
-  - Zero visual regressions
+- **Version 2.1** - Folder upload support
+  - Completed: December 5, 2025
+  - Chunked uploads with folder structure preservation
+- **Version 3.0** - Phase 4 Complete (Current)
+  - Completed: December 6, 2025
+  - Trash system with restore
+  - Activity logging with export
+  - Comprehensive documentation
+  - Analytics module (privacy-respecting)
+  - Security hardening
 
 ### Special Thanks
 - All contributors and testers
