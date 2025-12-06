@@ -13,7 +13,9 @@
   border: 1px solid rgba(0, 0, 0, 0.04);
   transition: background-color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
-  overflow: hidden;
+  overflow: auto;
+  display: flex;
+  flex-direction: column;
 }
 
 [data-theme="dark"] .card {
@@ -57,4 +59,20 @@
 
 .card-elevated {
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+/* Mobile responsive adjustments */
+@media (max-width: 767px) {
+  .card {
+    padding: 8px;
+    border-radius: 8px;
+    max-height: calc(100vh - 180px); /* Prevent card from taking full height */
+  }
+}
+
+@media (max-width: 479px) {
+  .card {
+    padding: 6px;
+    max-height: calc(100vh - 160px);
+  }
 }

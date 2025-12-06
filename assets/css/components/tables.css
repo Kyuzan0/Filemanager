@@ -399,3 +399,102 @@ tbody tr.drop-active {
 [data-theme="dark"] .mobile-context-item:active {
   background: rgba(255, 255, 255, 0.15);
 }
+
+/* ============================================
+   Row Selection Styles (Click-to-Select)
+   ============================================ */
+
+/* Selected row styling for desktop table */
+tbody tr.selected {
+  background-color: rgba(59, 130, 246, 0.08) !important;
+  border-left: 3px solid #3b82f6;
+}
+
+tbody tr.selected:hover {
+  background-color: rgba(59, 130, 246, 0.12) !important;
+}
+
+/* Dark mode selected row */
+[data-theme="dark"] tbody tr.selected {
+  background-color: rgba(59, 130, 246, 0.15) !important;
+}
+
+[data-theme="dark"] tbody tr.selected:hover {
+  background-color: rgba(59, 130, 246, 0.2) !important;
+}
+
+/* Selected row checkbox styling */
+tbody tr.selected input[type="checkbox"] {
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.3);
+}
+
+/* Mobile item selected state */
+div[data-item-path].selected {
+  background-color: rgba(59, 130, 246, 0.08) !important;
+  border-left: 3px solid #3b82f6;
+}
+
+div[data-item-path].selected:hover {
+  background-color: rgba(59, 130, 246, 0.12) !important;
+}
+
+[data-theme="dark"] div[data-item-path].selected {
+  background-color: rgba(59, 130, 246, 0.15) !important;
+}
+
+[data-theme="dark"] div[data-item-path].selected:hover {
+  background-color: rgba(59, 130, 246, 0.2) !important;
+}
+
+/* Selection visual feedback on name cell */
+tbody tr.selected .file-name,
+div[data-item-path].selected .font-medium {
+  color: #2563eb;
+  font-weight: 600;
+}
+
+[data-theme="dark"] tbody tr.selected .file-name,
+[data-theme="dark"] div[data-item-path].selected .font-medium {
+  color: #60a5fa;
+}
+
+/* Ensure clickable cursor on row */
+tbody tr[data-item-path] {
+  cursor: pointer;
+  user-select: none;
+}
+
+/* But keep default cursor on action buttons area */
+tbody tr[data-item-path] .row-actions,
+tbody tr[data-item-path] .action-icon-btn {
+  cursor: pointer;
+}
+
+/* Selection animation */
+tbody tr.selected,
+div[data-item-path].selected {
+  animation: selectPulse 0.3s ease-out;
+}
+
+@keyframes selectPulse {
+  0% {
+    background-color: rgba(59, 130, 246, 0.2);
+  }
+  100% {
+    background-color: rgba(59, 130, 246, 0.08);
+  }
+}
+
+[data-theme="dark"] tbody tr.selected,
+[data-theme="dark"] div[data-item-path].selected {
+  animation: selectPulseDark 0.3s ease-out;
+}
+
+@keyframes selectPulseDark {
+  0% {
+    background-color: rgba(59, 130, 246, 0.3);
+  }
+  100% {
+    background-color: rgba(59, 130, 246, 0.15);
+  }
+}

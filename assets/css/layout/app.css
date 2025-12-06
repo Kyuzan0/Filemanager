@@ -36,10 +36,36 @@
   flex: 1;
   height: 100%;
   overflow-y: auto;
+  overflow-x: hidden; /* Prevent horizontal overflow */
   position: relative;
   padding: 18px;
   background: var(--bg);
   transition: background-color 0.3s ease;
+  /* Flexbox layout to push footer to bottom */
+  display: flex;
+  flex-direction: column;
+  min-height: 0; /* Allow flex shrinking */
+}
+
+/* Main content wrapper to hold header, card, and footer */
+.main > .header-actions {
+  flex-shrink: 0;
+}
+
+/* Card should grow and have internal scrolling */
+.main > .card {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Footer always visible at bottom */
+.main > nav.footer {
+  flex-shrink: 0;
+  margin-top: 12px;
 }
 
 /* Scrollbar styling with hover effect */
@@ -85,6 +111,15 @@
 @media (max-width: 767px) {
   .main {
     padding: 8px;
+    padding-bottom: 16px; /* Extra space for footer */
+  }
+  
+  .main > .card {
+    margin-bottom: 8px;
+  }
+  
+  .main > nav.footer {
+    margin-top: 8px;
   }
 }
 
@@ -92,6 +127,15 @@
 @media (max-width: 479px) {
   .main {
     padding: 4px;
+    padding-bottom: 12px; /* Extra space for footer */
+  }
+  
+  .main > .card {
+    margin-bottom: 6px;
+  }
+  
+  .main > nav.footer {
+    margin-top: 6px;
   }
 }
 

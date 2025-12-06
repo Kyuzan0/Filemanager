@@ -16,6 +16,16 @@
         /* Prevent flash of white background */
         html[data-theme="dark"] { background-color: #0f1419; }
         html[data-theme="dark"] body { background-color: #0f1419; }
+        
+        /* Safe area insets for mobile devices with notch */
+        @supports (padding: env(safe-area-inset-bottom)) {
+            .main {
+                padding-bottom: calc(env(safe-area-inset-bottom) + 16px) !important;
+            }
+            nav.footer {
+                padding-bottom: calc(env(safe-area-inset-bottom) + 12px) !important;
+            }
+        }
     </style>
     <!-- Using Tailwind CDN (reverted to CDN-based workflow) -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -30,10 +40,10 @@
     <!-- RemixIcon CDN -->
     <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <link rel="icon" type="image/svg+xml" href="favicon.svg">
     <link rel="shortcut icon" type="image/svg+xml" href="favicon.svg">
     <title>File Manager — SiyNLic Pro</title>

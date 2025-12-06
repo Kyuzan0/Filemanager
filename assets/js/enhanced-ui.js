@@ -15,6 +15,7 @@ let isDragging = false;
 const draggedItems = new Set();
 let currentContextId = null;
 let contextFileData = null;
+let isSelectionModeActive = false; // Track if selection mode is active (user clicked a checkbox first)
 
 // DOM Elements
 let tbody;
@@ -683,14 +684,23 @@ function render() {
 
   console.log(`[render] Rendering ${pageItems.length} items (total: ${total})`);
 
+  // Track last selected index for Shift+Click range selection
+  let lastSelectedIndex = -1;
+  
   for (const f of pageItems) {
     const tr = document.createElement('tr');
     tr.dataset.id = f.id;
     tr.dataset.path = f.path;
     tr.dataset.itemType = f.type;
+    tr.dataset.index = pageItems.indexOf(f).toString();
     tr.draggable = true;
 
     const checked = selected.has(f.path);
+    
+    // Add selected class if checked
+    if (checked) {
+      tr.classList.add('selected');
+    }
     const iconData = f.type === 'folder' 
       ? { html: '<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="#f59e0b" d="M10 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2h-8l-2-2z"></path></svg>', type: 'folder', bg: '#fef3c7' }
       : getFileIcon(f.name, f.type);
@@ -738,6 +748,84 @@ function render() {
     tr.addEventListener('drop', handleDrop);
     tr.addEventListener('contextmenu', handleContextMenu);
     
+    // Click-to-select: only works after selection mode is activated (user clicked a checkbox first)
+    tr.addEventListener('click', (event) => {
+      const target = event.target;
+      
+      // Check if the click is on an interactive element that should NOT trigger selection
+      const isInteractiveElement =
+        target.closest('input[type="checkbox"]') ||
+        target.closest('button') ||
+        target.closest('.action-icon-btn') ||
+        target.closest('.mobile-more-btn') ||
+        target.closest('.row-actions');
+      
+      if (isInteractiveElement) {
+        return; // Let the element handle its own click
+      }
+      
+      // Only allow row click selection if selection mode is active
+      if (!isSelectionModeActive) {
+        return; // Selection mode not active yet, do nothing on row click
+      }
+      
+      const path = f.path;
+      const checkbox = tr.querySelector('.sel');
+      const currentIndex = parseInt(tr.dataset.index);
+      
+      if (event.shiftKey && lastSelectedIndex !== -1) {
+        // Shift+Click: Range selection
+        const start = Math.min(lastSelectedIndex, currentIndex);
+        const end = Math.max(lastSelectedIndex, currentIndex);
+        
+        for (let i = start; i <= end; i++) {
+          const item = pageItems[i];
+          if (item) {
+            selected.add(item.path);
+            const row = tbody.querySelector(`tr[data-path="${item.path}"]`);
+            if (row) {
+              row.classList.add('selected');
+              const cb = row.querySelector('.sel');
+              if (cb) cb.checked = true;
+            }
+          }
+        }
+      } else if (event.ctrlKey || event.metaKey) {
+        // Ctrl/Cmd+Click: Toggle single item without affecting others
+        if (selected.has(path)) {
+          selected.delete(path);
+          tr.classList.remove('selected');
+          if (checkbox) checkbox.checked = false;
+        } else {
+          selected.add(path);
+          tr.classList.add('selected');
+          if (checkbox) checkbox.checked = true;
+        }
+      } else {
+        // Normal click: Toggle this item
+        if (selected.has(path)) {
+          selected.delete(path);
+          tr.classList.remove('selected');
+          if (checkbox) checkbox.checked = false;
+        } else {
+          selected.add(path);
+          tr.classList.add('selected');
+          if (checkbox) checkbox.checked = true;
+        }
+      }
+      
+      // Update last selected index
+      lastSelectedIndex = currentIndex;
+      
+      // Update selected count display
+      if (selectedCount) selectedCount.textContent = `${selected.size} selected`;
+      
+      // Deactivate selection mode if no items are selected
+      if (selected.size === 0) {
+        isSelectionModeActive = false;
+      }
+    });
+    
     tbody.appendChild(tr);
   }
 
@@ -752,14 +840,38 @@ function render() {
   const nextBtn = document.getElementById('nextPage');
   if (prevBtn) prevBtn.disabled = page <= 1;
   if (nextBtn) nextBtn.disabled = page >= pages;
+  
+  // Show/hide pagination footer based on total items
+  // Always show footer to maintain UI consistency
+  const paginationFooter = document.querySelector('nav.footer');
+  if (paginationFooter) {
+    paginationFooter.classList.remove('hidden-pagination');
+    // Only add minimal styling if needed
+    paginationFooter.style.display = 'flex';
+  }
 
   // Wire checkbox events
   document.querySelectorAll('.sel').forEach(el =>
     el.addEventListener('change', e => {
       const path = e.target.dataset.path;
-      if (e.target.checked) selected.add(path);
-      else selected.delete(path);
+      const row = e.target.closest('tr');
+      
+      if (e.target.checked) {
+        selected.add(path);
+        if (row) row.classList.add('selected');
+        // Activate selection mode when user checks a checkbox
+        isSelectionModeActive = true;
+      } else {
+        selected.delete(path);
+        if (row) row.classList.remove('selected');
+      }
+      
       if (selectedCount) selectedCount.textContent = `${selected.size} selected`;
+      
+      // Deactivate selection mode if no items are selected
+      if (selected.size === 0) {
+        isSelectionModeActive = false;
+      }
     })
   );
 
@@ -1286,8 +1398,15 @@ function initializeEventHandlers() {
     document.querySelectorAll('.sel').forEach(el => {
       el.checked = checked;
       const path = el.dataset.path;
-      if (checked) selected.add(path);
-      else selected.delete(path);
+      const row = el.closest('tr');
+      
+      if (checked) {
+        selected.add(path);
+        if (row) row.classList.add('selected');
+      } else {
+        selected.delete(path);
+        if (row) row.classList.remove('selected');
+      }
     });
     selectedCount.textContent = `${selected.size} selected`;
   });

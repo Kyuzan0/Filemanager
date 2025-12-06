@@ -14,12 +14,15 @@ import { config } from '../constants.js';
 import { VirtualScrollManager, createSpacer, shouldUseVirtualScroll } from '../virtualScroll.js';
 import { invalidateDOMCache } from '../dragDrop.js';
 import { debugLog } from '../debug.js';
-import { 
-    calculatePagination, 
-    updatePaginationState, 
+import {
+    calculatePagination,
+    updatePaginationState,
     initScrollTracking,
     getItemsForPage
 } from '../pagination.js';
+
+// Track last selected index for Shift+Click range selection
+let lastSelectedIndex = -1;
 
 // Global virtual scroll manager instance
 let virtualScrollManager = null;
@@ -229,6 +232,79 @@ export function renderItemRow(item, state, params) {
     checkbox.addEventListener('change', (event) => toggleSelection(key, event.target.checked));
     selectionCell.appendChild(checkbox);
     row.appendChild(selectionCell);
+
+    // Single-click on row toggles checkbox selection (click-to-select enhancement)
+    // Supports Shift+Click for range selection and Ctrl+Click for toggle
+    row.addEventListener('click', (event) => {
+        // Don't toggle if clicking on interactive elements
+        const target = event.target;
+        const isInteractiveElement =
+            target.closest('input[type="checkbox"]') ||
+            target.closest('a') ||
+            target.closest('button') ||
+            target.closest('.action-icon-btn') ||
+            target.closest('.mobile-more-btn') ||
+            target.closest('.row-actions');
+        
+        if (isInteractiveElement) {
+            return; // Let the element handle its own click
+        }
+        
+        // Get current item index from visible items
+        const allRows = Array.from(row.parentElement.querySelectorAll('tr[data-item-path]'));
+        const currentIndex = allRows.indexOf(row);
+        
+        if (event.shiftKey && lastSelectedIndex >= 0) {
+            // Shift+Click: Range selection
+            const start = Math.min(lastSelectedIndex, currentIndex);
+            const end = Math.max(lastSelectedIndex, currentIndex);
+            
+            for (let i = start; i <= end; i++) {
+                const targetRow = allRows[i];
+                if (targetRow) {
+                    const targetPath = targetRow.dataset.itemPath;
+                    const targetCheckbox = targetRow.querySelector('input[type="checkbox"]');
+                    if (targetCheckbox && !targetCheckbox.checked) {
+                        targetCheckbox.checked = true;
+                        toggleSelection(targetPath, true);
+                        targetRow.classList.add('selected');
+                        targetRow.setAttribute('aria-selected', 'true');
+                    }
+                }
+            }
+            debugLog('[TableRenderer] Range selection from', start, 'to', end);
+        } else if (event.ctrlKey || event.metaKey) {
+            // Ctrl+Click (or Cmd+Click on Mac): Toggle single selection without clearing others
+            const newState = !checkbox.checked;
+            checkbox.checked = newState;
+            toggleSelection(key, newState);
+            
+            if (newState) {
+                row.classList.add('selected');
+                row.setAttribute('aria-selected', 'true');
+            } else {
+                row.classList.remove('selected');
+                row.setAttribute('aria-selected', 'false');
+            }
+            lastSelectedIndex = currentIndex;
+            debugLog('[TableRenderer] Ctrl+Click toggle:', key, newState);
+        } else {
+            // Normal click: Toggle single item selection
+            const newState = !checkbox.checked;
+            checkbox.checked = newState;
+            toggleSelection(key, newState);
+            
+            // Update row visual state for selection
+            if (newState) {
+                row.classList.add('selected');
+                row.setAttribute('aria-selected', 'true');
+            } else {
+                row.classList.remove('selected');
+                row.setAttribute('aria-selected', 'false');
+            }
+            lastSelectedIndex = currentIndex;
+        }
+    });
 
     // Double-click and keyboard handlers
     if (item.type === 'folder') {
@@ -902,28 +978,109 @@ export function createMobileItem(item, state, params) {
     
     mobileItem.appendChild(rightSide);
     
-    // Add click handlers for the entire item
+    // Single-click on item toggles checkbox selection (click-to-select enhancement)
+    // Double-click opens the item
+    // Supports Shift+Click for range selection and Ctrl+Click for toggle
+    let clickTimeout = null;
+    
     mobileItem.addEventListener('click', (event) => {
+        // Don't handle if clicking on interactive elements
         if (event.target.closest('button') || event.target.closest('input')) return;
         
-        if (item.type === 'folder') {
-            navigateTo(item.path);
-        } else if (isPreviewable || isMediaPreviewable) {
-            if (isPreviewable) {
-                openTextPreview(item);
+        // Clear any pending click timeout for double-click detection
+        if (clickTimeout) {
+            clearTimeout(clickTimeout);
+            clickTimeout = null;
+            // This is a double-click - open the item
+            if (item.type === 'folder') {
+                navigateTo(item.path);
+            } else if (isPreviewable || isMediaPreviewable) {
+                if (isPreviewable) {
+                    openTextPreview(item);
+                } else {
+                    openMediaPreview(item);
+                }
             } else {
-                openMediaPreview(item);
+                const ext = getFileExtension(item.name);
+                if (isWordDocument(ext)) {
+                    openInWord(item);
+                } else {
+                    const url = buildFileUrl(item.path);
+                    const newWindow = window.open(url, '_blank');
+                    if (newWindow) newWindow.opener = null;
+                }
             }
-        } else {
-            const ext = getFileExtension(item.name);
-            if (isWordDocument(ext)) {
-                openInWord(item);
-            } else {
-                const url = buildFileUrl(item.path);
-                const newWindow = window.open(url, '_blank');
-                if (newWindow) newWindow.opener = null;
-            }
+            return;
         }
+        
+        // For Shift+Click and Ctrl+Click, handle immediately without timeout
+        if (event.shiftKey || event.ctrlKey || event.metaKey) {
+            const mobileList = mobileItem.parentElement;
+            const allItems = Array.from(mobileList.querySelectorAll('div[data-item-path]'));
+            const currentIndex = allItems.indexOf(mobileItem);
+            
+            if (event.shiftKey && lastSelectedIndex >= 0) {
+                // Shift+Click: Range selection
+                const start = Math.min(lastSelectedIndex, currentIndex);
+                const end = Math.max(lastSelectedIndex, currentIndex);
+                
+                for (let i = start; i <= end; i++) {
+                    const targetItem = allItems[i];
+                    if (targetItem) {
+                        const targetPath = targetItem.dataset.itemPath;
+                        const targetCheckbox = targetItem.querySelector('input[type="checkbox"]');
+                        if (targetCheckbox && !targetCheckbox.checked) {
+                            targetCheckbox.checked = true;
+                            toggleSelection(targetPath, true);
+                            targetItem.classList.add('selected');
+                            targetItem.setAttribute('aria-selected', 'true');
+                        }
+                    }
+                }
+                debugLog('[TableRenderer] Mobile range selection from', start, 'to', end);
+            } else if (event.ctrlKey || event.metaKey) {
+                // Ctrl+Click: Toggle without clearing
+                const newState = !checkbox.checked;
+                checkbox.checked = newState;
+                toggleSelection(key, newState);
+                
+                if (newState) {
+                    mobileItem.classList.add('selected');
+                    mobileItem.setAttribute('aria-selected', 'true');
+                } else {
+                    mobileItem.classList.remove('selected');
+                    mobileItem.setAttribute('aria-selected', 'false');
+                }
+                lastSelectedIndex = currentIndex;
+            }
+            return;
+        }
+        
+        // Set a timeout for single click (toggle selection)
+        clickTimeout = setTimeout(() => {
+            clickTimeout = null;
+            
+            // Get current index for tracking
+            const mobileList = mobileItem.parentElement;
+            const allItems = Array.from(mobileList.querySelectorAll('div[data-item-path]'));
+            const currentIndex = allItems.indexOf(mobileItem);
+            
+            // Single click - toggle checkbox
+            const newState = !checkbox.checked;
+            checkbox.checked = newState;
+            toggleSelection(key, newState);
+            
+            // Update visual state
+            if (newState) {
+                mobileItem.classList.add('selected');
+                mobileItem.setAttribute('aria-selected', 'true');
+            } else {
+                mobileItem.classList.remove('selected');
+                mobileItem.setAttribute('aria-selected', 'false');
+            }
+            
+            lastSelectedIndex = currentIndex;
+        }, 250); // 250ms delay to distinguish single vs double click
     });
     
     // Context menu

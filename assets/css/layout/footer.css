@@ -1,8 +1,8 @@
 /**
  * Footer Styles
  * =============
- * Application footer area.
- * 
+ * Application footer area - Pagination footer that sticks to bottom.
+ *
  * Note: Footer styles are minimal in original CSS.
  * Will extract if additional footer styles found.
  */
@@ -17,6 +17,21 @@
   font-size: 12px;
   color: var(--text-secondary);
   transition: background-color var(--transition), border-color var(--transition);
+}
+
+/* Pagination footer - always visible at bottom */
+nav.footer {
+  position: relative;
+  z-index: 10;
+  flex-shrink: 0;
+  display: flex !important; /* Ensure always visible */
+  min-height: fit-content;
+  width: 100%;
+}
+
+/* Hide pagination footer when explicitly needed */
+nav.footer.hidden-pagination {
+  display: none !important;
 }
 
 .footer-left {
@@ -50,11 +65,34 @@
     flex-direction: column;
     gap: 8px;
     text-align: center;
+    padding: 12px;
   }
 
   .footer-left,
   .footer-right {
     width: 100%;
     justify-content: center;
+  }
+  
+  /* Pagination footer mobile adjustments */
+  nav.footer {
+    position: relative;
+    flex-shrink: 0;
+    margin-bottom: 0;
+    padding: 10px 8px;
+  }
+}
+
+/* Small mobile devices */
+@media (max-width: 479px) {
+  nav.footer {
+    padding: 8px 4px;
+    gap: 6px;
+    font-size: 0.75rem;
+  }
+  
+  nav.footer .flex {
+    flex-wrap: wrap;
+    gap: 4px;
   }
 }
