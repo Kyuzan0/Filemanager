@@ -1,12 +1,28 @@
 /**
  * File Operations Module
  * Berisi fungsi-fungsi untuk operasi file seperti delete, move, rename, dll.
+ * Enhanced with centralized error handling
  */
 
 import { deleteItems as apiDeleteItems, moveItem as apiMoveItem, renameItem as apiRenameItem, createItem as apiCreateItem, uploadFiles as apiUploadFiles } from './apiService.js';
 import { errorMessages, successMessages } from './constants.js';
 import { getParentPath, isSubPath } from './utils.js';
 import { debugLog, debugError, debugPerf } from './debug.js';
+import {
+    handleError,
+    createErrorHandler,
+    FileManagerError,
+    ErrorCategory,
+    ErrorSeverity,
+    isRetryableError
+} from './errorHandler.js';
+
+// Create context-specific error handlers for each operation type
+const deleteErrorHandler = createErrorHandler('FileOperations:Delete');
+const moveErrorHandler = createErrorHandler('FileOperations:Move');
+const renameErrorHandler = createErrorHandler('FileOperations:Rename');
+const createErrorHandler_internal = createErrorHandler('FileOperations:Create');
+const uploadErrorHandler = createErrorHandler('FileOperations:Upload');
 
 /**
  * Menghapus item-item yang dipilih
@@ -100,7 +116,17 @@ export async function deleteItems(
         await fetchDirectory(state.currentPath, { silent: true });
     } catch (error) {
         debugError('[ERROR] Delete operation error:', error);
-        const message = error instanceof Error ? error.message : 'Terjadi kesalahan saat menghapus item.';
+        
+        // Use centralized error handler for consistent error processing
+        const processedError = deleteErrorHandler(error, {
+            silent: true, // We'll show error via setError instead
+            context: 'deleteItems'
+        });
+        
+        // Get user-friendly message
+        const message = processedError instanceof FileManagerError
+            ? processedError.getUserMessage()
+            : (error instanceof Error ? error.message : 'Terjadi kesalahan saat menghapus item.');
         setError(message);
     } finally {
         state.isDeleting = false;
@@ -231,7 +257,16 @@ export async function moveItem(
             rollbackFn();
         }
         
-        const message = error instanceof Error ? error.message : 'Terjadi kesalahan saat memindahkan item.';
+        // Use centralized error handler for consistent error processing
+        const processedError = moveErrorHandler(error, {
+            silent: true, // We'll show error via setError instead
+            context: 'moveItem'
+        });
+        
+        // Get user-friendly message
+        const message = processedError instanceof FileManagerError
+            ? processedError.getUserMessage()
+            : (error instanceof Error ? error.message : 'Terjadi kesalahan saat memindahkan item.');
         if (setError) {
             setError(message);
         }
@@ -355,7 +390,16 @@ export async function renameItem(
         
         return fetchDirectory(state.currentPath, { silent: true });
     } catch (error) {
-        const message = error instanceof Error ? error.message : 'Gagal mengubah nama item.';
+        // Use centralized error handler for consistent error processing
+        const processedError = renameErrorHandler(error, {
+            silent: true, // We'll show error via setError/renameHint instead
+            context: 'renameItem'
+        });
+        
+        // Get user-friendly message
+        const message = processedError instanceof FileManagerError
+            ? processedError.getUserMessage()
+            : (error instanceof Error ? error.message : 'Gagal mengubah nama item.');
         setError(message);
         renameHint.textContent = message;
         renameHint.classList.add('error');
@@ -413,7 +457,16 @@ export async function createItem(
         closeCreateOverlay();
         return fetchDirectory(state.currentPath, { silent: true });
     } catch (error) {
-        const message = error instanceof Error ? error.message : 'Gagal membuat item baru.';
+        // Use centralized error handler for consistent error processing
+        const processedError = createErrorHandler_internal(error, {
+            silent: true, // We'll show error via setError/createHint instead
+            context: 'createItem'
+        });
+        
+        // Get user-friendly message
+        const message = processedError instanceof FileManagerError
+            ? processedError.getUserMessage()
+            : (error instanceof Error ? error.message : 'Gagal membuat item baru.');
         setError(message);
         createHint.textContent = message;
         createHint.classList.add('error');
@@ -520,7 +573,16 @@ export async function uploadFiles(
 
         await fetchDirectory(state.currentPath, { silent: true });
     } catch (error) {
-        const message = error instanceof Error ? error.message : 'Terjadi kesalahan saat mengunggah.';
+        // Use centralized error handler for consistent error processing
+        const processedError = uploadErrorHandler(error, {
+            silent: true, // We'll show error via setError instead
+            context: 'uploadFiles'
+        });
+        
+        // Get user-friendly message
+        const message = processedError instanceof FileManagerError
+            ? processedError.getUserMessage()
+            : (error instanceof Error ? error.message : 'Terjadi kesalahan saat mengunggah.');
         setError(message);
     } finally {
         setLoading(false);
@@ -813,7 +875,16 @@ export async function uploadFolder(
 
         await fetchDirectory(state.currentPath, { silent: true });
     } catch (error) {
-        const message = error instanceof Error ? error.message : 'Terjadi kesalahan saat mengunggah folder.';
+        // Use centralized error handler for consistent error processing
+        const processedError = uploadErrorHandler(error, {
+            silent: true, // We'll show error via setError instead
+            context: 'uploadFolder'
+        });
+        
+        // Get user-friendly message
+        const message = processedError instanceof FileManagerError
+            ? processedError.getUserMessage()
+            : (error instanceof Error ? error.message : 'Terjadi kesalahan saat mengunggah folder.');
         setError(message);
     } finally {
         setLoading(false);
