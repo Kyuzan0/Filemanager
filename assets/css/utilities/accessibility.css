@@ -1,0 +1,743 @@
+/**
+ * Accessibility CSS Utilities
+ * WCAG 2.1 AA compliant accessibility styles
+ * 
+ * Features:
+ * - Screen reader only content
+ * - Focus visible states
+ * - High contrast mode support
+ * - Reduced motion support
+ * - Skip links
+ * - Focus rings
+ * - Selection indicators
+ * - Keyboard shortcuts help modal
+ * - Batch operations UI
+ */
+
+/* ============================================================================
+   Screen Reader Only (Visually Hidden)
+   ============================================================================ */
+
+.sr-only,
+.visually-hidden {
+    position: absolute !important;
+    width: 1px !important;
+    height: 1px !important;
+    padding: 0 !important;
+    margin: -1px !important;
+    overflow: hidden !important;
+    clip: rect(0, 0, 0, 0) !important;
+    white-space: nowrap !important;
+    border: 0 !important;
+}
+
+/* Allow the element to be focusable when navigated to via keyboard */
+.sr-only-focusable:focus,
+.sr-only-focusable:active,
+.visually-hidden-focusable:focus,
+.visually-hidden-focusable:active {
+    position: static !important;
+    width: auto !important;
+    height: auto !important;
+    padding: inherit !important;
+    margin: inherit !important;
+    overflow: visible !important;
+    clip: auto !important;
+    white-space: normal !important;
+}
+
+/* ============================================================================
+   Skip Links
+   ============================================================================ */
+
+.skip-links {
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 9999;
+}
+
+.skip-link {
+    position: absolute;
+    top: -100%;
+    left: 0;
+    padding: 0.75rem 1.5rem;
+    background-color: var(--primary, #3b82f6);
+    color: white;
+    font-weight: 600;
+    font-size: 0.875rem;
+    text-decoration: none;
+    border-radius: 0 0 0.5rem 0;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    transition: top 0.2s ease-in-out;
+    outline: none;
+}
+
+.skip-link:focus {
+    top: 0;
+    outline: 3px solid var(--primary-dark, #1d4ed8);
+    outline-offset: 2px;
+}
+
+/* ============================================================================
+   Focus Visible States
+   ============================================================================ */
+
+/* Base focus ring for all interactive elements */
+:focus-visible,
+.focus-visible {
+    outline: 2px solid var(--primary, #3b82f6);
+    outline-offset: 2px;
+}
+
+/* Remove default focus ring for mouse users */
+:focus:not(:focus-visible) {
+    outline: none;
+}
+
+/* Enhanced focus ring for important elements */
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+[tabindex]:focus-visible:not([tabindex="-1"]) {
+    outline: 2px solid var(--primary, #3b82f6);
+    outline-offset: 2px;
+    box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.2);
+}
+
+/* Focus ring for table rows */
+tr:focus-visible,
+tr.focus-visible {
+    outline: 2px solid var(--primary, #3b82f6);
+    outline-offset: -2px;
+    background-color: rgba(59, 130, 246, 0.1);
+}
+
+/* Focus ring for file list items */
+div[data-item-path]:focus-visible,
+div[data-item-path].focus-visible {
+    outline: 2px solid var(--primary, #3b82f6);
+    outline-offset: -2px;
+    background-color: rgba(59, 130, 246, 0.1);
+}
+
+/* Custom focus highlight animation */
+.focus-highlight {
+    animation: focusHighlight 2s ease-out;
+}
+
+@keyframes focusHighlight {
+    0% {
+        box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.5);
+    }
+    100% {
+        box-shadow: 0 0 0 4px transparent;
+    }
+}
+
+/* Keyboard navigation focus indicator */
+.a11y-focused {
+    position: relative;
+}
+
+.a11y-focused::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border: 2px solid var(--primary, #3b82f6);
+    pointer-events: none;
+    border-radius: inherit;
+}
+
+/* ============================================================================
+   High Contrast Mode Support
+   ============================================================================ */
+
+@media (forced-colors: active) {
+    /* Ensure borders are visible */
+    button,
+    input,
+    select,
+    textarea,
+    a {
+        border: 1px solid CanvasText;
+    }
+
+    /* Ensure focus is visible */
+    :focus-visible {
+        outline: 3px solid Highlight;
+        outline-offset: 2px;
+    }
+
+    /* Icons should use current color */
+    svg {
+        fill: currentColor;
+        stroke: currentColor;
+    }
+
+    /* Selection should be visible */
+    tr.selected,
+    div.selected {
+        background-color: Highlight;
+        color: HighlightText;
+    }
+
+    /* Disabled state */
+    :disabled,
+    [disabled],
+    .disabled {
+        opacity: 0.6;
+        border-style: dashed;
+    }
+}
+
+/* Custom high contrast mode class */
+.high-contrast {
+    --primary: #0000ff;
+    --primary-dark: #0000aa;
+    --background: #ffffff;
+    --foreground: #000000;
+    --border: #000000;
+}
+
+.high-contrast button,
+.high-contrast a,
+.high-contrast input,
+.high-contrast select {
+    border: 2px solid currentColor;
+}
+
+.high-contrast :focus-visible {
+    outline: 3px solid #000000;
+    outline-offset: 3px;
+}
+
+/* ============================================================================
+   Reduced Motion Support
+   ============================================================================ */
+
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+    }
+
+    /* Disable specific animations */
+    .animate-spin,
+    .animate-pulse,
+    .animate-bounce,
+    .animate-ping {
+        animation: none !important;
+    }
+
+    /* Keep essential animations but make them instant */
+    .is-new,
+    .highlight-new {
+        animation: none !important;
+        background-color: rgba(34, 197, 94, 0.1);
+    }
+}
+
+/* Reduced motion class for JavaScript control */
+.reduce-motion *,
+.reduce-motion *::before,
+.reduce-motion *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+}
+
+/* ============================================================================
+   Selection Indicator
+   ============================================================================ */
+
+.batch-selection-indicator {
+    position: sticky;
+    top: 0;
+    z-index: 30;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.75rem 1rem;
+    background-color: var(--primary, #3b82f6);
+    color: white;
+    font-size: 0.875rem;
+    font-weight: 500;
+    transition: transform 0.2s ease-in-out, opacity 0.2s ease-in-out;
+    transform: translateY(-100%);
+    opacity: 0;
+}
+
+.batch-selection-indicator.visible {
+    transform: translateY(0);
+    opacity: 1;
+}
+
+.batch-selection-indicator.hidden {
+    display: none;
+}
+
+.batch-selection-indicator .selection-info {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.batch-selection-indicator .selection-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.batch-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    padding: 0.375rem 0.75rem;
+    background-color: rgba(255, 255, 255, 0.2);
+    color: white;
+    border: none;
+    border-radius: 0.375rem;
+    font-size: 0.75rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.15s ease;
+}
+
+.batch-btn:hover {
+    background-color: rgba(255, 255, 255, 0.3);
+}
+
+.batch-btn:focus-visible {
+    outline: 2px solid white;
+    outline-offset: 2px;
+}
+
+.batch-btn svg {
+    width: 1rem;
+    height: 1rem;
+}
+
+/* ============================================================================
+   Batch Actions Bar (Bottom Fixed)
+   ============================================================================ */
+
+.batch-actions-bar {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 40;
+    background-color: var(--background, white);
+    border-top: 1px solid var(--border, #e5e7eb);
+    box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.1);
+    transform: translateY(100%);
+    transition: transform 0.2s ease-in-out;
+}
+
+.batch-actions-bar.visible {
+    transform: translateY(0);
+}
+
+.batch-actions-bar.hidden {
+    display: none;
+}
+
+.batch-actions-content {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.75rem 1rem;
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+.batch-selection-info {
+    font-size: 0.875rem;
+    color: var(--foreground, #374151);
+}
+
+.batch-selection-info strong {
+    font-weight: 600;
+    color: var(--primary, #3b82f6);
+}
+
+.batch-actions-buttons {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.batch-action-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    padding: 0.5rem 0.75rem;
+    background-color: var(--background, white);
+    color: var(--foreground, #374151);
+    border: 1px solid var(--border, #e5e7eb);
+    border-radius: 0.375rem;
+    font-size: 0.75rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.batch-action-btn:hover {
+    background-color: var(--hover-bg, #f3f4f6);
+    border-color: var(--hover-border, #d1d5db);
+}
+
+.batch-action-btn:focus-visible {
+    outline: 2px solid var(--primary, #3b82f6);
+    outline-offset: 2px;
+}
+
+.batch-action-btn.batch-action-btn-danger {
+    color: #dc2626;
+    border-color: #fecaca;
+}
+
+.batch-action-btn.batch-action-btn-danger:hover {
+    background-color: #fef2f2;
+    border-color: #fca5a5;
+}
+
+.batch-action-btn svg {
+    width: 1rem;
+    height: 1rem;
+}
+
+.batch-close-btn {
+    padding: 0.5rem;
+    background: transparent;
+    border: none;
+    color: var(--muted, #9ca3af);
+    cursor: pointer;
+    border-radius: 50%;
+    transition: all 0.15s ease;
+}
+
+.batch-close-btn:hover {
+    background-color: var(--hover-bg, #f3f4f6);
+    color: var(--foreground, #374151);
+}
+
+.batch-close-btn:focus-visible {
+    outline: 2px solid var(--primary, #3b82f6);
+    outline-offset: 2px;
+}
+
+/* ============================================================================
+   Progress Indicator
+   ============================================================================ */
+
+.batch-progress-indicator {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 9999;
+    min-width: 300px;
+    padding: 1.5rem;
+    background-color: var(--background, white);
+    border-radius: 0.5rem;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+}
+
+.batch-progress-indicator.hidden {
+    display: none;
+}
+
+.progress-content {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.progress-text {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.875rem;
+}
+
+.progress-action {
+    font-weight: 500;
+    color: var(--foreground, #374151);
+}
+
+.progress-count {
+    color: var(--muted, #9ca3af);
+}
+
+.progress-bar-container {
+    height: 0.5rem;
+    background-color: var(--border, #e5e7eb);
+    border-radius: 0.25rem;
+    overflow: hidden;
+}
+
+.progress-bar-fill {
+    height: 100%;
+    background-color: var(--primary, #3b82f6);
+    border-radius: 0.25rem;
+    transition: width 0.3s ease;
+}
+
+/* ============================================================================
+   Keyboard Shortcuts Help Modal
+   ============================================================================ */
+
+.shortcuts-help-overlay {
+    backdrop-filter: blur(4px);
+}
+
+.shortcuts-help-dialog {
+    max-height: 80vh;
+}
+
+.shortcuts-help-header {
+    flex-shrink: 0;
+}
+
+.shortcuts-help-body {
+    overflow-y: auto;
+    flex: 1;
+}
+
+.shortcuts-categories {
+    display: grid;
+    gap: 1.5rem;
+}
+
+@media (min-width: 640px) {
+    .shortcuts-categories {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+.shortcuts-category {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.shortcuts-category-title {
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--muted, #6b7280);
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid var(--border, #e5e7eb);
+}
+
+.shortcuts-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.shortcut-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.375rem 0;
+    font-size: 0.875rem;
+}
+
+.shortcut-keys {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    flex-shrink: 0;
+}
+
+.shortcut-description {
+    color: var(--foreground, #374151);
+    text-align: right;
+}
+
+/* Keyboard key styling */
+.kbd,
+kbd {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 1.5rem;
+    height: 1.5rem;
+    padding: 0 0.375rem;
+    font-family: inherit;
+    font-size: 0.75rem;
+    font-weight: 500;
+    background-color: var(--bg-subtle, #f3f4f6);
+    color: var(--foreground, #374151);
+    border: 1px solid var(--border, #d1d5db);
+    border-radius: 0.25rem;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.shortcuts-help-footer {
+    flex-shrink: 0;
+}
+
+/* ============================================================================
+   Cut/Copy/Paste Visual Indicators
+   ============================================================================ */
+
+tr.item-cut,
+div.item-cut {
+    opacity: 0.6;
+    background-color: rgba(251, 191, 36, 0.1);
+}
+
+tr.item-cut td,
+div.item-cut {
+    position: relative;
+}
+
+tr.item-cut td::before,
+div.item-cut::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background-color: var(--warning, #f59e0b);
+    opacity: 0.5;
+}
+
+/* ============================================================================
+   Selected Row Styling
+   ============================================================================ */
+
+tr.selected,
+div.selected {
+    background-color: rgba(59, 130, 246, 0.1);
+}
+
+tr.selected:hover,
+div.selected:hover {
+    background-color: rgba(59, 130, 246, 0.15);
+}
+
+/* Dark mode adjustments */
+@media (prefers-color-scheme: dark) {
+    tr.selected,
+    div.selected {
+        background-color: rgba(59, 130, 246, 0.2);
+    }
+
+    tr.selected:hover,
+    div.selected:hover {
+        background-color: rgba(59, 130, 246, 0.25);
+    }
+
+    .kbd,
+    kbd {
+        background-color: #374151;
+        color: #f3f4f6;
+        border-color: #4b5563;
+    }
+
+    .batch-actions-bar {
+        background-color: #1f2937;
+        border-color: #374151;
+    }
+
+    .batch-action-btn {
+        background-color: #1f2937;
+        color: #f3f4f6;
+        border-color: #374151;
+    }
+
+    .batch-action-btn:hover {
+        background-color: #374151;
+        border-color: #4b5563;
+    }
+
+    .batch-progress-indicator {
+        background-color: #1f2937;
+    }
+
+    .progress-bar-container {
+        background-color: #374151;
+    }
+}
+
+/* ============================================================================
+   Responsive Adjustments
+   ============================================================================ */
+
+@media (max-width: 639px) {
+    .batch-selection-indicator {
+        flex-direction: column;
+        gap: 0.5rem;
+        padding: 0.5rem;
+    }
+
+    .batch-selection-indicator .selection-actions {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .batch-btn span {
+        display: none;
+    }
+
+    .batch-actions-content {
+        flex-wrap: wrap;
+        gap: 0.5rem;
+    }
+
+    .batch-selection-info {
+        width: 100%;
+        text-align: center;
+    }
+
+    .batch-actions-buttons {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .batch-action-btn span {
+        display: none;
+    }
+
+    .shortcuts-categories {
+        grid-template-columns: 1fr;
+    }
+
+    .shortcut-item {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.25rem;
+    }
+
+    .shortcut-description {
+        text-align: left;
+        font-size: 0.75rem;
+        color: var(--muted, #6b7280);
+    }
+}
+
+/* ============================================================================
+   Print Styles - Accessibility
+   ============================================================================ */
+
+@media print {
+    .skip-links,
+    .batch-selection-indicator,
+    .batch-actions-bar,
+    .batch-progress-indicator,
+    .shortcuts-help-overlay {
+        display: none !important;
+    }
+}

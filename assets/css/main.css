@@ -65,8 +65,9 @@
 @import 'themes/dark.css';
 
 /* ============================================================================
-   UTILITIES - Animations, Helpers, Responsive Media Queries
+   UTILITIES - Animations, Helpers, Responsive Media Queries, Accessibility
    ============================================================================ */
 @import 'utilities/animations.css';
 @import 'utilities/helpers.css';
 @import 'utilities/responsive.css';
+@import 'utilities/accessibility.css';
