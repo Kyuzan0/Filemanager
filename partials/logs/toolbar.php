@@ -44,8 +44,5 @@
             <i class="ri-delete-bin-line"></i>
             <span class="btn-text">Cleanup</span>
         </button>
-        <button class="btn btn-icon" id="theme-toggle" title="Toggle tema">
-            <i class="ri-moon-line"></i>
-        </button>
     </div>
 </div>

@@ -125,11 +125,16 @@
   height: 18px;
 }
 
-/* Special case for mobile menu toggle - make it smaller */
+/* Special case for mobile menu toggle to keep it compact */
 #mobile-menu-toggle.btn-icon {
-  padding: 2px !important;
-  min-width: 28px !important;
-  min-height: 28px !important;
+  padding: 0;
+  width: 34px;
+  height: 34px;
+  min-width: unset;
+  min-height: unset;
+  border-radius: 10px;
+  justify-content: center;
+  box-shadow: none;
 }
 
 /* Word Wrap Toggle Button */

@@ -135,17 +135,6 @@
                             <i class="ri-delete-bin-line text-lg" aria-hidden="true"></i>
                         </button>
                     </div>
-
-                    <div class="h-6 w-px bg-gray-200 dark:bg-white/10 mx-1 hidden sm:block" aria-hidden="true"></div>
-
-                    <!-- Theme Toggle -->
-                    <button class="p-1.5 text-gray-500 hover:bg-gray-100 dark:hover:bg-white/5 rounded-md transition-colors flex-shrink-0"
-                            id="toggleTheme"
-                            title="Toggle Theme"
-                            aria-label="Toggle dark/light theme"
-                            aria-pressed="false">
-                        <i class="ri-moon-line text-lg" aria-hidden="true"></i>
-                    </button>
                 </div>
             </section>
 

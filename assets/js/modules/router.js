@@ -83,29 +83,17 @@
             if (currentPath.includes('logs.php')) currentPage = 'logs';
             else if (currentPath.includes('trash.php')) currentPage = 'trash';
             
-            const menuItems = document.querySelectorAll('.side-list li[data-nav]');
+            const menuItems = document.querySelectorAll('.sidebar-link[data-nav]');
             menuItems.forEach(item => {
                 const itemPage = item.dataset.nav;
                 const isActive = itemPage === currentPage;
-                
-                // Remove all state classes
-                item.classList.remove(
-                    'bg-blue-50', 'dark:bg-blue-900/20', 
-                    'text-blue-600', 'dark:text-blue-400'
-                );
-                
-                if (!isActive) {
-                    item.classList.remove('hover:bg-slate-100', 'dark:hover:bg-white/5');
-                }
-                
+
+                item.classList.toggle('sidebar-link--active', isActive);
+
                 if (isActive) {
-                    item.classList.add('bg-blue-50', 'dark:bg-blue-900/20', 'text-blue-600', 'dark:text-blue-400');
-                    // Remove hover classes for active item
-                    item.classList.remove('text-slate-600', 'dark:text-slate-400');
+                    item.setAttribute('aria-current', 'page');
                 } else {
-                    if (!item.classList.contains('text-slate-600')) {
-                        item.classList.add('text-slate-600', 'dark:text-slate-400', 'hover:bg-slate-100', 'dark:hover:bg-white/5');
-                    }
+                    item.removeAttribute('aria-current');
                 }
             });
         }

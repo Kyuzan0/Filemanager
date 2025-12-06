@@ -19,6 +19,7 @@
     function initSidebar() {
         initMobileToggle();
         initNavigation();
+        initSettingsLink();
     }
     
     // Mobile sidebar toggle
@@ -102,6 +103,17 @@
                     window.location.href = NAV_PAGES[navTarget];
                 }
             });
+        });
+    }
+
+    function initSettingsLink() {
+        const settingsBtn = document.getElementById('sidebar-settings');
+        if (!settingsBtn) return;
+
+        settingsBtn.addEventListener('click', () => {
+            if (typeof window.closeSidebar === 'function') {
+                window.closeSidebar();
+            }
         });
     }
     

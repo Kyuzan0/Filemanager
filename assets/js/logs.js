@@ -23,23 +23,37 @@ const LogsHandler = (function() {
     const $ = id => document.getElementById(id);
 
     // ===== THEME FUNCTIONS =====
+    const syncSidebarThemeSwitch = theme => {
+        const sidebarSwitch = document.getElementById('toggleTheme');
+        if (!sidebarSwitch) return;
+        sidebarSwitch.classList.toggle('is-dark', theme === 'dark');
+        sidebarSwitch.setAttribute('aria-pressed', theme === 'dark' ? 'true' : 'false');
+    };
+
     function initTheme() {
         const t = localStorage.getItem('theme') || 'dark';
         document.documentElement.setAttribute('data-theme', t);
+        const appShell = document.getElementById('app');
+        if (appShell) appShell.setAttribute('data-theme', t);
         const icon = $('theme-toggle')?.querySelector('i');
         if (icon) {
             icon.className = t === 'dark' ? 'ri-sun-line' : 'ri-moon-line';
         }
+        syncSidebarThemeSwitch(t);
     }
 
     function toggleTheme() {
-        const next = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+        const current = document.documentElement.getAttribute('data-theme') || 'dark';
+        const next = current === 'dark' ? 'light' : 'dark';
         document.documentElement.setAttribute('data-theme', next);
+        const appShell = document.getElementById('app');
+        if (appShell) appShell.setAttribute('data-theme', next);
         localStorage.setItem('theme', next);
         const icon = $('theme-toggle')?.querySelector('i');
         if (icon) {
             icon.className = next === 'dark' ? 'ri-sun-line' : 'ri-moon-line';
         }
+        syncSidebarThemeSwitch(next);
     }
 
     // ===== HELPER FUNCTIONS =====
@@ -435,6 +449,9 @@ const LogsHandler = (function() {
 
         const themeToggle = $('theme-toggle');
         if (themeToggle) themeToggle.addEventListener('click', toggleTheme);
+
+        const sidebarThemeToggle = document.getElementById('toggleTheme');
+        if (sidebarThemeToggle) sidebarThemeToggle.addEventListener('click', toggleTheme);
 
         const modalClose = $('modal-close');
         if (modalClose) modalClose.addEventListener('click', hideModal);

@@ -14,24 +14,70 @@ $activePage = $activePage ?? 'dashboard';
 <div class="sidebar-overlay" id="sidebar-overlay"></div>
 
 <!-- SIDEBAR -->
-<aside class="sidebar w-56 px-5 py-5 bg-white border-r border-slate-200 h-full overflow-y-auto dark:bg-[#1a2332] dark:border-white/10" id="sidebar">
-    <div class="sidebar-header flex items-center justify-between mb-4">
-        <a href="index.php" class="logo text-lg font-bold text-blue-600 cursor-pointer no-underline">Filemanager</a>
-        <button class="sidebar-close md:hidden p-2 hover:bg-slate-100 dark:hover:bg-white/5 rounded-lg" id="sidebar-close">
-            <i class="ri-close-line text-xl"></i>
-        </button>
+<aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+        <a href="index.php" class="sidebar-logo">Filemanager</a>
+        <div class="sidebar-header-actions">
+            <button type="button"
+                    class="theme-switch"
+                    id="toggleTheme"
+                    title="Toggle Tema"
+                    aria-label="Toggle dark/light theme"
+                    aria-pressed="false">
+                <span class="theme-switch__indicator" aria-hidden="true"></span>
+                <span class="theme-switch__icon theme-switch__icon--sun" aria-hidden="true">
+                    <i class="ri-sun-line"></i>
+                </span>
+                <span class="theme-switch__icon theme-switch__icon--moon" aria-hidden="true">
+                    <i class="ri-moon-line"></i>
+                </span>
+            </button>
+            <button class="sidebar-close" id="sidebar-close" type="button" aria-label="Close sidebar">
+                <i class="ri-close-line"></i>
+            </button>
+        </div>
     </div>
-    <ul class="side-list space-y-2">
-        <li data-nav="dashboard" class="px-2 py-2.5 rounded-lg <?php echo $activePage === 'dashboard' ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-white/5'; ?> cursor-pointer transition-colors flex items-center gap-2">
-            <i class="ri-dashboard-line"></i> Dashboard
-        </li>
-        <li data-nav="logs" class="px-2 py-2.5 rounded-lg <?php echo $activePage === 'logs' ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-white/5'; ?> cursor-pointer transition-colors flex items-center gap-2">
-            <i class="ri-file-list-3-line"></i> Log Activity
-        </li>
-        <li data-nav="trash" class="px-2 py-2.5 rounded-lg <?php echo $activePage === 'trash' ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-white/5'; ?> cursor-pointer transition-colors flex items-center gap-2">
-            <i class="ri-delete-bin-line"></i> Trash
-        </li>
-    </ul>
+
+    <nav class="sidebar-nav" aria-label="Navigasi utama">
+        <ul class="sidebar-menu">
+            <li>
+                <button type="button"
+                        data-nav="dashboard"
+                        class="sidebar-link <?php echo $activePage === 'dashboard' ? 'sidebar-link--active' : ''; ?>"
+                        <?php echo $activePage === 'dashboard' ? 'aria-current="page"' : ''; ?>>
+                    <i class="ri-dashboard-line" aria-hidden="true"></i>
+                    <span>Dashboard</span>
+                </button>
+            </li>
+            <li>
+                <button type="button"
+                        data-nav="logs"
+                        class="sidebar-link <?php echo $activePage === 'logs' ? 'sidebar-link--active' : ''; ?>"
+                        <?php echo $activePage === 'logs' ? 'aria-current="page"' : ''; ?>>
+                    <i class="ri-file-list-3-line" aria-hidden="true"></i>
+                    <span>Log Activity</span>
+                </button>
+            </li>
+            <li>
+                <button type="button"
+                        data-nav="trash"
+                        class="sidebar-link <?php echo $activePage === 'trash' ? 'sidebar-link--active' : ''; ?>"
+                        <?php echo $activePage === 'trash' ? 'aria-current="page"' : ''; ?>>
+                    <i class="ri-delete-bin-line" aria-hidden="true"></i>
+                    <span>Trash</span>
+                </button>
+            </li>
+            <li>
+                <button type="button"
+                        class="sidebar-link"
+                        data-action="settings"
+                        id="sidebar-settings">
+                    <i class="ri-settings-3-line" aria-hidden="true"></i>
+                    <span>Settings</span>
+                </button>
+            </li>
+        </ul>
+    </nav>
 </aside>
 
 <!-- Sidebar Navigation Script -->

@@ -545,20 +545,27 @@ async function submitCreate() {
   
   showLoader(true);
   try {
-    const response = await fetch(`${API_BASE}?action=create`, {
+    // Get current path from enhanced-ui.js via window object
+    const path = window.currentPath || '';
+    
+    // Include path in URL query parameter as API expects it there
+    const response = await fetch(`${API_BASE}?action=create&path=${encodeURIComponent(path)}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         type: type,
         name: name,
-        path: currentPath
+        path: path
       })
     });
     
     const data = await response.json();
     if (!data.success) throw new Error(data.error || 'Gagal membuat item');
     
-    await loadFiles(currentPath);
+    // Reload files using the global loadFiles function
+    if (typeof window.loadFiles === 'function') {
+      await window.loadFiles(path);
+    }
     closeCreateModal();
     showSuccess(`${type === 'file' ? 'File' : 'Folder'} "${name}" berhasil dibuat`);
   } catch (error) {

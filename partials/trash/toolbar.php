@@ -24,8 +24,5 @@
             <i class="ri-delete-bin-2-line"></i>
             <span class="btn-text">Empty Trash</span>
         </button>
-        <button class="btn btn-icon" id="theme-toggle" title="Toggle tema">
-            <i class="ri-moon-line"></i>
-        </button>
     </div>
 </div>

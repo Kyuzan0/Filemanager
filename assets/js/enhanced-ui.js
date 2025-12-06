@@ -2005,22 +2005,28 @@ function initializeEventHandlers() {
     }
   });
 
-  // Theme toggle
-  document.getElementById('toggleTheme')?.addEventListener('click', () => {
-    const cur = app.getAttribute('data-theme');
-    const newTheme = cur === 'light' ? 'dark' : 'light';
-    // Set theme consistently on root and app to ensure CSS variables apply
+  const themeToggleButton = document.getElementById('toggleTheme');
+
+  const syncThemeToggle = (theme) => {
+    if (!themeToggleButton) return;
+    themeToggleButton.classList.toggle('is-dark', theme === 'dark');
+    themeToggleButton.setAttribute('aria-pressed', theme === 'dark' ? 'true' : 'false');
+  };
+
+  themeToggleButton?.addEventListener('click', () => {
+    const currentTheme = document.documentElement.getAttribute('data-theme') || 'dark';
+    const newTheme = currentTheme === 'light' ? 'dark' : 'light';
     document.documentElement.setAttribute('data-theme', newTheme);
-    app.setAttribute('data-theme', newTheme);
+    if (app) app.setAttribute('data-theme', newTheme);
     localStorage.setItem('theme', newTheme);
-    document.getElementById('toggleTheme').textContent = newTheme === 'light' ? '🌙' : '☀️';
+    syncThemeToggle(newTheme);
   });
 
   // Load saved theme
   const savedTheme = localStorage.getItem('theme') || 'dark';
   document.documentElement.setAttribute('data-theme', savedTheme);
-  app.setAttribute('data-theme', savedTheme);
-  document.getElementById('toggleTheme').textContent = savedTheme === 'light' ? '🌙' : '☀️';
+  if (app) app.setAttribute('data-theme', savedTheme);
+  syncThemeToggle(savedTheme);
 
   // Keyboard shortcut: Delete
   document.addEventListener('keydown', e => {
@@ -2112,9 +2118,15 @@ document.addEventListener('DOMContentLoaded', async () => {
   
   console.log('[enhanced-ui] DOM elements initialized successfully');
   
-  // Export functions to window for use by modals-handler
+  // Export functions and state to window for use by modals-handler
   window.loadFiles = loadFiles;
   window.deleteItems = deleteItems;
+  
+  // Export getter for currentPath so modals can access it
+  Object.defineProperty(window, 'currentPath', {
+    get: function() { return currentPath; },
+    configurable: true
+  });
   
   // Initialize event handlers
   initializeEventHandlers();
