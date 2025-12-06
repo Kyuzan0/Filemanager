@@ -1,56 +1,69 @@
 /**
- * Event Handlers Module
- * Berisi fungsi-fungsi untuk menangani event-event dalam aplikasi
+ * Event Handlers Module - Facade
+ * Re-exports all event handler functions from sub-modules for backward compatibility
  */
 
 import { config } from './constants.js';
 import { debounce } from './utils.js';
 
-/**
- * Mengatur event handler untuk tombol refresh
- * @param {HTMLElement} btnRefresh - Tombol refresh
- * @param {Object} state - State aplikasi
- * @param {Function} hasUnsavedChanges - Fungsi cek perubahan belum disimpan
- * @param {Function} confirmDiscardChanges - Fungsi konfirmasi perubahan
- * @param {Function} fetchDirectory - Fungsi fetch directory
- */
-export function setupRefreshHandler(
-    btnRefresh,
-    state,
-    hasUnsavedChanges,
-    confirmDiscardChanges,
-    fetchDirectory
-) {
-    btnRefresh.addEventListener('click', () => {
-        if (hasUnsavedChanges()) {
-            const confirmed = confirmDiscardChanges('Perubahan belum disimpan. Muat ulang daftar dan buang perubahan?')
-                .then((confirmed) => {
-                    if (!confirmed) {
-                        return;
-                    }
-                    fetchDirectory(state.currentPath);
-                });
-            return;
-        }
+// Re-export from file handlers
+export {
+    setupRefreshHandler,
+    setupUpHandler,
+    setupSelectAllHandler,
+    setupDeleteSelectedHandler,
+    setupDeleteSelectedDesktopHandler,
+    setupVisibilityHandler,
+    setupContextMenuHandler,
+    setupSelectAllMobileButtonHandler,
+    setupMobileActionsHandler
+} from './handlers/fileHandlers.js';
 
-        fetchDirectory(state.currentPath);
-    });
-}
+// Re-export from keyboard handlers
+export {
+    setupKeyboardHandler as setupKeyboardNavigationHandler,
+    handleKeyboardNavigation,
+    setupSearchKeyboardHandler,
+    setupCopyPasteHandler,
+    setupSelectAllKeyboardHandler,
+    setupDeleteKeyboardHandler,
+    setupRenameKeyboardHandler,
+    setupNewItemKeyboardHandler,
+    setupRefreshKeyboardHandler,
+    setupBackNavigationHandler
+} from './handlers/keyboardHandlers.js';
 
-/**
- * Mengatur event handler untuk tombol up
- * @param {HTMLElement} btnUp - Tombol up
- * @param {Object} state - State aplikasi
- * @param {Function} navigateTo - Fungsi navigasi
- */
-export function setupUpHandler(btnUp, state, navigateTo) {
-    btnUp.addEventListener('click', () => {
-        const parent = btnUp.dataset.parentPath || '';
-        if (parent !== state.currentPath) {
-            navigateTo(parent);
-        }
-    });
-}
+// Re-export from drag handlers
+export {
+    setupDragDropHandlers,
+    handleDragStart,
+    handleDragOver,
+    handleDragLeave,
+    handleDropEvent,
+    handleDragEnd,
+    setupUploadDropZone,
+    setupSortableDrag,
+    setupBreadcrumbDropZones
+} from './handlers/dragHandlers.js';
+
+// Re-export from form handlers
+export {
+    setupCreateFormHandler,
+    setupRenameFormHandler,
+    setupUploadFormHandler,
+    setupSearchFormHandler,
+    setupSettingsFormHandler,
+    setupMoveFormHandler,
+    setupFormValidation,
+    setupCreateButtonHandlers,
+    setupOverlayCloseHandlers,
+    setupBackdropClickHandlers
+} from './handlers/formHandlers.js';
+
+
+// ============================================================================
+// Functions that remain in this file (facade-specific or cross-cutting)
+// ============================================================================
 
 /**
  * Mengatur event handler untuk filter input
@@ -130,90 +143,6 @@ export function setupSortHandlers(sortHeaders, state, changeSort) {
                 event.preventDefault();
                 changeSort(header.dataset.sortKey);
             }
-        });
-    });
-}
-
-/**
- * Mengatur event handler untuk select all checkbox
- * @param {HTMLElement} selectAllCheckbox - Checkbox select all
- * @param {Object} state - State aplikasi
- * @param {Function} setSelectionForVisible - Fungsi set selection untuk visible items
- */
-export function setupSelectAllHandler(selectAllCheckbox, state, setSelectionForVisible) {
-    selectAllCheckbox.addEventListener('change', (event) => {
-        if (state.isLoading || state.isDeleting) {
-            event.preventDefault();
-            return;
-        }
-        setSelectionForVisible(event.target.checked);
-    });
-}
-
-/**
- * Mengatur event handler untuk tombol delete selected
- * @param {HTMLElement} btnDeleteSelected - Tombol delete selected
- * @param {Object} state - State aplikasi
- * @param {Function} hasUnsavedChanges - Fungsi cek perubahan belum disimpan
- * @param {Function} confirmDiscardChanges - Fungsi konfirmasi perubahan
- * @param {Function} openConfirmOverlay - Fungsi buka confirm overlay
- */
-export function setupDeleteSelectedHandler(
-    btnDeleteSelected,
-    state,
-    hasUnsavedChanges,
-    confirmDiscardChanges,
-    openConfirmOverlay
-) {
-    btnDeleteSelected.addEventListener('click', () => {
-        if (state.isLoading || state.isDeleting || state.selected.size === 0) {
-            return;
-        }
-
-        const paths = Array.from(state.selected);
-        const labels = paths.map((path) => {
-            const item = state.itemMap.get(path);
-            return item ? item.name : path;
-        });
-
-        if (hasUnsavedChanges()) {
-            const proceed = confirmDiscardChanges('Perubahan belum disimpan. Tetap hapus item terpilih?')
-                .then((proceed) => {
-                    if (!proceed) {
-                        return;
-                    }
-                    const paths = Array.from(state.selected);
-                    const labels = paths.map((path) => {
-                        const item = state.itemMap.get(path);
-                        return item ? item.name : path;
-                    });
-                    const message = paths.length === 1
-                        ? `Hapus "${labels[0]}"?`
-                        : `Hapus ${paths.length.toLocaleString('id-ID')} item terpilih?`;
-                    const description = 'Item yang dihapus tidak dapat dikembalikan.';
-                    openConfirmOverlay({
-                        message,
-                        description,
-                        paths,
-                        showList: paths.length > 1,
-                        confirmLabel: 'Hapus',
-                    });
-                });
-            return;
-        }
-
-        const message = paths.length === 1
-            ? `Hapus "${labels[0]}"?`
-            : `Hapus ${paths.length.toLocaleString('id-ID')} item terpilih?`;
-
-        const description = 'Item yang dihapus tidak dapat dikembalikan.';
-
-        openConfirmOverlay({
-            message,
-            description,
-            paths,
-            showList: paths.length > 1,
-            confirmLabel: 'Hapus',
         });
     });
 }
@@ -427,74 +356,6 @@ export function setupUploadFolderDesktopHandler(
 
         await uploadFolderWrapper(files);
         uploadFolderInputDesktop.value = '';
-    });
-}
-
-/**
- * Mengatur event handler untuk tombol delete selected desktop
- * @param {HTMLElement} btnDeleteSelectedDesktop - Tombol delete selected desktop
- * @param {Object} state - State aplikasi
- * @param {Function} hasUnsavedChanges - Fungsi cek perubahan belum disimpan
- * @param {Function} confirmDiscardChanges - Fungsi konfirmasi perubahan
- * @param {Function} openConfirmOverlay - Fungsi buka confirm overlay
- */
-export function setupDeleteSelectedDesktopHandler(
-    btnDeleteSelectedDesktop,
-    state,
-    hasUnsavedChanges,
-    confirmDiscardChanges,
-    openConfirmOverlay
-) {
-    btnDeleteSelectedDesktop.addEventListener('click', () => {
-        if (state.isLoading || state.isDeleting || state.selected.size === 0) {
-            return;
-        }
-
-        const paths = Array.from(state.selected);
-        const labels = paths.map((path) => {
-            const item = state.itemMap.get(path);
-            return item ? item.name : path;
-        });
-
-        if (hasUnsavedChanges()) {
-            const proceed = confirmDiscardChanges('Perubahan belum disimpan. Tetap hapus item terpilih?')
-                .then((proceed) => {
-                    if (!proceed) {
-                        return;
-                    }
-                    const paths = Array.from(state.selected);
-                    const labels = paths.map((path) => {
-                        const item = state.itemMap.get(path);
-                        return item ? item.name : path;
-                    });
-                    const message = paths.length === 1
-                        ? `Hapus "${labels[0]}"?`
-                        : `Hapus ${paths.length.toLocaleString('id-ID')} item terpilih?`;
-                    const description = 'Item yang dihapus tidak dapat dikembalikan.';
-                    openConfirmOverlay({
-                        message,
-                        description,
-                        paths,
-                        showList: paths.length > 1,
-                        confirmLabel: 'Hapus',
-                    });
-                });
-            return;
-        }
-
-        const message = paths.length === 1
-            ? `Hapus "${labels[0]}"?`
-            : `Hapus ${paths.length.toLocaleString('id-ID')} item terpilih?`;
-
-        const description = 'Item yang dihapus tidak dapat dikembalikan.';
-
-        openConfirmOverlay({
-            message,
-            description,
-            paths,
-            showList: paths.length > 1,
-            confirmLabel: 'Hapus',
-        });
     });
 }
 
@@ -1045,78 +906,6 @@ export function setupKeyboardHandler(
 }
 
 /**
- * Mengatur event handler untuk visibility change
- * @param {Object} state - State aplikasi
- * @param {Function} fetchDirectory - Fungsi fetch directory
- * @param {Function} startPolling - Fungsi mulai polling
- */
-export function setupVisibilityHandler(state, fetchDirectory, startPolling) {
-    document.addEventListener('visibilitychange', () => {
-        if (document.hidden) {
-            clearInterval(state.polling);
-            state.polling = null;
-        } else {
-            fetchDirectory(state.currentPath).then(startPolling);
-        }
-    });
-}
-
-/**
- * Mengatur event handler untuk context menu
- * @param {NodeList} contextMenuItems - Daftar item context menu
- * @param {HTMLElement} contextMenu - Elemen context menu
- * @param {Object} state - State aplikasi
- * @param {Function} handleContextMenuAction - Fungsi handle context menu action
- * @param {Function} closeContextMenu - Fungsi tutup context menu
- */
-export function setupContextMenuHandler(
-    contextMenuItems,
-    contextMenu,
-    state,
-    handleContextMenuAction,
-    closeContextMenu
-) {
-    console.log('[DEBUG] Setting up context menu event listeners for', contextMenuItems.length, 'items');
-    contextMenuItems.forEach((item, index) => {
-        console.log('[DEBUG] Setting up listener for context menu item', index, 'with action:', item.dataset.action);
-        item.addEventListener('click', (event) => {
-            const action = event.currentTarget.dataset.action;
-            console.log('[DEBUG] Context menu item clicked with action:', action);
-            handleContextMenuAction(action);
-        });
-    });
-
-    document.addEventListener('click', (event) => {
-        if (state.contextMenu.isOpen && !contextMenu.contains(event.target)) {
-            closeContextMenu();
-        }
-    });
-
-    document.addEventListener('keydown', (event) => {
-        if (state.contextMenu.isOpen) {
-            if (event.key === 'Escape') {
-                event.preventDefault();
-                closeContextMenu();
-            } else if (event.key === 'ArrowDown') {
-                event.preventDefault();
-                const focusedItem = document.activeElement;
-                const currentIndex = Array.from(contextMenuItems).indexOf(focusedItem);
-                if (currentIndex < contextMenuItems.length - 1) {
-                    contextMenuItems[currentIndex + 1].focus();
-                }
-            } else if (event.key === 'ArrowUp') {
-                event.preventDefault();
-                const focusedItem = document.activeElement;
-                const currentIndex = Array.from(contextMenuItems).indexOf(focusedItem);
-                if (currentIndex > 0) {
-                    contextMenuItems[currentIndex - 1].focus();
-                }
-            }
-        }
-    });
-}
-
-/**
  * Mengatur event handler untuk split action
  * @param {HTMLElement} splitAction - Elemen split action
  * @param {HTMLElement} splitToggle - Elemen split toggle
@@ -1375,202 +1164,4 @@ export function setupSearchModalHandler(
             closeModal();
         }
     });
-}
-
-/**
- * Mengatur event handler untuk tombol select all mobile
- * @param {HTMLElement} btnSelectAllMobile - Tombol select all mobile
- * @param {HTMLElement} selectAllCheckboxMobile - Checkbox select all mobile
- * @param {Object} state - State aplikasi
- * @param {Function} setSelectionForVisible - Fungsi set selection untuk visible items
- */
-export function setupSelectAllMobileButtonHandler(
-    btnSelectAllMobile,
-    selectAllCheckboxMobile,
-    state,
-    setSelectionForVisible
-) {
-    if (!btnSelectAllMobile || !selectAllCheckboxMobile) {
-        console.warn('[setupSelectAllMobileButtonHandler] Button or checkbox not found');
-        return;
-    }
-
-    btnSelectAllMobile.addEventListener('click', (event) => {
-        event.preventDefault();
-        event.stopPropagation();
-        
-        if (state.isLoading || state.isDeleting) {
-            console.warn('[setupSelectAllMobileButtonHandler] Loading or deleting - ignoring click');
-            return;
-        }
-        
-        console.log('[setupSelectAllMobileButtonHandler] Click detected, current checked state:', selectAllCheckboxMobile.checked);
-        
-        // Toggle select all
-        const newState = !selectAllCheckboxMobile.checked;
-        selectAllCheckboxMobile.checked = newState;
-        
-        console.log('[setupSelectAllMobileButtonHandler] New state:', newState);
-        
-        setSelectionForVisible(newState);
-    });
-}
-
-/**
- * Setup handler untuk mobile actions floating context menu
- * @param {HTMLElement} mobileActionsMenu - Context menu element
- * @param {HTMLElement} mobileActionsViewBtn - View button
- * @param {HTMLElement} mobileActionsEditBtn - Edit button
- * @param {HTMLElement} mobileActionsDeleteBtn - Delete button
- * @param {Object} state - State aplikasi
- * @param {Function} openTextPreview - Fungsi open text preview
- * @param {Function} openMediaPreview - Fungsi open media preview
- * @param {Function} openRenameOverlayWrapper - Fungsi open rename overlay
- * @param {Function} openConfirmOverlayWrapper - Fungsi open confirm overlay
- * @param {Function} navigateTo - Fungsi navigate
- * @param {Function} buildFileUrl - Fungsi build file URL
- * @param {Array} previewableExtensions - Previewable extensions
- * @param {Array} mediaPreviewableExtensions - Media previewable extensions
- */
-export function setupMobileActionsHandler(
-    mobileActionsMenu,
-    mobileActionsViewBtn,
-    mobileActionsEditBtn,
-    mobileActionsMoveBtn,
-    mobileActionsDeleteBtn,
-    state,
-    openTextPreview,
-    openMediaPreview,
-    openRenameOverlayWrapper,
-    openConfirmOverlayWrapper,
-    navigateTo,
-    buildFileUrl,
-    previewableExtensions,
-    mediaPreviewableExtensions
-) {
-    if (!mobileActionsMenu) {
-        console.warn('[setupMobileActionsHandler] Context menu not found');
-        return;
-    }
-
-    let currentActionItem = null;
-
-    // Close menu function
-    const closeMenu = () => {
-        mobileActionsMenu.classList.add('hidden');
-        mobileActionsMenu.setAttribute('aria-hidden', 'true');
-        currentActionItem = null;
-    };
-
-    // Open menu function at specific position
-    const openMenu = (item, x, y) => {
-        currentActionItem = item;
-        mobileActionsMenu.classList.remove('hidden');
-        mobileActionsMenu.setAttribute('aria-hidden', 'false');
-        
-        // Position menu at click location, adjusted if near edge
-        let left = x;
-        let top = y;
-        
-        // Adjust if menu goes off screen
-        const rect = mobileActionsMenu.getBoundingClientRect();
-        const menuWidth = rect.width || 150;
-        const menuHeight = rect.height || 120;
-        
-        if (left + menuWidth > window.innerWidth) {
-            left = window.innerWidth - menuWidth - 10;
-        }
-        
-        if (top + menuHeight > window.innerHeight) {
-            top = window.innerHeight - menuHeight - 10;
-        }
-        
-        mobileActionsMenu.style.left = left + 'px';
-        mobileActionsMenu.style.top = top + 'px';
-    };
-
-    // View button handler
-    if (mobileActionsViewBtn) {
-        mobileActionsViewBtn.addEventListener('click', () => {
-            if (!currentActionItem) return;
-            
-            const ext = currentActionItem.name.split('.').pop().toLowerCase();
-            
-            if (currentActionItem.type === 'folder') {
-                navigateTo(currentActionItem.path);
-                closeMenu();
-            } else if (previewableExtensions.has(ext)) {
-                openTextPreview(currentActionItem);
-                closeMenu();
-            } else if (mediaPreviewableExtensions.has(ext)) {
-                openMediaPreview(currentActionItem);
-                closeMenu();
-            }
-        });
-    }
-
-    // Edit button handler
-    if (mobileActionsEditBtn) {
-        mobileActionsEditBtn.addEventListener('click', () => {
-            if (!currentActionItem) return;
-            
-            // Allow rename for both files and folders
-            openRenameOverlayWrapper(currentActionItem);
-            closeMenu();
-        });
-    }
-
-    // Move button handler
-    if (mobileActionsMoveBtn) {
-        mobileActionsMoveBtn.addEventListener('click', async () => {
-            if (!currentActionItem) return;
-            
-            // Import moveOverlay module dynamically
-            try {
-                const moveOverlayModule = await import('./moveOverlay.js');
-                if (moveOverlayModule.openMoveOverlay) {
-                    // Pass the current item path to move overlay
-                    moveOverlayModule.openMoveOverlay([currentActionItem.path]);
-                    closeMenu();
-                }
-            } catch (error) {
-                console.error('Failed to load move overlay:', error);
-                alert('Gagal memuat fitur pindah. Silakan coba lagi.');
-            }
-        });
-    }
-
-    // Delete button handler
-    if (mobileActionsDeleteBtn) {
-        mobileActionsDeleteBtn.addEventListener('click', () => {
-            if (!currentActionItem) return;
-            
-            openConfirmOverlayWrapper({
-                message: `Hapus "${currentActionItem.name}"?`,
-                description: 'Item yang dihapus tidak dapat dikembalikan.',
-                paths: [currentActionItem.path],
-                showList: false,
-                confirmLabel: 'Hapus',
-            });
-            closeMenu();
-        });
-    }
-
-    // Close menu when clicking outside
-    document.addEventListener('click', (event) => {
-        if (!mobileActionsMenu.classList.contains('hidden') && 
-            !mobileActionsMenu.contains(event.target)) {
-            closeMenu();
-        }
-    });
-
-    // ESC key handler
-    document.addEventListener('keydown', (event) => {
-        if (event.key === 'Escape' && !mobileActionsMenu.classList.contains('hidden')) {
-            closeMenu();
-        }
-    });
-
-    // Expose openMenu globally for item buttons
-    window.mobileActionsOpenMenu = openMenu;
 }

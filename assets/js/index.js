@@ -413,7 +413,8 @@ if (typeof window !== 'undefined' && (window.location.hostname === 'localhost' |
         getLogManager: () => import('./modules/logManager.js'),
         getMoveOverlay: () => import('./modules/moveOverlay.js'),
         getAppInitializer: () => import('./modules/appInitializer.js'),
-        getStorage: () => import('./modules/storage.js')
+        getStorage: () => import('./modules/storage.js'),
+        getRenderOptimizer: () => import('./modules/renderOptimizer.js')
     };
     
     console.log('Debug modules available at window.debugModules');

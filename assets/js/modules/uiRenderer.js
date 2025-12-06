@@ -1,38 +1,108 @@
 /**
- * UI Renderer Module
- * Berisi fungsi-fungsi untuk merender UI aplikasi
+ * UI Renderer Module (Facade)
+ * 
+ * This is the main orchestrator that imports and re-exports from sub-modules.
+ * Split into focused modules for better maintainability:
+ * - tableRenderer.js: Table/list rendering logic
+ * - overlayRenderer.js: Overlay/modal rendering
+ * - breadcrumbRenderer.js: Breadcrumb navigation rendering
+ * - statusRenderer.js: Status bar and indicators
+ * 
+ * All exports are re-exported here for backward compatibility.
  */
 
+// Re-export everything from sub-modules
+export {
+    getIconColors,
+    renderItemRow,
+    renderVirtualItems,
+    renderNormalItems,
+    renderMobileItems,
+    createMobileItem,
+    getVirtualScrollManager,
+    resetVirtualScrollManager,
+    cleanupScrollTracking
+} from './ui/tableRenderer.js';
+
+export {
+    showMobileContextMenu,
+    closeMobileContextMenu,
+    handleMobileContextAction,
+    moveRowInDOM,
+    rollbackMove,
+    renderPreviewContent,
+    renderMediaPreview,
+    renderDetailsOverlay
+} from './ui/overlayRenderer.js';
+
+export {
+    renderBreadcrumbs,
+    createBreadcrumbTrail,
+    createCompactBreadcrumbTrail,
+    renderCompactBreadcrumbs,
+    updatePageTitle,
+    getParentPath
+} from './ui/breadcrumbRenderer.js';
+
+export {
+    updateSortUI,
+    updateSelectionUI,
+    syncRowSelection,
+    syncMobileSelection,
+    updateStatus,
+    setLoading,
+    setError,
+    flashStatus,
+    updateSelectionCount,
+    showSpinner,
+    hideSpinner,
+    updateProgress
+} from './ui/statusRenderer.js';
+
+// Import modules for local use
+import {
+    renderItemRow,
+    renderVirtualItems,
+    renderNormalItems,
+    renderMobileItems,
+    getVirtualScrollManager,
+    cleanupScrollTracking
+} from './ui/tableRenderer.js';
+
+import {
+    showMobileContextMenu
+} from './ui/overlayRenderer.js';
+
+import {
+    renderBreadcrumbs
+} from './ui/breadcrumbRenderer.js';
+
+import {
+    setLoading,
+    setError,
+    updateSortUI,
+    updateSelectionUI,
+    syncRowSelection,
+    syncMobileSelection,
+    updateStatus
+} from './ui/statusRenderer.js';
+
+// Additional imports needed for renderItems
 import {
     compareItems,
-    getSortDescription,
-    synchronizeSelection,
-    createRowActionButton,
-    getFileExtension,
-    formatBytes,
-    formatDate
+    synchronizeSelection
 } from './utils.js';
-import { getItemIcon } from './fileIcons.js';
-import { actionIcons, config } from './constants.js';
+import { config } from './constants.js';
 import { moveItem } from './fileOperations.js';
 import { fetchDirectory } from './apiService.js';
-import { VirtualScrollManager, createSpacer, shouldUseVirtualScroll } from './virtualScroll.js';
+import { shouldUseVirtualScroll } from './virtualScroll.js';
 import { invalidateDOMCache } from './dragDrop.js';
 import { debugLog } from './debug.js';
 import { 
     calculatePagination, 
-    updatePaginationState, 
-    initScrollTracking,
-    getSimplePaginationInfo,
-    getItemsForPage,
-    getPaginationState
+    updatePaginationState,
+    getItemsForPage
 } from './pagination.js';
-
-// Global virtual scroll manager instance
-let virtualScrollManager = null;
-
-// Global scroll tracking cleanup function
-let scrollTrackingCleanup = null;
 
 // Global flag to prevent multiple simultaneous renders
 let isRendering = false;
@@ -51,1227 +121,39 @@ let renderCache = {
 };
 
 /**
- * Get icon colors based on file type
- * Returns { backgroundColor, color } for colorful icons
- */
-function getIconColors(item) {
-    if (!item || !item.type) {
-        return { backgroundColor: '#e0e7ff', color: '#4f46e5' }; // Indigo for unknown files
-    }
-    
-    if (item.type === 'folder') {
-        return { backgroundColor: '#fef3c7', color: '#f59e0b' }; // Amber for folders
-    }
-    
-    // Get file extension for file type detection
-    const ext = getFileExtension(item.name);
-    
-    // Images - Red
-    const images = new Set(['png','jpg','jpeg','gif','webp','svg','bmp','ico','tiff','tif','avif']);
-    if (images.has(ext)) {
-        return { backgroundColor: '#fee2e2', color: '#dc2626' };
-    }
-    
-    // PDF - Red/Orange
-    if (ext === 'pdf') {
-        return { backgroundColor: '#fecaca', color: '#ea580c' };
-    }
-    
-    // Documents - Blue
-    const docs = new Set(['doc','docx','odt','rtf']);
-    if (docs.has(ext)) {
-        return { backgroundColor: '#dbeafe', color: '#0284c7' };
-    }
-    
-    // Presentations - Orange
-    const ppts = new Set(['ppt','pptx','odp']);
-    if (ppts.has(ext)) {
-        return { backgroundColor: '#fed7aa', color: '#d97706' };
-    }
-    
-    // Spreadsheets - Green
-    const sheets = new Set(['xls','xlsx','ods','csv']);
-    if (sheets.has(ext)) {
-        return { backgroundColor: '#dcfce7', color: '#16a34a' };
-    }
-    
-    // Archives - Purple
-    const archives = new Set(['zip','rar','7z','tar','gz','bz2','tgz','xz']);
-    if (archives.has(ext)) {
-        return { backgroundColor: '#e9d5ff', color: '#a855f7' };
-    }
-    
-    // Audio - Violet
-    const audio = new Set(['mp3','wav','flac','ogg','m4a','aac']);
-    if (audio.has(ext)) {
-        return { backgroundColor: '#ede9fe', color: '#7c3aed' };
-    }
-    
-    // Video - Rose
-    const video = new Set(['mp4','webm','mkv','mov','avi','m4v']);
-    if (video.has(ext)) {
-        return { backgroundColor: '#ffe4e6', color: '#be123c' };
-    }
-    
-    // JavaScript/TypeScript - Yellow
-    const javascript = new Set(['js','jsx']);
-    if (javascript.has(ext)) {
-        return { backgroundColor: '#fef08a', color: '#ca8a04' };
-    }
-    
-    // TypeScript - Blue
-    const typescript = new Set(['ts','tsx']);
-    if (typescript.has(ext)) {
-        return { backgroundColor: '#dbeafe', color: '#0369a1' };
-    }
-    
-    // Python - Blue/Yellow
-    if (ext === 'py') {
-        return { backgroundColor: '#dbeafe', color: '#1e40af' };
-    }
-    
-    // PHP - Violet
-    if (ext === 'php') {
-        return { backgroundColor: '#ede9fe', color: '#6d28d9' };
-    }
-    
-    // HTML - Orange/Red
-    const html = new Set(['html','htm']);
-    if (html.has(ext)) {
-        return { backgroundColor: '#fed7aa', color: '#ea580c' };
-    }
-    
-    // CSS - Blue
-    if (ext === 'css') {
-        return { backgroundColor: '#bfdbfe', color: '#1e40af' };
-    }
-    
-    // SCSS/LESS - Pink
-    const scss = new Set(['scss','less']);
-    if (scss.has(ext)) {
-        return { backgroundColor: '#fbcfe8', color: '#be185d' };
-    }
-    
-    // JSON - Green
-    if (ext === 'json') {
-        return { backgroundColor: '#dcfce7', color: '#16a34a' };
-    }
-    
-    // XML - Emerald
-    if (ext === 'xml') {
-        return { backgroundColor: '#d1fae5', color: '#059669' };
-    }
-    
-    // YAML - Cyan
-    const yaml = new Set(['yml','yaml']);
-    if (yaml.has(ext)) {
-        return { backgroundColor: '#cffafe', color: '#0891b2' };
-    }
-    
-    // Text - Gray
-    const text = new Set(['txt','md','markdown','log','ini','conf','cfg','env']);
-    if (text.has(ext)) {
-        return { backgroundColor: '#f3f4f6', color: '#6b7280' };
-    }
-    
-    // Default - Indigo
-    return { backgroundColor: '#e0e7ff', color: '#4f46e5' };
-}
-
-// ============= Mobile Context Menu =============
-
-/**
- * Shows mobile context menu for file actions
- * @param {Event} event - Click event
- * @param {Object} item - File/folder item data
- */
-function showMobileContextMenu(event, item) {
-    // Remove existing mobile context menu
-    const existingMenu = document.getElementById('mobile-context-menu');
-    if (existingMenu) existingMenu.remove();
-
-    const menu = document.createElement('div');
-    menu.id = 'mobile-context-menu';
-    menu.className = 'mobile-context-menu fixed z-50 bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 py-1 min-w-[160px]';
-    
-    const menuItems = [
-        { action: 'preview', icon: 'ri-folder-open-line', label: 'Buka', color: 'text-blue-600 dark:text-blue-400' },
-        ...(item.type === 'file' ? [{ action: 'download', icon: 'ri-download-line', label: 'Unduh', color: 'text-green-600 dark:text-green-400' }] : []),
-        { action: 'rename', icon: 'ri-edit-line', label: 'Ganti Nama', color: 'text-amber-600 dark:text-amber-400' },
-        { action: 'move', icon: 'ri-folder-transfer-line', label: 'Pindahkan', color: 'text-purple-600 dark:text-purple-400' },
-        { divider: true },
-        { action: 'delete', icon: 'ri-delete-bin-line', label: 'Hapus', color: 'text-red-500 dark:text-red-400' }
-    ];
-
-    menu.innerHTML = menuItems.map(menuItem => {
-        if (menuItem.divider) {
-            return '<div class="border-t border-gray-200 dark:border-gray-700 my-1"></div>';
-        }
-        return `
-            <button class="mobile-context-item w-full flex items-center gap-3 px-4 py-2.5 text-left hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors" data-action="${menuItem.action}">
-                <i class="${menuItem.icon} ${menuItem.color} text-lg"></i>
-                <span class="text-sm text-gray-700 dark:text-gray-200">${menuItem.label}</span>
-            </button>
-        `;
-    }).join('');
-
-    document.body.appendChild(menu);
-
-    // Position the menu
-    const rect = event.target.closest('button').getBoundingClientRect();
-    const menuRect = menu.getBoundingClientRect();
-    
-    let top = rect.bottom + 4;
-    let left = rect.left;
-
-    // Adjust if menu goes off screen
-    if (left + menuRect.width > window.innerWidth) {
-        left = window.innerWidth - menuRect.width - 8;
-    }
-    if (top + menuRect.height > window.innerHeight) {
-        top = rect.top - menuRect.height - 4;
-    }
-
-    menu.style.top = `${top}px`;
-    menu.style.left = `${left}px`;
-
-    // Handle menu item clicks
-    menu.querySelectorAll('.mobile-context-item').forEach(menuBtn => {
-        menuBtn.addEventListener('click', async (e) => {
-            e.stopPropagation();
-            const action = menuBtn.dataset.action;
-            closeMobileContextMenu();
-            await handleMobileContextAction(action, item);
-        });
-    });
-
-    // Close menu when clicking outside
-    setTimeout(() => {
-        document.addEventListener('click', closeMobileContextMenu, { once: true });
-    }, 0);
-}
-
-/**
- * Closes mobile context menu
- */
-function closeMobileContextMenu() {
-    const menu = document.getElementById('mobile-context-menu');
-    if (menu) menu.remove();
-}
-
-/**
- * Handles mobile context menu action
- * @param {string} action - Action type
- * @param {Object} item - File/folder item
- */
-async function handleMobileContextAction(action, item) {
-    const { path, type, name } = item;
-    
-    if (action === 'preview') {
-        if (type === 'folder') {
-            // Use global navigateTo if available
-            if (window.navigateTo) {
-                window.navigateTo(path);
-            }
-        } else {
-            // Check if previewable
-            const ext = getFileExtension(name);
-            const textExts = new Set(['txt','md','json','js','jsx','ts','tsx','css','scss','less','html','htm','xml','php','py','java','c','cpp','h','hpp','cs','go','rs','rb','swift','kt','sql','sh','bash','yml','yaml','toml','ini','cfg','conf','log','env']);
-            const mediaExts = new Set(['png','jpg','jpeg','gif','webp','svg','bmp','mp4','webm','mp3','wav','ogg','pdf']);
-            
-            if (textExts.has(ext) && window.openPreviewModal) {
-                window.openPreviewModal(path, name);
-            } else if (mediaExts.has(ext) && window.openPreviewModal) {
-                window.openPreviewModal(path, name);
-            } else {
-                const url = `api.php?action=raw&path=${encodeURIComponent(path)}`;
-                window.open(url, '_blank');
-            }
-        }
-    } else if (action === 'download') {
-        const url = `api.php?action=raw&path=${encodeURIComponent(path)}`;
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = name || 'download';
-        a.style.display = 'none';
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-    } else if (action === 'rename') {
-        if (window.openRenameModal) {
-            window.openRenameModal(path, name);
-        } else if (window.openRenameOverlay) {
-            window.openRenameOverlay(item);
-        }
-    } else if (action === 'move') {
-        if (window.openMoveModal) {
-            window.openMoveModal([path]);
-        } else if (window.openMoveOverlay) {
-            window.openMoveOverlay([path]);
-        }
-    } else if (action === 'delete') {
-        if (window.openDeleteOverlay) {
-            window.openDeleteOverlay(
-                [item],
-                async (items) => {
-                    const paths = items.map(i => i.path);
-                    if (window.deleteItems) {
-                        await window.deleteItems(paths);
-                    }
-                }
-            );
-        } else if (window.openConfirmOverlay) {
-            window.openConfirmOverlay({
-                message: `Hapus "${name}"?`,
-                description: 'Item yang dihapus tidak dapat dikembalikan.',
-                paths: [path],
-                showList: false,
-                confirmLabel: 'Hapus',
-            });
-        }
-    }
-}
-
-/**
- * Moves a row in the DOM immediately for optimistic UI update
- * @param {string} itemPath - Path of the item being moved
- * @returns {Object|null} - Object with row element and original position for rollback, or null if not found
- */
-export function moveRowInDOM(itemPath) {
-    const tableBody = document.getElementById('file-table');
-    if (!tableBody) return null;
-    
-    const row = tableBody.querySelector(`tr[data-item-path="${CSS.escape(itemPath)}"]`);
-    if (!row) return null;
-    
-    // Store original position for rollback
-    const originalPosition = {
-        row: row,
-        parent: row.parentNode,
-        nextSibling: row.nextSibling
-    };
-    
-    // Remove row from DOM immediately
-    row.remove();
-    
-    return originalPosition;
-}
-
-/**
- * Rolls back a DOM move operation
- * @param {Object} originalPosition - Original position object from moveRowInDOM
- */
-export function rollbackMove(originalPosition) {
-    if (!originalPosition || !originalPosition.row) return;
-    
-    const { row, parent, nextSibling } = originalPosition;
-    
-    // Re-insert the row at its original position
-    if (nextSibling && nextSibling.parentNode === parent) {
-        parent.insertBefore(row, nextSibling);
-    } else {
-        parent.appendChild(row);
-    }
-}
-
-/**
- * Merender breadcrumbs navigasi
- * @param {HTMLElement} breadcrumbsEl - Elemen breadcrumbs
- * @param {Array} breadcrumbs - Data breadcrumbs
- * @param {Function} navigateTo - Fungsi navigasi
- */
-export function renderBreadcrumbs(breadcrumbsEl, breadcrumbs, navigateTo) {
-    // Clear children safely to avoid HTML parsing side-effects during Tailwind migration
-    while (breadcrumbsEl.firstChild) {
-        breadcrumbsEl.removeChild(breadcrumbsEl.firstChild);
-    }
-    breadcrumbs.forEach((crumb, index) => {
-        const isLast = index === breadcrumbs.length - 1;
-        const element = document.createElement(isLast ? 'span' : 'a');
-        element.textContent = crumb.label;
-
-        if (!isLast) {
-            element.href = '#';
-            element.addEventListener('click', (event) => {
-                event.preventDefault();
-                navigateTo(crumb.path);
-            });
-        }
-
-        breadcrumbsEl.appendChild(element);
-
-        if (!isLast) {
-            const separator = document.createElement('span');
-            separator.classList.add('breadcrumb-separator');
-            separator.textContent = '\u203A';
-            separator.setAttribute('aria-hidden', 'true');
-            breadcrumbsEl.appendChild(separator);
-        }
-    });
-}
-
-/**
- * Render single item row (extracted from renderItems for reusability)
- * @param {Object} item - Item data
- * @param {Object} state - Application state
- * @param {Object} params - Rendering parameters (callbacks, elements, etc.)
- * @returns {HTMLElement} - The created row element
- */
-function renderItemRow(item, state, params) {
-    const rowStartTime = performance.now();
-    
-    const {
-        previewableExtensions,
-        mediaPreviewableExtensions,
-        openTextPreview,
-        openMediaPreview,
-        navigateTo,
-        openInWord,
-        copyPathToClipboard,
-        openRenameOverlay,
-        openMoveOverlay,
-        openConfirmOverlay,
-        toggleSelection,
-        openContextMenu,
-        isWordDocument,
-        buildFileUrl,
-        hasUnsavedChanges,
-        confirmDiscardChanges,
-        handleDragStart,
-        handleDragEnd,
-        handleDragOver,
-        handleDrop,
-        handleDragLeave,
-        flashStatus,
-        setError,
-        highlightNew,
-        generatedAt
-    } = params;
-
-    const key = item.path;
-    const previouslySeen = state.knownItems.has(key);
-    const row = document.createElement('tr');
-    row.dataset.itemPath = key;
-    row.dataset.itemType = item.type;
-    row.tabIndex = 0;
-    // Accessibility: explicit role for assistive tech when headers are visually hidden
-    try { row.setAttribute('role', 'row'); } catch (e) {}
-    // Tailwind utility classes added progressively (migration): hover + group support
-    // Keep table semantics but add a conservative visual layer so rows get subtle hover/appearance
-    // transition-colors included to smooth hover changes during migration
-    // Preserve existing classes and add Tailwind utilities conservatively
-    row.classList.add('tw-row','group','hover:bg-gray-50','cursor-default','transition-colors');
-    const extension = item.type === 'file' ? getFileExtension(item.name) : '';
-    const isPreviewable = item.type === 'file' && previewableExtensions.has(extension);
-    const isMediaPreviewable = item.type === 'file' && mediaPreviewableExtensions.has(extension);
-    
-    if (isPreviewable || isMediaPreviewable) {
-        row.dataset.previewable = 'true';
-    }
-
-    if (!previouslySeen && highlightNew) {
-        row.classList.add('is-new');
-    }
-
-    // Selection cell
-    const selectionCell = document.createElement('td');
-    selectionCell.classList.add('selection-cell','px-3','w-12','text-center','align-middle');
-    try { selectionCell.setAttribute('role', 'gridcell'); } catch (e) {}
-    const checkbox = document.createElement('input');
-    checkbox.type = 'checkbox';
-    checkbox.classList.add('item-select','form-checkbox','h-4','w-4','text-primary');
-    checkbox.dataset.path = key;
-    checkbox.checked = state.selected.has(key);
-    checkbox.setAttribute('aria-label', `Pilih ${item.name}`);
-    checkbox.addEventListener('click', (event) => event.stopPropagation());
-    checkbox.addEventListener('keydown', (event) => event.stopPropagation());
-    checkbox.addEventListener('change', (event) => toggleSelection(key, event.target.checked));
-    selectionCell.appendChild(checkbox);
-    row.appendChild(selectionCell);
-
-    // Double-click and keyboard handlers
-    if (item.type === 'folder') {
-        row.addEventListener('dblclick', () => navigateTo(item.path));
-        row.addEventListener('keydown', (event) => {
-            if (event.key === 'Enter' || event.key === ' ') {
-                event.preventDefault();
-                navigateTo(item.path);
-            }
-        });
-    } else if (isPreviewable || isMediaPreviewable) {
-        const openPreview = () => {
-            if (isPreviewable) {
-                openTextPreview(item);
-            } else {
-                openMediaPreview(item);
-            }
-        };
-        row.addEventListener('dblclick', openPreview);
-        row.addEventListener('keydown', (event) => {
-            if (event.key === 'Enter' || event.key === ' ') {
-                event.preventDefault();
-                openPreview();
-            }
-        });
-    } else {
-        const openFile = () => {
-            const ext = getFileExtension(item.name);
-            if (isWordDocument(ext)) {
-                openInWord(item);
-            } else {
-                const url = buildFileUrl(item.path);
-                const newWindow = window.open(url, '_blank');
-                if (newWindow) newWindow.opener = null;
-            }
-        };
-        row.addEventListener('dblclick', openFile);
-        row.addEventListener('keydown', (event) => {
-            if (event.key === 'Enter' || event.key === ' ') {
-                event.preventDefault();
-                openFile();
-            }
-        });
-    }
-
-    // Context menu
-    row.addEventListener('contextmenu', (event) => {
-        event.preventDefault();
-        openContextMenu(event.clientX, event.clientY, item);
-    });
-
-    // Drag and drop
-    row.draggable = true;
-    row.addEventListener('dragstart', (event) => handleDragStart(event, item));
-    row.addEventListener('dragend', (event) => handleDragEnd(event));
-    
-    if (item.type === 'folder') {
-        row.addEventListener('dragover', (event) => handleDragOver(event, item));
-        row.addEventListener('drop', (event) => handleDrop(event, item));
-        row.addEventListener('dragleave', (event) => handleDragLeave(event));
-    }
-
-    // Name cell with icon
-    const cellName = document.createElement('td');
-    cellName.classList.add('name-cell','item-name','flex','items-center','gap-4','min-w-0','flex-1');
-    try { cellName.setAttribute('role', 'gridcell'); } catch (e) {}
-    const iconInfo = getItemIcon(item);
-    const icon = document.createElement('span');
-    // Preserve any classes provided by iconInfo but avoid overwriting existing classes.
-    icon.classList.add('item-icon');
-    if (iconInfo.className && iconInfo.className.trim()) {
-        iconInfo.className.trim().split(/\s+/).forEach(c => icon.classList.add(c));
-    }
-    // Apply inline styles to ensure icon is visible
-    icon.style.display = 'inline-flex';
-    icon.style.alignItems = 'center';
-    icon.style.justifyContent = 'center';
-    icon.style.width = '25px';
-    icon.style.height = '25px';
-    icon.style.borderRadius = '8px';
-    
-    // Apply colorful icon styles based on file type
-    const iconColors = getIconColors(item);
-    icon.style.backgroundColor = iconColors.backgroundColor;
-    icon.style.color = iconColors.color;
-    
-    icon.style.flexShrink = '0';
-    icon.style.marginTop = '2px';
-    // Insert SVG safely: support both legacy string SVGs and Element nodes returned by the icons module.
-    // Prefer Element nodes (created via createElementNS) to avoid relying on innerHTML parsing.
-    if (iconInfo && iconInfo.svg) {
-        try {
-            // DOM Element (preferred)
-            if (typeof iconInfo.svg === 'object' && iconInfo.svg.nodeType === 1) {
-                // Clone to avoid moving the canonical node out of the cache
-                const svgClone = iconInfo.svg.cloneNode(true);
-                // Ensure SVG has size
-                svgClone.style.width = '24px';
-                svgClone.style.height = '24px';
-                icon.appendChild(svgClone);
-            } else if (typeof iconInfo.svg === 'string') {
-                // Legacy: trusted SVG string from this module — set as innerHTML
-                icon.innerHTML = iconInfo.svg;
-            }
-        } catch (e) {
-            // Fallback: if anything goes wrong, gracefully degrade to empty icon
-            console.warn('[uiRenderer] Failed to render icon for', item && item.path, e);
-        }
-    }
-    icon.style.cursor = 'pointer';
-    
-    // Add click handler to icon
-    if (item.type === 'folder') {
-        icon.addEventListener('click', (event) => {
-            event.preventDefault();
-            event.stopPropagation();
-            navigateTo(item.path);
-        });
-    } else if (isPreviewable || isMediaPreviewable) {
-        icon.addEventListener('click', (event) => {
-            event.preventDefault();
-            event.stopPropagation();
-            if (isPreviewable) {
-                openTextPreview(item);
-            } else {
-                openMediaPreview(item);
-            }
-        });
-    } else {
-        const extForIcon = getFileExtension(item.name);
-        if (isWordDocument(extForIcon)) {
-            icon.addEventListener('click', (event) => {
-                event.preventDefault();
-                event.stopPropagation();
-                openInWord(item);
-            });
-        } else {
-            icon.addEventListener('click', (event) => {
-                event.stopPropagation();
-                const url = buildFileUrl(item.path);
-                const newWindow = window.open(url, '_blank');
-                if (newWindow) newWindow.opener = null;
-            });
-        }
-    }
-    
-    cellName.appendChild(icon);
-
-    const link = document.createElement('a');
-    link.classList.add('item-link','truncate','block','text-sm','text-gray-800');
-    link.textContent = item.name;
-
-    if (item.type === 'folder') {
-        link.href = '#';
-        link.addEventListener('click', (event) => {
-            event.preventDefault();
-            navigateTo(item.path);
-        });
-    } else if (isPreviewable || isMediaPreviewable) {
-        link.href = '#';
-        link.addEventListener('click', (event) => {
-            event.preventDefault();
-            if (isPreviewable) {
-                openTextPreview(item);
-            } else {
-                openMediaPreview(item);
-            }
-        });
-    } else {
-        const extForLink = getFileExtension(item.name);
-        if (isWordDocument(extForLink)) {
-            link.href = '#';
-            link.addEventListener('click', (event) => {
-                event.preventDefault();
-                openInWord(item);
-            });
-        } else {
-            link.href = buildFileUrl(item.path);
-            link.target = '_blank';
-            link.rel = 'noopener';
-        }
-    }
-
-    cellName.appendChild(link);
-
-    // Badge for new items
-    let badge = null;
-    if (!previouslySeen && highlightNew) {
-        badge = document.createElement('span');
-        badge.classList.add('badge','badge-new','inline-flex','items-center','px-2','py-0.5','text-xs','font-semibold','bg-green-100','text-green-700','rounded-full','ml-2');
-        badge.textContent = 'Baru';
-        cellName.appendChild(badge);
-    }
-
-    // Modified date cell
-    const cellModified = document.createElement('td');
-    cellModified.classList.add('modified-cell','text-sm','text-gray-500','w-36','text-right','whitespace-nowrap');
-    try { cellModified.setAttribute('role', 'gridcell'); } catch (e) {}
-    cellModified.textContent = formatDate(item.modified);
-    row.appendChild(cellModified);
-
-    // Size cell
-    const cellSize = document.createElement('td');
-    cellSize.classList.add('size-cell','text-sm','text-gray-500','w-[100px]','text-right','whitespace-nowrap','px-2');
-    try { cellSize.setAttribute('role', 'gridcell'); } catch (e) {}
-    if (item.type === 'folder') {
-        cellSize.textContent = '-';
-    } else {
-        // Format file size
-        const size = item.size || 0;
-        cellSize.textContent = formatBytes(size);
-    }
-    row.appendChild(cellSize);
-
-    // Actions cell
-    const actionCell = document.createElement('td');
-    actionCell.classList.add('actions-cell','w-auto','pr-2','text-right');
-    try { actionCell.setAttribute('role', 'gridcell'); } catch (e) {}
-    const actionGroup = document.createElement('div');
-    actionGroup.classList.add('row-actions','inline-flex','items-center','gap-1','justify-end');
-
-    // Desktop action buttons wrapper
-    const desktopActions = document.createElement('div');
-    desktopActions.classList.add('hidden', 'sm:flex', 'items-center', 'gap-1');
-
-    // Helper function to create action button with tooltip
-    const createActionBtn = (icon, title, colorClass, onClick) => {
-        const btn = document.createElement('button');
-        btn.classList.add('action-icon-btn', 'p-1.5', 'rounded', 'transition-colors', 'hover:bg-gray-100', 'dark:hover:bg-white/10', colorClass);
-        btn.innerHTML = `<i class="${icon} text-base"></i>`;
-        btn.setAttribute('title', title);
-        btn.addEventListener('click', (event) => {
-            event.stopPropagation();
-            onClick(event);
-        });
-        return btn;
-    };
-
-    // 1. Open/Preview button
-    const openBtn = createActionBtn('ri-folder-open-line', 'Buka', 'text-blue-600 dark:text-blue-400', () => {
-        if (item.type === 'folder') {
-            navigateTo(item.path);
-        } else if (isPreviewable) {
-            openTextPreview(item);
-        } else if (isMediaPreviewable) {
-            openMediaPreview(item);
-        } else {
-            const ext = getFileExtension(item.name);
-            if (isWordDocument(ext)) {
-                openInWord(item);
-            } else {
-                const url = buildFileUrl(item.path);
-                const newWindow = window.open(url, '_blank');
-                if (newWindow) newWindow.opener = null;
-            }
-        }
-    });
-    desktopActions.appendChild(openBtn);
-
-    // 2. Download button (only for files)
-    if (item.type === 'file') {
-        const downloadBtn = createActionBtn('ri-download-line', 'Unduh', 'text-green-600 dark:text-green-400', () => {
-            const url = buildFileUrl(item.path);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = item.name;
-            a.style.display = 'none';
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-        });
-        desktopActions.appendChild(downloadBtn);
-    }
-
-    // 3. Rename button
-    const renameBtn = createActionBtn('ri-edit-line', 'Ganti Nama', 'text-amber-600 dark:text-amber-400', () => {
-        openRenameOverlay(item);
-    });
-    desktopActions.appendChild(renameBtn);
-
-    // 4. Move button
-    const moveBtn = createActionBtn('ri-folder-transfer-line', 'Pindahkan', 'text-purple-600 dark:text-purple-400', () => {
-        openMoveOverlay([item.path]);
-    });
-    desktopActions.appendChild(moveBtn);
-
-    // 5. Delete button
-    const deleteBtn = createActionBtn('ri-delete-bin-line', 'Hapus', 'text-red-500 dark:text-red-400', () => {
-        if (hasUnsavedChanges(state.preview)) {
-            confirmDiscardChanges('Perubahan belum disimpan. Tetap hapus item terpilih?')
-                .then((proceed) => {
-                    if (!proceed) return;
-                    openConfirmOverlay({
-                        message: `Hapus "${item.name}"?`,
-                        description: 'Item yang dihapus tidak dapat dikembalikan.',
-                        paths: [item.path],
-                        showList: false,
-                        confirmLabel: 'Hapus',
-                    });
-                });
-            return;
-        }
-
-        openConfirmOverlay({
-            message: `Hapus "${item.name}"?`,
-            description: 'Item yang dihapus tidak dapat dikembalikan.',
-            paths: [item.path],
-            showList: false,
-            confirmLabel: 'Hapus',
-        });
-    });
-    desktopActions.appendChild(deleteBtn);
-    
-    // Add desktop actions to action group
-    actionGroup.appendChild(desktopActions);
-
-    // Mobile more button
-    const mobileMoreBtn = document.createElement('button');
-    mobileMoreBtn.classList.add('mobile-more-btn', 'sm:hidden', 'p-1.5', 'rounded', 'transition-colors', 'hover:bg-gray-100', 'dark:hover:bg-white/10', 'text-gray-600', 'dark:text-gray-400');
-    mobileMoreBtn.innerHTML = '<i class="ri-more-2-fill text-lg"></i>';
-    mobileMoreBtn.setAttribute('title', 'Menu');
-    mobileMoreBtn.dataset.path = item.path;
-    mobileMoreBtn.dataset.type = item.type;
-    mobileMoreBtn.dataset.name = item.name;
-    mobileMoreBtn.addEventListener('click', (event) => {
-        event.stopPropagation();
-        showMobileContextMenu(event, item);
-    });
-    actionGroup.appendChild(mobileMoreBtn);
-
-    actionCell.appendChild(actionGroup);
-    row.appendChild(cellName);
-    row.appendChild(cellModified);
-    row.appendChild(cellSize);
-    row.appendChild(actionCell);
-
-    // Auto-remove highlight after 5s
-    if (!previouslySeen && highlightNew) {
-        setTimeout(() => {
-            row.classList.remove('is-new');
-            if (badge) badge.remove();
-        }, 5000);
-    }
-
-    // Debug log: show computed classes and (if measurable) height to validate migration
-    try {
-        const rowEndTime = performance.now();
-        console.log('[PAGINATION DEBUG] renderItemRow ->', {
-            path: key,
-            classes: row.className,
-            height: (typeof row.getBoundingClientRect === 'function') ? Math.round(row.getBoundingClientRect().height) : null,
-            renderTime: rowEndTime - rowStartTime
-        });
-    } catch (e) { /* ignore */ }
-
-    return row;
-}
-
-/**
- * Render items using virtual scrolling
+ * Main render function for file items
+ * This is the primary entry point for rendering the file table.
+ * 
  * @param {HTMLElement} tableBody - Table body element
- * @param {Array} filtered - Filtered items array
+ * @param {HTMLElement} emptyState - Empty state element
  * @param {Object} state - Application state
- * @param {Object} params - Rendering parameters
- */
-function renderVirtualItems(tableBody, filtered, state, params) {
-    const renderStartTime = performance.now();
-    console.log('[PAGINATION DEBUG] renderVirtualItems called at:', renderStartTime, 'with', filtered.length, 'items');
-    
-    // Get items for current page FIRST
-    const paginatedItems = getItemsForPage(filtered);
-    console.log('[PAGINATION DEBUG] Showing', paginatedItems.length, 'items for current page');
-    
-    const vsConfig = config.virtualScroll || {
-        enabled: true,
-        threshold: 100,
-        itemHeight: 40,
-        overscan: 5
-    };
-    
-    // Initialize virtual scroll manager if not exists
-    const managerInitTime = performance.now();
-    if (!virtualScrollManager) {
-        virtualScrollManager = new VirtualScrollManager({
-            container: tableBody.parentElement, // Use parent container for scrolling
-            itemHeight: vsConfig.itemHeight,
-            overscan: vsConfig.overscan,
-            onRender: (range) => {
-                console.log('[VirtualScroll] Render triggered for range:', range);
-            }
-        });
-        virtualScrollManager.setTotalItems(paginatedItems.length);
-    } else {
-        // Update total count for current page items
-        virtualScrollManager.setTotalItems(paginatedItems.length);
-    }
-    console.log('[PAGINATION DEBUG] Virtual scroll manager initialized at:', managerInitTime, 'delta:', managerInitTime - renderStartTime);
-
-    // Get visible range
-    const rangeTime = performance.now();
-    const { start, end } = virtualScrollManager.getVisibleRange();
-    debugLog('[VirtualScroll] Rendering range:', start, '-', end);
-    console.log('[PAGINATION DEBUG] Visible range calculated at:', rangeTime, 'delta:', rangeTime - managerInitTime);
-    
-    // Clear existing rows (keep up-row if exists)
-    const clearTime = performance.now();
-    const upRow = tableBody.querySelector('.up-row');
-    // Clear existing rows without parsing HTML (preserve a previously-found up-row)
-    while (tableBody.firstChild) {
-        tableBody.removeChild(tableBody.firstChild);
-    }
-    if (upRow) {
-        tableBody.appendChild(upRow);
-    }
-    console.log('[PAGINATION DEBUG] DOM cleared at:', clearTime, 'delta:', clearTime - rangeTime);
-
-    // Create top spacer (use numeric height and guard against null spacer)
-    const spacerTime = performance.now();
-    const topSpaceHeight = start * vsConfig.itemHeight;
-    const topSpacer = createSpacer(topSpaceHeight);
-    if (topSpacer) tableBody.appendChild(topSpacer);
-    console.log('[PAGINATION DEBUG] Top spacer created at:', spacerTime, 'delta:', spacerTime - clearTime);
-
-    // Render visible items FROM CURRENT PAGE
-    const itemRenderTime = performance.now();
-    const fragment = document.createDocumentFragment();
-    for (let i = start; i < end; i++) {
-        if (i >= paginatedItems.length) break;
-        const item = paginatedItems[i];
-        const row = renderItemRow(item, state, params);
-        fragment.appendChild(row);
-    }
-    tableBody.appendChild(fragment);
-    console.log('[PAGINATION DEBUG] Visible items rendered at:', itemRenderTime, 'delta:', itemRenderTime - spacerTime, 'items:', end - start);
-
-    // Reconcile computed row height with virtual scroll configuration.
-    // This helps keep config.virtualScroll.itemHeight in sync with actual CSS during migration.
-    try {
-        const heightReconcileTime = performance.now();
-        const firstRow = tableBody.querySelector('tr:not(.up-row)');
-        if (firstRow) {
-            const actualHeight = Math.round(firstRow.getBoundingClientRect().height);
-            if (actualHeight > 0 && actualHeight !== vsConfig.itemHeight) {
-                vsConfig.itemHeight = actualHeight;
-                if (virtualScrollManager) {
-                    // Best-effort: update manager's itemHeight and call optional updater if available
-                    virtualScrollManager.itemHeight = actualHeight;
-                    if (typeof virtualScrollManager.updateItemHeight === 'function') {
-                        virtualScrollManager.updateItemHeight(actualHeight);
-                    }
-                }
-            }
-        }
-        console.log('[PAGINATION DEBUG] Height reconciled at:', heightReconcileTime, 'delta:', heightReconcileTime - itemRenderTime);
-    } catch (e) {
-        // Ignore measurement errors in older browsers/environments
-        debugLog('[VirtualScroll] Failed to reconcile itemHeight', e);
-    }
-
-    // Create bottom spacer (use numeric height and guard against null spacer)
-    const bottomSpacerTime = performance.now();
-    const remainingItems = Math.max(0, paginatedItems.length - end);
-    const bottomSpaceHeight = remainingItems * vsConfig.itemHeight;
-    const bottomSpacer = createSpacer(bottomSpaceHeight);
-    if (bottomSpacer) tableBody.appendChild(bottomSpacer);
-    console.log('[PAGINATION DEBUG] Bottom spacer created at:', bottomSpacerTime, 'delta:', bottomSpacerTime - itemRenderTime);
-
-    // Track performance (call trackRender if available)
-    if (virtualScrollManager && typeof virtualScrollManager.trackRender === 'function') {
-        virtualScrollManager.trackRender(end - start);
-    }
-    
-    // Initialize pagination tracking (but don't track scroll in true pagination mode)
-    const container = tableBody.parentElement;
-    if (container && filtered.length > 0) {
-        // Cleanup previous scroll tracking
-        if (scrollTrackingCleanup) {
-            scrollTrackingCleanup();
-        }
-        
-        // Initialize new scroll tracking
-        scrollTrackingCleanup = initScrollTracking(container, filtered.length, vsConfig.itemHeight);
-        
-        // Calculate and update pagination state
-        const pagination = calculatePagination(filtered.length);
-        updatePaginationState(pagination.currentPage, pagination.totalPages, filtered.length);
-    }
-    
-    const renderEndTime = performance.now();
-    console.log('[PAGINATION DEBUG] renderVirtualItems completed at:', renderEndTime, 'total delta:', renderEndTime - renderStartTime);
-}
-
-/**
- * Render items normally (non-virtual)
- * @param {HTMLElement} tableBody - Table body element
- * @param {Array} filtered - Filtered items array
- * @param {Object} state - Application state
- * @param {Object} params - Rendering parameters
- */
-function renderNormalItems(tableBody, filtered, state, params) {
-    const renderStartTime = performance.now();
-    console.log('[PAGINATION DEBUG] renderNormalItems called at:', renderStartTime, 'with', filtered.length, 'items');
-    
-    // Get items for current page FIRST
-    const paginatedItems = getItemsForPage(filtered);
-    console.log('[PAGINATION DEBUG] Showing', paginatedItems.length, 'items for current page');
-    
-    const fragment = document.createDocumentFragment();
-    
-    const itemRenderTime = performance.now();
-    // Render items for current page only
-    paginatedItems.forEach((item, index) => {
-        const row = renderItemRow(item, state, params);
-        fragment.appendChild(row);
-    });
-    console.log('[PAGINATION DEBUG] Items rendered at:', itemRenderTime, 'delta:', itemRenderTime - renderStartTime);
-    
-    const domAppendTime = performance.now();
-    tableBody.appendChild(fragment);
-    console.log('[PAGINATION DEBUG] DOM appended at:', domAppendTime, 'total delta:', domAppendTime - renderStartTime);
-    
-    // Update pagination state
-    const pagination = calculatePagination(filtered.length);
-    updatePaginationState(pagination.currentPage, pagination.totalPages, filtered.length);
-}
-
-/**
- * Render mobile view items
- * @param {HTMLElement} mobileList - Mobile list element
  * @param {Array} items - Items to render
- * @param {Object} state - Application state
- * @param {Object} params - Rendering parameters
- */
-function renderMobileItems(mobileList, items, state, params) {
-    const renderStartTime = performance.now();
-        console.log('[PAGINATION DEBUG] renderMobileItems called at:', renderStartTime, 'with', items.length, 'items');
-    
-    if (!mobileList) {
-        console.log('[PAGINATION DEBUG] Mobile list not found, skipping');
-        return;
-    }
-    
-    const fragment = document.createDocumentFragment();
-    
-    const itemRenderTime = performance.now();
-    items.forEach((item) => {
-        const mobileItem = createMobileItem(item, state, params);
-        fragment.appendChild(mobileItem);
-    });
-    console.log('[PAGINATION DEBUG] Mobile items rendered at:', itemRenderTime, 'delta:', itemRenderTime - renderStartTime);
-    
-    const domAppendTime = performance.now();
-    mobileList.appendChild(fragment);
-    console.log('[PAGINATION DEBUG] Mobile DOM appended at:', domAppendTime, 'total delta:', domAppendTime - renderStartTime);
-}
-
-/**
- * Create mobile item element
- * @param {Object} item - Item data
- * @param {Object} state - Application state
- * @param {Object} params - Rendering parameters
- * @returns {HTMLElement} - Mobile item element
- */
-function createMobileItem(item, state, params) {
-    const itemStartTime = performance.now();
-    
-    const {
-        previewableExtensions,
-        mediaPreviewableExtensions,
-        openTextPreview,
-        openMediaPreview,
-        navigateTo,
-        openInWord,
-        copyPathToClipboard,
-        openRenameOverlay,
-        openMoveOverlay,
-        openConfirmOverlay,
-        toggleSelection,
-        openContextMenu,
-        isWordDocument,
-        buildFileUrl,
-        hasUnsavedChanges,
-        confirmDiscardChanges,
-        handleDragStart,
-        handleDragEnd,
-        handleDragOver,
-        handleDrop,
-        handleDragLeave,
-        flashStatus,
-        setError
-    } = params;
-
-    const key = item.path;
-    const extension = item.type === 'file' ? getFileExtension(item.name) : '';
-    const isPreviewable = item.type === 'file' && previewableExtensions.has(extension);
-    const isMediaPreviewable = item.type === 'file' && mediaPreviewableExtensions.has(extension);
-    
-    const mobileItem = document.createElement('div');
-    mobileItem.classList.add('flex', 'items-center', 'justify-between', 'p-3');
-    mobileItem.dataset.itemPath = key;
-    mobileItem.dataset.itemType = item.type;
-    
-    // Left side: checkbox + icon + name + date
-    const leftSide = document.createElement('div');
-    leftSide.classList.add('flex', 'items-center', 'gap-3');
-    
-    // Checkbox
-    const checkbox = document.createElement('input');
-    checkbox.type = 'checkbox';
-    checkbox.classList.add('w-5', 'h-5');
-    checkbox.dataset.path = key;
-    checkbox.checked = state.selected.has(key);
-    checkbox.setAttribute('aria-label', `Pilih ${item.name}`);
-    checkbox.addEventListener('click', (event) => event.stopPropagation());
-    checkbox.addEventListener('change', (event) => toggleSelection(key, event.target.checked));
-    leftSide.appendChild(checkbox);
-    
-    // Icon
-    const iconContainer = document.createElement('div');
-    iconContainer.classList.add('flex', 'items-center', 'justify-center');
-    
-    // Use the same icon system as desktop
-    const iconInfo = getItemIcon(item);
-    const icon = document.createElement('span');
-    icon.classList.add('item-icon');
-    if (iconInfo.className && iconInfo.className.trim()) {
-        iconInfo.className.trim().split(/\s+/).forEach(c => icon.classList.add(c));
-    }
-    // Apply inline styles to ensure icon is visible
-    icon.style.display = 'inline-flex';
-    icon.style.alignItems = 'center';
-    icon.style.justifyContent = 'center';
-    icon.style.width = '32px';
-    icon.style.height = '32px';
-    icon.style.borderRadius = '6px';
-    
-    // Apply colorful icon styles based on file type
-    const mobileIconColors = getIconColors(item);
-    icon.style.backgroundColor = mobileIconColors.backgroundColor;
-    icon.style.color = mobileIconColors.color;
-    
-    icon.style.flexShrink = '0';
-    icon.style.marginTop = '2px';
-    
-    // Insert SVG safely
-    if (iconInfo && iconInfo.svg) {
-        try {
-            if (typeof iconInfo.svg === 'object' && iconInfo.svg.nodeType === 1) {
-                const svgClone = iconInfo.svg.cloneNode(true);
-                // Ensure SVG has size
-                svgClone.style.width = '20px';
-                svgClone.style.height = '20px';
-                icon.appendChild(svgClone);
-            } else if (typeof iconInfo.svg === 'string') {
-                icon.innerHTML = iconInfo.svg;
-            }
-        } catch (e) {
-            console.warn('[uiRenderer] Failed to render icon for', item && item.path, e);
-        }
-    }
-    
-    iconContainer.appendChild(icon);
-    leftSide.appendChild(iconContainer);
-    
-    // Name + date
-    const nameDateContainer = document.createElement('div');
-    nameDateContainer.classList.add('flex', 'flex-col');
-    
-    const nameSpan = document.createElement('span');
-    nameSpan.classList.add('font-medium', 'text-gray-800');
-    nameSpan.textContent = item.name;
-    nameDateContainer.appendChild(nameSpan);
-    
-    const dateSpan = document.createElement('span');
-    dateSpan.classList.add('text-xs', 'text-gray-500');
-    dateSpan.textContent = formatDate(item.modified);
-    nameDateContainer.appendChild(dateSpan);
-    
-    leftSide.appendChild(nameDateContainer);
-    mobileItem.appendChild(leftSide);
-    
-    // Right side: action menu button (three dots)
-    const rightSide = document.createElement('div');
-    rightSide.classList.add('flex', 'items-center', 'gap-2');
-    
-    // Three dots menu button
-    const actionBtn = document.createElement('button');
-    actionBtn.classList.add('p-2', 'rounded-full', 'text-gray-600', 'hover:bg-gray-100', 'transition-colors');
-    actionBtn.innerHTML = '⋮';
-    actionBtn.style.fontSize = '20px';
-    actionBtn.style.lineHeight = '1';
-    actionBtn.setAttribute('aria-label', `Menu aksi untuk ${item.name}`);
-    actionBtn.addEventListener('click', (event) => {
-        event.stopPropagation();
-        if (window.mobileActionsOpenMenu) {
-            // Get button position for menu placement
-            const rect = actionBtn.getBoundingClientRect();
-            const x = rect.right - 150; // Align menu to right of button
-            const y = rect.bottom + 5; // Position below button
-            window.mobileActionsOpenMenu(item, x, y);
-        }
-    });
-    rightSide.appendChild(actionBtn);
-    
-    mobileItem.appendChild(rightSide);
-    
-    // Add click handlers for the entire item
-    mobileItem.addEventListener('click', (event) => {
-        if (event.target.closest('button') || event.target.closest('input')) return;
-        
-        if (item.type === 'folder') {
-            navigateTo(item.path);
-        } else if (isPreviewable || isMediaPreviewable) {
-            if (isPreviewable) {
-                openTextPreview(item);
-            } else {
-                openMediaPreview(item);
-            }
-        } else {
-            const ext = getFileExtension(item.name);
-            if (isWordDocument(ext)) {
-                openInWord(item);
-            } else {
-                const url = buildFileUrl(item.path);
-                const newWindow = window.open(url, '_blank');
-                if (newWindow) newWindow.opener = null;
-            }
-        }
-    });
-    
-    // Context menu
-    mobileItem.addEventListener('contextmenu', (event) => {
-        event.preventDefault();
-        openContextMenu(event.clientX, event.clientY, item);
-    });
-    
-    // Drag and drop
-    mobileItem.draggable = true;
-    mobileItem.addEventListener('dragstart', (event) => handleDragStart(event, item));
-    mobileItem.addEventListener('dragend', (event) => handleDragEnd(event));
-    
-    if (item.type === 'folder') {
-        mobileItem.addEventListener('dragover', (event) => handleDragOver(event, item));
-        mobileItem.addEventListener('drop', (event) => handleDrop(event, item));
-        mobileItem.addEventListener('dragleave', (event) => handleDragLeave(event));
-    }
-    
-    const itemEndTime = performance.now();
-    console.log('[PAGINATION DEBUG] createMobileItem completed for:', item.name, 'at:', itemEndTime, 'delta:', itemEndTime - itemStartTime);
-    
-    return mobileItem;
-}
-
-/**
- * Merender daftar item dalam tabel
- * @param {HTMLElement} tableBody - Elemen body tabel
- * @param {HTMLElement} emptyState - Elemen empty state
- * @param {Object} state - State aplikasi
- * @param {Array} items - Daftar item
- * @param {number} generatedAt - Timestamp pembuatan data
- * @param {boolean} highlightNew - Apakah menandai item baru
- * @param {Function} openTextPreview - Fungsi buka preview teks
- * @param {Function} openMediaPreview - Fungsi buka preview media
- * @param {Function} navigateTo - Fungsi navigasi
- * @param {Function} openInWord - Fungsi buka di Word
- * @param {Function} copyPathToClipboard - Fungsi salin path
- * @param {Function} openRenameOverlay - Fungsi buka rename overlay
- * @param {Function} openMoveOverlay - Fungsi buka move overlay
- * @param {Function} openConfirmOverlay - Fungsi buka confirm overlay
- * @param {Function} toggleSelection - Fungsi toggle selection
- * @param {Function} openContextMenu - Fungsi buka context menu
- * @param {Function} isWordDocument - Fungsi cek dokumen Word
- * @param {Function} buildFileUrl - Fungsi build file URL
- * @param {Function} hasUnsavedChanges - Fungsi cek perubahan belum disimpan
- * @param {Function} confirmDiscardChanges - Fungsi konfirmasi perubahan
- * @param {Function} previewableExtensions - Set ekstensi yang bisa di-preview
- * @param {Function} mediaPreviewableExtensions - Set ekstensi media yang bisa di-preview
- * @param {Function} handleDragStart - Fungsi handle drag start
- * @param {Function} handleDragEnd - Fungsi handle drag end
- * @param {Function} handleDragOver - Fungsi handle drag over
- * @param {Function} handleDrop - Fungsi handle drop
- * @param {Function} handleDragLeave - Fungsi handle drag leave
- * @param {Function} flashStatus - Fungsi flash status message
- * @param {Function} setError - Fungsi set error message
+ * @param {number} generatedAt - Timestamp
+ * @param {boolean} highlightNew - Whether to highlight new items
+ * @param {Function} openTextPreview - Open text preview function
+ * @param {Function} openMediaPreview - Open media preview function
+ * @param {Function} navigateTo - Navigation function
+ * @param {Function} openInWord - Open in Word function
+ * @param {Function} copyPathToClipboard - Copy path function
+ * @param {Function} openRenameOverlay - Open rename overlay function
+ * @param {Function} openMoveOverlay - Open move overlay function
+ * @param {Function} openConfirmOverlay - Open confirm overlay function
+ * @param {Function} toggleSelection - Toggle selection function
+ * @param {Function} openContextMenu - Open context menu function
+ * @param {Function} isWordDocument - Check if Word document function
+ * @param {Function} buildFileUrl - Build file URL function
+ * @param {Function} hasUnsavedChanges - Check unsaved changes function
+ * @param {Function} confirmDiscardChanges - Confirm discard changes function
+ * @param {Set} previewableExtensions - Previewable extensions
+ * @param {Set} mediaPreviewableExtensions - Media previewable extensions
+ * @param {Function} handleDragStart - Drag start handler
+ * @param {Function} handleDragEnd - Drag end handler
+ * @param {Function} handleDragOver - Drag over handler
+ * @param {Function} handleDrop - Drop handler
+ * @param {Function} handleDragLeave - Drag leave handler
+ * @param {Function} flashStatusFn - Flash status function
+ * @param {Function} setErrorFn - Set error function
+ * @returns {Object} - Result with items, filtered, and meta
  */
 export function renderItems(
     tableBody,
@@ -1301,14 +183,13 @@ export function renderItems(
     handleDragOver,
     handleDrop,
     handleDragLeave,
-    flashStatus,
-    setError
+    flashStatusFn,
+    setErrorFn
 ) {
     const renderStartTime = performance.now();
     console.log('[PAGINATION DEBUG] renderItems called at:', renderStartTime);
     
-    // PERFORMANCE FIX: Only prevent concurrent renders, no debounce delay
-    // Pagination already has its own protection via isRendering flag
+    // Prevent concurrent renders
     if (isRendering) {
         console.log('[PAGINATION DEBUG] Skipping render - already rendering');
         return { items, filtered: state.visibleItems || [], meta: {} };
@@ -1318,580 +199,323 @@ export function renderItems(
     lastRenderTime = performance.now();
     
     try {
-    // Clear render cache when items change significantly
-    const cacheClearTime = performance.now();
-    if (renderCache.items !== items || renderCache.items.length !== items.length) {
-        console.log('[RENDER DEBUG] Clearing render cache due to items change');
-        renderCache = {
-            items: null,
-            sortKey: null,
-            sortDirection: null,
-            filter: null,
-            sortedItems: null,
-            filteredItems: null,
-            lastCacheTime: 0
+        // Clear render cache when items change significantly
+        const cacheClearTime = performance.now();
+        if (renderCache.items !== items || renderCache.items.length !== items.length) {
+            console.log('[RENDER DEBUG] Clearing render cache due to items change');
+            renderCache = {
+                items: null,
+                sortKey: null,
+                sortDirection: null,
+                filter: null,
+                sortedItems: null,
+                filteredItems: null,
+                lastCacheTime: 0
+            };
+        }
+        console.log('[RENDER DEBUG] Cache check completed at:', cacheClearTime, 'delta:', cacheClearTime - renderStartTime);
+        
+        const stateUpdateTime = performance.now();
+        console.log('[RENDER DEBUG] State updated at:', stateUpdateTime, 'delta:', stateUpdateTime - cacheClearTime);
+        
+        const sortingTime = performance.now();
+        const query = state.filter.toLowerCase();
+        
+        // Check cache validity
+        const canUseCache = renderCache.items === items &&
+                            renderCache.sortKey === state.sortKey &&
+                            renderCache.sortDirection === state.sortDirection &&
+                            renderCache.filter === query;
+        
+        let sortedItems, filtered;
+        
+        if (canUseCache) {
+            console.log('[PAGINATION DEBUG] Using cached sorted/filtered items');
+            sortedItems = renderCache.sortedItems;
+            filtered = renderCache.filteredItems;
+        } else {
+            console.log('[PAGINATION DEBUG] Cache miss - processing items');
+            
+            const arrayCreationTime = performance.now();
+            const itemsCopy = [...items];
+            console.log('[PAGINATION DEBUG] Array copy created at:', arrayCreationTime, 'delta:', arrayCreationTime - sortingTime);
+            
+            const sortStartTime = performance.now();
+            sortedItems = itemsCopy.sort((a, b) => compareItems(a, b, state.sortKey, state.sortDirection));
+            console.log('[PAGINATION DEBUG] Sorting completed at:', sortStartTime, 'items:', sortedItems.length);
+            
+            const filterStartTime = performance.now();
+            filtered = query
+                ? sortedItems.filter((item) => item.name.toLowerCase().includes(query))
+                : sortedItems;
+            console.log('[PAGINATION DEBUG] Filtering completed at:', filterStartTime, 'query:', query, 'filtered:', filtered.length);
+            
+            // Update cache
+            renderCache = {
+                items,
+                sortKey: state.sortKey,
+                sortDirection: state.sortDirection,
+                filter: query,
+                sortedItems,
+                filteredItems: filtered,
+                lastCacheTime: performance.now()
+            };
+        }
+        
+        state.visibleItems = filtered;
+        console.log('[RENDER DEBUG] Sorting/filtering completed items:', items.length, 'filtered:', filtered.length);
+
+        const totalFolders = items.filter((item) => item.type === 'folder').length;
+        const filteredFolders = filtered.filter((item) => item.type === 'folder').length;
+        const meta = {
+            totalFolders,
+            totalFiles: items.length - totalFolders,
+            filteredFolders,
+            filteredFiles: filtered.length - filteredFolders,
         };
-    }
-    console.log('[RENDER DEBUG] Cache check completed at:', cacheClearTime, 'delta:', cacheClearTime - renderStartTime);
-    
-    // PERFORMANCE FIX: Do not mutate global state.items here.
-    // state.items should be the source of truth managed by the caller (appInitializer).
-    // renderItems should only render what it is given.
-    // state.items = items; 
-    // state.itemMap = new Map(items.map((item) => [item.path, item]));
-    // state.selected = synchronizeSelection(items, state.selected);
-    
-    const stateUpdateTime = performance.now();
-    // We still need to update visibleItems for other modules to know what's shown
-    // But we should be careful if items is just a page slice.
-    // For now, we assume items passed here IS what should be visible (paginated slice).
-    
-    console.log('[RENDER DEBUG] State updated at:', stateUpdateTime, 'delta:', stateUpdateTime - cacheClearTime);
-    
-    const sortingTime = performance.now();
-    const query = state.filter.toLowerCase();
-    
-    // Check cache validity
-    const cacheKey = `${items.length}-${state.sortKey}-${state.sortDirection}-${query}`;
-    const canUseCache = renderCache.items === items &&
-                        renderCache.sortKey === state.sortKey &&
-                        renderCache.sortDirection === state.sortDirection &&
-                        renderCache.filter === query;
-    
-    let sortedItems, filtered;
-    
-    if (canUseCache) {
-        console.log('[PAGINATION DEBUG] Using cached sorted/filtered items');
-        sortedItems = renderCache.sortedItems;
-        filtered = renderCache.filteredItems;
-    } else {
-        console.log('[PAGINATION DEBUG] Cache miss - processing items');
+
+        // Clear table body
+        const clearStartTime = performance.now();
+        tableBody.innerHTML = '';
+        console.log('[RENDER DEBUG] Table cleared at:', clearStartTime);
         
-        const arrayCreationTime = performance.now();
-        const itemsCopy = [...items];
-        console.log('[PAGINATION DEBUG] Array copy created at:', arrayCreationTime, 'delta:', arrayCreationTime - sortingTime);
+        // Clear mobile list
+        const mobileList = document.getElementById('mobile-file-list');
+        if (mobileList) {
+            mobileList.innerHTML = '';
+        }
+
+        // Insert "Up (..)" row at the top
+        const upRow = document.createElement('tr');
+        upRow.classList.add('up-row','cursor-pointer','transition-colors');
+        upRow.tabIndex = 0;
+        try { upRow.setAttribute('role', 'row'); } catch (e) {}
+        try { upRow.setAttribute('aria-label', 'Kembali ke folder sebelumnya'); } catch (e) {}
+
+        // Empty selection cell
+        const upSel = document.createElement('td');
+        upSel.classList.add('selection-cell','w-12','px-3','text-center','align-middle');
+        upRow.appendChild(upSel);
+
+        // Name cell with icon + "Back" label
+        const upName = document.createElement('td');
+        upName.classList.add('name-cell','item-name','flex','items-center','gap-4','min-w-0','flex-1','px-3','text-sm');
         
-        const sortStartTime = performance.now();
-        sortedItems = itemsCopy.sort((a, b) => compareItems(a, b, state.sortKey, state.sortDirection));
-        console.log('[PAGINATION DEBUG] Sorting completed at:', sortStartTime, 'delta:', sortStartTime - arrayCreationTime, 'items:', sortedItems.length);
+        const backIcon = document.createElement('span');
+        backIcon.classList.add('up-icon', 'small', 'inline-flex', 'items-center', 'justify-center', 'flex-shrink-0');
+        backIcon.textContent = '...';
+        upName.appendChild(backIcon);
         
-        const filterStartTime = performance.now();
-        filtered = query
-            ? sortedItems.filter((item) => item.name.toLowerCase().includes(query))
-            : sortedItems;
-        console.log('[PAGINATION DEBUG] Filtering completed at:', filterStartTime, 'delta:', filterStartTime - sortStartTime, 'query:', query, 'filtered:', filtered.length);
-        
-        // Update cache
-        renderCache = {
-            items,
-            sortKey: state.sortKey,
-            sortDirection: state.sortDirection,
-            filter: query,
-            sortedItems,
-            filteredItems: filtered,
-            lastCacheTime: performance.now()
-        };
-    }
-    
-    state.visibleItems = filtered;
-    console.log('[RENDER DEBUG] Sorting/filtering completed at:', sortingTime, 'delta:', sortingTime - stateUpdateTime, 'items:', items.length, 'filtered:', filtered.length);
-
-    const totalFolders = items.filter((item) => item.type === 'folder').length;
-    const filteredFolders = filtered.filter((item) => item.type === 'folder').length;
-    const meta = {
-        totalFolders,
-        totalFiles: items.length - totalFolders,
-        filteredFolders,
-        filteredFiles: filtered.length - filteredFolders,
-    };
-
-    // PERFORMANCE FIX: Use innerHTML = '' instead of removeChild loop for faster clearing
-    const clearStartTime = performance.now();
-    tableBody.innerHTML = '';
-    console.log('[RENDER DEBUG] Table cleared at:', clearStartTime, 'delta:', clearStartTime - sortingTime);
-    
-    // Clear mobile list
-    const mobileList = document.getElementById('mobile-file-list');
-    if (mobileList) {
-        mobileList.innerHTML = '';
-    }
-
-    // Insert "Up (..)" row at the top (always show it)
-    const upRow = document.createElement('tr');
-    upRow.classList.add('up-row','cursor-pointer','transition-colors');
-    upRow.tabIndex = 0;
-    try { upRow.setAttribute('role', 'row'); } catch (e) {}
-    try { upRow.setAttribute('aria-label', 'Kembali ke folder sebelumnya'); } catch (e) {}
-
-    // Empty selection cell (no checkbox)
-    const upSel = document.createElement('td');
-    upSel.classList.add('selection-cell','w-12','px-3','text-center','align-middle');
-    upRow.appendChild(upSel);
-
-    // Name cell with icon + "Back" label
-    const upName = document.createElement('td');
-    upName.classList.add('name-cell','item-name','flex','items-center','gap-4','min-w-0','flex-1','px-3','text-sm');
-    
-    // Add back icon
-    const backIcon = document.createElement('span');
-    backIcon.classList.add('up-icon', 'small', 'inline-flex', 'items-center', 'justify-center');
-    backIcon.classList.add('flex-shrink-0');
-    backIcon.textContent = '...';
-    upName.appendChild(backIcon);
-    
-    const upLink = document.createElement('a');
-    upLink.classList.add('item-link');
-    upLink.href = '#';
-    upLink.textContent = '...';
-    upLink.setAttribute('title', 'Kembali ke folder sebelumnya');
-    upLink.addEventListener('click', (event) => {
-        event.preventDefault();
-        navigateTo(state.parentPath || '');
-    });
-    upName.appendChild(upLink);
-    upRow.appendChild(upName);
-
-    // Modified column shows "-"
-    const upModified = document.createElement('td');
-    upModified.classList.add('modified-cell','text-sm','text-gray-500','w-36','text-right','whitespace-nowrap','px-3');
-    upModified.textContent = '-';
-    upRow.appendChild(upModified);
-
-    // Size column shows "-"
-    const upSize = document.createElement('td');
-    upSize.classList.add('size-cell','text-sm','text-gray-500','w-[100px]','text-right','whitespace-nowrap','px-2');
-    upSize.textContent = '-';
-    upRow.appendChild(upSize);
-
-    // Empty actions cell (no actions)
-    const upActions = document.createElement('td');
-    upActions.classList.add('actions-cell','w-36','pr-2','px-3','text-right');
-    upRow.appendChild(upActions);
-
-    // Keyboard and mouse interactions
-    upRow.addEventListener('dblclick', () => navigateTo(state.parentPath || ''));
-    upRow.addEventListener('keydown', (event) => {
-        if (event.key === 'Enter' || event.key === ' ') {
+        const upLink = document.createElement('a');
+        upLink.classList.add('item-link');
+        upLink.href = '#';
+        upLink.textContent = '...';
+        upLink.setAttribute('title', 'Kembali ke folder sebelumnya');
+        upLink.addEventListener('click', (event) => {
             event.preventDefault();
             navigateTo(state.parentPath || '');
-        }
-    });
+        });
+        upName.appendChild(upLink);
+        upRow.appendChild(upName);
 
-    // Make the up-row a drop target to move item to parent directory
-    upRow.addEventListener('dragover', (event) => {
-        if (!state.drag.isDragging) {
-            return;
-        }
-        event.preventDefault();
-        event.dataTransfer.dropEffect = 'move';
-        // Visual highlight for drop target
-        upRow.classList.add('drop-target');
-    });
+        // Modified column
+        const upModified = document.createElement('td');
+        upModified.classList.add('modified-cell','text-sm','text-gray-500','w-36','text-right','whitespace-nowrap','px-3');
+        upModified.textContent = '-';
+        upRow.appendChild(upModified);
 
-    upRow.addEventListener('dragleave', (event) => {
-        // Only remove when actually leaving the row, not entering children
-        if (event.currentTarget === event.target) {
-            upRow.classList.remove('drop-target');
-        }
-    });
+        // Size column
+        const upSize = document.createElement('td');
+        upSize.classList.add('size-cell','text-sm','text-gray-500','w-[100px]','text-right','whitespace-nowrap','px-2');
+        upSize.textContent = '-';
+        upRow.appendChild(upSize);
 
-    upRow.addEventListener('drop', (event) => {
-        if (!state.drag.isDragging || !state.drag.draggedItem) {
-            return;
-        }
-        event.preventDefault();
-        // Prevent bubbling to body to avoid duplicate move requests
-        event.stopPropagation();
-        if (typeof event.stopImmediatePropagation === 'function') {
-            event.stopImmediatePropagation();
-        }
+        // Empty actions cell
+        const upActions = document.createElement('td');
+        upActions.classList.add('actions-cell','w-36','pr-2','px-3','text-right');
+        upRow.appendChild(upActions);
 
-        const targetPath = state.parentPath || '';
-        debugLog('[DEBUG] Dropping', state.drag.draggedItem.name, 'onto up-row to move into parent', targetPath);
+        // Event handlers
+        upRow.addEventListener('dblclick', () => navigateTo(state.parentPath || ''));
+        upRow.addEventListener('keydown', (event) => {
+            if (event.key === 'Enter' || event.key === ' ') {
+                event.preventDefault();
+                navigateTo(state.parentPath || '');
+            }
+        });
 
-        // Perform the move operation to parent directory
-        moveItem(
-            state.drag.draggedItem.path,
-            targetPath,
-            state,
-            (isLoading) => {
-                setLoading(document.querySelector('.loader-overlay'), null, isLoading);
-                debugLog('[DEBUG] Loading:', isLoading);
-            },
-            (error) => { debugLog('[DEBUG] Move error:', error); },
-            () => fetchDirectory(state.currentPath, { silent: true }),
-            (message) => { debugLog('[DEBUG] Status:', message); },
-            null, // previewTitle
-            null, // previewMeta
-            null, // previewOpenRaw
-            null  // buildFileUrl
-        );
+        // Drag and drop for up-row
+        upRow.addEventListener('dragover', (event) => {
+            if (!state.drag.isDragging) return;
+            event.preventDefault();
+            event.dataTransfer.dropEffect = 'move';
+            upRow.classList.add('drop-target');
+        });
 
-        // Clean up highlight/state
+        upRow.addEventListener('dragleave', (event) => {
+            if (event.currentTarget === event.target) {
+                upRow.classList.remove('drop-target');
+            }
+        });
+
+        upRow.addEventListener('drop', (event) => {
+            if (!state.drag.isDragging || !state.drag.draggedItem) return;
+            event.preventDefault();
+            event.stopPropagation();
+            if (typeof event.stopImmediatePropagation === 'function') {
+                event.stopImmediatePropagation();
+            }
+
+            const targetPath = state.parentPath || '';
+            debugLog('[DEBUG] Dropping', state.drag.draggedItem.name, 'onto up-row to move into parent', targetPath);
+
+            moveItem(
+                state.drag.draggedItem.path,
+                targetPath,
+                state,
+                (isLoading) => {
+                    setLoading(document.querySelector('.loader-overlay'), null, isLoading);
+                    debugLog('[DEBUG] Loading:', isLoading);
+                },
+                (error) => { debugLog('[DEBUG] Move error:', error); },
+                () => fetchDirectory(state.currentPath, { silent: true }),
+                (message) => { debugLog('[DEBUG] Status:', message); },
+                null,
+                null,
+                null,
+                null
+            );
+
+            tableBody.appendChild(upRow);
+            state.drag.dropTarget = null;
+        });
+
         tableBody.appendChild(upRow);
 
-        // (mobile 'up' row insertion is handled below as mobileUpItem to avoid duplication)
-        state.drag.dropTarget = null;
-    });
+        // Add up-row for mobile view
+        if (mobileList) {
+            const mobileUpItem = document.createElement('div');
+            mobileUpItem.classList.add('flex', 'items-center', 'justify-between', 'p-3', 'cursor-pointer', 'up-mobile-row', 'transition-colors', 'border-b');
+            mobileUpItem.dataset.itemPath = state.parentPath || '';
+            mobileUpItem.dataset.itemType = 'parent';
+            
+            const leftSide = document.createElement('div');
+            leftSide.classList.add('flex', 'items-center', 'gap-3');
+            
+            const iconContainer = document.createElement('div');
+            iconContainer.classList.add('flex', 'items-center', 'justify-center');
+            const icon = document.createElement('span');
+            icon.classList.add('up-icon', 'small', 'inline-flex', 'items-center', 'justify-center');
+            icon.textContent = '...';
+            iconContainer.appendChild(icon);
+            leftSide.appendChild(iconContainer);
+            
+            const nameSpan = document.createElement('span');
+            nameSpan.classList.add('font-medium');
+            nameSpan.style.color = 'var(--muted)';
+            nameSpan.textContent = '...';
+            leftSide.appendChild(nameSpan);
+            
+            mobileUpItem.appendChild(leftSide);
+            
+            mobileUpItem.addEventListener('click', () => {
+                navigateTo(state.parentPath || '');
+            });
+            
+            mobileList.appendChild(mobileUpItem);
+        }
 
-    tableBody.appendChild(upRow);
+        // Show/hide empty state
+        if (filtered.length === 0) {
+            emptyState.hidden = false;
+            emptyState.textContent = items.length === 0
+                ? 'Direktori ini kosong.'
+                : `Tidak ada hasil untuk "${state.filter}".`;
+        } else {
+            emptyState.hidden = true;
+        }
 
-    // Add up-row for mobile view too
-    if (mobileList) {
-        const mobileUpItem = document.createElement('div');
-        mobileUpItem.classList.add('flex', 'items-center', 'justify-between', 'p-3', 'cursor-pointer', 'up-mobile-row', 'transition-colors', 'border-b');
-        mobileUpItem.dataset.itemPath = state.parentPath || '';
-        mobileUpItem.dataset.itemType = 'parent';
+        // Prepare rendering parameters
+        const renderParams = {
+            previewableExtensions,
+            mediaPreviewableExtensions,
+            openTextPreview,
+            openMediaPreview,
+            navigateTo,
+            openInWord,
+            copyPathToClipboard,
+            openRenameOverlay,
+            openMoveOverlay,
+            openConfirmOverlay,
+            toggleSelection,
+            openContextMenu,
+            isWordDocument,
+            buildFileUrl,
+            hasUnsavedChanges,
+            confirmDiscardChanges,
+            handleDragStart,
+            handleDragEnd,
+            handleDragOver,
+            handleDrop,
+            handleDragLeave,
+            flashStatus: flashStatusFn,
+            setError: setErrorFn,
+            highlightNew,
+            generatedAt,
+            showMobileContextMenu
+        };
+
+        // Use virtual scrolling for large lists
+        const vsConfig = config.virtualScroll || {
+            enabled: false,
+            threshold: 100,
+            itemHeight: 40,
+            overscan: 5
+        };
         
-        // Left side
-        const leftSide = document.createElement('div');
-        leftSide.classList.add('flex', 'items-center', 'gap-3');
+        const useVirtual = shouldUseVirtualScroll(
+            filtered.length,
+            vsConfig.threshold,
+            vsConfig.enabled
+        );
+
+        if (useVirtual) {
+            debugLog(`[Virtual Scroll] Rendering ${filtered.length} items with virtual scrolling`);
+            renderVirtualItems(tableBody, filtered, state, renderParams);
+        } else {
+            debugLog(`[Normal Render] Rendering ${filtered.length} items normally`);
+            renderNormalItems(tableBody, filtered, state, renderParams);
+        }
         
-        // Icon for parent
-        const iconContainer = document.createElement('div');
-        iconContainer.classList.add('flex', 'items-center', 'justify-center');
-        const icon = document.createElement('span');
-        icon.classList.add('up-icon', 'small', 'inline-flex', 'items-center', 'justify-center');
-        icon.textContent = '...';
-        iconContainer.appendChild(icon);
-        leftSide.appendChild(iconContainer);
+        // Mobile render (only on mobile devices)
+        const mobileRenderTime = performance.now();
+        if (window.innerWidth < 768) {
+            renderMobileItems(mobileList, filtered, state, renderParams);
+            console.log('[RENDER DEBUG] Mobile items rendered at:', mobileRenderTime);
+        } else {
+            console.log('[RENDER DEBUG] Skipped mobile render on desktop');
+        }
         
-        // Name
-        const nameSpan = document.createElement('span');
-        nameSpan.classList.add('font-medium');
-        nameSpan.style.color = 'var(--muted)';
-        nameSpan.textContent = '...';
-        leftSide.appendChild(nameSpan);
-        
-        mobileUpItem.appendChild(leftSide);
-        
-        // Click handler
-        mobileUpItem.addEventListener('click', () => {
-            navigateTo(state.parentPath || '');
+        // Invalidate DOM cache
+        invalidateDOMCache();
+
+        // Update pagination state
+        const pagination = calculatePagination(filtered.length);
+        updatePaginationState(pagination.currentPage, pagination.totalPages, filtered.length);
+        console.log('[PAGINATION DEBUG] Final pagination state:', pagination);
+
+        // Update known items
+        const newMap = new Map();
+        items.forEach((item) => {
+            newMap.set(item.path, generatedAt);
         });
-        
-        mobileList.appendChild(mobileUpItem);
-    }
+        state.knownItems = newMap;
 
-    // Show/hide empty state
-    if (filtered.length === 0) {
-        emptyState.hidden = false;
-        emptyState.textContent = items.length === 0
-            ? 'Direktori ini kosong.'
-            : `Tidak ada hasil untuk "${state.filter}".`;
-    } else {
-        emptyState.hidden = true;
-    }
-
-    // Prepare rendering parameters
-    const renderParams = {
-        previewableExtensions,
-        mediaPreviewableExtensions,
-        openTextPreview,
-        openMediaPreview,
-        navigateTo,
-        openInWord,
-        copyPathToClipboard,
-        openRenameOverlay,
-        openMoveOverlay,
-        openConfirmOverlay,
-        toggleSelection,
-        openContextMenu,
-        isWordDocument,
-        buildFileUrl,
-        hasUnsavedChanges,
-        confirmDiscardChanges,
-        handleDragStart,
-        handleDragEnd,
-        handleDragOver,
-        handleDrop,
-        handleDragLeave,
-        flashStatus,
-        setError,
-        highlightNew,
-        generatedAt
-    };
-
-    // Use virtual scrolling for large lists, normal rendering otherwise
-    // Safe check for virtualScroll config
-    const vsConfig = config.virtualScroll || {
-        enabled: false,
-        threshold: 100,
-        itemHeight: 40,
-        overscan: 5
-    };
-    
-    // Show all filtered items without pagination
-    const useVirtual = shouldUseVirtualScroll(
-        filtered.length,
-        vsConfig.threshold,
-        vsConfig.enabled
-    );
-
-    if (useVirtual) {
-        debugLog(`[Virtual Scroll] Rendering ${filtered.length} items with virtual scrolling`);
-        renderVirtualItems(tableBody, filtered, state, renderParams);
-    } else {
-        debugLog(`[Normal Render] Rendering ${filtered.length} items normally`);
-        renderNormalItems(tableBody, filtered, state, renderParams);
-    }
-    
-    // PERFORMANCE FIX: Skip mobile render on desktop for better performance
-    const mobileRenderTime = performance.now();
-    if (window.innerWidth < 768) {
-        // Only render mobile view on mobile devices
-        renderMobileItems(mobileList, filtered, state, renderParams);
-        console.log('[RENDER DEBUG] Mobile items rendered at:', mobileRenderTime, 'delta:', mobileRenderTime - clearStartTime);
-    } else {
-        console.log('[RENDER DEBUG] Skipped mobile render on desktop');
-    }
-    
-    // Invalidate DOM cache after rendering to force fresh queries on next drag operation
-    invalidateDOMCache();
-
-    // Update pagination state after render (for both virtual and normal renders)
-    const pagination = calculatePagination(filtered.length);
-    updatePaginationState(pagination.currentPage, pagination.totalPages, filtered.length);
-    console.log('[PAGINATION DEBUG] Final pagination state:', pagination);
-
-    const finalStateTime = performance.now();
-    const newMap = new Map();
-    items.forEach((item) => {
-        newMap.set(item.path, generatedAt);
-    });
-    state.knownItems = newMap;
-    console.log('[RENDER DEBUG] Final state updated at:', finalStateTime, 'delta:', finalStateTime - mobileRenderTime);
-
-    const renderEndTime = performance.now();
-    console.log('[RENDER DEBUG] renderItems completed at:', renderEndTime, 'total delta:', renderEndTime - renderStartTime);
+        const renderEndTime = performance.now();
+        console.log('[RENDER DEBUG] renderItems completed at:', renderEndTime, 'total delta:', renderEndTime - renderStartTime);
 
         return { items, filtered, meta };
     } finally {
         isRendering = false;
-    }
-}
-
-/**
- * Mengupdate UI sorting
- * @param {HTMLElement} sortHeaders - Elemen header sorting
- * @param {HTMLElement} statusSort - Elemen status sorting
- * @param {Object} state - State aplikasi
- */
-export function updateSortUI(sortHeaders, statusSort, state) {
-    const isDefaultSort = state.sortKey === 'name' && state.sortDirection === 'asc';
-
-    sortHeaders.forEach((header) => {
-        const key = header.dataset.sortKey;
-        const indicator = header.querySelector('.sort-indicator');
-        const isActive = key === state.sortKey;
-        header.classList.toggle('sorted', isActive);
-        header.classList.toggle('sorted-asc', isActive && state.sortDirection === 'asc');
-        header.classList.toggle('sorted-desc', isActive && state.sortDirection === 'desc');
-        header.setAttribute('aria-sort', isActive ? (state.sortDirection === 'asc' ? 'ascending' : 'descending') : 'none');
-        if (indicator) {
-            indicator.textContent = isActive
-                ? (state.sortDirection === 'asc' ? '\u25B2' : '\u25BC')
-                : '\u2195';
-        }
-    });
-
-    if (statusSort) {
-        if (isDefaultSort) {
-            statusSort.hidden = true;
-            statusSort.textContent = '';
-        } else {
-            statusSort.hidden = false;
-            statusSort.textContent = `Urut: ${getSortDescription(state.sortKey, state.sortDirection)}`;
-        }
-    }
-}
-
-/**
- * Mengupdate UI selection
- * @param {HTMLElement} btnDeleteSelected - Tombol delete selected
- * @param {HTMLElement} btnMoveSelected - Tombol move selected
- * @param {HTMLElement} selectAllCheckbox - Checkbox select all
- * @param {Object} state - State aplikasi
- */
-export function updateSelectionUI(btnDeleteSelected, btnMoveSelected, selectAllCheckbox, state) {
-    const selectedCount = state.selected.size;
-
-    if (btnDeleteSelected) {
-        if (state.isDeleting) {
-            btnDeleteSelected.disabled = true;
-            btnDeleteSelected.textContent = 'Menghapus...';
-        } else {
-            btnDeleteSelected.disabled = selectedCount === 0 || state.isLoading;
-            btnDeleteSelected.textContent = selectedCount > 0
-                ? `Hapus (${selectedCount.toLocaleString('id-ID')})`
-                : 'Hapus';
-        }
-    }
-
-    // Enable/disable Move Selected button
-    if (btnMoveSelected) {
-        btnMoveSelected.disabled = selectedCount === 0 || state.isLoading;
-    }
-
-    if (selectAllCheckbox) {
-        const totalVisible = state.visibleItems.length;
-        const selectedVisible = state.visibleItems.reduce((accumulator, item) => (
-            state.selected.has(item.path) ? accumulator + 1 : accumulator
-        ), 0);
-
-        const disableCheckbox = state.isLoading || totalVisible === 0;
-        selectAllCheckbox.disabled = disableCheckbox;
-
-        if (disableCheckbox) {
-            selectAllCheckbox.checked = false;
-            selectAllCheckbox.indeterminate = false;
-        } else {
-            selectAllCheckbox.checked = totalVisible > 0 && selectedVisible === totalVisible;
-            selectAllCheckbox.indeterminate = selectedVisible > 0 && selectedVisible < totalVisible;
-        }
-    }
-}
-
-/**
- * Sinkronisasi selection pada baris tabel
- * @param {HTMLElement} tableBody - Elemen body tabel
- * @param {Object} state - State aplikasi
- */
-export function syncRowSelection(tableBody, state) {
-    tableBody.querySelectorAll('tr').forEach((row) => {
-        const path = row.dataset.itemPath;
-        const isSelected = state.selected.has(path);
-        row.classList.toggle('is-selected', isSelected);
-        const checkbox = row.querySelector('.item-select');
-        if (checkbox) {
-            checkbox.checked = isSelected;
-        }
-    });
-}
-
-/**
- * Sinkronisasi selection pada mobile list
- * @param {HTMLElement} mobileList - Elemen mobile list
- * @param {Object} state - State aplikasi
- */
-export function syncMobileSelection(mobileList, state) {
-    if (!mobileList) return;
-    
-    // Mobile items are divs with data-item-path attribute and contain checkboxes
-    mobileList.querySelectorAll('[data-item-path]').forEach((item) => {
-        const checkbox = item.querySelector('input[type="checkbox"]');
-        if (checkbox) {
-            const path = checkbox.dataset.path;
-            if (path) {
-                checkbox.checked = state.selected.has(path);
-            }
-        }
-    });
-}
-
-/**
- * Mengupdate status informasi
- * @param {HTMLElement} statusInfo - Elemen status info
- * @param {HTMLElement} statusTime - Elemen status time
- * @param {HTMLElement} statusFilter - Elemen status filter
- * @param {number} totalCount - Total item
- * @param {number} filteredCount - Item yang difilter
- * @param {number} generatedAt - Timestamp pembuatan data
- * @param {Object} meta - Metadata tambahan
- * @param {string} filter - Filter yang diterapkan
- * @param {Object} paginationState - Pagination state (optional)
- */
-export function updateStatus(statusInfo, statusTime, statusFilter, totalCount, filteredCount, generatedAt, meta = {}, filter, paginationState = null) {
-    const {
-        totalFolders = 0,
-        totalFiles = 0,
-        filteredFolders = totalFolders,
-        filteredFiles = totalFiles,
-    } = meta;
-
-    const displayCount = filteredCount ?? totalCount;
-    const formattedDisplay = displayCount.toLocaleString('id-ID');
-    const formattedTotal = totalCount.toLocaleString('id-ID');
-    const folderDisplay = (filter && filteredCount !== totalCount) ? filteredFolders : totalFolders;
-    const fileDisplay = (filter && filteredCount !== totalCount) ? filteredFiles : totalFiles;
-
-    const infoPrefix = (filter && filteredCount !== totalCount)
-        ? `${formattedDisplay} dari ${formattedTotal} item ditampilkan`
-        : `${formattedDisplay} item ditampilkan`;
-
-    // Add pagination info if available
-    let paginationInfo = '';
-    if (paginationState && paginationState.currentPage && paginationState.totalPages > 1) {
-        paginationInfo = ` • ${getSimplePaginationInfo(paginationState.currentPage, paginationState.totalPages)}`;
-    }
-
-    statusInfo.textContent = `${infoPrefix} • ${folderDisplay.toLocaleString('id-ID')} folder • ${fileDisplay.toLocaleString('id-ID')} file${paginationInfo}`;
-
-    if (filter) {
-        statusFilter.hidden = false;
-        statusFilter.textContent = `Filter: "${filter}" (${filteredCount.toLocaleString('id-ID')} cocok)`;
-    } else {
-        statusFilter.hidden = true;
-        statusFilter.textContent = '';
-    }
-
-    if (generatedAt) {
-        statusTime.hidden = false;
-        statusTime.textContent = `Diperbarui ${new Date(generatedAt * 1000).toLocaleTimeString('id-ID')}`;
-    } else {
-        statusTime.hidden = true;
-        statusTime.textContent = '';
-    }
-}
-
-/**
- * Mengatur status loading
- * @param {HTMLElement} loaderOverlay - Elemen loader overlay
- * @param {HTMLElement} btnRefresh - Tombol refresh
- * @param {boolean} isLoading - Status loading
- */
-export function setLoading(loaderOverlay, btnRefresh, isLoading) {
-    const startTime = performance.now();
-    console.log('[PAGINATION DEBUG] setLoading called at:', startTime, 'with isLoading:', isLoading);
-    
-    // Defensive: guard against missing elements to avoid Uncaught TypeErrors
-    const overlayTime = performance.now();
-    if (loaderOverlay && loaderOverlay.classList) {
-        loaderOverlay.classList.toggle('visible', !!isLoading);
-    } else {
-        // Fallback: try common selectors if passed element is null
-        const overlay = document.getElementById('loader-overlay') || document.querySelector('.loader-overlay');
-        if (overlay && overlay.classList) overlay.classList.toggle('visible', !!isLoading);
-    }
-    console.log('[PAGINATION DEBUG] Loader overlay updated at:', overlayTime, 'delta:', overlayTime - startTime);
-    
-    const buttonTime = performance.now();
-    if (btnRefresh) {
-        try {
-            btnRefresh.disabled = !!isLoading;
-        } catch (e) {
-            // Element exists but cannot be disabled — ignore safely
-        }
-    }
-    // Note: btn-refresh button has been removed from UI, no fallback needed
-    console.log('[PAGINATION DEBUG] Refresh button updated at:', buttonTime, 'delta:', buttonTime - overlayTime);
-
-    
-    const endTime = performance.now();
-    console.log('[PAGINATION DEBUG] setLoading completed at:', endTime, 'total delta:', endTime - startTime);
-}
-
-/**
- * Mengatur pesan error
- * @param {HTMLElement} errorBanner - Elemen error banner
- * @param {string} message - Pesan error
- */
-export function setError(errorBanner, message) {
-    if (message) {
-        errorBanner.textContent = message;
-        errorBanner.classList.add('visible', 'error');
-    } else {
-        errorBanner.textContent = '';
-        errorBanner.classList.remove('visible', 'error');
     }
 }
