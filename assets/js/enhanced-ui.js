@@ -1253,14 +1253,20 @@ function initializeEventHandlers() {
   
   console.log('[enhanced-ui] Initializing event handlers');
   
-  // Close context menu
+  // Close context menus
   document.addEventListener('click', (e) => {
-    // Don't close if clicking inside context menu
+    // Close file context menu
     if (ctxMenu && !ctxMenu.contains(e.target)) {
       ctxMenu.classList.add('hidden');
       ctxMenu.classList.remove('visible');
       ctxMenu.style.display = 'none';
       ctxMenu.setAttribute('aria-hidden', 'true');
+    }
+    
+    // Close upload context menu
+    if (uploadContextMenu && !uploadContextMenu.contains(e.target) && e.target !== uploadBtn) {
+      uploadContextMenu.classList.add('hidden');
+      uploadBtn?.setAttribute('aria-expanded', 'false');
     }
   });
 
@@ -1478,15 +1484,61 @@ function initializeEventHandlers() {
     `;
   }
 
-  // Show modal first when upload button clicked
-  document.getElementById('uploadBtn')?.addEventListener('click', () => {
+  // Upload button with context menu
+  const uploadContextMenu = document.getElementById('uploadContextMenu');
+  const uploadBtn = document.getElementById('uploadBtn');
+  const folderInput = document.getElementById('folderInput');
+  
+  // Show context menu when upload button is clicked
+  uploadBtn?.addEventListener('click', (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    // Toggle context menu
+    const isVisible = !uploadContextMenu.classList.contains('hidden');
+    
+    if (isVisible) {
+      // Hide menu
+      uploadContextMenu.classList.add('hidden');
+      uploadBtn.setAttribute('aria-expanded', 'false');
+    } else {
+      // Show menu
+      uploadContextMenu.classList.remove('hidden');
+      uploadBtn.setAttribute('aria-expanded', 'true');
+      
+      // Position the menu
+      const rect = uploadBtn.getBoundingClientRect();
+      const menuHeight = 100; // Approximate height of the menu
+      const menuWidth = 160; // Width of the menu
+      
+      let top = rect.bottom + 4;
+      let left = rect.left;
+      
+      // Adjust if menu goes off screen
+      if (left + menuWidth > window.innerWidth) {
+        left = window.innerWidth - menuWidth - 8;
+      }
+      if (top + menuHeight > window.innerHeight) {
+        top = rect.top - menuHeight - 4;
+      }
+      
+      uploadContextMenu.style.top = `${top}px`;
+      uploadContextMenu.style.left = `${left}px`;
+    }
+  });
+  
+  // Handle upload files option click
+  document.getElementById('uploadFilesOption')?.addEventListener('click', () => {
+    uploadContextMenu.classList.add('hidden');
+    uploadBtn.setAttribute('aria-expanded', 'false');
     modal?.classList.remove('hidden');
     modal?.classList.add('visible');
   });
-
-  // Upload folder button - directly triggers folder input
-  const folderInput = document.getElementById('folderInput');
-  document.getElementById('uploadFolderBtn')?.addEventListener('click', () => {
+  
+  // Handle upload folder option click
+  document.getElementById('uploadFolderOption')?.addEventListener('click', () => {
+    uploadContextMenu.classList.add('hidden');
+    uploadBtn.setAttribute('aria-expanded', 'false');
     folderInput?.click();
   });
 

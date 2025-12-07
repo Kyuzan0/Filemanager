@@ -151,6 +151,24 @@
   transform: translateY(1px);
 }
 
+/* Disabled sidebar link */
+.sidebar-link--disabled {
+  opacity: 0.5;
+  cursor: not-allowed !important;
+  background: transparent !important;
+  color: rgba(148, 163, 184, 0.6) !important;
+}
+
+.sidebar-link--disabled:hover,
+.sidebar-link--disabled:focus-visible {
+  background: transparent !important;
+  color: rgba(148, 163, 184, 0.6) !important;
+}
+
+[data-theme="dark"] .sidebar-link--disabled {
+  color: rgba(100, 116, 139, 0.7) !important;
+}
+
 /* Theme Switch */
 .theme-switch {
   position: relative;

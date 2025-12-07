@@ -49,11 +49,22 @@ function getPreviewType(filename) {
   return 'text';
 }
 
-// ============= Image Zoom Functions =============
+// ============= Image Zoom and Pan Functions =============
 let currentZoom = 100;
 const ZOOM_STEP = 25;
 const MIN_ZOOM = 25;
 const MAX_ZOOM = 400;
+
+// Image pan/drag state - using transform-based panning
+let imagePanState = {
+  isPanning: false,
+  startX: 0,
+  startY: 0,
+  translateX: 0,
+  translateY: 0,
+  lastTranslateX: 0,
+  lastTranslateY: 0
+};
 
 function updateZoomLevel() {
   const zoomLabel = document.getElementById('preview-zoom-level');
@@ -62,14 +73,36 @@ function updateZoomLevel() {
   }
   
   const img = document.getElementById('preview-image');
+  const container = document.getElementById('preview-image-container');
+  
   if (img) {
-    if (currentZoom === 100) {
-      img.style.transform = '';
+    // Apply both scale and translate transforms
+    applyImageTransform(img);
+    
+    if (currentZoom === 100 && imagePanState.translateX === 0 && imagePanState.translateY === 0) {
       img.classList.remove('zoomed');
     } else {
-      img.style.transform = `scale(${currentZoom / 100})`;
       img.classList.add('zoomed');
     }
+    
+    // Update cursor based on new zoom level
+    updateImageCursor();
+  }
+}
+
+// Apply combined transform (scale + translate) to image
+function applyImageTransform(img) {
+  if (!img) img = document.getElementById('preview-image');
+  if (!img) return;
+  
+  const scale = currentZoom / 100;
+  const translateX = imagePanState.translateX;
+  const translateY = imagePanState.translateY;
+  
+  if (currentZoom === 100 && translateX === 0 && translateY === 0) {
+    img.style.transform = '';
+  } else {
+    img.style.transform = `translate(${translateX}px, ${translateY}px) scale(${scale})`;
   }
 }
 
@@ -89,15 +122,34 @@ function zoomOut() {
 
 function resetImageZoom() {
   currentZoom = 100;
+  
+  // Reset pan state
+  imagePanState = {
+    isPanning: false,
+    startX: 0,
+    startY: 0,
+    translateX: 0,
+    translateY: 0,
+    lastTranslateX: 0,
+    lastTranslateY: 0
+  };
+  
   updateZoomLevel();
+  
+  // Remove pan classes
+  const container = document.getElementById('preview-image-container');
+  if (container) {
+    container.classList.remove('is-panning', 'can-pan');
+  }
 }
 
-// Initialize zoom controls
+// Initialize zoom controls and pan functionality
 function initImageZoomControls() {
   const zoomInBtn = document.getElementById('preview-zoom-in');
   const zoomOutBtn = document.getElementById('preview-zoom-out');
   const zoomResetBtn = document.getElementById('preview-zoom-reset');
   const imageContainer = document.getElementById('preview-image-container');
+  const image = document.getElementById('preview-image');
   
   if (zoomInBtn) {
     zoomInBtn.addEventListener('click', zoomIn);
@@ -121,6 +173,230 @@ function initImageZoomControls() {
         }
       }
     }, { passive: false });
+    
+    // Initialize pan/drag functionality
+    initImagePan(imageContainer, image);
+  }
+}
+
+// Initialize image pan/drag functionality
+function initImagePan(container, image) {
+  if (!container || !image) return;
+  
+  // Mouse events for panning
+  container.addEventListener('mousedown', handlePanStart);
+  container.addEventListener('mousemove', handlePanMove);
+  container.addEventListener('mouseup', handlePanEnd);
+  container.addEventListener('mouseleave', handlePanEnd);
+  
+  // Touch events for mobile panning
+  container.addEventListener('touchstart', handleTouchPanStart, { passive: false });
+  container.addEventListener('touchmove', handleTouchPanMove, { passive: false });
+  container.addEventListener('touchend', handleTouchPanEnd);
+  container.addEventListener('touchcancel', handleTouchPanEnd);
+}
+
+// Mouse pan handlers - using transform-based panning
+function handlePanStart(e) {
+  const container = e.currentTarget;
+  const image = document.getElementById('preview-image');
+  
+  // Always allow panning when zoomed (any level)
+  if (currentZoom === 100) return;
+  
+  // Prevent default to avoid text selection
+  e.preventDefault();
+  
+  imagePanState.isPanning = true;
+  imagePanState.startX = e.clientX;
+  imagePanState.startY = e.clientY;
+  imagePanState.lastTranslateX = imagePanState.translateX;
+  imagePanState.lastTranslateY = imagePanState.translateY;
+  
+  // Add panning class for visual feedback
+  container.classList.add('is-panning');
+  container.style.cursor = 'grabbing';
+  if (image) image.style.cursor = 'grabbing';
+}
+
+function handlePanMove(e) {
+  if (!imagePanState.isPanning) return;
+  
+  e.preventDefault();
+  
+  const image = document.getElementById('preview-image');
+  const container = document.getElementById('preview-image-container');
+  
+  const deltaX = e.clientX - imagePanState.startX;
+  const deltaY = e.clientY - imagePanState.startY;
+  
+  // Calculate new translate values
+  let newTranslateX = imagePanState.lastTranslateX + deltaX;
+  let newTranslateY = imagePanState.lastTranslateY + deltaY;
+  
+  // Apply boundary limits
+  const bounds = getPanBounds(container, image);
+  newTranslateX = Math.max(bounds.minX, Math.min(bounds.maxX, newTranslateX));
+  newTranslateY = Math.max(bounds.minY, Math.min(bounds.maxY, newTranslateY));
+  
+  imagePanState.translateX = newTranslateX;
+  imagePanState.translateY = newTranslateY;
+  
+  // Apply transform
+  applyImageTransform(image);
+}
+
+function handlePanEnd(e) {
+  if (!imagePanState.isPanning) return;
+  
+  imagePanState.isPanning = false;
+  
+  const container = e.currentTarget;
+  const image = document.getElementById('preview-image');
+  
+  // Remove panning class
+  container.classList.remove('is-panning');
+  
+  // Reset cursor based on pan availability
+  const canPan = currentZoom !== 100;
+  container.style.cursor = canPan ? 'grab' : '';
+  if (image) {
+    image.style.cursor = canPan ? 'grab' : 'default';
+  }
+  
+  // Update container class
+  if (canPan) {
+    container.classList.add('can-pan');
+  } else {
+    container.classList.remove('can-pan');
+  }
+}
+
+// Touch pan handlers - using transform-based panning
+function handleTouchPanStart(e) {
+  if (e.touches.length !== 1) return; // Only single touch for pan
+  
+  // Always allow panning when zoomed (any level)
+  if (currentZoom === 100) return;
+  
+  const container = e.currentTarget;
+  const touch = e.touches[0];
+  
+  imagePanState.isPanning = true;
+  imagePanState.startX = touch.clientX;
+  imagePanState.startY = touch.clientY;
+  imagePanState.lastTranslateX = imagePanState.translateX;
+  imagePanState.lastTranslateY = imagePanState.translateY;
+  
+  container.classList.add('is-panning');
+}
+
+function handleTouchPanMove(e) {
+  if (!imagePanState.isPanning || e.touches.length !== 1) return;
+  
+  e.preventDefault(); // Prevent page scroll while panning
+  
+  const image = document.getElementById('preview-image');
+  const container = document.getElementById('preview-image-container');
+  const touch = e.touches[0];
+  
+  const deltaX = touch.clientX - imagePanState.startX;
+  const deltaY = touch.clientY - imagePanState.startY;
+  
+  // Calculate new translate values
+  let newTranslateX = imagePanState.lastTranslateX + deltaX;
+  let newTranslateY = imagePanState.lastTranslateY + deltaY;
+  
+  // Apply boundary limits
+  const bounds = getPanBounds(container, image);
+  newTranslateX = Math.max(bounds.minX, Math.min(bounds.maxX, newTranslateX));
+  newTranslateY = Math.max(bounds.minY, Math.min(bounds.maxY, newTranslateY));
+  
+  imagePanState.translateX = newTranslateX;
+  imagePanState.translateY = newTranslateY;
+  
+  // Apply transform
+  applyImageTransform(image);
+}
+
+function handleTouchPanEnd() {
+  imagePanState.isPanning = false;
+  
+  const container = document.getElementById('preview-image-container');
+  if (container) {
+    container.classList.remove('is-panning');
+  }
+}
+
+// Calculate pan boundaries based on zoom level and image/container sizes
+function getPanBounds(container, image) {
+  if (!container || !image) {
+    return { minX: 0, maxX: 0, minY: 0, maxY: 0 };
+  }
+  
+  const containerRect = container.getBoundingClientRect();
+  const scale = currentZoom / 100;
+  
+  // Scaled image dimensions
+  const scaledWidth = image.naturalWidth * scale;
+  const scaledHeight = image.naturalHeight * scale;
+  
+  // Calculate how much the image can move in each direction
+  // When zoomed in (scale > 1): image is larger than displayed, can pan to see edges
+  // When zoomed out (scale < 1): image is smaller, allow panning within container bounds
+  
+  let maxX, minX, maxY, minY;
+  
+  if (scaledWidth > containerRect.width) {
+    // Image wider than container - allow panning horizontally
+    const overflow = (scaledWidth - containerRect.width) / 2;
+    maxX = overflow;
+    minX = -overflow;
+  } else {
+    // Image narrower than container - allow moving within container
+    const slack = (containerRect.width - scaledWidth) / 2;
+    maxX = slack;
+    minX = -slack;
+  }
+  
+  if (scaledHeight > containerRect.height) {
+    // Image taller than container - allow panning vertically
+    const overflow = (scaledHeight - containerRect.height) / 2;
+    maxY = overflow;
+    minY = -overflow;
+  } else {
+    // Image shorter than container - allow moving within container
+    const slack = (containerRect.height - scaledHeight) / 2;
+    maxY = slack;
+    minY = -slack;
+  }
+  
+  return { minX, maxX, minY, maxY };
+}
+
+// Check if panning should be enabled (for cursor display)
+function shouldEnablePan(container, image) {
+  // Enable pan whenever zoom is not 100%
+  return currentZoom !== 100;
+}
+
+// Update cursor based on pan availability
+function updateImageCursor() {
+  const container = document.getElementById('preview-image-container');
+  const image = document.getElementById('preview-image');
+  
+  if (!container || !image) return;
+  
+  const canPan = shouldEnablePan(container, image);
+  
+  if (canPan) {
+    image.style.cursor = 'grab';
+    container.style.cursor = 'grab';
+    container.classList.add('can-pan');
+  } else {
+    image.style.cursor = 'default';
+    container.style.cursor = 'default';
+    container.classList.remove('can-pan');
   }
 }
 

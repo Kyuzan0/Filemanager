@@ -80,7 +80,7 @@ td:nth-child(2) {
   width: 100%;
 }
 
-.word-wrap-enabled #fileTable thead,
+.word-wrap-enabled #fileTablead,
 .word-wrap-enabled #fileTable tbody,
 .word-wrap-enabled #fileTable tr {
   display: table;
@@ -112,7 +112,6 @@ tbody tr {
 tbody tr:hover {
   background: var(--glass);
   box-shadow: inset 0 0 12px rgba(59, 130, 246, 0.08);
-  transform: translateX(2px);
 }
 
 [data-theme="dark"] tbody tr:hover {
@@ -407,7 +406,6 @@ tbody tr.drop-active {
 /* Selected row styling for desktop table */
 tbody tr.selected {
   background-color: rgba(59, 130, 246, 0.08) !important;
-  border-left: 3px solid #3b82f6;
 }
 
 tbody tr.selected:hover {
@@ -423,15 +421,59 @@ tbody tr.selected:hover {
   background-color: rgba(59, 130, 246, 0.2) !important;
 }
 
+/* First selected item - Blue highlight (triggered by checkbox) */
+tbody tr.selected.first-selected {
+  background-color: #3b82f6 !important;
+}
+
+tbody tr.selected.first-selected td {
+  color: white !important;
+}
+
+tbody tr.selected.first-selected .file-name,
+tbody tr.selected.first-selected .item-link,
+tbody tr.selected.first-selected .text-gray-800,
+tbody tr.selected.first-selected .text-gray-500 {
+  color: white !important;
+}
+
+tbody tr.selected.first-selected:hover {
+  background-color: #2563eb !important;
+}
+
+tbody tr.selected.first-selected .row-actions {
+  opacity: 1;
+}
+
+tbody tr.selected.first-selected .action-icon-btn {
+  color: white !important;
+}
+
+tbody tr.selected.first-selected .action-icon-btn:hover {
+  background-color: rgba(255, 255, 255, 0.2);
+}
+
+/* Dark mode first selected */
+[data-theme="dark"] tbody tr.selected.first-selected {
+  background-color: #3b82f6 !important;
+}
+
+[data-theme="dark"] tbody tr.selected.first-selected:hover {
+  background-color: #2563eb !important;
+}
+
 /* Selected row checkbox styling */
 tbody tr.selected input[type="checkbox"] {
   box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.3);
 }
 
+tbody tr.selected.first-selected input[type="checkbox"] {
+  box-shadow: 0 0 0 2px rgba(29, 78, 216, 0.6);
+}
+
 /* Mobile item selected state */
 div[data-item-path].selected {
   background-color: rgba(59, 130, 246, 0.08) !important;
-  border-left: 3px solid #3b82f6;
 }
 
 div[data-item-path].selected:hover {
@@ -446,6 +488,27 @@ div[data-item-path].selected:hover {
   background-color: rgba(59, 130, 246, 0.2) !important;
 }
 
+/* Mobile first selected item - Blue highlight */
+div[data-item-path].selected.first-selected {
+  background-color: #3b82f6 !important;
+}
+
+div[data-item-path].selected.first-selected,
+div[data-item-path].selected.first-selected .font-medium,
+div[data-item-path].selected.first-selected .text-gray-800,
+div[data-item-path].selected.first-selected .text-gray-500,
+div[data-item-path].selected.first-selected .text-xs {
+  color: white !important;
+}
+
+div[data-item-path].selected.first-selected:hover {
+  background-color: #2563eb !important;
+}
+
+[data-theme="dark"] div[data-item-path].selected.first-selected {
+  background-color: #3b82f6 !important;
+}
+
 /* Selection visual feedback on name cell */
 tbody tr.selected .file-name,
 div[data-item-path].selected .font-medium {
@@ -456,6 +519,12 @@ div[data-item-path].selected .font-medium {
 [data-theme="dark"] tbody tr.selected .file-name,
 [data-theme="dark"] div[data-item-path].selected .font-medium {
   color: #60a5fa;
+}
+
+/* Override for first-selected */
+tbody tr.selected.first-selected .file-name,
+div[data-item-path].selected.first-selected .font-medium {
+  color: white !important;
 }
 
 /* Ensure clickable cursor on row */

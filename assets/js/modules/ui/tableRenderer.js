@@ -229,7 +229,10 @@ export function renderItemRow(item, state, params) {
     checkbox.setAttribute('aria-label', `Pilih ${item.name}`);
     checkbox.addEventListener('click', (event) => event.stopPropagation());
     checkbox.addEventListener('keydown', (event) => event.stopPropagation());
-    checkbox.addEventListener('change', (event) => toggleSelection(key, event.target.checked));
+    checkbox.addEventListener('change', (event) => {
+        const isChecked = event.target.checked;
+        toggleSelection(key, isChecked);
+    });
     selectionCell.appendChild(checkbox);
     row.appendChild(selectionCell);
 
@@ -292,6 +295,7 @@ export function renderItemRow(item, state, params) {
             // Normal click: Toggle single item selection
             const newState = !checkbox.checked;
             checkbox.checked = newState;
+            
             toggleSelection(key, newState);
             
             // Update row visual state for selection
@@ -893,7 +897,10 @@ export function createMobileItem(item, state, params) {
     checkbox.checked = state.selected.has(key);
     checkbox.setAttribute('aria-label', `Pilih ${item.name}`);
     checkbox.addEventListener('click', (event) => event.stopPropagation());
-    checkbox.addEventListener('change', (event) => toggleSelection(key, event.target.checked));
+    checkbox.addEventListener('change', (event) => {
+        const isChecked = event.target.checked;
+        toggleSelection(key, isChecked);
+    });
     leftSide.appendChild(checkbox);
     
     // Icon
@@ -1068,6 +1075,7 @@ export function createMobileItem(item, state, params) {
             // Single click - toggle checkbox
             const newState = !checkbox.checked;
             checkbox.checked = newState;
+            
             toggleSelection(key, newState);
             
             // Update visual state

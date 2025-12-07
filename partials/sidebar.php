@@ -69,11 +69,13 @@ $activePage = $activePage ?? 'dashboard';
             </li>
             <li>
                 <button type="button"
-                        class="sidebar-link"
+                        class="sidebar-link sidebar-link--disabled"
                         data-action="settings"
-                        id="sidebar-settings">
+                        id="sidebar-settings"
+                        disabled
+                        title="Coming Soon">
                     <i class="ri-settings-3-line" aria-hidden="true"></i>
-                    <span>Settings</span>
+                    <span>Coming Soon</span>
                 </button>
             </li>
         </ul>

@@ -762,15 +762,16 @@
   color: #e5e7eb;
 }
 
-/* Image container */
+/* Image container - using overflow hidden for transform-based panning */
 .preview-image-container {
   flex: 1;
   min-height: 0;
-  overflow: auto;
+  overflow: hidden; /* Hidden since we use transform-based panning */
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 1rem;
+  position: relative; /* For positioning context */
 }
 
 .preview-image-wrapper img {
@@ -779,17 +780,40 @@
   object-fit: contain;
   border-radius: 0.5rem;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-  transition: transform 0.2s ease;
-  cursor: grab;
+  cursor: default;
+  user-select: none;
+  -webkit-user-drag: none;
+  pointer-events: auto;
+  transform-origin: center center;
+  /* No transition on transform for smooth panning */
+  transition: box-shadow 0.2s ease;
+  /* Ensure image doesn't affect container overflow calculations */
+  flex-shrink: 0;
 }
 
-.preview-image-wrapper img:active {
-  cursor: grabbing;
-}
-
+/* Zoomed state - remove max constraints and show grab cursor */
 .preview-image-wrapper img.zoomed {
   max-width: none;
   max-height: none;
+  cursor: grab;
+}
+
+/* Disable transition during panning for smoother movement */
+.preview-image-container.is-panning img {
+  transition: none !important;
+}
+
+/* Container cursor states */
+.preview-image-container.can-pan {
+  cursor: grab;
+}
+
+.preview-image-container.is-panning {
+  cursor: grabbing !important;
+}
+
+.preview-image-container.is-panning img {
+  cursor: grabbing !important;
 }
 
 .preview-video-wrapper {

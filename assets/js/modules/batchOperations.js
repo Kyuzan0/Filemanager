@@ -22,6 +22,7 @@ import { announce, announceSelection } from './accessibility.js';
 let lastSelectedIndex = -1;
 let isOperationInProgress = false;
 let operationProgress = { current: 0, total: 0, action: '' };
+let hasBeenActivated = false; // Track if indicator has been shown before
 
 // Callback holders for external integration
 let callbacks = {
@@ -97,25 +98,42 @@ function getOrCreateSelectionIndicator() {
 
 /**
  * Update the selection indicator UI
+ * @param {boolean} isCheckboxTrigger - Whether this was triggered by a checkbox click
  */
-export function updateSelectionIndicator() {
+export function updateSelectionIndicator(isCheckboxTrigger = false) {
     const indicator = getOrCreateSelectionIndicator();
     const count = state.selected?.size || 0;
     const countSpan = indicator.querySelector('.selection-count');
 
     if (countSpan) {
-        countSpan.textContent = count === 0 
+        countSpan.textContent = count === 0
             ? 'Tidak ada item dipilih'
             : `${count} item dipilih`;
     }
 
     // Show/hide indicator based on selection
     if (count > 0) {
+        const wasHidden = !indicator.classList.contains('visible');
         indicator.classList.add('visible');
         indicator.classList.remove('hidden');
+        
+        // Add first-activation class when showing for the first time via checkbox
+        if (wasHidden && isCheckboxTrigger && !hasBeenActivated) {
+            hasBeenActivated = true;
+            indicator.classList.add('first-activation');
+            
+            // Remove the class after animation completes
+            setTimeout(() => {
+                indicator.classList.remove('first-activation');
+            }, 600); // Match animation duration
+            
+            debugLog('[BatchOperations] First activation triggered');
+        }
     } else {
         indicator.classList.remove('visible');
         indicator.classList.add('hidden');
+        // Reset activation state when all items are deselected
+        hasBeenActivated = false;
     }
 
     // Update batch action buttons visibility
@@ -258,15 +276,16 @@ export function deselectAllItems() {
  * Toggle selection for a specific item
  * @param {string} itemPath - The item path
  * @param {boolean} selected - Whether to select or deselect
+ * @param {boolean} isCheckboxTrigger - Whether this was triggered by a checkbox click
  */
-export function toggleItemSelection(itemPath, selected) {
+export function toggleItemSelection(itemPath, selected, isCheckboxTrigger = true) {
     if (selected) {
         state.selected.add(itemPath);
     } else {
         state.selected.delete(itemPath);
     }
 
-    updateSelectionUI();
+    updateSelectionUI(isCheckboxTrigger);
     announceSelectionChange();
 
     if (callbacks.onSelectionChange) {
@@ -297,10 +316,11 @@ export function isItemSelected(itemPath) {
 
 /**
  * Update all selection-related UI elements
+ * @param {boolean} isCheckboxTrigger - Whether this was triggered by a checkbox click
  */
-function updateSelectionUI() {
+function updateSelectionUI(isCheckboxTrigger = false) {
     // Update indicator
-    updateSelectionIndicator();
+    updateSelectionIndicator(isCheckboxTrigger);
 
     // Update checkboxes
     const checkboxes = document.querySelectorAll('.item-select, input[data-path]');
@@ -313,14 +333,27 @@ function updateSelectionUI() {
 
     // Update row visual state
     const rows = document.querySelectorAll('tr[data-item-path], div[data-item-path]');
+    
+    // Get the first item from the Set (insertion order)
+    const iterator = state.selected.values();
+    const firstResult = iterator.next();
+    const currentFirstSelected = firstResult.done ? null : firstResult.value;
+    
     rows.forEach(row => {
         const path = row.dataset.itemPath;
         if (path) {
             if (state.selected.has(path)) {
                 row.classList.add('selected');
                 row.setAttribute('aria-selected', 'true');
+                
+                // Maintain first-selected class for the first selected item
+                if (path === currentFirstSelected) {
+                    row.classList.add('first-selected');
+                } else {
+                    row.classList.remove('first-selected');
+                }
             } else {
-                row.classList.remove('selected');
+                row.classList.remove('selected', 'first-selected');
                 row.setAttribute('aria-selected', 'false');
             }
         }
@@ -711,6 +744,7 @@ export function cleanupBatchOperations() {
     lastSelectedIndex = -1;
     isOperationInProgress = false;
     operationProgress = { current: 0, total: 0, action: '' };
+    hasBeenActivated = false;
 
     debugLog('[BatchOperations] Batch operations cleaned up');
 }

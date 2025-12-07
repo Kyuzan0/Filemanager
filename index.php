@@ -95,18 +95,14 @@
                         <i class="ri-add-line text-lg" aria-hidden="true"></i>
                         <span class="text-sm font-medium hidden sm:inline">New</span>
                     </button>
-                    <button class="flex items-center gap-1.5 px-3 py-1.5 bg-white dark:bg-white/5 hover:bg-gray-50 dark:hover:bg-white/10 text-gray-700 dark:text-gray-200 border border-gray-200 dark:border-white/10 rounded-md transition-colors"
+                    <button class="flex items-center gap-1.5 px-3 py-1.5 bg-white dark:bg-white/5 hover:bg-gray-50 dark:hover:bg-white/10 text-gray-700 dark:text-gray-200 border border-gray-200 dark:border-white/10 rounded-md transition-colors relative"
                             id="uploadBtn"
-                            aria-label="Upload files">
+                            aria-label="Upload files or folder"
+                            aria-haspopup="true"
+                            aria-expanded="false">
                         <i class="ri-upload-cloud-2-line text-lg" aria-hidden="true"></i>
                         <span class="text-sm font-medium hidden sm:inline">Upload</span>
-                    </button>
-                    <button class="flex items-center gap-1.5 px-3 py-1.5 bg-white dark:bg-white/5 hover:bg-gray-50 dark:hover:bg-white/10 text-gray-700 dark:text-gray-200 border border-gray-200 dark:border-white/10 rounded-md transition-colors"
-                            id="uploadFolderBtn"
-                            title="Upload Folder"
-                            aria-label="Upload entire folder">
-                        <i class="ri-folder-upload-line text-lg" aria-hidden="true"></i>
-                        <span class="text-sm font-medium hidden sm:inline">Folder</span>
+                        <i class="ri-arrow-down-s-line text-sm ml-0.5" aria-hidden="true"></i>
                     </button>
                 </div>
 
@@ -247,6 +243,28 @@
         <button data-action="delete" class="context-menu-item context-menu-item-danger" role="menuitem" aria-label="Delete file or folder (Delete key)">
             <i class="ri-delete-bin-line context-menu-icon" aria-hidden="true"></i>
             <span>Hapus</span>
+        </button>
+    </div>
+
+    <!-- UPLOAD CONTEXT MENU -->
+    <div class="upload-context-menu hidden fixed z-50 bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 py-1 min-w-[160px]"
+         id="uploadContextMenu"
+         role="menu"
+         aria-hidden="true"
+         aria-label="Upload options">
+        <button class="upload-context-item w-full flex items-center gap-3 px-4 py-2.5 text-left hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                id="uploadFilesOption"
+                role="menuitem"
+                aria-label="Upload files">
+            <i class="ri-upload-cloud-2-line text-blue-600 dark:text-blue-400 text-lg"></i>
+            <span class="text-sm text-gray-700 dark:text-gray-200">Upload Files</span>
+        </button>
+        <button class="upload-context-item w-full flex items-center gap-3 px-4 py-2.5 text-left hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                id="uploadFolderOption"
+                role="menuitem"
+                aria-label="Upload folder">
+            <i class="ri-folder-upload-line text-amber-600 dark:text-amber-400 text-lg"></i>
+            <span class="text-sm text-gray-700 dark:text-gray-200">Upload Folder</span>
         </button>
     </div>
 
