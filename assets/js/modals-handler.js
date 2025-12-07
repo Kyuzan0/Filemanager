@@ -55,6 +55,9 @@ const ZOOM_STEP = 25;
 const MIN_ZOOM = 25;
 const MAX_ZOOM = 400;
 
+// Base scale to fit image in container at 100% zoom
+let baseScale = 1;
+
 // Image pan/drag state - using transform-based panning
 let imagePanState = {
   isPanning: false,
@@ -90,20 +93,50 @@ function updateZoomLevel() {
   }
 }
 
+// Calculate base scale to fit image in container
+function calculateBaseScale(container, img) {
+  if (!container || !img || !img.naturalWidth || !img.naturalHeight) {
+    return 1;
+  }
+  
+  const containerRect = container.getBoundingClientRect();
+  // Account for padding (smaller on mobile)
+  const isMobile = window.innerWidth < 640;
+  const padding = isMobile ? 16 : 32; // 0.5rem on mobile, 1rem on desktop
+  const containerWidth = containerRect.width - padding;
+  const containerHeight = containerRect.height - padding;
+  
+  const scaleX = containerWidth / img.naturalWidth;
+  const scaleY = containerHeight / img.naturalHeight;
+  
+  // Use the smaller scale to ensure image fits entirely
+  // On mobile, allow upscaling up to 1.5x to better use screen space
+  // On desktop, cap at 1 to not upscale small images
+  const fitScale = Math.min(scaleX, scaleY);
+  const maxScale = isMobile ? 1.5 : 1;
+  
+  return Math.min(fitScale, maxScale);
+}
+
 // Apply combined transform (scale + translate) to image
 function applyImageTransform(img) {
   if (!img) img = document.getElementById('preview-image');
   if (!img) return;
   
-  const scale = currentZoom / 100;
+  // Calculate effective scale: baseScale * (zoom / 100)
+  const effectiveScale = baseScale * (currentZoom / 100);
   const translateX = imagePanState.translateX;
   const translateY = imagePanState.translateY;
   
-  if (currentZoom === 100 && translateX === 0 && translateY === 0) {
-    img.style.transform = '';
-  } else {
-    img.style.transform = `translate(${translateX}px, ${translateY}px) scale(${scale})`;
-  }
+  console.log('[modals-handler] applyImageTransform:', {
+    baseScale,
+    currentZoom,
+    effectiveScale,
+    translateX,
+    translateY
+  });
+  
+  img.style.transform = `translate(${translateX}px, ${translateY}px) scale(${effectiveScale})`;
 }
 
 function zoomIn() {
@@ -134,31 +167,70 @@ function resetImageZoom() {
     lastTranslateY: 0
   };
   
+  // Recalculate base scale
+  const container = document.getElementById('preview-image-container');
+  const img = document.getElementById('preview-image');
+  if (container && img && img.naturalWidth) {
+    baseScale = calculateBaseScale(container, img);
+  }
+  
   updateZoomLevel();
   
   // Remove pan classes
-  const container = document.getElementById('preview-image-container');
   if (container) {
     container.classList.remove('is-panning', 'can-pan');
   }
 }
 
+// Track initialization state to prevent duplicate event bindings
+let zoomControlsInitialized = false;
+
 // Initialize zoom controls and pan functionality
 function initImageZoomControls() {
+  // Prevent duplicate initialization
+  if (zoomControlsInitialized) {
+    console.log('[modals-handler] Zoom controls already initialized, skipping');
+    return;
+  }
+  
   const zoomInBtn = document.getElementById('preview-zoom-in');
   const zoomOutBtn = document.getElementById('preview-zoom-out');
   const zoomResetBtn = document.getElementById('preview-zoom-reset');
   const imageContainer = document.getElementById('preview-image-container');
   const image = document.getElementById('preview-image');
   
+  // Remove any existing listeners by cloning and replacing elements
   if (zoomInBtn) {
-    zoomInBtn.addEventListener('click', zoomIn);
+    const newZoomInBtn = zoomInBtn.cloneNode(true);
+    zoomInBtn.parentNode.replaceChild(newZoomInBtn, zoomInBtn);
+    newZoomInBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      console.log('[modals-handler] Zoom IN clicked, current zoom:', currentZoom);
+      zoomIn();
+    });
   }
+  
   if (zoomOutBtn) {
-    zoomOutBtn.addEventListener('click', zoomOut);
+    const newZoomOutBtn = zoomOutBtn.cloneNode(true);
+    zoomOutBtn.parentNode.replaceChild(newZoomOutBtn, zoomOutBtn);
+    newZoomOutBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      console.log('[modals-handler] Zoom OUT clicked, current zoom:', currentZoom);
+      zoomOut();
+    });
   }
+  
   if (zoomResetBtn) {
-    zoomResetBtn.addEventListener('click', resetImageZoom);
+    const newZoomResetBtn = zoomResetBtn.cloneNode(true);
+    zoomResetBtn.parentNode.replaceChild(newZoomResetBtn, zoomResetBtn);
+    newZoomResetBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      console.log('[modals-handler] Zoom RESET clicked');
+      resetImageZoom();
+    });
   }
   
   // Mouse wheel zoom
@@ -177,6 +249,9 @@ function initImageZoomControls() {
     // Initialize pan/drag functionality
     initImagePan(imageContainer, image);
   }
+  
+  zoomControlsInitialized = true;
+  console.log('[modals-handler] Zoom controls initialized successfully');
 }
 
 // Initialize image pan/drag functionality
@@ -335,38 +410,40 @@ function getPanBounds(container, image) {
   }
   
   const containerRect = container.getBoundingClientRect();
-  const scale = currentZoom / 100;
+  // Use effective scale (baseScale * zoom/100)
+  const effectiveScale = baseScale * (currentZoom / 100);
   
-  // Scaled image dimensions
-  const scaledWidth = image.naturalWidth * scale;
-  const scaledHeight = image.naturalHeight * scale;
+  // Scaled image dimensions based on effective scale
+  const scaledWidth = image.naturalWidth * effectiveScale;
+  const scaledHeight = image.naturalHeight * effectiveScale;
+  
+  // Account for container padding
+  const containerWidth = containerRect.width - 32;
+  const containerHeight = containerRect.height - 32;
   
   // Calculate how much the image can move in each direction
-  // When zoomed in (scale > 1): image is larger than displayed, can pan to see edges
-  // When zoomed out (scale < 1): image is smaller, allow panning within container bounds
-  
   let maxX, minX, maxY, minY;
   
-  if (scaledWidth > containerRect.width) {
+  if (scaledWidth > containerWidth) {
     // Image wider than container - allow panning horizontally
-    const overflow = (scaledWidth - containerRect.width) / 2;
+    const overflow = (scaledWidth - containerWidth) / 2;
     maxX = overflow;
     minX = -overflow;
   } else {
     // Image narrower than container - allow moving within container
-    const slack = (containerRect.width - scaledWidth) / 2;
+    const slack = (containerWidth - scaledWidth) / 2;
     maxX = slack;
     minX = -slack;
   }
   
-  if (scaledHeight > containerRect.height) {
+  if (scaledHeight > containerHeight) {
     // Image taller than container - allow panning vertically
-    const overflow = (scaledHeight - containerRect.height) / 2;
+    const overflow = (scaledHeight - containerHeight) / 2;
     maxY = overflow;
     minY = -overflow;
   } else {
     // Image shorter than container - allow moving within container
-    const slack = (containerRect.height - scaledHeight) / 2;
+    const slack = (containerHeight - scaledHeight) / 2;
     maxY = slack;
     minY = -slack;
   }
@@ -540,14 +617,34 @@ function openPreviewModal(filePath, fileName) {
   } else if (previewType === 'image') {
     // Image Preview Mode
     const img = document.getElementById('preview-image');
+    const container = document.getElementById('preview-image-container');
     const rawUrl = `api.php?action=raw&path=${encodeURIComponent(filePath)}`;
     
-    // Reset zoom state
-    resetImageZoom();
+    // Reset zoom state first
+    currentZoom = 100;
+    baseScale = 1;
+    imagePanState = {
+      isPanning: false,
+      startX: 0,
+      startY: 0,
+      translateX: 0,
+      translateY: 0,
+      lastTranslateX: 0,
+      lastTranslateY: 0
+    };
     
     img.onload = function() {
       meta.textContent = `${this.naturalWidth} × ${this.naturalHeight} piksel`;
       loader.hidden = true;
+      
+      // Calculate base scale to fit image in container
+      baseScale = calculateBaseScale(container, this);
+      console.log('[modals-handler] Image loaded, calculated baseScale:', baseScale,
+        'natural:', this.naturalWidth, 'x', this.naturalHeight);
+      
+      // Apply initial transform
+      applyImageTransform(this);
+      updateZoomLevel();
     };
     img.onerror = function() {
       meta.textContent = 'Error: Gagal memuat gambar';
