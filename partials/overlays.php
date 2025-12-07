@@ -65,45 +65,6 @@
             </div>
             <!-- Image Preview View -->
             <div class="preview-image-wrapper" id="preview-image-wrapper" style="display: none;">
-                <div class="preview-image-controls" id="preview-image-controls" role="toolbar" aria-label="Image zoom controls">
-                    <button type="button"
-                            class="preview-zoom-btn"
-                            id="preview-zoom-out"
-                            title="Zoom Out"
-                            aria-label="Zoom out image">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                            <circle cx="11" cy="11" r="8" />
-                            <line x1="21" y1="21" x2="16.65" y2="16.65" />
-                            <line x1="8" y1="11" x2="14" y2="11" />
-                        </svg>
-                    </button>
-                    <span class="preview-zoom-level" id="preview-zoom-level" aria-live="polite" aria-atomic="true">100%</span>
-                    <button type="button"
-                            class="preview-zoom-btn"
-                            id="preview-zoom-in"
-                            title="Zoom In"
-                            aria-label="Zoom in image">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                            <circle cx="11" cy="11" r="8" />
-                            <line x1="21" y1="21" x2="16.65" y2="16.65" />
-                            <line x1="11" y1="8" x2="11" y2="14" />
-                            <line x1="8" y1="11" x2="14" y2="11" />
-                        </svg>
-                    </button>
-                    <button type="button"
-                            class="preview-zoom-btn"
-                            id="preview-zoom-reset"
-                            title="Reset Zoom"
-                            aria-label="Reset zoom to 100%">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                            <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
-                            <path d="M3 3v5h5" />
-                        </svg>
-                    </button>
-                </div>
                 <div class="preview-image-container" id="preview-image-container">
                     <img id="preview-image" src="" alt="Preview" />
                 </div>
@@ -130,6 +91,46 @@
                 <iframe id="preview-pdf" src="" title="PDF Preview"></iframe>
             </div>
         </div>
+        <!-- Image zoom controls (shown only for images) -->
+        <div class="preview-image-controls" id="preview-image-controls" role="toolbar" aria-label="Image zoom controls" style="display: none;">
+            <button type="button"
+                    class="preview-zoom-btn"
+                    id="preview-zoom-out"
+                    title="Zoom Out"
+                    aria-label="Zoom out image">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                    stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <circle cx="11" cy="11" r="8" />
+                    <line x1="21" y1="21" x2="16.65" y2="16.65" />
+                    <line x1="8" y1="11" x2="14" y2="11" />
+                </svg>
+            </button>
+            <span class="preview-zoom-level" id="preview-zoom-level" aria-live="polite" aria-atomic="true">100%</span>
+            <button type="button"
+                    class="preview-zoom-btn"
+                    id="preview-zoom-in"
+                    title="Zoom In"
+                    aria-label="Zoom in image">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                    stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <circle cx="11" cy="11" r="8" />
+                    <line x1="21" y1="21" x2="16.65" y2="16.65" />
+                    <line x1="11" y1="8" x2="11" y2="14" />
+                    <line x1="8" y1="11" x2="14" y2="11" />
+                </svg>
+            </button>
+            <button type="button"
+                    class="preview-zoom-btn"
+                    id="preview-zoom-reset"
+                    title="Reset Zoom"
+                    aria-label="Reset zoom to 100%">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                    stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
+                    <path d="M3 3v5h5" />
+                </svg>
+            </button>
+        </div>
         <footer class="preview-footer flex-shrink-0">
             <div class="preview-footer-status mb-2 sm:mb-3">
                 <span class="preview-status text-xs sm:text-sm text-gray-600 dark:text-slate-400"
@@ -137,63 +138,58 @@
                 <span class="preview-loader text-xs sm:text-sm text-blue-600" id="preview-loader" hidden>Memuat
                     konten...</span>
             </div>
-            <div class="preview-footer-actions grid grid-cols-5 sm:flex sm:flex-row gap-1.5 sm:gap-2 md:gap-3" role="group" aria-label="File actions">
+            <div class="preview-footer-actions" role="group" aria-label="File actions">
                 <a id="preview-open-raw" href="#" target="_blank" rel="noopener"
-                    class="inline-flex items-center justify-center gap-1 text-xs sm:text-sm text-blue-600 hover:underline focus:outline-none px-2 sm:px-3 py-1.5 sm:py-2 border border-blue-200 dark:border-blue-800 rounded-md"
-                    title="Buka Asli"
+                    class="preview-action-btn preview-action-btn--primary"
+                    data-tooltip="Buka file asli di tab baru"
                     aria-label="Open original file in new tab">
-                    <svg class="w-4 h-4 sm:hidden" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                        stroke-width="2">
+                    <svg class="preview-action-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
                         <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6M15 3h6v6M10 14L21 3" />
                     </svg>
-                    <span class="hidden sm:inline">Buka Asli</span>
+                    <span class="preview-action-label">Buka</span>
                 </a>
                 <a id="preview-download" href="#" download
-                    class="inline-flex items-center justify-center gap-1 text-xs sm:text-sm text-green-600 hover:underline focus:outline-none px-2 sm:px-3 py-1.5 sm:py-2 border border-green-200 dark:border-green-800 rounded-md"
-                    title="Download"
+                    class="preview-action-btn preview-action-btn--success"
+                    data-tooltip="Unduh file ke perangkat"
                     aria-label="Download file">
-                    <svg class="w-4 h-4 sm:hidden" viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true"
-                        stroke-width="2">
+                    <svg class="preview-action-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
                         <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
                         <polyline points="7 10 12 15 17 10" />
                         <line x1="12" y1="15" x2="12" y2="3" />
                     </svg>
-                    <span class="hidden sm:inline">Download</span>
+                    <span class="preview-action-label">Unduh</span>
                 </a>
                 <button type="button" id="preview-copy" data-action="preview-copy"
-                    class="btn inline-flex items-center justify-center gap-1 px-2 sm:px-3 py-1.5 sm:py-2 rounded-md text-xs sm:text-sm"
-                    title="Salin"
+                    class="preview-action-btn preview-action-btn--secondary"
+                    data-tooltip="Salin konten ke clipboard"
                     aria-label="Copy content to clipboard">
-                    <svg class="w-4 h-4 sm:hidden" viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true"
-                        stroke-width="2">
+                    <svg class="preview-action-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
                         <rect x="9" y="9" width="13" height="13" rx="2" />
                         <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
                     </svg>
-                    <span class="hidden sm:inline">Salin</span>
+                    <span class="preview-action-label">Salin</span>
                 </button>
                 <button type="button" id="preview-save" data-action="preview-save" disabled
-                    class="inline-flex items-center justify-center gap-1 px-2 sm:px-3 py-1.5 sm:py-2 rounded-md text-xs sm:text-sm bg-blue-600 text-white opacity-60 cursor-not-allowed"
+                    class="preview-action-btn preview-action-btn--save"
+                    data-tooltip="Simpan perubahan (Ctrl+S)"
                     aria-disabled="true"
-                    title="Simpan"
                     aria-label="Save changes to file">
-                    <svg class="w-4 h-4 sm:hidden" viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true"
-                        stroke-width="2">
+                    <svg class="preview-action-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
                         <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z" />
                         <polyline points="17 21 17 13 7 13 7 21" />
                         <polyline points="7 3 7 8 15 8" />
                     </svg>
-                    <span class="hidden sm:inline">Simpan</span>
+                    <span class="preview-action-label">Simpan</span>
                 </button>
                 <button type="button" id="preview-close" data-action="preview-close"
-                    class="btn inline-flex items-center justify-center gap-1 px-2 sm:px-3 py-1.5 sm:py-2 rounded-md text-xs sm:text-sm"
-                    title="Tutup"
+                    class="preview-action-btn preview-action-btn--close"
+                    data-tooltip="Tutup pratinjau (Esc)"
                     aria-label="Close preview (Escape)">
-                    <svg class="w-4 h-4 sm:hidden" viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true"
-                        stroke-width="2">
+                    <svg class="preview-action-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
                         <line x1="18" y1="6" x2="6" y2="18" />
                         <line x1="6" y1="6" x2="18" y2="18" />
                     </svg>
-                    <span class="hidden sm:inline">Tutup</span>
+                    <span class="preview-action-label">Tutup</span>
                 </button>
             </div>
         </footer>
@@ -477,12 +473,6 @@
         <div class="move-body flex-1 overflow-hidden flex flex-col">
             <nav class="move-breadcrumbs mb-3 text-sm" id="move-breadcrumbs" aria-label="Lokasi tujuan"></nav>
             <div class="move-tools mb-3 flex flex-col md:flex-row gap-2">
-                <div class="move-shortcuts flex flex-wrap gap-2">
-                    <button type="button" class="move-chip inline-flex items-center gap-2 px-2 py-1 rounded-md text-sm"
-                        id="move-root-shortcut" title="Ke Root">Root</button>
-                    <button type="button" class="move-chip inline-flex items-center gap-2 px-2 py-1 rounded-md text-sm"
-                        id="move-current-shortcut" title="Ke folder saat ini">Folder saat ini</button>
-                </div>
                 <div class="move-search flex-1">
                     <input type="search" id="move-search" class="move-search-input w-full rounded-md px-3 py-2 text-sm"
                         placeholder="Cari folder di lokasi ini" autocomplete="off" />

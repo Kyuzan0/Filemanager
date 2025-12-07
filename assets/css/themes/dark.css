@@ -183,9 +183,9 @@
 [data-theme="dark"] .preview-button.outline,
 [data-theme="dark"] .unsaved-button.outline,
 [data-theme="dark"] .settings-button.outline {
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  color: #e5e7eb;
+  background: transparent;
+  border: 1px solid var(--card-border);
+  color: var(--text-secondary);
 }
 
 [data-theme="dark"] .create-button.outline:hover,
@@ -196,7 +196,10 @@
 [data-theme="dark"] .preview-button.outline:hover,
 [data-theme="dark"] .unsaved-button.outline:hover,
 [data-theme="dark"] .settings-button.outline:hover {
-  background: rgba(255, 255, 255, 0.1);
+  background: var(--bg-secondary);
+  color: var(--text);
+  border-color: var(--accent);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
 }
 
 [data-theme="dark"] .create-button.outline:focus,
@@ -208,6 +211,7 @@
 [data-theme="dark"] .unsaved-button.outline:focus,
 [data-theme="dark"] .settings-button.outline:focus {
   outline: none;
+  box-shadow: 0 0 0 3px rgba(107, 161, 255, 0.2);
 }
 
 /* ============================================================================

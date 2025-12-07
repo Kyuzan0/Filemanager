@@ -145,8 +145,6 @@ export const elements = {
     moveSelectHere: document.getElementById('move-select-here'),
     moveCancel: document.getElementById('move-cancel'),
     moveConfirm: document.getElementById('move-confirm'),
-    moveRootShortcut: document.getElementById('move-root-shortcut'),
-    moveCurrentShortcut: document.getElementById('move-current-shortcut'),
     moveSearchInput: document.getElementById('move-search'),
     moveRecents: document.getElementById('move-recents'),
     

@@ -221,3 +221,45 @@
     order: 4 !important;
   }
 }
+
+/* Outline Button Style */
+.move-button.outline,
+.create-button.outline,
+.rename-button.outline,
+.confirm-button.outline,
+.log-button.outline,
+.preview-button.outline,
+.unsaved-button.outline,
+.settings-button.outline {
+  background: transparent;
+  border: 1px solid var(--card-border);
+  color: var(--text-secondary);
+  transition: all 0.2s ease;
+}
+
+.move-button.outline:hover,
+.create-button.outline:hover,
+.rename-button.outline:hover,
+.confirm-button.outline:hover,
+.log-button.outline:hover,
+.preview-button.outline:hover,
+.unsaved-button.outline:hover,
+.settings-button.outline:hover {
+  background: var(--bg-secondary);
+  color: var(--text);
+  border-color: var(--accent);
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.move-button.outline:focus,
+.create-button.outline:focus,
+.rename-button.outline:focus,
+.confirm-button.outline:focus,
+.log-button.outline:focus,
+.preview-button.outline:focus,
+.unsaved-button.outline:focus,
+.settings-button.outline:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(57, 120, 255, 0.2);
+}

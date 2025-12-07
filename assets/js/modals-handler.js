@@ -8,7 +8,9 @@ let modalState = {
   preview: {
     currentFile: null,
     isDirty: false,
-    originalContent: ''
+    originalContent: '',
+    previewUrl: '',
+    previewName: ''
   },
   move: {
     currentPath: '',
@@ -38,6 +40,36 @@ const PREVIEW_TYPES = {
 function getFileExtension(filename) {
   const ext = filename.split('.').pop().toLowerCase();
   return ext === filename.toLowerCase() ? '' : ext;
+}
+
+// Truncate filename while preserving extension
+// e.g., "Gemini_Generated_Image_egrvdhegrv.png" -> "Gemini_Generated_Im...png"
+function truncateFilename(filename, maxLength = 30) {
+  if (!filename || filename.length <= maxLength) return filename;
+  
+  const lastDot = filename.lastIndexOf('.');
+  
+  // No extension or extension is the whole name
+  if (lastDot === -1 || lastDot === 0) {
+    return filename.substring(0, maxLength - 3) + '...';
+  }
+  
+  const name = filename.substring(0, lastDot);
+  const ext = filename.substring(lastDot); // includes the dot
+  
+  // If extension is too long, just truncate everything
+  if (ext.length >= maxLength - 3) {
+    return filename.substring(0, maxLength - 3) + '...';
+  }
+  
+  // Calculate how much of the name we can show
+  const availableForName = maxLength - ext.length - 3; // 3 for "..."
+  
+  if (availableForName <= 0) {
+    return filename.substring(0, maxLength - 3) + '...';
+  }
+  
+  return name.substring(0, availableForName) + '...' + ext;
 }
 
 function getPreviewType(filename) {
@@ -252,6 +284,48 @@ function initImageZoomControls() {
   
   zoomControlsInitialized = true;
   console.log('[modals-handler] Zoom controls initialized successfully');
+}
+
+function sharePreviewLink() {
+  const shareUrl = modalState.preview.previewUrl;
+  if (!shareUrl) return;
+
+  const sharePayload = {
+    title: modalState.preview.previewName || 'File Preview',
+    url: shareUrl
+  };
+
+  if (navigator.share) {
+    navigator.share(sharePayload).catch(() => showError('Gagal membuka dialog share'));
+    return;
+  }
+
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(shareUrl)
+      .then(() => showSuccess('Link preview disalin ke clipboard'))
+      .catch(() => showError('Gagal menyalin link'));
+    return;
+  }
+
+  showSuccess('Salin tautan: ' + shareUrl);
+}
+
+function togglePreviewFullscreen() {
+  const overlay = document.getElementById('preview-overlay');
+  if (!overlay) return;
+
+  if (document.fullscreenElement) {
+    document.exitFullscreen();
+    return;
+  }
+
+  if (overlay.requestFullscreen) {
+    overlay.requestFullscreen().catch(() => showError('Tidak bisa masuk ke mode layar penuh'));
+  }
+}
+
+function handlePreviewMore() {
+  showSuccess('Lebih banyak tindakan akan segera hadir');
 }
 
 // Initialize image pan/drag functionality
@@ -485,6 +559,12 @@ function hideAllPreviewWrappers() {
       el.style.display = 'none';
     }
   });
+  
+  // Also hide image controls (now outside the wrapper)
+  const imageControls = document.getElementById('preview-image-controls');
+  if (imageControls) {
+    imageControls.style.display = 'none';
+  }
 }
 
 function showPreviewWrapper(type) {
@@ -499,6 +579,18 @@ function showPreviewWrapper(type) {
   const wrapper = document.getElementById(wrapperMap[type]);
   if (wrapper) {
     wrapper.style.display = type === 'audio' ? 'flex' : (type === 'text' ? 'flex' : 'flex');
+  }
+  
+  // Show image controls only for image preview
+  const imageControls = document.getElementById('preview-image-controls');
+  if (imageControls) {
+    imageControls.style.display = type === 'image' ? 'flex' : 'none';
+  }
+  
+  // Show word wrap button only for text/code preview
+  const wordWrapBtn = document.getElementById('previewWordWrapToggle');
+  if (wordWrapBtn) {
+    wordWrapBtn.style.display = type === 'text' ? '' : 'none';
   }
   
   // Toggle audio mode class on dialog for compact size
@@ -531,7 +623,9 @@ function openPreviewModal(filePath, fileName) {
   overlay.style.display = 'flex';
   overlay.setAttribute('aria-hidden', 'false');
   
-  title.textContent = fileName;
+  // Truncate long filenames while preserving extension
+  title.textContent = truncateFilename(fileName, 35);
+  title.title = fileName; // Full name on hover
   meta.textContent = 'Memuat...';
   loader.hidden = false;
   
@@ -549,6 +643,9 @@ function openPreviewModal(filePath, fileName) {
     downloadBtn.href = downloadUrl;
     downloadBtn.download = fileName;
   }
+
+  modalState.preview.previewUrl = downloadUrl;
+  modalState.preview.previewName = fileName;
   
   // Show appropriate wrapper
   showPreviewWrapper(previewType);
@@ -714,6 +811,10 @@ function closePreviewModal() {
     openUnsavedModal();
     return;
   }
+
+  if (document.fullscreenElement) {
+    document.exitFullscreen();
+  }
   
   const overlay = document.getElementById('preview-overlay');
   overlay.classList.add('hidden');
@@ -754,6 +855,21 @@ function closePreviewModal() {
   modalState.preview.currentFile = null;
   modalState.preview.isDirty = false;
   modalState.preview.originalContent = '';
+  modalState.preview.previewUrl = '';
+  modalState.preview.previewName = '';
+}
+
+function attachOverlayBackdropDismiss(overlayId, closeHandler) {
+  const overlay = document.getElementById(overlayId);
+  if (!overlay || typeof closeHandler !== 'function') return;
+
+  const handler = (event) => {
+    if (event.target === overlay) {
+      closeHandler();
+    }
+  };
+
+  overlay.addEventListener('click', handler);
 }
 
 function savePreviewContent() {
@@ -1143,6 +1259,7 @@ document.addEventListener('DOMContentLoaded', () => {
   
   // Preview Modal
   document.getElementById('preview-close')?.addEventListener('click', closePreviewModal);
+  document.getElementById('preview-back')?.addEventListener('click', closePreviewModal);
   document.getElementById('preview-save')?.addEventListener('click', savePreviewContent);
   document.getElementById('preview-copy')?.addEventListener('click', () => {
     // Get content from CodeMirror or fallback textarea
@@ -1156,6 +1273,10 @@ document.addEventListener('DOMContentLoaded', () => {
     navigator.clipboard?.writeText(content);
     showSuccess('Konten disalin ke clipboard');
   });
+  document.getElementById('preview-share')?.addEventListener('click', sharePreviewLink);
+  document.getElementById('preview-fullscreen')?.addEventListener('click', togglePreviewFullscreen);
+  document.getElementById('preview-more')?.addEventListener('click', handlePreviewMore);
+  attachOverlayBackdropDismiss('preview-overlay', closePreviewModal);
   
   // Fallback textarea input handler (when CodeMirror fails to load)
   document.getElementById('preview-editor')?.addEventListener('input', (e) => {
@@ -1197,6 +1318,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // Rename Modal
   document.getElementById('rename-cancel')?.addEventListener('click', closeRenameModal);
   document.getElementById('rename-form')?.addEventListener('submit', submitRename);
+  attachOverlayBackdropDismiss('rename-overlay', closeRenameModal);
   
   // Move Modal
   document.getElementById('move-cancel')?.addEventListener('click', closeMoveModal);
@@ -1205,8 +1327,7 @@ document.addEventListener('DOMContentLoaded', () => {
     modalState.move.selectedFolder = modalState.move.currentPath;
     document.getElementById('move-confirm').disabled = false;
   });
-  document.getElementById('move-root-shortcut')?.addEventListener('click', () => loadMoveFolders(''));
-  document.getElementById('move-current-shortcut')?.addEventListener('click', () => loadMoveFolders(currentPath));
+  attachOverlayBackdropDismiss('move-overlay', closeMoveModal);
   
   // Unsaved Modal
   document.getElementById('unsaved-save')?.addEventListener('click', () => {
