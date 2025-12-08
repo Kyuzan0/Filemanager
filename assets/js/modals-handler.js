@@ -46,29 +46,29 @@ function getFileExtension(filename) {
 // e.g., "Gemini_Generated_Image_egrvdhegrv.png" -> "Gemini_Generated_Im...png"
 function truncateFilename(filename, maxLength = 30) {
   if (!filename || filename.length <= maxLength) return filename;
-  
+
   const lastDot = filename.lastIndexOf('.');
-  
+
   // No extension or extension is the whole name
   if (lastDot === -1 || lastDot === 0) {
     return filename.substring(0, maxLength - 3) + '...';
   }
-  
+
   const name = filename.substring(0, lastDot);
   const ext = filename.substring(lastDot); // includes the dot
-  
+
   // If extension is too long, just truncate everything
   if (ext.length >= maxLength - 3) {
     return filename.substring(0, maxLength - 3) + '...';
   }
-  
+
   // Calculate how much of the name we can show
   const availableForName = maxLength - ext.length - 3; // 3 for "..."
-  
+
   if (availableForName <= 0) {
     return filename.substring(0, maxLength - 3) + '...';
   }
-  
+
   return name.substring(0, availableForName) + '...' + ext;
 }
 
@@ -106,20 +106,20 @@ function updateZoomLevel() {
   if (zoomLabel) {
     zoomLabel.textContent = `${currentZoom}%`;
   }
-  
+
   const img = document.getElementById('preview-image');
   const container = document.getElementById('preview-image-container');
-  
+
   if (img) {
     // Apply both scale and translate transforms
     applyImageTransform(img);
-    
+
     if (currentZoom === 100 && imagePanState.translateX === 0 && imagePanState.translateY === 0) {
       img.classList.remove('zoomed');
     } else {
       img.classList.add('zoomed');
     }
-    
+
     // Update cursor based on new zoom level
     updateImageCursor();
   }
@@ -130,23 +130,23 @@ function calculateBaseScale(container, img) {
   if (!container || !img || !img.naturalWidth || !img.naturalHeight) {
     return 1;
   }
-  
+
   const containerRect = container.getBoundingClientRect();
   // Account for padding (smaller on mobile)
   const isMobile = window.innerWidth < 640;
   const padding = isMobile ? 16 : 32; // 0.5rem on mobile, 1rem on desktop
   const containerWidth = containerRect.width - padding;
   const containerHeight = containerRect.height - padding;
-  
+
   const scaleX = containerWidth / img.naturalWidth;
   const scaleY = containerHeight / img.naturalHeight;
-  
+
   // Use the smaller scale to ensure image fits entirely
   // On mobile, allow upscaling up to 1.5x to better use screen space
   // On desktop, cap at 1 to not upscale small images
   const fitScale = Math.min(scaleX, scaleY);
   const maxScale = isMobile ? 1.5 : 1;
-  
+
   return Math.min(fitScale, maxScale);
 }
 
@@ -154,12 +154,12 @@ function calculateBaseScale(container, img) {
 function applyImageTransform(img) {
   if (!img) img = document.getElementById('preview-image');
   if (!img) return;
-  
+
   // Calculate effective scale: baseScale * (zoom / 100)
   const effectiveScale = baseScale * (currentZoom / 100);
   const translateX = imagePanState.translateX;
   const translateY = imagePanState.translateY;
-  
+
   console.log('[modals-handler] applyImageTransform:', {
     baseScale,
     currentZoom,
@@ -167,7 +167,7 @@ function applyImageTransform(img) {
     translateX,
     translateY
   });
-  
+
   img.style.transform = `translate(${translateX}px, ${translateY}px) scale(${effectiveScale})`;
 }
 
@@ -187,7 +187,7 @@ function zoomOut() {
 
 function resetImageZoom() {
   currentZoom = 100;
-  
+
   // Reset pan state
   imagePanState = {
     isPanning: false,
@@ -198,16 +198,16 @@ function resetImageZoom() {
     lastTranslateX: 0,
     lastTranslateY: 0
   };
-  
+
   // Recalculate base scale
   const container = document.getElementById('preview-image-container');
   const img = document.getElementById('preview-image');
   if (container && img && img.naturalWidth) {
     baseScale = calculateBaseScale(container, img);
   }
-  
+
   updateZoomLevel();
-  
+
   // Remove pan classes
   if (container) {
     container.classList.remove('is-panning', 'can-pan');
@@ -224,13 +224,13 @@ function initImageZoomControls() {
     console.log('[modals-handler] Zoom controls already initialized, skipping');
     return;
   }
-  
+
   const zoomInBtn = document.getElementById('preview-zoom-in');
   const zoomOutBtn = document.getElementById('preview-zoom-out');
   const zoomResetBtn = document.getElementById('preview-zoom-reset');
   const imageContainer = document.getElementById('preview-image-container');
   const image = document.getElementById('preview-image');
-  
+
   // Remove any existing listeners by cloning and replacing elements
   if (zoomInBtn) {
     const newZoomInBtn = zoomInBtn.cloneNode(true);
@@ -242,7 +242,7 @@ function initImageZoomControls() {
       zoomIn();
     });
   }
-  
+
   if (zoomOutBtn) {
     const newZoomOutBtn = zoomOutBtn.cloneNode(true);
     zoomOutBtn.parentNode.replaceChild(newZoomOutBtn, zoomOutBtn);
@@ -253,7 +253,7 @@ function initImageZoomControls() {
       zoomOut();
     });
   }
-  
+
   if (zoomResetBtn) {
     const newZoomResetBtn = zoomResetBtn.cloneNode(true);
     zoomResetBtn.parentNode.replaceChild(newZoomResetBtn, zoomResetBtn);
@@ -264,7 +264,7 @@ function initImageZoomControls() {
       resetImageZoom();
     });
   }
-  
+
   // Mouse wheel zoom
   if (imageContainer) {
     imageContainer.addEventListener('wheel', (e) => {
@@ -277,11 +277,11 @@ function initImageZoomControls() {
         }
       }
     }, { passive: false });
-    
+
     // Initialize pan/drag functionality
     initImagePan(imageContainer, image);
   }
-  
+
   zoomControlsInitialized = true;
   console.log('[modals-handler] Zoom controls initialized successfully');
 }
@@ -331,13 +331,13 @@ function handlePreviewMore() {
 // Initialize image pan/drag functionality
 function initImagePan(container, image) {
   if (!container || !image) return;
-  
+
   // Mouse events for panning
   container.addEventListener('mousedown', handlePanStart);
   container.addEventListener('mousemove', handlePanMove);
   container.addEventListener('mouseup', handlePanEnd);
   container.addEventListener('mouseleave', handlePanEnd);
-  
+
   // Touch events for mobile panning
   container.addEventListener('touchstart', handleTouchPanStart, { passive: false });
   container.addEventListener('touchmove', handleTouchPanMove, { passive: false });
@@ -349,19 +349,19 @@ function initImagePan(container, image) {
 function handlePanStart(e) {
   const container = e.currentTarget;
   const image = document.getElementById('preview-image');
-  
+
   // Always allow panning when zoomed (any level)
   if (currentZoom === 100) return;
-  
+
   // Prevent default to avoid text selection
   e.preventDefault();
-  
+
   imagePanState.isPanning = true;
   imagePanState.startX = e.clientX;
   imagePanState.startY = e.clientY;
   imagePanState.lastTranslateX = imagePanState.translateX;
   imagePanState.lastTranslateY = imagePanState.translateY;
-  
+
   // Add panning class for visual feedback
   container.classList.add('is-panning');
   container.style.cursor = 'grabbing';
@@ -370,49 +370,49 @@ function handlePanStart(e) {
 
 function handlePanMove(e) {
   if (!imagePanState.isPanning) return;
-  
+
   e.preventDefault();
-  
+
   const image = document.getElementById('preview-image');
   const container = document.getElementById('preview-image-container');
-  
+
   const deltaX = e.clientX - imagePanState.startX;
   const deltaY = e.clientY - imagePanState.startY;
-  
+
   // Calculate new translate values
   let newTranslateX = imagePanState.lastTranslateX + deltaX;
   let newTranslateY = imagePanState.lastTranslateY + deltaY;
-  
+
   // Apply boundary limits
   const bounds = getPanBounds(container, image);
   newTranslateX = Math.max(bounds.minX, Math.min(bounds.maxX, newTranslateX));
   newTranslateY = Math.max(bounds.minY, Math.min(bounds.maxY, newTranslateY));
-  
+
   imagePanState.translateX = newTranslateX;
   imagePanState.translateY = newTranslateY;
-  
+
   // Apply transform
   applyImageTransform(image);
 }
 
 function handlePanEnd(e) {
   if (!imagePanState.isPanning) return;
-  
+
   imagePanState.isPanning = false;
-  
+
   const container = e.currentTarget;
   const image = document.getElementById('preview-image');
-  
+
   // Remove panning class
   container.classList.remove('is-panning');
-  
+
   // Reset cursor based on pan availability
   const canPan = currentZoom !== 100;
   container.style.cursor = canPan ? 'grab' : '';
   if (image) {
     image.style.cursor = canPan ? 'grab' : 'default';
   }
-  
+
   // Update container class
   if (canPan) {
     container.classList.add('can-pan');
@@ -424,53 +424,53 @@ function handlePanEnd(e) {
 // Touch pan handlers - using transform-based panning
 function handleTouchPanStart(e) {
   if (e.touches.length !== 1) return; // Only single touch for pan
-  
+
   // Always allow panning when zoomed (any level)
   if (currentZoom === 100) return;
-  
+
   const container = e.currentTarget;
   const touch = e.touches[0];
-  
+
   imagePanState.isPanning = true;
   imagePanState.startX = touch.clientX;
   imagePanState.startY = touch.clientY;
   imagePanState.lastTranslateX = imagePanState.translateX;
   imagePanState.lastTranslateY = imagePanState.translateY;
-  
+
   container.classList.add('is-panning');
 }
 
 function handleTouchPanMove(e) {
   if (!imagePanState.isPanning || e.touches.length !== 1) return;
-  
+
   e.preventDefault(); // Prevent page scroll while panning
-  
+
   const image = document.getElementById('preview-image');
   const container = document.getElementById('preview-image-container');
   const touch = e.touches[0];
-  
+
   const deltaX = touch.clientX - imagePanState.startX;
   const deltaY = touch.clientY - imagePanState.startY;
-  
+
   // Calculate new translate values
   let newTranslateX = imagePanState.lastTranslateX + deltaX;
   let newTranslateY = imagePanState.lastTranslateY + deltaY;
-  
+
   // Apply boundary limits
   const bounds = getPanBounds(container, image);
   newTranslateX = Math.max(bounds.minX, Math.min(bounds.maxX, newTranslateX));
   newTranslateY = Math.max(bounds.minY, Math.min(bounds.maxY, newTranslateY));
-  
+
   imagePanState.translateX = newTranslateX;
   imagePanState.translateY = newTranslateY;
-  
+
   // Apply transform
   applyImageTransform(image);
 }
 
 function handleTouchPanEnd() {
   imagePanState.isPanning = false;
-  
+
   const container = document.getElementById('preview-image-container');
   if (container) {
     container.classList.remove('is-panning');
@@ -482,22 +482,22 @@ function getPanBounds(container, image) {
   if (!container || !image) {
     return { minX: 0, maxX: 0, minY: 0, maxY: 0 };
   }
-  
+
   const containerRect = container.getBoundingClientRect();
   // Use effective scale (baseScale * zoom/100)
   const effectiveScale = baseScale * (currentZoom / 100);
-  
+
   // Scaled image dimensions based on effective scale
   const scaledWidth = image.naturalWidth * effectiveScale;
   const scaledHeight = image.naturalHeight * effectiveScale;
-  
+
   // Account for container padding
   const containerWidth = containerRect.width - 32;
   const containerHeight = containerRect.height - 32;
-  
+
   // Calculate how much the image can move in each direction
   let maxX, minX, maxY, minY;
-  
+
   if (scaledWidth > containerWidth) {
     // Image wider than container - allow panning horizontally
     const overflow = (scaledWidth - containerWidth) / 2;
@@ -509,7 +509,7 @@ function getPanBounds(container, image) {
     maxX = slack;
     minX = -slack;
   }
-  
+
   if (scaledHeight > containerHeight) {
     // Image taller than container - allow panning vertically
     const overflow = (scaledHeight - containerHeight) / 2;
@@ -521,7 +521,7 @@ function getPanBounds(container, image) {
     maxY = slack;
     minY = -slack;
   }
-  
+
   return { minX, maxX, minY, maxY };
 }
 
@@ -535,11 +535,11 @@ function shouldEnablePan(container, image) {
 function updateImageCursor() {
   const container = document.getElementById('preview-image-container');
   const image = document.getElementById('preview-image');
-  
+
   if (!container || !image) return;
-  
+
   const canPan = shouldEnablePan(container, image);
-  
+
   if (canPan) {
     image.style.cursor = 'grab';
     container.style.cursor = 'grab';
@@ -559,7 +559,7 @@ function hideAllPreviewWrappers() {
       el.style.display = 'none';
     }
   });
-  
+
   // Also hide image controls (now outside the wrapper)
   const imageControls = document.getElementById('preview-image-controls');
   if (imageControls) {
@@ -580,19 +580,19 @@ function showPreviewWrapper(type) {
   if (wrapper) {
     wrapper.style.display = type === 'audio' ? 'flex' : (type === 'text' ? 'flex' : 'flex');
   }
-  
+
   // Show image controls only for image preview
   const imageControls = document.getElementById('preview-image-controls');
   if (imageControls) {
     imageControls.style.display = type === 'image' ? 'flex' : 'none';
   }
-  
+
   // Show word wrap button only for text/code preview
   const wordWrapBtn = document.getElementById('previewWordWrapToggle');
   if (wordWrapBtn) {
     wordWrapBtn.style.display = type === 'text' ? '' : 'none';
   }
-  
+
   // Toggle audio mode class on dialog for compact size
   const dialog = document.querySelector('.preview-dialog');
   if (dialog) {
@@ -615,28 +615,28 @@ function openPreviewModal(filePath, fileName) {
   const openRaw = document.getElementById('preview-open-raw');
   const downloadBtn = document.getElementById('preview-download');
   const cmContainer = document.getElementById('codemirror-container');
-  
+
   // Detect file type
   const previewType = getPreviewType(fileName);
-  
+
   overlay.classList.remove('hidden');
   overlay.style.display = 'flex';
   overlay.setAttribute('aria-hidden', 'false');
-  
+
   // Truncate long filenames while preserving extension
   title.textContent = truncateFilename(fileName, 35);
   title.title = fileName; // Full name on hover
   meta.textContent = 'Memuat...';
   loader.hidden = false;
-  
+
   modalState.preview.currentFile = filePath;
   modalState.preview.isDirty = false;
-  
+
   // Show/hide appropriate actions based on preview type
   const isEditable = previewType === 'text';
   if (saveBtn) saveBtn.style.display = isEditable ? '' : 'none';
   if (copyBtn) copyBtn.style.display = isEditable ? '' : 'none';
-  
+
   // Set download link for all file types
   const downloadUrl = `api.php?action=raw&path=${encodeURIComponent(filePath)}`;
   if (downloadBtn) {
@@ -646,23 +646,23 @@ function openPreviewModal(filePath, fileName) {
 
   modalState.preview.previewUrl = downloadUrl;
   modalState.preview.previewName = fileName;
-  
+
   // Show appropriate wrapper
   showPreviewWrapper(previewType);
-  
+
   if (previewType === 'text') {
     // Text/Code Editor Mode with CodeMirror
     if (editor) editor.value = '';
     if (saveBtn) saveBtn.disabled = true;
-    
+
     // Clear CodeMirror container
     if (cmContainer) cmContainer.innerHTML = '';
-    
+
     // Destroy existing CodeMirror instance
     if (window.CodeMirrorEditor && window.CodeMirrorEditor.isInitialized()) {
       window.CodeMirrorEditor.destroy();
     }
-    
+
     // Load file content
     fetch(`${API_BASE}?action=content&path=${encodeURIComponent(filePath)}`)
       .then(res => res.json())
@@ -672,10 +672,10 @@ function openPreviewModal(filePath, fileName) {
           modalState.preview.originalContent = content;
           meta.textContent = `${formatSize(data.size)} • Terakhir diubah: ${formatDate(data.modified)}`;
           openRaw.href = `api.php?action=content&path=${encodeURIComponent(filePath)}`;
-          
+
           // Store in hidden textarea for fallback
           if (editor) editor.value = content;
-          
+
           // Initialize CodeMirror
           if (window.CodeMirrorEditor && cmContainer) {
             try {
@@ -710,13 +710,13 @@ function openPreviewModal(filePath, fileName) {
       .finally(() => {
         loader.hidden = true;
       });
-      
+
   } else if (previewType === 'image') {
     // Image Preview Mode
     const img = document.getElementById('preview-image');
     const container = document.getElementById('preview-image-container');
     const rawUrl = `api.php?action=raw&path=${encodeURIComponent(filePath)}`;
-    
+
     // Reset zoom state first
     currentZoom = 100;
     baseScale = 1;
@@ -729,67 +729,67 @@ function openPreviewModal(filePath, fileName) {
       lastTranslateX: 0,
       lastTranslateY: 0
     };
-    
-    img.onload = function() {
+
+    img.onload = function () {
       meta.textContent = `${this.naturalWidth} × ${this.naturalHeight} piksel`;
       loader.hidden = true;
-      
+
       // Calculate base scale to fit image in container
       baseScale = calculateBaseScale(container, this);
       console.log('[modals-handler] Image loaded, calculated baseScale:', baseScale,
         'natural:', this.naturalWidth, 'x', this.naturalHeight);
-      
+
       // Apply initial transform
       applyImageTransform(this);
       updateZoomLevel();
     };
-    img.onerror = function() {
+    img.onerror = function () {
       meta.textContent = 'Error: Gagal memuat gambar';
       loader.hidden = true;
     };
     img.src = rawUrl;
     openRaw.href = rawUrl;
-    
+
   } else if (previewType === 'video') {
     // Video Preview Mode
     const video = document.getElementById('preview-video');
     const rawUrl = `api.php?action=raw&path=${encodeURIComponent(filePath)}`;
-    
-    video.onloadedmetadata = function() {
+
+    video.onloadedmetadata = function () {
       const duration = formatDuration(this.duration);
       meta.textContent = `${this.videoWidth} × ${this.videoHeight} • ${duration}`;
       loader.hidden = true;
     };
-    video.onerror = function() {
+    video.onerror = function () {
       meta.textContent = 'Error: Gagal memuat video';
       loader.hidden = true;
     };
     video.src = rawUrl;
     openRaw.href = rawUrl;
-    
+
   } else if (previewType === 'audio') {
     // Audio Preview Mode
     const audio = document.getElementById('preview-audio');
     const rawUrl = `api.php?action=raw&path=${encodeURIComponent(filePath)}`;
-    
-    audio.onloadedmetadata = function() {
+
+    audio.onloadedmetadata = function () {
       const duration = formatDuration(this.duration);
       meta.textContent = `Durasi: ${duration}`;
       loader.hidden = true;
     };
-    audio.onerror = function() {
+    audio.onerror = function () {
       meta.textContent = 'Error: Gagal memuat audio';
       loader.hidden = true;
     };
     audio.src = rawUrl;
     openRaw.href = rawUrl;
-    
+
   } else if (previewType === 'pdf') {
     // PDF Preview Mode
     const iframe = document.getElementById('preview-pdf');
     const rawUrl = `api.php?action=raw&path=${encodeURIComponent(filePath)}`;
-    
-    iframe.onload = function() {
+
+    iframe.onload = function () {
       meta.textContent = 'PDF Document';
       loader.hidden = true;
     };
@@ -815,23 +815,23 @@ function closePreviewModal() {
   if (document.fullscreenElement) {
     document.exitFullscreen();
   }
-  
+
   const overlay = document.getElementById('preview-overlay');
   overlay.classList.add('hidden');
   overlay.style.display = 'none';
   overlay.setAttribute('aria-hidden', 'true');
-  
+
   // Cleanup CodeMirror editor
   if (window.CodeMirrorEditor && window.CodeMirrorEditor.isInitialized()) {
     window.CodeMirrorEditor.destroy();
   }
-  
+
   // Cleanup media elements to stop playback
   const video = document.getElementById('preview-video');
   const audio = document.getElementById('preview-audio');
   const image = document.getElementById('preview-image');
   const pdf = document.getElementById('preview-pdf');
-  
+
   if (video) {
     video.pause();
     video.src = '';
@@ -848,10 +848,10 @@ function closePreviewModal() {
   if (pdf) {
     pdf.src = '';
   }
-  
+
   // Hide all wrappers
   hideAllPreviewWrappers();
-  
+
   modalState.preview.currentFile = null;
   modalState.preview.isDirty = false;
   modalState.preview.originalContent = '';
@@ -875,7 +875,7 @@ function attachOverlayBackdropDismiss(overlayId, closeHandler) {
 function savePreviewContent() {
   const saveBtn = document.getElementById('preview-save');
   const status = document.getElementById('preview-status');
-  
+
   // Get content from CodeMirror or fallback textarea
   let content = '';
   if (window.CodeMirrorEditor && window.CodeMirrorEditor.isInitialized()) {
@@ -884,10 +884,10 @@ function savePreviewContent() {
     const editor = document.getElementById('preview-editor');
     content = editor ? editor.value : '';
   }
-  
+
   saveBtn.disabled = true;
   status.textContent = 'Menyimpan...';
-  
+
   fetch(`${API_BASE}?action=save&path=${encodeURIComponent(modalState.preview.currentFile)}`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -918,27 +918,27 @@ function updateLineNumbers() {
     window.updateLineNumbers();
     return;
   }
-  
+
   // Fallback: Direct implementation
   const editor = document.getElementById('preview-editor');
   const lineNumbersInner = document.getElementById('preview-line-numbers-inner');
   if (!editor || !lineNumbersInner) return;
-  
+
   const value = editor.value || '';
   const lines = value.split('\n');
   const totalLines = lines.length || 1;
-  
+
   // Get computed line height from editor
   const editorStyle = window.getComputedStyle(editor);
   const lineHeight = parseFloat(editorStyle.lineHeight) || 24;
-  
+
   // Build line numbers
   let html = '';
   for (let i = 1; i <= totalLines; i++) {
     html += `<span style="display:block;height:${lineHeight}px;line-height:${lineHeight}px">${i}</span>`;
   }
   lineNumbersInner.innerHTML = html;
-  
+
   // Sync scroll
   if (typeof window.syncLineNumbersScroll === 'function') {
     window.syncLineNumbersScroll(true);
@@ -954,22 +954,22 @@ function openConfirmModal(title, message, items, onConfirm) {
   const descEl = document.getElementById('confirm-description');
   const listEl = document.getElementById('confirm-list');
   const confirmBtn = document.getElementById('confirm-confirm');
-  
+
   overlay.classList.remove('hidden');
   overlay.style.display = 'flex';
   overlay.setAttribute('aria-hidden', 'false');
-  
+
   titleEl.textContent = title;
   messageEl.textContent = message;
   descEl.textContent = items.length > 1 ? `${items.length} item akan dihapus:` : '';
-  
+
   if (items.length > 1) {
     listEl.hidden = false;
     listEl.innerHTML = items.map(item => `<li>• ${item}</li>`).join('');
   } else {
     listEl.hidden = true;
   }
-  
+
   modalState.confirm.callback = onConfirm;
   modalState.confirm.items = items;
 }
@@ -979,7 +979,7 @@ function closeConfirmModal() {
   overlay.classList.add('hidden');
   overlay.style.display = 'none';
   overlay.setAttribute('aria-hidden', 'true');
-  
+
   modalState.confirm.callback = null;
   modalState.confirm.items = [];
 }
@@ -999,10 +999,10 @@ function openCreateModal() {
   const nameGroup = document.getElementById('create-name-group');
   const fileRadio = document.getElementById('file-option');
   const folderRadio = document.getElementById('folder-option');
-  
+
   overlay.classList.remove('hidden');
   overlay.setAttribute('aria-hidden', 'false');
-  
+
   nameInput.value = '';
   nameGroup.style.display = 'none';
   fileRadio.checked = false;
@@ -1019,24 +1019,24 @@ async function submitCreate() {
   const nameInput = document.getElementById('create-name');
   const fileRadio = document.getElementById('file-option');
   const folderRadio = document.getElementById('folder-option');
-  
+
   const name = nameInput.value.trim();
   if (!name) {
     showError('Nama wajib diisi');
     return;
   }
-  
+
   const type = fileRadio.checked ? 'file' : (folderRadio.checked ? 'folder' : '');
   if (!type) {
     showError('Pilih tipe item terlebih dahulu');
     return;
   }
-  
+
   showLoader(true);
   try {
     // Get current path from enhanced-ui.js via window object
     const path = window.currentPath || '';
-    
+
     // Include path in URL query parameter as API expects it there
     const response = await fetch(`${API_BASE}?action=create&path=${encodeURIComponent(path)}`, {
       method: 'POST',
@@ -1047,10 +1047,10 @@ async function submitCreate() {
         path: path
       })
     });
-    
+
     const data = await response.json();
     if (!data.success) throw new Error(data.error || 'Gagal membuat item');
-    
+
     // Reload files using the global loadFiles function
     if (typeof window.loadFiles === 'function') {
       await window.loadFiles(path);
@@ -1070,16 +1070,16 @@ function openRenameModal(filePath, currentName) {
   const overlay = document.getElementById('rename-overlay');
   const subtitle = document.getElementById('rename-subtitle');
   const nameInput = document.getElementById('rename-name');
-  
+
   overlay.classList.remove('hidden');
   overlay.style.display = 'flex';
   overlay.setAttribute('aria-hidden', 'false');
-  
+
   subtitle.textContent = `Mengubah nama: ${currentName}`;
   nameInput.value = currentName;
   nameInput.focus();
   nameInput.select();
-  
+
   modalState.rename = { path: filePath, oldName: currentName };
 }
 
@@ -1092,20 +1092,20 @@ function closeRenameModal() {
 
 async function submitRename(e) {
   if (e) e.preventDefault();
-  
+
   const nameInput = document.getElementById('rename-name');
   const newName = nameInput.value.trim();
-  
+
   if (!newName) {
     showError('Nama baru wajib diisi');
     return;
   }
-  
+
   if (!modalState.rename || !modalState.rename.path) {
     showError('Data rename tidak valid');
     return;
   }
-  
+
   await renameItem(modalState.rename.path, newName);
   closeRenameModal();
 }
@@ -1116,17 +1116,17 @@ function openMoveModal(items) {
   const overlay = document.getElementById('move-overlay');
   const subtitle = document.getElementById('move-subtitle');
   const list = document.getElementById('move-list');
-  
+
   overlay.classList.remove('hidden');
   overlay.style.display = 'flex';
   overlay.setAttribute('aria-hidden', 'false');
-  
+
   modalState.move.itemsToMove = items;
   modalState.move.currentPath = '';
   modalState.move.selectedFolder = null;
-  
+
   subtitle.textContent = `Memindahkan ${items.length} item`;
-  
+
   loadMoveFolders('');
 }
 
@@ -1135,7 +1135,7 @@ function closeMoveModal() {
   overlay.classList.add('hidden');
   overlay.style.display = 'none';
   overlay.setAttribute('aria-hidden', 'true');
-  
+
   modalState.move = {
     currentPath: '',
     selectedFolder: null,
@@ -1146,25 +1146,25 @@ function closeMoveModal() {
 async function loadMoveFolders(path) {
   const list = document.getElementById('move-list');
   const breadcrumbs = document.getElementById('move-breadcrumbs');
-  const error = document.getElementById('move-error');
-  
+  const errorEl = document.getElementById('move-error');
+
   modalState.move.currentPath = path;
   list.innerHTML = '<li class="p-3 text-sm text-gray-500">Memuat...</li>';
-  error.textContent = '';
-  
+  if (errorEl) errorEl.textContent = '';
+
   try {
     const response = await fetch(`${API_BASE}?action=list&path=${encodeURIComponent(path)}`);
     const data = await response.json();
-    
+
     if (!data.success) throw new Error(data.error);
-    
+
     const folders = data.items.filter(item => item.type === 'folder');
-    
+
     // Update breadcrumbs
-    breadcrumbs.innerHTML = path ? 
+    breadcrumbs.innerHTML = path ?
       `<span class="text-blue-600 cursor-pointer" onclick="loadMoveFolders('')">Root</span> / ${path.split('/').join(' / ')}` :
       '<span>Root</span>';
-    
+
     // Update list
     if (folders.length === 0) {
       list.innerHTML = '<li class="p-3 text-sm text-gray-500">Tidak ada folder di sini</li>';
@@ -1175,22 +1175,22 @@ async function loadMoveFolders(path) {
           <span>${folder.name}</span>
         </li>
       `).join('');
-      
+
       // Wire folder click events
       list.querySelectorAll('.move-folder-item').forEach(item => {
         item.addEventListener('click', () => {
           const folderPath = item.dataset.path;
           loadMoveFolders(folderPath);
         });
-        
+
         item.addEventListener('dblclick', () => {
           modalState.move.selectedFolder = item.dataset.path;
           executeMoveItems();
         });
       });
     }
-  } catch (error) {
-    error.textContent = error.message;
+  } catch (err) {
+    if (errorEl) errorEl.textContent = err.message;
     list.innerHTML = '<li class="p-3 text-sm text-red-500">Gagal memuat folder</li>';
   }
 }
@@ -1198,12 +1198,12 @@ async function loadMoveFolders(path) {
 async function executeMoveItems() {
   const destPath = modalState.move.selectedFolder || modalState.move.currentPath;
   const items = modalState.move.itemsToMove;
-  
+
   if (items.length === 0) {
     showError('Tidak ada item yang akan dipindahkan');
     return;
   }
-  
+
   closeMoveModal();
   await moveItems(items, destPath);
 }
@@ -1229,11 +1229,11 @@ function closeUnsavedModal() {
 function openSettingsModal() {
   const overlay = document.getElementById('settings-overlay');
   const debugToggle = document.getElementById('toggle-debug');
-  
+
   overlay.classList.remove('hidden');
   overlay.style.display = 'flex';
   overlay.setAttribute('aria-hidden', 'false');
-  
+
   debugToggle.checked = localStorage.getItem('fm-debug') === 'true';
 }
 
@@ -1256,7 +1256,7 @@ function saveSettings() {
 document.addEventListener('DOMContentLoaded', () => {
   // Initialize image zoom controls
   initImageZoomControls();
-  
+
   // Preview Modal
   document.getElementById('preview-close')?.addEventListener('click', closePreviewModal);
   document.getElementById('preview-back')?.addEventListener('click', closePreviewModal);
@@ -1277,7 +1277,7 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('preview-fullscreen')?.addEventListener('click', togglePreviewFullscreen);
   document.getElementById('preview-more')?.addEventListener('click', handlePreviewMore);
   attachOverlayBackdropDismiss('preview-overlay', closePreviewModal);
-  
+
   // Fallback textarea input handler (when CodeMirror fails to load)
   document.getElementById('preview-editor')?.addEventListener('input', (e) => {
     // Only handle if CodeMirror is not initialized
@@ -1286,45 +1286,45 @@ document.addEventListener('DOMContentLoaded', () => {
       document.getElementById('preview-save').disabled = !modalState.preview.isDirty;
     }
   });
-  
+
   // Confirm Modal
   document.getElementById('confirm-cancel')?.addEventListener('click', closeConfirmModal);
   document.getElementById('confirm-confirm')?.addEventListener('click', executeConfirm);
-  
+
   // Create Modal
   document.getElementById('create-cancel')?.addEventListener('click', closeCreateModal);
   document.getElementById('create-cancel-alt')?.addEventListener('click', closeCreateModal);
   document.getElementById('create-submit')?.addEventListener('click', submitCreate);
-  
+
   // Show name input when type is selected and update placeholder
   document.querySelectorAll('input[name="create-type"]').forEach(radio => {
     radio.addEventListener('change', (e) => {
       const nameGroup = document.getElementById('create-name-group');
       const nameInput = document.getElementById('create-name');
-      
+
       nameGroup.style.display = 'block';
-      
+
       // Update placeholder based on selected type
       if (e.target.value === 'file') {
         nameInput.placeholder = 'Misal: document.txt';
       } else if (e.target.value === 'folder') {
         nameInput.placeholder = 'Misal: My Documents';
       }
-      
+
       nameInput.focus();
     });
   });
-  
+
   // Rename Modal
   document.getElementById('rename-cancel')?.addEventListener('click', closeRenameModal);
   document.getElementById('rename-form')?.addEventListener('submit', submitRename);
   attachOverlayBackdropDismiss('rename-overlay', closeRenameModal);
-  
+
   // Move Modal
   document.getElementById('move-cancel')?.addEventListener('click', closeMoveModal);
   document.getElementById('move-confirm')?.addEventListener('click', executeMoveItems);
   attachOverlayBackdropDismiss('move-overlay', closeMoveModal);
-  
+
   // Unsaved Modal
   document.getElementById('unsaved-save')?.addEventListener('click', () => {
     closeUnsavedModal();
@@ -1337,38 +1337,38 @@ document.addEventListener('DOMContentLoaded', () => {
     closePreviewModal();
   });
   document.getElementById('unsaved-cancel')?.addEventListener('click', closeUnsavedModal);
-  
+
   // Settings Modal
   document.getElementById('settings-close')?.addEventListener('click', closeSettingsModal);
   document.getElementById('settings-cancel')?.addEventListener('click', closeSettingsModal);
   document.getElementById('settings-save')?.addEventListener('click', saveSettings);
-  
+
   // Toggle switch styling
-  document.getElementById('toggle-debug')?.addEventListener('change', function() {
+  document.getElementById('toggle-debug')?.addEventListener('change', function () {
     this.setAttribute('aria-checked', this.checked);
   });
-  
+
   // Delete overlay event listeners
   document.getElementById('delete-cancel')?.addEventListener('click', closeDeleteOverlay);
   document.getElementById('delete-confirm')?.addEventListener('click', confirmDelete);
-  document.getElementById('delete-overlay')?.addEventListener('click', function(e) {
+  document.getElementById('delete-overlay')?.addEventListener('click', function (e) {
     if (e.target === this) closeDeleteOverlay();
   });
-  
+
   // Download overlay event listeners
   document.getElementById('download-cancel')?.addEventListener('click', closeDownloadOverlay);
   document.getElementById('download-confirm')?.addEventListener('click', confirmDownload);
-  document.getElementById('download-overlay')?.addEventListener('click', function(e) {
+  document.getElementById('download-overlay')?.addEventListener('click', function (e) {
     if (e.target === this) closeDownloadOverlay();
   });
-  
+
   // Global keyboard handler for modals
   document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape') {
       // Check which modal is open and close it
       const deleteOverlay = document.getElementById('delete-overlay');
       const downloadOverlay = document.getElementById('download-overlay');
-      
+
       if (deleteOverlay && !deleteOverlay.classList.contains('hidden')) {
         closeDeleteOverlay();
       } else if (downloadOverlay && !downloadOverlay.classList.contains('hidden')) {
@@ -1389,60 +1389,60 @@ let deleteState = {
 function openDeleteOverlay(items, onConfirm, onCancel = null) {
   const overlay = document.getElementById('delete-overlay');
   if (!overlay) return;
-  
+
   const itemsArray = Array.isArray(items) ? items : [items];
   const itemCount = itemsArray.length;
-  
+
   // Store state
   deleteState.items = itemsArray;
   deleteState.confirmCallback = onConfirm;
   deleteState.cancelCallback = onCancel;
-  
+
   // Update title and subtitle
   const title = document.getElementById('delete-title');
   const subtitle = document.getElementById('delete-subtitle');
   const message = document.getElementById('delete-message');
   const itemsList = document.getElementById('delete-items-list');
-  
+
   if (title) {
     title.textContent = itemCount > 1 ? `Hapus ${itemCount} Item` : 'Hapus Item';
   }
-  
+
   if (subtitle) {
-    subtitle.textContent = itemCount > 1 
-      ? `Konfirmasi penghapusan ${itemCount} item` 
+    subtitle.textContent = itemCount > 1
+      ? `Konfirmasi penghapusan ${itemCount} item`
       : 'Konfirmasi penghapusan';
   }
-  
+
   if (message) {
-    message.textContent = itemCount > 1 
-      ? `Apakah Anda yakin ingin menghapus ${itemCount} item berikut?` 
+    message.textContent = itemCount > 1
+      ? `Apakah Anda yakin ingin menghapus ${itemCount} item berikut?`
       : `Apakah Anda yakin ingin menghapus item ini?`;
   }
-  
+
   // Populate items list
   if (itemsList) {
     itemsList.innerHTML = itemsArray.slice(0, 10).map(item => {
       const name = typeof item === 'string' ? item.split('/').pop() : (item.name || item.path?.split('/').pop() || 'Unknown');
       const isFolder = typeof item === 'object' && item.type === 'folder';
-      const icon = isFolder 
+      const icon = isFolder
         ? '<svg viewBox="0 0 24 24" fill="currentColor" class="delete-item-icon w-4 h-4"><path d="M10 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2h-8l-2-2z"/></svg>'
         : '<svg viewBox="0 0 24 24" fill="currentColor" class="delete-item-icon w-4 h-4"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6z"/><path d="M14 2v6h6"/></svg>';
       return `<div class="delete-item flex items-center gap-2 py-1 px-2 text-xs rounded">${icon}<span class="delete-item-name flex-1 truncate">${escapeHtml(name)}</span></div>`;
     }).join('');
-    
+
     if (itemCount > 10) {
       itemsList.innerHTML += `<div class="delete-item text-gray-500 py-1 px-2 text-xs">... dan ${itemCount - 10} item lainnya</div>`;
     }
   }
-  
+
   // Show overlay
   overlay.hidden = false;
   overlay.classList.remove('hidden');
   overlay.classList.add('visible');
   overlay.setAttribute('aria-hidden', 'false');
   overlay.style.display = 'flex';
-  
+
   // Focus cancel button
   setTimeout(() => {
     document.getElementById('delete-cancel')?.focus();
@@ -1452,17 +1452,17 @@ function openDeleteOverlay(items, onConfirm, onCancel = null) {
 function closeDeleteOverlay() {
   const overlay = document.getElementById('delete-overlay');
   if (!overlay) return;
-  
+
   overlay.classList.remove('visible');
   overlay.classList.add('hidden');
   overlay.setAttribute('aria-hidden', 'true');
   overlay.hidden = true;
   overlay.style.display = 'none';
-  
+
   // Clear items list
   const itemsList = document.getElementById('delete-items-list');
   if (itemsList) itemsList.innerHTML = '';
-  
+
   // Clear state
   deleteState = { items: [], confirmCallback: null, cancelCallback: null };
 }
@@ -1489,36 +1489,36 @@ let downloadState = {
 function openDownloadOverlay(fileData, onConfirm, onCancel = null) {
   const overlay = document.getElementById('download-overlay');
   if (!overlay) return;
-  
+
   // Store state
   downloadState.fileData = fileData;
   downloadState.confirmCallback = onConfirm;
   downloadState.cancelCallback = onCancel;
-  
+
   // Update file info
   const fileName = document.getElementById('download-file-name');
   const fileSize = document.getElementById('download-file-size');
   const fileIcon = document.getElementById('download-file-icon');
   const subtitle = document.getElementById('download-subtitle');
-  
+
   if (fileName) {
     fileName.textContent = fileData.name || 'Unknown file';
   }
-  
+
   if (fileSize) {
     const size = fileData.size || 0;
     fileSize.textContent = formatFileSize(size);
   }
-  
+
   if (subtitle) {
     subtitle.textContent = `Unduh ${fileData.name || 'file'}`;
   }
-  
+
   // Set appropriate icon based on file type
   if (fileIcon) {
     fileIcon.className = 'download-file-icon w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0';
     const ext = (fileData.name || '').split('.').pop()?.toLowerCase() || '';
-    
+
     if (['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg', 'bmp'].includes(ext)) {
       fileIcon.classList.add('image');
     } else if (['js', 'ts', 'jsx', 'tsx', 'php', 'py', 'html', 'css', 'json', 'xml'].includes(ext)) {
@@ -1529,14 +1529,14 @@ function openDownloadOverlay(fileData, onConfirm, onCancel = null) {
       fileIcon.classList.add('folder');
     }
   }
-  
+
   // Show overlay
   overlay.hidden = false;
   overlay.classList.remove('hidden');
   overlay.classList.add('visible');
   overlay.setAttribute('aria-hidden', 'false');
   overlay.style.display = 'flex';
-  
+
   // Focus download button
   setTimeout(() => {
     document.getElementById('download-confirm')?.focus();
@@ -1546,13 +1546,13 @@ function openDownloadOverlay(fileData, onConfirm, onCancel = null) {
 function closeDownloadOverlay() {
   const overlay = document.getElementById('download-overlay');
   if (!overlay) return;
-  
+
   overlay.classList.remove('visible');
   overlay.classList.add('hidden');
   overlay.setAttribute('aria-hidden', 'true');
   overlay.hidden = true;
   overlay.style.display = 'none';
-  
+
   // Clear state
   downloadState = { fileData: null, confirmCallback: null, cancelCallback: null };
 }
@@ -1583,11 +1583,11 @@ function openDetailsOverlay(item, onAction = null) {
     console.error('[modals-handler] details-overlay element not found!');
     return;
   }
-  
+
   // Store state
   detailsState.item = item;
   detailsState.actionCallback = onAction;
-  
+
   // Update details info
   const nameEl = document.getElementById('details-name');
   const typeEl = document.getElementById('details-type');
@@ -1596,9 +1596,9 @@ function openDetailsOverlay(item, onAction = null) {
   const pathEl = document.getElementById('details-path');
   const subtitleEl = document.getElementById('details-subtitle');
   const iconEl = document.getElementById('details-icon');
-  
+
   if (nameEl) nameEl.textContent = item.name || '-';
-  
+
   if (typeEl) {
     if (item.type === 'folder') {
       typeEl.textContent = 'Folder';
@@ -1607,7 +1607,7 @@ function openDetailsOverlay(item, onAction = null) {
       typeEl.textContent = ext + ' File';
     }
   }
-  
+
   if (modifiedEl) {
     // Format timestamp to readable date
     let dateValue = item.modified || item.date || item.mtime;
@@ -1619,7 +1619,7 @@ function openDetailsOverlay(item, onAction = null) {
         const date = new Date(timestamp * 1000);
         dateValue = date.toLocaleDateString('id-ID', {
           day: 'numeric',
-          month: 'long', 
+          month: 'long',
           year: 'numeric',
           hour: '2-digit',
           minute: '2-digit'
@@ -1628,7 +1628,7 @@ function openDetailsOverlay(item, onAction = null) {
     }
     modifiedEl.textContent = dateValue || '-';
   }
-  
+
   if (sizeEl) {
     if (item.type === 'folder') {
       sizeEl.textContent = '-';
@@ -1636,17 +1636,17 @@ function openDetailsOverlay(item, onAction = null) {
       sizeEl.textContent = item.size || formatFileSize(item.sizeBytes || 0);
     }
   }
-  
+
   if (pathEl) {
     const path = item.path || '-';
     pathEl.textContent = path;
     pathEl.title = path;
   }
-  
+
   if (subtitleEl) {
     subtitleEl.textContent = item.name || 'Informasi lengkap';
   }
-  
+
   // Update icon based on type
   if (iconEl) {
     if (item.type === 'folder') {
@@ -1664,14 +1664,14 @@ function openDetailsOverlay(item, onAction = null) {
       iconEl.classList.remove('details-icon-folder');
     }
   }
-  
+
   // Show overlay
   overlay.hidden = false;
   overlay.classList.remove('hidden');
   overlay.classList.add('visible');
   overlay.setAttribute('aria-hidden', 'false');
   overlay.style.display = 'flex';
-  
+
   // Focus close button
   setTimeout(() => {
     document.getElementById('details-close-btn')?.focus();
@@ -1681,13 +1681,13 @@ function openDetailsOverlay(item, onAction = null) {
 function closeDetailsOverlay() {
   const overlay = document.getElementById('details-overlay');
   if (!overlay) return;
-  
+
   overlay.classList.remove('visible');
   overlay.classList.add('hidden');
   overlay.setAttribute('aria-hidden', 'true');
   overlay.hidden = true;
   overlay.style.display = 'none';
-  
+
   // Clear state
   detailsState = { item: null, actionCallback: null };
 }
@@ -1695,9 +1695,9 @@ function closeDetailsOverlay() {
 function handleDetailsAction(action) {
   const item = detailsState.item;
   if (!item) return;
-  
+
   closeDetailsOverlay();
-  
+
   switch (action) {
     case 'details-open':
       if (item.type === 'folder') {
@@ -1750,17 +1750,17 @@ function handleDetailsAction(action) {
 document.addEventListener('DOMContentLoaded', () => {
   // Close button
   document.getElementById('details-close-btn')?.addEventListener('click', closeDetailsOverlay);
-  
+
   // Click outside to close
-  document.getElementById('details-overlay')?.addEventListener('click', function(e) {
+  document.getElementById('details-overlay')?.addEventListener('click', function (e) {
     if (e.target === this) closeDetailsOverlay();
   });
-  
+
   // Action buttons
   ['details-open', 'details-rename', 'details-move', 'details-delete'].forEach(action => {
     document.getElementById(action)?.addEventListener('click', () => handleDetailsAction(action));
   });
-  
+
   // Escape key to close
   document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape') {

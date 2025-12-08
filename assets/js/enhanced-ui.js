@@ -167,7 +167,192 @@ async function moveItems(sourcePaths, destPath) {
   }
 }
 
+// ============= Archive Operations =============
+
+/**
+ * Compress selected files/folders into a ZIP archive
+ * @param {string[]} paths - Array of file/folder paths to compress
+ * @param {string|null} outputName - Optional custom name for the ZIP file
+ */
+async function compressItems(paths, outputName = null) {
+  if (!paths || paths.length === 0) {
+    showError('Tidak ada item yang dipilih untuk dikompres');
+    return;
+  }
+
+  showLoader(true);
+  try {
+    const response = await fetch(`${API_BASE}?action=compress`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        paths: paths,
+        name: outputName
+      })
+    });
+
+    const data = await response.json();
+    if (!data.success) {
+      throw new Error(data.error || 'Gagal membuat file ZIP');
+    }
+
+    await loadFiles(currentPath);
+    selected.clear();
+    render();
+
+    const sizeFormatted = formatSize(data.size);
+    showSuccess(`ZIP berhasil dibuat: ${data.name} (${sizeFormatted}, ${data.itemCount} item)`);
+
+    return data;
+  } catch (error) {
+    showError(error.message);
+    throw error;
+  } finally {
+    showLoader(false);
+  }
+}
+
+/**
+ * Extract a ZIP file
+ * @param {string} zipPath - Path to the ZIP file
+ * @param {string|null} extractTo - Optional extraction destination path
+ */
+async function extractZip(zipPath, extractTo = null) {
+  if (!zipPath) {
+    showError('Path file ZIP tidak valid');
+    return;
+  }
+
+  showLoader(true);
+  try {
+    const payload = { path: zipPath };
+    if (extractTo) {
+      payload.extractTo = extractTo;
+    }
+
+    const response = await fetch(`${API_BASE}?action=extract`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+
+    const data = await response.json();
+    if (!data.success) {
+      throw new Error(data.error || 'Gagal mengekstrak file ZIP');
+    }
+
+    await loadFiles(currentPath);
+    showSuccess(`ZIP berhasil diekstrak ke folder "${data.folderName}" (${data.itemCount} item)`);
+
+    return data;
+  } catch (error) {
+    showError(error.message);
+    throw error;
+  } finally {
+    showLoader(false);
+  }
+}
+
+/**
+ * Get contents of a ZIP file without extracting
+ * @param {string} zipPath - Path to the ZIP file
+ * @returns {Promise<Object>} ZIP contents information
+ */
+async function getZipContents(zipPath) {
+  if (!zipPath) {
+    throw new Error('Path file ZIP tidak valid');
+  }
+
+  const response = await fetch(`${API_BASE}?action=zip-contents&path=${encodeURIComponent(zipPath)}`);
+  const data = await response.json();
+
+  if (!data.success) {
+    throw new Error(data.error || 'Gagal membaca isi file ZIP');
+  }
+
+  return data;
+}
+
+/**
+ * Check if a file is an extractable archive based on extension
+ * Note: PHP only natively supports ZIP extraction
+ * @param {string} filename
+ * @returns {boolean}
+ */
+function isArchiveFile(filename) {
+  if (!filename) return false;
+  const ext = filename.toLowerCase();
+  // Only ZIP is supported natively by PHP without external tools
+  return ext.endsWith('.zip');
+}
+
+// Alias for backward compatibility
+function isZipFile(filename) {
+  return isArchiveFile(filename);
+}
+
+/**
+ * Inject archive operation buttons (Compress/Extract) into context menu
+ * Called once during initialization
+ */
+function injectArchiveContextMenuItems() {
+  // The context menu in index.php uses id="contextMenu"
+  const contextMenu = document.getElementById('contextMenu');
+  if (!contextMenu) {
+    console.warn('[enhanced-ui] Context menu (#contextMenu) not found, cannot inject archive buttons');
+    return;
+  }
+
+  // Find all dividers (separators) in the context menu
+  const dividers = contextMenu.querySelectorAll('.context-menu-divider');
+  if (dividers.length === 0) {
+    console.warn('[enhanced-ui] No dividers found in context menu');
+    return;
+  }
+
+  // Get the last divider (before delete button)
+  const lastDivider = dividers[dividers.length - 1];
+
+  // Create Compress button
+  const compressBtn = document.createElement('button');
+  compressBtn.className = 'context-menu-item';
+  compressBtn.setAttribute('data-action', 'compress');
+  compressBtn.setAttribute('role', 'menuitem');
+  compressBtn.setAttribute('aria-label', 'Compress to ZIP');
+  compressBtn.innerHTML = `
+    <i class="ri-file-zip-line context-menu-icon" aria-hidden="true"></i>
+    <span>Kompres ke ZIP</span>
+  `;
+
+  // Create Extract button (hidden by default, shown only for ZIP files)
+  const extractBtn = document.createElement('button');
+  extractBtn.id = 'context-extract-btn';
+  extractBtn.className = 'context-menu-item';
+  extractBtn.setAttribute('data-action', 'extract');
+  extractBtn.setAttribute('role', 'menuitem');
+  extractBtn.setAttribute('aria-label', 'Extract ZIP file');
+  extractBtn.style.display = 'none';
+  extractBtn.innerHTML = `
+    <i class="ri-folder-zip-line context-menu-icon" aria-hidden="true"></i>
+    <span>Ekstrak di Sini</span>
+  `;
+
+  // Create a new divider for archive section
+  const archiveDivider = document.createElement('div');
+  archiveDivider.className = 'context-menu-divider';
+  archiveDivider.setAttribute('role', 'separator');
+  archiveDivider.setAttribute('aria-hidden', 'true');
+
+  // Insert: divider, compress, extract, then existing last divider comes after
+  contextMenu.insertBefore(archiveDivider, lastDivider);
+  contextMenu.insertBefore(compressBtn, lastDivider);
+  contextMenu.insertBefore(extractBtn, lastDivider);
+
+  console.log('[enhanced-ui] Archive context menu items injected successfully');
+}
+
 // ============= UI Utilities =============
+
 
 function showLoader(show) {
   if (loaderOverlay) {
@@ -1210,6 +1395,13 @@ function handleContextMenu(e) {
   currentContextId = path;
   contextFileData = fileData;
 
+  // Show/hide extract button based on file type (supports ZIP, 7z, RAR, TAR.GZ)
+  const extractBtn = document.getElementById('context-extract-btn');
+  if (extractBtn) {
+    const isArchive = fileData && fileData.name && isArchiveFile(fileData.name);
+    extractBtn.style.display = isArchive ? '' : 'none';
+  }
+
   // Show context menu
   ctxMenu.classList.remove('hidden');
   ctxMenu.classList.add('visible');
@@ -1362,6 +1554,25 @@ function initializeEventHandlers() {
         window.openDetailsOverlay({ ...fileData, path });
       } else {
         console.error('[enhanced-ui] openDetailsOverlay not available on window');
+      }
+    } else if (action === 'compress') {
+      // Compress file/folder to ZIP
+      const pathsToCompress = selected.size > 0 ? Array.from(selected) : [path];
+      try {
+        await compressItems(pathsToCompress);
+      } catch (error) {
+        console.error('[enhanced-ui] Compress error:', error);
+      }
+    } else if (action === 'extract') {
+      // Extract archive file (ZIP, 7z, RAR, TAR.GZ)
+      if (fileData && isArchiveFile(fileData.name)) {
+        try {
+          await extractZip(path);
+        } catch (error) {
+          console.error('[enhanced-ui] Extract error:', error);
+        }
+      } else {
+        showError('File ini bukan format arsip yang didukung');
       }
     }
   });
@@ -1571,7 +1782,7 @@ function initializeEventHandlers() {
 
       if (data.success) {
         const uploadedCount = data.uploaded?.length || 0;
-        const failedCount = data.failed?.length || 0;
+        const failedCount = data.errors?.length || 0;
         if (uploadedCount > 0) {
           showSuccess(`${uploadedCount} file berhasil diunggah${failedCount > 0 ? `, ${failedCount} gagal` : ''}`);
         }
@@ -1651,7 +1862,7 @@ function initializeEventHandlers() {
 
       if (data.success) {
         const uploadedCount = data.uploaded?.length || 0;
-        const failedCount = data.failed?.length || 0;
+        const failedCount = data.errors?.length || 0;
         if (uploadedCount > 0) {
           showSuccess(`${uploadedCount} file berhasil diunggah${failedCount > 0 ? `, ${failedCount} gagal` : ''}`);
         } else {
@@ -2173,6 +2384,13 @@ document.addEventListener('DOMContentLoaded', async () => {
   // Export functions and state to window for use by modals-handler
   window.loadFiles = loadFiles;
   window.deleteItems = deleteItems;
+  window.formatSize = formatSize;
+  window.formatDate = formatDate;
+  window.compressItems = compressItems;
+  window.extractZip = extractZip;
+  window.getZipContents = getZipContents;
+  window.isZipFile = isZipFile;
+  window.isArchiveFile = isArchiveFile;
 
   // Export getter for currentPath so modals can access it
   Object.defineProperty(window, 'currentPath', {
@@ -2182,6 +2400,9 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   // Initialize event handlers
   initializeEventHandlers();
+
+  // Inject archive buttons into context menu
+  injectArchiveContextMenuItems();
 
   // Wait a bit before loading files to ensure all handlers are ready
   await new Promise(resolve => setTimeout(resolve, 100));

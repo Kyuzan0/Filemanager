@@ -1,5 +1,21 @@
 <?php
 
+// Debug mode - set to true during development, false in production
+if (!defined('FM_DEBUG')) {
+    define('FM_DEBUG', false);
+}
+
+/**
+ * Log debug message only when FM_DEBUG is enabled
+ */
+function fm_debug_log(string $message): void
+{
+    if (FM_DEBUG) {
+        error_log('[DEBUG] ' . $message);
+    }
+}
+
+
 function sanitize_relative_path(string $relativePath): string
 {
     $segments = preg_split('/[\\\\\/]+/', $relativePath, -1, PREG_SPLIT_NO_EMPTY);
@@ -213,27 +229,27 @@ function write_text_file(string $root, string $relativePath, string $content, ar
 
 function delete_single_path(string $root, string $relativePath): array
 {
-    error_log('[DEBUG] delete_single_path called with root: ' . $root . ' and relative path: ' . $relativePath);
-    
+    fm_debug_log('delete_single_path called with root: ' . $root . ' and relative path: ' . $relativePath);
+
     [$normalizedRoot, $sanitizedRelativeUrl, $realTargetPath] = resolve_path($root, $relativePath);
-    
-    error_log('[DEBUG] Resolved paths - normalizedRoot: ' . $normalizedRoot . ', sanitizedRelativeUrl: ' . $sanitizedRelativeUrl . ', realTargetPath: ' . $realTargetPath);
+
+    fm_debug_log('Resolved paths - normalizedRoot: ' . $normalizedRoot . ', sanitizedRelativeUrl: ' . $sanitizedRelativeUrl . ', realTargetPath: ' . $realTargetPath);
 
     if ($sanitizedRelativeUrl === '') {
-        error_log('[DEBUG] Attempted to delete root directory');
+        fm_debug_log('Attempted to delete root directory');
         throw new RuntimeException('Tidak dapat menghapus direktori root.');
     }
 
     if (!file_exists($realTargetPath)) {
-        error_log('[DEBUG] Path does not exist: ' . $realTargetPath);
+        fm_debug_log('Path does not exist: ' . $realTargetPath);
         throw new RuntimeException('Path tidak ditemukan.');
     }
 
     $isDir = is_dir($realTargetPath);
-    error_log('[DEBUG] Path is directory: ' . ($isDir ? 'true' : 'false'));
+    fm_debug_log('Path is directory: ' . ($isDir ? 'true' : 'false'));
 
     if ($isDir) {
-        error_log('[DEBUG] Deleting directory recursively');
+        fm_debug_log('Deleting directory recursively');
         $iterator = new RecursiveIteratorIterator(
             new RecursiveDirectoryIterator(
                 $realTargetPath,
@@ -246,37 +262,37 @@ function delete_single_path(string $root, string $relativePath): array
             /** @var SplFileInfo $item */
             $pathName = $item->getPathname();
             if ($item->isDir()) {
-                error_log('[DEBUG] Deleting subdirectory: ' . $pathName);
+                fm_debug_log('Deleting subdirectory: ' . $pathName);
                 if (!@rmdir($pathName)) {
                     $error = error_get_last();
                     $message = $error['message'] ?? 'Gagal menghapus direktori.';
-                    error_log('[DEBUG] Failed to delete subdirectory: ' . $pathName . ' with error: ' . $message);
+                    fm_debug_log('Failed to delete subdirectory: ' . $pathName . ' with error: ' . $message);
                     throw new RuntimeException($message);
                 }
             } else {
-                error_log('[DEBUG] Deleting file: ' . $pathName);
+                fm_debug_log('Deleting file: ' . $pathName);
                 if (!@unlink($pathName)) {
                     $error = error_get_last();
                     $message = $error['message'] ?? 'Gagal menghapus file.';
-                    error_log('[DEBUG] Failed to delete file: ' . $pathName . ' with error: ' . $message);
+                    fm_debug_log('Failed to delete file: ' . $pathName . ' with error: ' . $message);
                     throw new RuntimeException($message);
                 }
             }
         }
 
-        error_log('[DEBUG] Deleting main directory: ' . $realTargetPath);
+        fm_debug_log('Deleting main directory: ' . $realTargetPath);
         if (!@rmdir($realTargetPath)) {
             $error = error_get_last();
             $message = $error['message'] ?? 'Gagal menghapus direktori.';
-            error_log('[DEBUG] Failed to delete main directory: ' . $realTargetPath . ' with error: ' . $message);
+            fm_debug_log('Failed to delete main directory: ' . $realTargetPath . ' with error: ' . $message);
             throw new RuntimeException($message);
         }
     } else {
-        error_log('[DEBUG] Deleting file: ' . $realTargetPath);
+        fm_debug_log('Deleting file: ' . $realTargetPath);
         if (!@unlink($realTargetPath)) {
             $error = error_get_last();
             $message = $error['message'] ?? 'Gagal menghapus file.';
-            error_log('[DEBUG] Failed to delete file: ' . $realTargetPath . ' with error: ' . $message);
+            fm_debug_log('Failed to delete file: ' . $realTargetPath . ' with error: ' . $message);
             throw new RuntimeException($message);
         }
     }
@@ -286,45 +302,45 @@ function delete_single_path(string $root, string $relativePath): array
         'path' => $sanitizedRelativeUrl,
         'type' => $isDir ? 'folder' : 'file',
     ];
-    
-    error_log('[DEBUG] Successfully deleted item: ' . json_encode($result));
+
+    fm_debug_log('Successfully deleted item: ' . json_encode($result));
     return $result;
 }
 
 function delete_paths(string $root, array $relativePaths): array
 {
-    error_log('[DEBUG] delete_paths called with root: ' . $root . ' and paths: ' . implode(', ', $relativePaths));
-    
+    fm_debug_log('delete_paths called with root: ' . $root . ' and paths: ' . implode(', ', $relativePaths));
+
     $deleted = [];
     $errors = [];
 
     $uniquePaths = [];
     foreach ($relativePaths as $path) {
         if (!is_string($path)) {
-            error_log('[DEBUG] Skipping non-string path: ' . print_r($path, true));
+            fm_debug_log('Skipping non-string path: ' . print_r($path, true));
             continue;
         }
 
         $sanitized = sanitize_relative_path($path);
         if ($sanitized === '' || isset($uniquePaths[$sanitized])) {
-            error_log('[DEBUG] Skipping empty or duplicate path: ' . $sanitized);
+            fm_debug_log('Skipping empty or duplicate path: ' . $sanitized);
             continue;
         }
 
         $uniquePaths[$sanitized] = $sanitized;
-        error_log('[DEBUG] Added unique path: ' . $sanitized);
+        fm_debug_log('Added unique path: ' . $sanitized);
     }
 
     foreach ($uniquePaths as $sanitized) {
         try {
-            error_log('[DEBUG] Attempting to delete path: ' . $sanitized);
+            fm_debug_log('Attempting to delete path: ' . $sanitized);
             $result = delete_single_path($root, $sanitized);
             $deleted[] = $result;
-            
-            error_log('[DEBUG] Successfully deleted path: ' . $sanitized);
+
+            fm_debug_log('Successfully deleted path: ' . $sanitized);
         } catch (Throwable $e) {
-            error_log('[DEBUG] Failed to delete path: ' . $sanitized . ' with error: ' . $e->getMessage());
-            
+            fm_debug_log('Failed to delete path: ' . $sanitized . ' with error: ' . $e->getMessage());
+
             $errors[] = [
                 'path' => $sanitized,
                 'error' => $e->getMessage(),
@@ -336,8 +352,8 @@ function delete_paths(string $root, array $relativePaths): array
         'deleted' => $deleted,
         'errors' => $errors,
     ];
-    
-    error_log('[DEBUG] delete_paths result: ' . json_encode($result));
+
+    fm_debug_log('delete_paths result: ' . json_encode($result));
     return $result;
 }
 
@@ -364,7 +380,7 @@ function prepare_creation_target(string $root, string $relativePath): array
         throw new RuntimeException('Nama tidak valid.');
     }
 
-    $parentRelative = implode('/', array_filter($segments, static fn ($value) => $value !== ''));
+    $parentRelative = implode('/', array_filter($segments, static fn($value) => $value !== ''));
     $parentPath = $normalizedRoot;
 
     if ($parentRelative !== '') {
@@ -652,7 +668,7 @@ function upload_files_with_folders(string $root, string $relativePath, array $fi
         $targetDir = $realTargetPath;
         if (!empty($subfolderPath)) {
             $targetDir = $realTargetPath . DIRECTORY_SEPARATOR . str_replace('/', DIRECTORY_SEPARATOR, $subfolderPath);
-            
+
             // Create subdirectories if they don't exist
             if (!is_dir($targetDir)) {
                 if (!@mkdir($targetDir, 0755, true)) {
@@ -695,7 +711,7 @@ function upload_files_with_folders(string $root, string $relativePath, array $fi
         }
 
         clearstatcache(true, $targetPath);
-        
+
         // Build relative path for response
         $relativeItemPath = $sanitizedRelativeUrl === '' ? '' : $sanitizedRelativeUrl . '/';
         if (!empty($subfolderPath)) {
@@ -786,7 +802,7 @@ function upload_chunk(string $root, string $relativePath, array $fileEntry, stri
             @mkdir($chunkDir, 0755, true);
         }
 
-        $chunkPath = $chunkDir . DIRECTORY_SEPARATOR . 'chunk_' . (int)$chunkIndex . '.part';
+        $chunkPath = $chunkDir . DIRECTORY_SEPARATOR . 'chunk_' . (int) $chunkIndex . '.part';
 
         if (!@move_uploaded_file($fileEntry['tmp_name'], $chunkPath)) {
             $err = error_get_last();
@@ -983,7 +999,7 @@ function upload_chunk_with_folder(string $root, string $relativePath, array $fil
         $targetDir = $realTargetPath;
         if (!empty($subfolderPath)) {
             $targetDir = $realTargetPath . DIRECTORY_SEPARATOR . str_replace('/', DIRECTORY_SEPARATOR, $subfolderPath);
-            
+
             if (!is_dir($targetDir)) {
                 if (!@mkdir($targetDir, 0755, true)) {
                     $error = error_get_last();
@@ -1002,7 +1018,7 @@ function upload_chunk_with_folder(string $root, string $relativePath, array $fil
             @mkdir($chunkDir, 0755, true);
         }
 
-        $chunkPath = $chunkDir . DIRECTORY_SEPARATOR . 'chunk_' . (int)$chunkIndex . '.part';
+        $chunkPath = $chunkDir . DIRECTORY_SEPARATOR . 'chunk_' . (int) $chunkIndex . '.part';
 
         if (!@move_uploaded_file($fileEntry['tmp_name'], $chunkPath)) {
             $err = error_get_last();
@@ -1119,7 +1135,7 @@ function upload_chunk_with_folder(string $root, string $relativePath, array $fil
         @rmdir($chunkDir);
 
         clearstatcache(true, $targetPath);
-        
+
         // Build relative path for response
         $relativeItemPath = $sanitizedRelativeUrl === '' ? '' : $sanitizedRelativeUrl . '/';
         if (!empty($subfolderPath)) {
@@ -1209,75 +1225,75 @@ function rename_item(string $root, string $oldRelativePath, string $newRelativeP
     if ($normalizedRoot === false) {
         throw new RuntimeException('Root directory tidak ditemukan.');
     }
-    
+
     // Sanitize old path
     $sanitizedOldPath = sanitize_relative_path($oldRelativePath);
     if ($sanitizedOldPath === '') {
         throw new RuntimeException('Path item wajib diisi.');
     }
-    
+
     // Build old real path
     $oldRealPath = $normalizedRoot . DIRECTORY_SEPARATOR . str_replace('/', DIRECTORY_SEPARATOR, $sanitizedOldPath);
-    
+
     if (!file_exists($oldRealPath)) {
         throw new RuntimeException('Item yang akan diubah namanya tidak ditemukan.');
     }
-    
+
     $isDir = is_dir($oldRealPath);
     $targetType = $isDir ? 'folder' : 'file';
-    
+
     // Validasi path baru
     $segments = explode('/', $newRelativePath);
     $newName = array_pop($segments);
-    
+
     if ($newName === null || $newName === '') {
         throw new RuntimeException('Nama baru wajib diisi.');
     }
-    
+
     if (preg_match('/[\\\\\/]/', $newName)) {
         throw new RuntimeException('Nama tidak valid.');
     }
-    
+
     // Pastikan direktori induk dari path baru ada dan dapat ditulisi
-    $parentRelative = implode('/', array_filter($segments, static fn ($value) => $value !== ''));
+    $parentRelative = implode('/', array_filter($segments, static fn($value) => $value !== ''));
     $parentPath = $normalizedRoot;
-    
+
     if ($parentRelative !== '') {
         $sanitizedParentPath = sanitize_relative_path($parentRelative);
         $parentPath = $normalizedRoot . DIRECTORY_SEPARATOR . str_replace('/', DIRECTORY_SEPARATOR, $sanitizedParentPath);
-        
+
         if (!is_dir($parentPath)) {
             throw new RuntimeException('Direktori induk tidak ditemukan.');
         }
     }
-    
+
     assert_writable_directory($parentPath);
-    
+
     // Path lengkap untuk item baru
     $sanitizedNewPath = sanitize_relative_path($newRelativePath);
     $newRealPath = $normalizedRoot . DIRECTORY_SEPARATOR . str_replace('/', DIRECTORY_SEPARATOR, $sanitizedNewPath);
-    
+
     if (file_exists($newRealPath)) {
         throw new RuntimeException('Nama sudah digunakan.');
     }
-    
+
     try {
         // Lakukan rename
         if (!@rename($oldRealPath, $newRealPath)) {
             $error = error_get_last();
             $message = $error['message'] ?? 'Gagal mengubah nama item.';
-            
+
             throw new RuntimeException($message);
         }
-        
+
         clearstatcache(true, $newRealPath);
         $modified = filemtime($newRealPath) ?: time();
-        
+
         $size = 0;
         if ($targetType === 'file') {
             $size = filesize($newRealPath) ?: 0;
         }
-        
+
         return [
             'name' => $newName,
             'path' => $sanitizedNewPath,
@@ -1292,90 +1308,90 @@ function rename_item(string $root, string $oldRelativePath, string $newRelativeP
 
 function move_item(string $root, string $oldRelativePath, string $newRelativePath): array
 {
-    error_log('[DEBUG] move_item called with oldPath: "' . $oldRelativePath . '", newPath: "' . $newRelativePath . '"');
-    
+    fm_debug_log('move_item called with oldPath: "' . $oldRelativePath . '", newPath: "' . $newRelativePath . '"');
+
     $normalizedRoot = realpath($root);
     if ($normalizedRoot === false) {
         throw new RuntimeException('Root directory tidak ditemukan.');
     }
-    
+
     // Sanitize old path
     $sanitizedOldPath = sanitize_relative_path($oldRelativePath);
     if ($sanitizedOldPath === '') {
         throw new RuntimeException('Path item wajib diisi.');
     }
-    
+
     // Build old real path
     $oldRealPath = $normalizedRoot . DIRECTORY_SEPARATOR . str_replace('/', DIRECTORY_SEPARATOR, $sanitizedOldPath);
-    
+
     if (!file_exists($oldRealPath)) {
         throw new RuntimeException('Item yang akan dipindahkan tidak ditemukan.');
     }
-    
+
     $isDir = is_dir($oldRealPath);
     $targetType = $isDir ? 'folder' : 'file';
-    
+
     // Validasi path baru
     $segments = explode('/', $newRelativePath);
-    
+
     // If targetPath is empty (moving to root), extract filename from old path
     if ($newRelativePath === '') {
         $newName = basename($oldRealPath); // Use basename from real path
     } else {
         $newName = array_pop($segments);
     }
-    
+
     if ($newName === null || $newName === '') {
         throw new RuntimeException('Nama baru wajib diisi.');
     }
-    
+
     if (preg_match('/[\\\\\/]/', $newName)) {
         throw new RuntimeException('Nama tidak valid.');
     }
-    
+
     // Pastikan direktori induk dari path baru ada dan dapat ditulisi
-    $parentRelative = implode('/', array_filter($segments, static fn ($value) => $value !== ''));
+    $parentRelative = implode('/', array_filter($segments, static fn($value) => $value !== ''));
     $parentPath = $normalizedRoot;
-    
+
     if ($parentRelative !== '') {
         $sanitizedParentPath = sanitize_relative_path($parentRelative);
         $parentPath = $normalizedRoot . DIRECTORY_SEPARATOR . str_replace('/', DIRECTORY_SEPARATOR, $sanitizedParentPath);
-        
+
         if (!is_dir($parentPath)) {
             throw new RuntimeException('Direktori induk tidak ditemukan.');
         }
     }
-    
+
     assert_writable_directory($parentPath);
-    
+
     // Path lengkap untuk item baru
     // If newRelativePath is empty, it means move to root
     $sanitizedNewPath = sanitize_relative_path($newRelativePath);
     $newRealPath = $normalizedRoot . DIRECTORY_SEPARATOR . str_replace('/', DIRECTORY_SEPARATOR, $sanitizedNewPath);
-    
+
     if (file_exists($newRealPath)) {
         throw new RuntimeException('Nama sudah digunakan di lokasi tujuan.');
     }
-    
-    error_log('[DEBUG] Moving from "' . $oldRealPath . '" to "' . $newRealPath . '"');
-    
+
+    fm_debug_log('Moving from "' . $oldRealPath . '" to "' . $newRealPath . '"');
+
     try {
         // Lakukan move
         if (!@rename($oldRealPath, $newRealPath)) {
             $error = error_get_last();
             $message = $error['message'] ?? 'Gagal memindahkan item.';
-            
+
             throw new RuntimeException($message);
         }
-        
+
         clearstatcache(true, $newRealPath);
         $modified = filemtime($newRealPath) ?: time();
-        
+
         $size = 0;
         if ($targetType === 'file') {
             $size = filesize($newRealPath) ?: 0;
         }
-        
+
         return [
             'name' => $newName,
             'path' => $sanitizedNewPath,
@@ -1392,37 +1408,37 @@ function move_items(string $root, array $sourcePaths, string $targetPath): array
 {
     $moved = [];
     $errors = [];
-    
+
     // Sanitize target path
     $sanitizedTargetPath = sanitize_relative_path($targetPath);
-    
+
     foreach ($sourcePaths as $sourcePath) {
         try {
             // Sanitize source path for comparison
             $sanitizedSourcePath = sanitize_relative_path($sourcePath);
-            
+
             // Prevent moving a folder into itself
             if ($sanitizedSourcePath === $sanitizedTargetPath) {
                 throw new RuntimeException('Tidak dapat memindahkan folder ke dalam dirinya sendiri.');
             }
-            
+
             // Prevent moving a folder into its own subdirectory
             if ($sanitizedTargetPath !== '' && strpos($sanitizedTargetPath, $sanitizedSourcePath . '/') === 0) {
                 throw new RuntimeException('Tidak dapat memindahkan folder ke dalam subdirektori-nya sendiri.');
             }
-            
+
             // Extract filename from source path
             $sourceSegments = explode('/', $sourcePath);
             $fileName = end($sourceSegments);
-            
+
             // Build new full path
             // If target path is empty, it means move to root
             $newPath = $sanitizedTargetPath === '' ? $fileName : $sanitizedTargetPath . '/' . $fileName;
-            
+
             // Move the item
             $result = move_item($root, $sourcePath, $newPath);
             $moved[] = $result;
-            
+
             // Log activity
             write_activity_log('move', $result['name'], $result['type'], $result['path'], [
                 'oldPath' => $sourcePath,
@@ -1435,7 +1451,7 @@ function move_items(string $root, array $sourcePaths, string $targetPath): array
             ];
         }
     }
-    
+
     return [
         'moved' => $moved,
         'errors' => $errors,
@@ -1478,28 +1494,28 @@ function validate_file_name(string $name): array
     if (empty($name)) {
         return ['valid' => false, 'error' => 'File name is required.'];
     }
-    
+
     $name = trim($name);
-    
+
     if (strlen($name) > 255) {
         return ['valid' => false, 'error' => 'File name is too long (max 255 characters).'];
     }
-    
+
     // Check for forbidden characters
     if (preg_match('/[<>:"\/\\\\|?*\x00-\x1f]/', $name)) {
         return ['valid' => false, 'error' => 'File name contains invalid characters.'];
     }
-    
+
     // Check for reserved names (Windows)
     if (preg_match('/^(con|prn|aux|nul|com[1-9]|lpt[1-9])(\.|$)/i', $name)) {
         return ['valid' => false, 'error' => 'This file name is reserved by the system.'];
     }
-    
+
     // Check for names that are just dots
     if (preg_match('/^\.+$/', $name)) {
         return ['valid' => false, 'error' => 'Invalid file name.'];
     }
-    
+
     return ['valid' => true, 'error' => null];
 }
 
@@ -1511,26 +1527,26 @@ function validate_file_name(string $name): array
 function sanitize_file_name(string $name): string
 {
     $name = trim($name);
-    
+
     // Replace forbidden characters with underscore
     $name = preg_replace('/[<>:"\/\\\\|?*\x00-\x1f]/', '_', $name);
-    
+
     // Replace multiple consecutive underscores
     $name = preg_replace('/_+/', '_', $name);
-    
+
     // Remove leading/trailing underscores and dots
     $name = preg_replace('/^[_.]+|[_.]+$/', '', $name);
-    
+
     // Handle reserved names
     if (preg_match('/^(con|prn|aux|nul|com[1-9]|lpt[1-9])$/i', $name)) {
         $name = '_' . $name;
     }
-    
+
     // Ensure we have something left
     if (empty($name)) {
         $name = 'unnamed';
     }
-    
+
     // Truncate if too long
     if (strlen($name) > 255) {
         $ext = pathinfo($name, PATHINFO_EXTENSION);
@@ -1538,7 +1554,7 @@ function sanitize_file_name(string $name): string
         $maxNameLength = $ext ? 255 - strlen($ext) - 1 : 255;
         $name = substr($nameWithoutExt, 0, $maxNameLength) . ($ext ? '.' . $ext : '');
     }
-    
+
     return $name;
 }
 
@@ -1552,20 +1568,42 @@ function validate_file_extension(string $filename, ?array $allowedExtensions = n
 {
     // Dangerous extensions that should never be allowed
     $dangerousExtensions = [
-        'exe', 'msi', 'dll', 'com', 'scr', 'pif',
-        'vbs', 'vbe', 'jse', 'ws', 'wsf', 'wsc', 'wsh',
-        'ps1', 'ps1xml', 'ps2', 'ps2xml', 'psc1', 'psc2',
-        'lnk', 'inf', 'reg', 'hta', 'cpl', 'msc',
-        'jar', 'jnlp'
+        'exe',
+        'msi',
+        'dll',
+        'com',
+        'scr',
+        'pif',
+        'vbs',
+        'vbe',
+        'jse',
+        'ws',
+        'wsf',
+        'wsc',
+        'wsh',
+        'ps1',
+        'ps1xml',
+        'ps2',
+        'ps2xml',
+        'psc1',
+        'psc2',
+        'lnk',
+        'inf',
+        'reg',
+        'hta',
+        'cpl',
+        'msc',
+        'jar',
+        'jnlp'
     ];
-    
+
     $ext = strtolower(pathinfo($filename, PATHINFO_EXTENSION));
-    
+
     if (empty($ext)) {
         // Files without extensions are allowed
         return ['valid' => true, 'error' => null, 'extension' => null];
     }
-    
+
     // Check for dangerous extensions
     if (in_array($ext, $dangerousExtensions, true)) {
         return [
@@ -1574,7 +1612,7 @@ function validate_file_extension(string $filename, ?array $allowedExtensions = n
             'extension' => $ext
         ];
     }
-    
+
     // If allowed extensions list is provided, check against it
     if ($allowedExtensions !== null && count($allowedExtensions) > 0) {
         if (!in_array($ext, $allowedExtensions, true)) {
@@ -1585,7 +1623,7 @@ function validate_file_extension(string $filename, ?array $allowedExtensions = n
             ];
         }
     }
-    
+
     return ['valid' => true, 'error' => null, 'extension' => $ext];
 }
 
@@ -1607,11 +1645,11 @@ function validate_file_size(int $size, string $filename): array
         'code' => 5 * 1024 * 1024,        // 5MB
         'default' => 25 * 1024 * 1024     // 25MB
     ];
-    
+
     $ext = strtolower(pathinfo($filename, PATHINFO_EXTENSION));
     $type = get_file_type_category($ext);
     $limit = $maxSizes[$type] ?? $maxSizes['default'];
-    
+
     if ($size > $limit) {
         $limitMB = round($limit / 1024 / 1024);
         $sizeMB = round($size / 1024 / 1024, 1);
@@ -1621,7 +1659,7 @@ function validate_file_size(int $size, string $filename): array
             'limit' => $limit
         ];
     }
-    
+
     return ['valid' => true, 'error' => null, 'limit' => $limit];
 }
 
@@ -1637,13 +1675,18 @@ function get_file_type_category(string $ext): string
     $audioExts = ['mp3', 'wav', 'ogg', 'flac', 'm4a', 'aac', 'wma'];
     $archiveExts = ['zip', 'rar', '7z', 'tar', 'gz', 'bz2'];
     $codeExts = ['js', 'ts', 'jsx', 'tsx', 'php', 'py', 'rb', 'java', 'c', 'cpp', 'go', 'rs'];
-    
-    if (in_array($ext, $imageExts, true)) return 'image';
-    if (in_array($ext, $videoExts, true)) return 'video';
-    if (in_array($ext, $audioExts, true)) return 'audio';
-    if (in_array($ext, $archiveExts, true)) return 'archive';
-    if (in_array($ext, $codeExts, true)) return 'code';
-    
+
+    if (in_array($ext, $imageExts, true))
+        return 'image';
+    if (in_array($ext, $videoExts, true))
+        return 'video';
+    if (in_array($ext, $audioExts, true))
+        return 'audio';
+    if (in_array($ext, $archiveExts, true))
+        return 'archive';
+    if (in_array($ext, $codeExts, true))
+        return 'code';
+
     return 'document';
 }
 
@@ -1658,16 +1701,18 @@ function validate_path_security(string $path): array
     if (strpos($path, "\0") !== false) {
         return ['valid' => false, 'error' => 'Invalid path: null byte detected.'];
     }
-    
+
     // Check for URL encoded traversal attempts
     $decodedPath = urldecode($path);
-    if ($decodedPath !== $path && (
-        strpos($decodedPath, '..') !== false ||
-        strpos($decodedPath, '%') !== false
-    )) {
+    if (
+        $decodedPath !== $path && (
+            strpos($decodedPath, '..') !== false ||
+            strpos($decodedPath, '%') !== false
+        )
+    ) {
         return ['valid' => false, 'error' => 'Invalid path: encoded traversal detected.'];
     }
-    
+
     // Check for various traversal patterns
     $traversalPatterns = [
         '/\.\./',           // Parent directory
@@ -1678,18 +1723,18 @@ function validate_path_security(string $path): array
         '/\.\.%2f/i',       // Mixed encoding
         '/\.\.%5c/i'        // Mixed encoding (backslash)
     ];
-    
+
     foreach ($traversalPatterns as $pattern) {
         if (preg_match($pattern, $path)) {
             return ['valid' => false, 'error' => 'Invalid path: directory traversal detected.'];
         }
     }
-    
+
     // Check path length
     if (strlen($path) > 4096) {
         return ['valid' => false, 'error' => 'Path is too long.'];
     }
-    
+
     return ['valid' => true, 'error' => null];
 }
 
@@ -1702,32 +1747,32 @@ function validate_path_security(string $path): array
 function validate_upload_security(array $fileEntry, string $originalName): array
 {
     $errors = [];
-    
+
     // Validate file name
     $nameResult = validate_file_name($originalName);
     if (!$nameResult['valid']) {
         $errors[] = $nameResult['error'];
     }
-    
+
     // Validate extension
     $extResult = validate_file_extension($originalName);
     if (!$extResult['valid']) {
         $errors[] = $extResult['error'];
     }
-    
+
     // Validate size
     $size = $fileEntry['size'] ?? 0;
     $sizeResult = validate_file_size($size, $originalName);
     if (!$sizeResult['valid']) {
         $errors[] = $sizeResult['error'];
     }
-    
+
     // Check if it's a valid uploaded file
     $tmpName = $fileEntry['tmp_name'] ?? '';
     if (!empty($tmpName) && !is_uploaded_file($tmpName)) {
         $errors[] = 'Invalid upload file.';
     }
-    
+
     return [
         'valid' => count($errors) === 0,
         'errors' => $errors
@@ -1759,19 +1804,19 @@ function is_rate_limited(string $action, int $maxAttempts = 30, int $windowSecon
     if (session_status() === PHP_SESSION_NONE) {
         session_start();
     }
-    
+
     $key = get_rate_limit_key($action);
     $now = time();
-    
+
     if (!isset($_SESSION[$key])) {
         $_SESSION[$key] = [];
     }
-    
+
     // Remove old entries outside the window
-    $_SESSION[$key] = array_filter($_SESSION[$key], function($timestamp) use ($now, $windowSeconds) {
+    $_SESSION[$key] = array_filter($_SESSION[$key], function ($timestamp) use ($now, $windowSeconds) {
         return ($now - $timestamp) < $windowSeconds;
     });
-    
+
     // Check if we've exceeded the limit
     return count($_SESSION[$key]) >= $maxAttempts;
 }
@@ -1785,13 +1830,13 @@ function record_rate_limit_attempt(string $action): void
     if (session_status() === PHP_SESSION_NONE) {
         session_start();
     }
-    
+
     $key = get_rate_limit_key($action);
-    
+
     if (!isset($_SESSION[$key])) {
         $_SESSION[$key] = [];
     }
-    
+
     $_SESSION[$key][] = time();
 }
 
@@ -1807,26 +1852,26 @@ function get_rate_limit_status(string $action, int $maxAttempts = 30, int $windo
     if (session_status() === PHP_SESSION_NONE) {
         session_start();
     }
-    
+
     $key = get_rate_limit_key($action);
     $now = time();
-    
+
     if (!isset($_SESSION[$key])) {
         $_SESSION[$key] = [];
     }
-    
+
     // Remove old entries
-    $_SESSION[$key] = array_filter($_SESSION[$key], function($timestamp) use ($now, $windowSeconds) {
+    $_SESSION[$key] = array_filter($_SESSION[$key], function ($timestamp) use ($now, $windowSeconds) {
         return ($now - $timestamp) < $windowSeconds;
     });
-    
+
     $currentCount = count($_SESSION[$key]);
     $remaining = max(0, $maxAttempts - $currentCount);
-    
+
     // Calculate reset time
     $oldestEntry = !empty($_SESSION[$key]) ? min($_SESSION[$key]) : $now;
     $resetTime = $oldestEntry + $windowSeconds;
-    
+
     return [
         'limited' => $currentCount >= $maxAttempts,
         'remaining' => $remaining,
@@ -1859,16 +1904,16 @@ function sanitize_html_content(string $html): string
 {
     // Remove script tags and content
     $html = preg_replace('/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/is', '', $html);
-    
+
     // Remove style tags and content
     $html = preg_replace('/<style\b[^<]*(?:(?!<\/style>)<[^<]*)*<\/style>/is', '', $html);
-    
+
     // Remove event handlers
     $html = preg_replace('/\s*on\w+\s*=\s*["\'][^"\']*["\']/i', '', $html);
-    
+
     // Remove javascript: URLs
     $html = preg_replace('/javascript\s*:/i', '', $html);
-    
+
     return $html;
 }
 
@@ -1880,27 +1925,27 @@ function sanitize_html_content(string $html): string
 function check_content_safety(string $content): array
 {
     $warnings = [];
-    
+
     // Check for script tags
     if (preg_match('/<script\b/i', $content)) {
         $warnings[] = 'Content contains script tags.';
     }
-    
+
     // Check for event handlers
     if (preg_match('/\bon\w+\s*=/i', $content)) {
         $warnings[] = 'Content contains event handlers.';
     }
-    
+
     // Check for JavaScript URLs
     if (preg_match('/javascript\s*:/i', $content)) {
         $warnings[] = 'Content contains JavaScript URLs.';
     }
-    
+
     // Check for embedded objects
     if (preg_match('/<(object|embed|iframe)\b/i', $content)) {
         $warnings[] = 'Content contains embedded objects.';
     }
-    
+
     return [
         'safe' => count($warnings) === 0,
         'warnings' => $warnings
@@ -1927,13 +1972,13 @@ function verify_csrf_token(string $token): bool
     if (session_status() === PHP_SESSION_NONE) {
         session_start();
     }
-    
+
     $storedToken = $_SESSION['csrf_token'] ?? '';
-    
+
     if (empty($storedToken) || empty($token)) {
         return false;
     }
-    
+
     return hash_equals($storedToken, $token);
 }
 
@@ -1946,10 +1991,10 @@ function generate_csrf_token(): string
     if (session_status() === PHP_SESSION_NONE) {
         session_start();
     }
-    
+
     $token = generate_secure_token();
     $_SESSION['csrf_token'] = $token;
-    
+
     return $token;
 }
 
@@ -1965,7 +2010,7 @@ function ensure_logs_directory(): void
             throw new RuntimeException('Gagal membuat direktori logs.');
         }
     }
-    
+
     if (!is_writable($logsDir)) {
         throw new RuntimeException('Direktori logs tidak dapat ditulisi.');
     }

@@ -2,6 +2,7 @@
 require_once __DIR__ . '/lib/file_manager.php';
 require_once __DIR__ . '/lib/trash_manager.php';
 require_once __DIR__ . '/lib/log_manager.php';
+require_once __DIR__ . '/lib/archive_manager.php';
 
 header('Content-Type: application/json; charset=utf-8');
 
@@ -28,22 +29,22 @@ try {
     // =========================================================================
     // RAW FILE ENDPOINT (for media preview)
     // =========================================================================
-    
+
     if ($action === 'raw') {
         if ($sanitizedPath === '') {
             throw new RuntimeException('Path file wajib diisi.');
         }
-        
+
         $fullPath = $root . DIRECTORY_SEPARATOR . str_replace('/', DIRECTORY_SEPARATOR, $sanitizedPath);
         $realFile = realpath($fullPath);
-        
+
         if ($realFile === false || strpos($realFile, $root) !== 0 || !is_file($realFile)) {
             http_response_code(404);
             header('Content-Type: application/json');
             echo json_encode(['success' => false, 'error' => 'File tidak ditemukan.']);
             exit;
         }
-        
+
         // MIME type detection
         $mimeTypes = [
             // Images
@@ -78,58 +79,58 @@ try {
             'tar' => 'application/x-tar',
             'gz' => 'application/gzip',
         ];
-        
+
         $ext = strtolower(pathinfo($realFile, PATHINFO_EXTENSION));
         $mimeType = isset($mimeTypes[$ext]) ? $mimeTypes[$ext] : 'application/octet-stream';
-        
+
         // Determine if file should be downloaded as attachment (not displayed inline)
         $forceDownload = in_array($ext, ['zip', 'rar', '7z', 'tar', 'gz', 'exe', 'msi', 'dmg', 'iso']);
         $disposition = $forceDownload ? 'attachment' : 'inline';
-        
+
         // Clear any previous output
         if (ob_get_level()) {
             ob_end_clean();
         }
-        
+
         // Set appropriate headers
         header('Content-Type: ' . $mimeType);
         header('Content-Length: ' . filesize($realFile));
         header('Content-Disposition: ' . $disposition . '; filename="' . basename($realFile) . '"');
         header('Cache-Control: public, max-age=3600');
         header('Accept-Ranges: bytes');
-        
+
         // Handle range requests for video/audio seeking
         $fileSize = filesize($realFile);
         $start = 0;
         $end = $fileSize - 1;
-        
+
         if (isset($_SERVER['HTTP_RANGE'])) {
             $range = $_SERVER['HTTP_RANGE'];
             if (preg_match('/bytes=(\d+)-(\d*)/', $range, $matches)) {
-                $start = (int)$matches[1];
+                $start = (int) $matches[1];
                 if (!empty($matches[2])) {
-                    $end = (int)$matches[2];
+                    $end = (int) $matches[2];
                 }
-                
+
                 if ($start > $end || $start >= $fileSize) {
                     http_response_code(416);
                     header('Content-Range: bytes */' . $fileSize);
                     exit;
                 }
-                
+
                 http_response_code(206);
                 header('Content-Range: bytes ' . $start . '-' . $end . '/' . $fileSize);
                 header('Content-Length: ' . ($end - $start + 1));
             }
         }
-        
+
         // Output file content
         $fp = fopen($realFile, 'rb');
         if ($fp) {
             fseek($fp, $start);
             $remaining = $end - $start + 1;
             $bufferSize = 8192;
-            
+
             while ($remaining > 0 && !feof($fp)) {
                 $readLength = min($bufferSize, $remaining);
                 echo fread($fp, $readLength);
@@ -140,16 +141,16 @@ try {
         }
         exit;
     }
-    
+
     // =========================================================================
     // LOGS API ENDPOINTS
     // =========================================================================
-    
+
     if ($action === 'logs') {
         // Get activity logs with optional filtering and pagination
-        $page = isset($_GET['page']) ? max(1, (int)$_GET['page']) : 1;
-        $limit = isset($_GET['limit']) ? max(1, min(100, (int)$_GET['limit'])) : 20;
-        
+        $page = isset($_GET['page']) ? max(1, (int) $_GET['page']) : 1;
+        $limit = isset($_GET['limit']) ? max(1, min(100, (int) $_GET['limit'])) : 20;
+
         $filters = [];
         if (isset($_GET['filterAction']) && $_GET['filterAction'] !== '') {
             $filters['action'] = $_GET['filterAction'];
@@ -160,9 +161,9 @@ try {
         if (isset($_GET['search']) && $_GET['search'] !== '') {
             $filters['search'] = $_GET['search'];
         }
-        
+
         $result = read_activity_logs($limit, $page, $filters);
-        
+
         echo json_encode([
             'success' => true,
             'type' => 'logs',
@@ -177,20 +178,20 @@ try {
         ], JSON_UNESCAPED_UNICODE);
         exit;
     }
-    
+
     if ($action === 'logs-cleanup') {
         if (strtoupper($method) !== 'POST') {
             throw new RuntimeException('Metode HTTP tidak diizinkan.');
         }
-        
+
         $rawBody = file_get_contents('php://input');
         $payload = json_decode($rawBody, true);
-        
+
         // Allow days = 0 for "delete all", otherwise minimum 1 day
-        $days = isset($payload['days']) ? max(0, (int)$payload['days']) : 30;
-        
+        $days = isset($payload['days']) ? max(0, (int) $payload['days']) : 30;
+
         $deletedCount = cleanup_activity_logs($days);
-        
+
         // Log the cleanup action itself (only if not deleting all logs)
         if ($days > 0 || $deletedCount > 0) {
             write_activity_log('cleanup', 'activity_logs', 'system', '', [
@@ -199,7 +200,7 @@ try {
                 'type' => $days === 0 ? 'all' : 'by_age'
             ]);
         }
-        
+
         echo json_encode([
             'success' => true,
             'type' => 'logs-cleanup',
@@ -209,10 +210,10 @@ try {
         ], JSON_UNESCAPED_UNICODE);
         exit;
     }
-    
+
     if ($action === 'logs-export') {
         $format = isset($_GET['format']) ? strtolower($_GET['format']) : 'json';
-        
+
         $filters = [];
         if (isset($_GET['filterAction']) && $_GET['filterAction'] !== '') {
             $filters['action'] = $_GET['filterAction'];
@@ -223,16 +224,16 @@ try {
         if (isset($_GET['search']) && $_GET['search'] !== '') {
             $filters['search'] = $_GET['search'];
         }
-        
+
         $logs = export_activity_logs($filters, 10000);
-        
+
         if ($format === 'csv') {
             header('Content-Type: text/csv; charset=utf-8');
             header('Content-Disposition: attachment; filename="activity_logs_' . date('Y-m-d_His') . '.csv"');
-            
+
             // CSV header
             echo "Waktu,Aksi,File,Tipe,Path,IP,Browser\n";
-            
+
             foreach ($logs as $log) {
                 $actionDisplay = $log['action'] ?? 'unknown';
                 $fileDisplay = $log['filename'] ?? '-';
@@ -241,10 +242,12 @@ try {
                 $ip = $log['ip'] ?? '-';
                 $browser = $log['userAgent'] ?? '-';
                 $time = isset($log['timestamp']) ? date('Y-m-d H:i:s', $log['timestamp']) : '-';
-                
+
                 // Escape CSV values
                 $row = [$time, $actionDisplay, $fileDisplay, $type, $path, $ip, $browser];
-                echo '"' . implode('","', array_map(function($v) { return str_replace('"', '""', $v); }, $row)) . "\"\n";
+                echo '"' . implode('","', array_map(function ($v) {
+                    return str_replace('"', '""', $v);
+                }, $row)) . "\"\n";
             }
         } else {
             header('Content-Type: application/json; charset=utf-8');
@@ -253,14 +256,14 @@ try {
         }
         exit;
     }
-    
+
     // =========================================================================
     // TRASH API ENDPOINTS
     // =========================================================================
-    
+
     if ($action === 'trash-list') {
         $items = list_trash_items();
-        
+
         echo json_encode([
             'success' => true,
             'type' => 'trash-list',
@@ -270,40 +273,40 @@ try {
         ], JSON_UNESCAPED_UNICODE);
         exit;
     }
-    
+
     if ($action === 'trash-restore') {
         if (strtoupper($method) !== 'POST') {
             throw new RuntimeException('Metode HTTP tidak diizinkan.');
         }
-        
+
         $rawBody = file_get_contents('php://input');
         if ($rawBody === false) {
             throw new RuntimeException('Payload tidak dapat dibaca.');
         }
-        
+
         $payload = json_decode($rawBody, true);
         if (!is_array($payload)) {
             throw new RuntimeException('Payload tidak valid.');
         }
-        
+
         $ids = [];
         if (isset($payload['ids']) && is_array($payload['ids'])) {
             $ids = array_filter($payload['ids'], 'is_string');
         } elseif (isset($payload['id']) && is_string($payload['id'])) {
             $ids = [$payload['id']];
         }
-        
+
         if (empty($ids)) {
             throw new RuntimeException('ID trash wajib diisi.');
         }
-        
+
         $result = restore_from_trash($root, $ids);
         $success = count($result['errors']) === 0;
-        
+
         if (!$success) {
             http_response_code(207);
         }
-        
+
         echo json_encode([
             'success' => $success,
             'type' => 'trash-restore',
@@ -313,40 +316,40 @@ try {
         ], JSON_UNESCAPED_UNICODE);
         exit;
     }
-    
+
     if ($action === 'trash-delete') {
         if (strtoupper($method) !== 'POST') {
             throw new RuntimeException('Metode HTTP tidak diizinkan.');
         }
-        
+
         $rawBody = file_get_contents('php://input');
         if ($rawBody === false) {
             throw new RuntimeException('Payload tidak dapat dibaca.');
         }
-        
+
         $payload = json_decode($rawBody, true);
         if (!is_array($payload)) {
             throw new RuntimeException('Payload tidak valid.');
         }
-        
+
         $ids = [];
         if (isset($payload['ids']) && is_array($payload['ids'])) {
             $ids = array_filter($payload['ids'], 'is_string');
         } elseif (isset($payload['id']) && is_string($payload['id'])) {
             $ids = [$payload['id']];
         }
-        
+
         if (empty($ids)) {
             throw new RuntimeException('ID trash wajib diisi.');
         }
-        
+
         $result = delete_from_trash_permanently($ids);
         $success = count($result['errors']) === 0;
-        
+
         if (!$success) {
             http_response_code(207);
         }
-        
+
         echo json_encode([
             'success' => $success,
             'type' => 'trash-delete',
@@ -356,14 +359,14 @@ try {
         ], JSON_UNESCAPED_UNICODE);
         exit;
     }
-    
+
     if ($action === 'trash-empty') {
         if (strtoupper($method) !== 'POST') {
             throw new RuntimeException('Metode HTTP tidak diizinkan.');
         }
-        
+
         $result = empty_trash();
-        
+
         echo json_encode([
             'success' => true,
             'type' => 'trash-empty',
@@ -373,18 +376,18 @@ try {
         ], JSON_UNESCAPED_UNICODE);
         exit;
     }
-    
+
     if ($action === 'trash-cleanup') {
         if (strtoupper($method) !== 'POST') {
             throw new RuntimeException('Metode HTTP tidak diizinkan.');
         }
-        
+
         $rawBody = file_get_contents('php://input');
         $payload = json_decode($rawBody, true);
-        $days = isset($payload['days']) ? max(1, (int)$payload['days']) : 30;
-        
+        $days = isset($payload['days']) ? max(1, (int) $payload['days']) : 30;
+
         $result = cleanup_old_trash($days);
-        
+
         echo json_encode([
             'success' => true,
             'type' => 'trash-cleanup',
@@ -395,7 +398,7 @@ try {
         ], JSON_UNESCAPED_UNICODE);
         exit;
     }
-    
+
     // =========================================================================
     // FILE MANAGER API ENDPOINTS
     // =========================================================================
@@ -501,7 +504,7 @@ try {
             // Log activity when upload is finished
             if (!empty($result['finished']) && !empty($result['uploaded'])) {
                 $uploadedCount = count($result['uploaded']);
-                
+
                 if ($uploadedCount === 1) {
                     // Single file upload - log individually
                     $uploaded = $result['uploaded'][0];
@@ -512,7 +515,7 @@ try {
                     // Multiple files upload - log as bulk action
                     $totalSize = array_sum(array_column($result['uploaded'], 'size'));
                     $fileNames = array_column($result['uploaded'], 'name');
-                    
+
                     $bulkFilename = $uploadedCount . ' files';
                     write_activity_log('bulk_upload', $bulkFilename, 'bulk', $targetPath, [
                         'count' => $uploadedCount,
@@ -561,14 +564,14 @@ try {
             // Regular file upload
             $result = upload_files($root, $targetPath, $_FILES['files']);
         }
-        
+
         $hasUploads = !empty($result['uploaded']);
         $hasErrors = !empty($result['errors']);
 
         // Log activity for successful uploads
         if ($hasUploads) {
             $uploadedCount = count($result['uploaded']);
-            
+
             if ($uploadedCount === 1) {
                 // Single file upload - log individually
                 $uploaded = $result['uploaded'][0];
@@ -579,7 +582,7 @@ try {
                 // Multiple files upload - log as bulk action
                 $totalSize = array_sum(array_column($result['uploaded'], 'size'));
                 $fileNames = array_column($result['uploaded'], 'name');
-                
+
                 $bulkFilename = $uploadedCount . ' files';
                 write_activity_log('bulk_upload', $bulkFilename, 'bulk', $targetPath, [
                     'count' => $uploadedCount,
@@ -621,7 +624,7 @@ try {
             throw new RuntimeException('Path file wajib diisi.');
         }
 
-    $file = read_text_file($root, $sanitizedPath, $editableExtensions);
+        $file = read_text_file($root, $sanitizedPath, $editableExtensions);
 
         echo json_encode([
             'success' => true,
@@ -660,7 +663,7 @@ try {
         }
 
         $content = $payload['content'];
-    $file = write_text_file($root, $sanitizedPath, $content, $editableExtensions);
+        $file = write_text_file($root, $sanitizedPath, $content, $editableExtensions);
 
         // Log activity
         write_activity_log('save', $file['name'], 'file', $sanitizedPath, [
@@ -682,24 +685,24 @@ try {
 
     if ($action === 'delete') {
         // Debug logging
-        error_log('[DEBUG] Delete action triggered');
-        
+        fm_debug_log('Delete action triggered');
+
         if (strtoupper($method) !== 'POST') {
-            error_log('[DEBUG] Invalid method: ' . $method);
+            fm_debug_log('Invalid method: ' . $method);
             throw new RuntimeException('Metode HTTP tidak diizinkan.');
         }
 
         $rawBody = file_get_contents('php://input');
         if ($rawBody === false) {
-            error_log('[DEBUG] Failed to read payload');
+            fm_debug_log('Failed to read payload');
             throw new RuntimeException('Payload tidak dapat dibaca.');
         }
 
-        error_log('[DEBUG] Raw payload: ' . $rawBody);
+        fm_debug_log('Raw payload: ' . $rawBody);
 
         $payload = json_decode($rawBody, true);
         if (!is_array($payload)) {
-            error_log('[DEBUG] Invalid payload format');
+            fm_debug_log('Invalid payload format');
             throw new RuntimeException('Payload tidak valid.');
         }
 
@@ -707,7 +710,7 @@ try {
 
         if (isset($payload['paths'])) {
             if (!is_array($payload['paths'])) {
-                error_log('[DEBUG] Paths is not an array');
+                fm_debug_log('Paths is not an array');
                 throw new RuntimeException('Daftar path harus berupa array.');
             }
 
@@ -719,32 +722,32 @@ try {
             }, $payload['paths']), static function ($value) {
                 return $value !== '';
             }));
-            
-            error_log('[DEBUG] Processed paths from payload: ' . implode(', ', $paths));
+
+            fm_debug_log('Processed paths from payload: ' . implode(', ', $paths));
         } elseif (isset($payload['path'])) {
             if (!is_string($payload['path'])) {
-                error_log('[DEBUG] Single path is not a string');
+                fm_debug_log('Single path is not a string');
                 throw new RuntimeException('Path wajib berupa string.');
             }
             $single = sanitize_relative_path(rawurldecode($payload['path']));
             if ($single !== '') {
                 $paths[] = $single;
-                error_log('[DEBUG] Processed single path: ' . $single);
+                fm_debug_log('Processed single path: ' . $single);
             }
         } elseif ($sanitizedPath !== '') {
             $paths[] = $sanitizedPath;
-            error_log('[DEBUG] Using sanitized path: ' . $sanitizedPath);
+            fm_debug_log('Using sanitized path: ' . $sanitizedPath);
         }
 
         if (empty($paths)) {
-            error_log('[DEBUG] No paths to delete');
+            fm_debug_log('No paths to delete');
             throw new RuntimeException('Path yang akan dihapus wajib diisi.');
         }
 
-        error_log('[DEBUG] Moving items to trash: ' . implode(', ', $paths));
+        fm_debug_log('Moving items to trash: ' . implode(', ', $paths));
         $result = move_to_trash($root, $paths);
-        error_log('[DEBUG] Trash result: ' . json_encode($result));
-        
+        fm_debug_log('Trash result: ' . json_encode($result));
+
         $success = count($result['errors']) === 0;
 
         if (!$success) {
@@ -829,16 +832,17 @@ try {
         }
 
         $targetPath = isset($payload['targetPath']) && is_string($payload['targetPath']) ? trim($payload['targetPath']) : '';
-        
+
         // Support both single path and multiple paths
         $sourcePaths = [];
-        
+
         if (isset($payload['sourcePaths']) && is_array($payload['sourcePaths'])) {
             // New format: multiple paths
-            $sourcePaths = array_filter(array_map(function($path) {
-                if (!is_string($path)) return '';
+            $sourcePaths = array_filter(array_map(function ($path) {
+                if (!is_string($path))
+                    return '';
                 return sanitize_relative_path(rawurldecode(trim($path)));
-            }, $payload['sourcePaths']), function($path) {
+            }, $payload['sourcePaths']), function ($path) {
                 return $path !== '';
             });
         } elseif (isset($payload['sourcePath']) && is_string($payload['sourcePath'])) {
@@ -858,9 +862,9 @@ try {
 
         // Move items
         $result = move_items($root, $sourcePaths, $sanitizedTargetPath);
-        
+
         $success = count($result['errors']) === 0;
-        
+
         if (!$success) {
             http_response_code(207); // Multi-Status for partial success
         }
@@ -875,7 +879,136 @@ try {
         exit;
     }
 
+    // =========================================================================
+    // COMPRESS ACTION (Create ZIP)
+    // =========================================================================
+    if ($action === 'compress') {
+        if (strtoupper($method) !== 'POST') {
+            throw new RuntimeException('Metode HTTP tidak diizinkan.');
+        }
+
+        $rawBody = file_get_contents('php://input');
+        if ($rawBody === false) {
+            throw new RuntimeException('Payload tidak dapat dibaca.');
+        }
+
+        $payload = json_decode($rawBody, true);
+        if (!is_array($payload)) {
+            throw new RuntimeException('Payload tidak valid.');
+        }
+
+        $paths = [];
+        if (isset($payload['paths']) && is_array($payload['paths'])) {
+            $paths = array_values(array_filter(array_map(static function ($value) {
+                if (!is_string($value)) {
+                    return '';
+                }
+                return sanitize_relative_path(rawurldecode($value));
+            }, $payload['paths']), static function ($value) {
+                return $value !== '';
+            }));
+        } elseif (isset($payload['path']) && is_string($payload['path'])) {
+            $single = sanitize_relative_path(rawurldecode($payload['path']));
+            if ($single !== '') {
+                $paths[] = $single;
+            }
+        }
+
+        if (empty($paths)) {
+            throw new RuntimeException('Tidak ada file yang dipilih untuk dikompres.');
+        }
+
+        $outputName = isset($payload['name']) && is_string($payload['name']) ? $payload['name'] : null;
+
+        $result = create_zip($root, $paths, $outputName);
+
+        echo json_encode([
+            'success' => $result['success'],
+            'type' => 'compress',
+            'path' => $result['path'],
+            'name' => $result['name'],
+            'size' => $result['size'],
+            'itemCount' => $result['itemCount'],
+            'errors' => $result['errors'],
+            'generated_at' => time(),
+        ], JSON_UNESCAPED_UNICODE);
+        exit;
+    }
+
+    // =========================================================================
+    // EXTRACT ACTION (Unzip)
+    // =========================================================================
+    if ($action === 'extract') {
+        if (strtoupper($method) !== 'POST') {
+            throw new RuntimeException('Metode HTTP tidak diizinkan.');
+        }
+
+        $rawBody = file_get_contents('php://input');
+        if ($rawBody === false) {
+            throw new RuntimeException('Payload tidak dapat dibaca.');
+        }
+
+        $payload = json_decode($rawBody, true);
+        if (!is_array($payload)) {
+            throw new RuntimeException('Payload tidak valid.');
+        }
+
+        $zipPath = '';
+        if (isset($payload['path']) && is_string($payload['path'])) {
+            $zipPath = sanitize_relative_path(rawurldecode($payload['path']));
+        }
+
+        if ($zipPath === '') {
+            throw new RuntimeException('Path file arsip tidak valid.');
+        }
+
+        $extractTo = isset($payload['extractTo']) && is_string($payload['extractTo'])
+            ? sanitize_relative_path(rawurldecode($payload['extractTo']))
+            : null;
+
+        // Use extract_archive which supports multiple formats (ZIP, 7z, RAR, TAR)
+        $result = extract_archive($root, $zipPath, $extractTo);
+
+        echo json_encode([
+            'success' => $result['success'],
+            'type' => 'extract',
+            'extractedTo' => $result['extractedTo'],
+            'folderName' => $result['folderName'],
+            'itemCount' => $result['itemCount'],
+            'archiveType' => $result['archiveType'] ?? 'zip',
+            'generated_at' => time(),
+        ], JSON_UNESCAPED_UNICODE);
+        exit;
+    }
+
+    // =========================================================================
+    // ZIP CONTENTS ACTION (List ZIP contents without extracting)
+    // =========================================================================
+    if ($action === 'zip-contents') {
+        $zipPath = $sanitizedPath;
+
+        if ($zipPath === '') {
+            throw new RuntimeException('Path file ZIP tidak valid.');
+        }
+
+        $result = list_zip_contents($root, $zipPath);
+
+        echo json_encode([
+            'success' => $result['success'],
+            'type' => 'zip-contents',
+            'name' => $result['name'],
+            'zipSize' => $result['zipSize'],
+            'uncompressedSize' => $result['uncompressedSize'],
+            'compressionRatio' => $result['compressionRatio'],
+            'itemCount' => $result['itemCount'],
+            'items' => $result['items'],
+            'generated_at' => time(),
+        ], JSON_UNESCAPED_UNICODE);
+        exit;
+    }
+
     $items = list_directory($root, $sanitizedPath);
+
     $breadcrumbs = build_breadcrumbs($sanitizedPath, 'Root');
 
     $parent = null;
