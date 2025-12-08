@@ -1323,10 +1323,6 @@ document.addEventListener('DOMContentLoaded', () => {
   // Move Modal
   document.getElementById('move-cancel')?.addEventListener('click', closeMoveModal);
   document.getElementById('move-confirm')?.addEventListener('click', executeMoveItems);
-  document.getElementById('move-select-here')?.addEventListener('click', () => {
-    modalState.move.selectedFolder = modalState.move.currentPath;
-    document.getElementById('move-confirm').disabled = false;
-  });
   attachOverlayBackdropDismiss('move-overlay', closeMoveModal);
   
   // Unsaved Modal

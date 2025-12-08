@@ -33,19 +33,19 @@ async function apiCall(action, payload = {}) {
   try {
     let url = `${API_BASE}?action=${action}`;
     if (payload.path) url += `&path=${encodeURIComponent(payload.path)}`;
-    
+
     const options = {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' }
     };
-    
+
     if (Object.keys(payload).length > 0) {
       options.body = JSON.stringify(payload);
     }
-    
+
     const response = await fetch(url, options);
     const data = await response.json();
-    
+
     if (!data.success) throw new Error(data.error || 'API Error');
     return data;
   } catch (error) {
@@ -77,11 +77,11 @@ async function renameItem(oldPath, newName) {
     pathSegments.pop(); // Remove old name
     const parentPath = pathSegments.join('/');
     const finalPath = parentPath ? `${parentPath}/${newName}` : newName;
-    
+
     const url = `${API_BASE}?action=rename&path=${encodeURIComponent(oldPath)}`;
     console.log('[renameItem] URL:', url);
     console.log('[renameItem] Body:', { newName, newPath: finalPath });
-    
+
     const response = await fetch(url, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -90,13 +90,13 @@ async function renameItem(oldPath, newName) {
         newPath: finalPath
       })
     });
-    
+
     console.log('[renameItem] Response status:', response.status);
     const data = await response.json();
     console.log('[renameItem] Response data:', data);
-    
+
     if (!data.success) throw new Error(data.error || 'Rename failed');
-    
+
     await loadFiles(currentPath);
     showSuccess(`Renamed to: ${newName}`);
   } catch (error) {
@@ -111,12 +111,12 @@ async function createFolder(folderName) {
   showLoader(true);
   try {
     const path = currentPath ? `${currentPath}/${folderName}` : folderName;
-    await apiCall('create', { 
+    await apiCall('create', {
       type: 'folder',
       name: folderName,
       path: currentPath
     });
-    
+
     await loadFiles(currentPath);
     showSuccess(`Folder created: ${folderName}`);
   } catch (error) {
@@ -139,21 +139,21 @@ async function moveItems(sourcePaths, destPath) {
         targetPath: destPath || '' // Ensure empty string instead of undefined
       })
     });
-    
+
     const data = await response.json();
     if (!data.success) {
       // Jika ada error dari server, tampilkan pesan error
       const errorMsg = data.error || (data.errors && data.errors.length > 0 ? data.errors[0].error : 'Move failed');
       throw new Error(errorMsg);
     }
-    
+
     await loadFiles(currentPath);
     selected.clear();
-    
+
     // Tampilkan pesan sukses dengan jumlah item yang dipindahkan
     const movedCount = data.moved ? data.moved.length : sourcePaths.length;
     const errorCount = data.errors ? data.errors.length : 0;
-    
+
     if (errorCount > 0) {
       showSuccess(`${movedCount} item(s) moved, ${errorCount} failed`);
     } else {
@@ -195,15 +195,15 @@ function showSuccess(msg) {
 function updateBreadcrumbs(path) {
   const breadcrumbEl = document.getElementById('breadcrumbs');
   if (!breadcrumbEl) return;
-  
+
   if (!path) {
     breadcrumbEl.textContent = 'Home';
     return;
   }
-  
+
   const parts = path.split('/');
   breadcrumbEl.innerHTML = '<span>Home</span>';
-  
+
   let currentSegment = '';
   for (const part of parts) {
     currentSegment = currentSegment ? `${currentSegment}/${part}` : part;
@@ -223,9 +223,9 @@ async function loadFiles(path = '') {
     const url = `${API_BASE}?action=list&path=${encodeURIComponent(path)}`;
     const response = await fetch(url);
     const data = await response.json();
-    
+
     if (!data.success) throw new Error(data.error);
-    
+
     currentPath = path;
     files = (data.items || []).map((item, idx) => ({
       id: item.path || idx,
@@ -237,7 +237,7 @@ async function loadFiles(path = '') {
       modified: item.modified,
       rawSize: item.size
     }));
-    
+
     selected.clear();
     page = 1;
     updateBreadcrumbs(path);
@@ -302,168 +302,168 @@ function getLanguageBadge(ext) {
 
 function getFileIcon(filename, type) {
   const ext = getFileExtension(filename);
-  
+
   // Icon dengan warna dan background berbeda untuk setiap tipe
   const iconConfig = {
     // Folders
-    folder: { 
+    folder: {
       icon: `<svg viewBox="0 0 24 24"><path fill="#f59e0b" d="M10 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2h-8l-2-2z"/></svg>`,
       bg: '#fef3c7'
     },
     // Default file
-    file: { 
+    file: {
       icon: `<svg viewBox="0 0 24 24"><path fill="#64748b" d="M14 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8l-6-6zm-1 2l5 5h-5V4zM6 20V4h6v6h6v10H6z"/></svg>`,
       bg: '#f1f5f9'
     },
     // Code files dengan warna berbeda
-    php: { 
+    php: {
       icon: `<svg viewBox="0 0 24 24"><path fill="#777bb4" d="M9.4 16.6L4.8 12l4.6-4.6L8 6l-6 6 6 6 1.4-1.4zm5.2 0l4.6-4.6-4.6-4.6L16 6l6 6-6 6-1.4-1.4z"/></svg>`,
       bg: '#ede9fe'
     },
-    js: { 
+    js: {
       icon: `<svg viewBox="0 0 24 24"><path fill="#f7df1e" d="M9.4 16.6L4.8 12l4.6-4.6L8 6l-6 6 6 6 1.4-1.4zm5.2 0l4.6-4.6-4.6-4.6L16 6l6 6-6 6-1.4-1.4z"/></svg>`,
       bg: '#fef9c3'
     },
-    jsx: { 
+    jsx: {
       icon: `<svg viewBox="0 0 24 24"><path fill="#61dafb" d="M9.4 16.6L4.8 12l4.6-4.6L8 6l-6 6 6 6 1.4-1.4zm5.2 0l4.6-4.6-4.6-4.6L16 6l6 6-6 6-1.4-1.4z"/></svg>`,
       bg: '#cffafe'
     },
-    ts: { 
+    ts: {
       icon: `<svg viewBox="0 0 24 24"><path fill="#3178c6" d="M9.4 16.6L4.8 12l4.6-4.6L8 6l-6 6 6 6 1.4-1.4zm5.2 0l4.6-4.6-4.6-4.6L16 6l6 6-6 6-1.4-1.4z"/></svg>`,
       bg: '#dbeafe'
     },
-    tsx: { 
+    tsx: {
       icon: `<svg viewBox="0 0 24 24"><path fill="#3178c6" d="M9.4 16.6L4.8 12l4.6-4.6L8 6l-6 6 6 6 1.4-1.4zm5.2 0l4.6-4.6-4.6-4.6L16 6l6 6-6 6-1.4-1.4z"/></svg>`,
       bg: '#dbeafe'
     },
-    html: { 
+    html: {
       icon: `<svg viewBox="0 0 24 24"><path fill="#e34c26" d="M9.4 16.6L4.8 12l4.6-4.6L8 6l-6 6 6 6 1.4-1.4zm5.2 0l4.6-4.6-4.6-4.6L16 6l6 6-6 6-1.4-1.4z"/></svg>`,
       bg: '#fee2e2'
     },
-    htm: { 
+    htm: {
       icon: `<svg viewBox="0 0 24 24"><path fill="#e34c26" d="M9.4 16.6L4.8 12l4.6-4.6L8 6l-6 6 6 6 1.4-1.4zm5.2 0l4.6-4.6-4.6-4.6L16 6l6 6-6 6-1.4-1.4z"/></svg>`,
       bg: '#fee2e2'
     },
-    css: { 
+    css: {
       icon: `<svg viewBox="0 0 24 24"><path fill="#264de4" d="M9.4 16.6L4.8 12l4.6-4.6L8 6l-6 6 6 6 1.4-1.4zm5.2 0l4.6-4.6-4.6-4.6L16 6l6 6-6 6-1.4-1.4z"/></svg>`,
       bg: '#dbeafe'
     },
-    scss: { 
+    scss: {
       icon: `<svg viewBox="0 0 24 24"><path fill="#c6538c" d="M9.4 16.6L4.8 12l4.6-4.6L8 6l-6 6 6 6 1.4-1.4zm5.2 0l4.6-4.6-4.6-4.6L16 6l6 6-6 6-1.4-1.4z"/></svg>`,
       bg: '#fce7f3'
     },
-    less: { 
+    less: {
       icon: `<svg viewBox="0 0 24 24"><path fill="#1d365d" d="M9.4 16.6L4.8 12l4.6-4.6L8 6l-6 6 6 6 1.4-1.4zm5.2 0l4.6-4.6-4.6-4.6L16 6l6 6-6 6-1.4-1.4z"/></svg>`,
       bg: '#e0e7ff'
     },
-    py: { 
+    py: {
       icon: `<svg viewBox="0 0 24 24"><path fill="#3776ab" d="M9.4 16.6L4.8 12l4.6-4.6L8 6l-6 6 6 6 1.4-1.4zm5.2 0l4.6-4.6-4.6-4.6L16 6l6 6-6 6-1.4-1.4z"/></svg>`,
       bg: '#dbeafe'
     },
-    java: { 
+    java: {
       icon: `<svg viewBox="0 0 24 24"><path fill="#f89820" d="M9.4 16.6L4.8 12l4.6-4.6L8 6l-6 6 6 6 1.4-1.4zm5.2 0l4.6-4.6-4.6-4.6L16 6l6 6-6 6-1.4-1.4z"/></svg>`,
       bg: '#ffedd5'
     },
-    json: { 
+    json: {
       icon: `<svg viewBox="0 0 24 24"><path fill="#fbbf24" d="M9.4 16.6L4.8 12l4.6-4.6L8 6l-6 6 6 6 1.4-1.4zm5.2 0l4.6-4.6-4.6-4.6L16 6l6 6-6 6-1.4-1.4z"/></svg>`,
       bg: '#fef3c7'
     },
-    xml: { 
+    xml: {
       icon: `<svg viewBox="0 0 24 24"><path fill="#ff6b35" d="M9.4 16.6L4.8 12l4.6-4.6L8 6l-6 6 6 6 1.4-1.4zm5.2 0l4.6-4.6-4.6-4.6L16 6l6 6-6 6-1.4-1.4z"/></svg>`,
       bg: '#ffedd5'
     },
-    yaml: { 
+    yaml: {
       icon: `<svg viewBox="0 0 24 24"><path fill="#cb171e" d="M9.4 16.6L4.8 12l4.6-4.6L8 6l-6 6 6 6 1.4-1.4zm5.2 0l4.6-4.6-4.6-4.6L16 6l6 6-6 6-1.4-1.4z"/></svg>`,
       bg: '#fee2e2'
     },
-    yml: { 
+    yml: {
       icon: `<svg viewBox="0 0 24 24"><path fill="#cb171e" d="M9.4 16.6L4.8 12l4.6-4.6L8 6l-6 6 6 6 1.4-1.4zm5.2 0l4.6-4.6-4.6-4.6L16 6l6 6-6 6-1.4-1.4z"/></svg>`,
       bg: '#fee2e2'
     },
-    conf: { 
+    conf: {
       icon: `<svg viewBox="0 0 24 24"><path fill="#6b7280" d="M9.4 16.6L4.8 12l4.6-4.6L8 6l-6 6 6 6 1.4-1.4zm5.2 0l4.6-4.6-4.6-4.6L16 6l6 6-6 6-1.4-1.4z"/></svg>`,
       bg: '#f3f4f6'
     },
-    ini: { 
+    ini: {
       icon: `<svg viewBox="0 0 24 24"><path fill="#6b7280" d="M9.4 16.6L4.8 12l4.6-4.6L8 6l-6 6 6 6 1.4-1.4zm5.2 0l4.6-4.6-4.6-4.6L16 6l6 6-6 6-1.4-1.4z"/></svg>`,
       bg: '#f3f4f6'
     },
-    env: { 
+    env: {
       icon: `<svg viewBox="0 0 24 24"><path fill="#16a34a" d="M9.4 16.6L4.8 12l4.6-4.6L8 6l-6 6 6 6 1.4-1.4zm5.2 0l4.6-4.6-4.6-4.6L16 6l6 6-6 6-1.4-1.4z"/></svg>`,
       bg: '#dcfce7'
     },
-    c: { 
+    c: {
       icon: `<svg viewBox="0 0 24 24"><path fill="#a8b9cc" d="M9.4 16.6L4.8 12l4.6-4.6L8 6l-6 6 6 6 1.4-1.4zm5.2 0l4.6-4.6-4.6-4.6L16 6l6 6-6 6-1.4-1.4z"/></svg>`,
       bg: '#f1f5f9'
     },
-    cpp: { 
+    cpp: {
       icon: `<svg viewBox="0 0 24 24"><path fill="#00599c" d="M9.4 16.6L4.8 12l4.6-4.6L8 6l-6 6 6 6 1.4-1.4zm5.2 0l4.6-4.6-4.6-4.6L16 6l6 6-6 6-1.4-1.4z"/></svg>`,
       bg: '#dbeafe'
     },
-    vue: { 
+    vue: {
       icon: `<svg viewBox="0 0 24 24"><path fill="#42b883" d="M9.4 16.6L4.8 12l4.6-4.6L8 6l-6 6 6 6 1.4-1.4zm5.2 0l4.6-4.6-4.6-4.6L16 6l6 6-6 6-1.4-1.4z"/></svg>`,
       bg: '#d1fae5'
     },
     // Images
-    image: { 
+    image: {
       icon: `<svg viewBox="0 0 24 24"><path fill="#ef4444" d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/></svg>`,
       bg: '#fee2e2'
     },
     // PDF
-    pdf: { 
+    pdf: {
       icon: `<svg viewBox="0 0 24 24"><path fill="#ef4444" d="M14 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8l-6-6zm-1 2l5 5h-5V4zM6 20V4h6v6h6v10H6z"/></svg>`,
       bg: '#fee2e2'
     },
     // Archives
-    archive: { 
+    archive: {
       icon: `<svg viewBox="0 0 24 24"><path fill="#8b5cf6" d="M20 6h-8l-2-2H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm-2 6h-2v2h2v2h-2v2h-2v-2h2v-2h-2v-2h2v-2h-2V8h2v2h2v2z"/></svg>`,
       bg: '#ede9fe'
     },
     // Text
-    text: { 
+    text: {
       icon: `<svg viewBox="0 0 24 24"><path fill="#64748b" d="M14 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8l-6-6zm-1 2l5 5h-5V4zM6 20V4h6v6h6v10H6zm2-6h8v2H8v-2zm0 4h5v2H8v-2z"/></svg>`,
       bg: '#f1f5f9'
     },
     // Markdown
-    md: { 
+    md: {
       icon: `<svg viewBox="0 0 24 24"><path fill="#8b5cf6" d="M14 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8l-6-6zm-1 2l5 5h-5V4zM6 20V4h6v6h6v10H6z"/></svg>`,
       bg: '#ede9fe'
     },
-    markdown: { 
+    markdown: {
       icon: `<svg viewBox="0 0 24 24"><path fill="#8b5cf6" d="M14 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8l-6-6zm-1 2l5 5h-5V4zM6 20V4h6v6h6v10H6z"/></svg>`,
       bg: '#ede9fe'
     },
     // Sheets
-    sheet: { 
+    sheet: {
       icon: `<svg viewBox="0 0 24 24"><path fill="#22c55e" d="M14 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8l-6-6zm-1 2l5 5h-5V4zM6 20V4h6v6h6v10H6zm2-8h2v2H8v-2zm4 0h2v2h-2v-2zm-4 4h2v2H8v-2zm4 0h2v2h-2v-2z"/></svg>`,
       bg: '#dcfce7'
     },
     // Documents
-    doc: { 
+    doc: {
       icon: `<svg viewBox="0 0 24 24"><path fill="#2563eb" d="M14 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8l-6-6zm-1 2l5 5h-5V4zM6 20V4h6v6h6v10H6zm2-8h8v2H8v-2zm0 4h5v2H8v-2z"/></svg>`,
       bg: '#dbeafe'
     },
     // PPT
-    ppt: { 
+    ppt: {
       icon: `<svg viewBox="0 0 24 24"><path fill="#f97316" d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zM8 17H6v-4h2v4zm0-6H6V9h2v2zm4 6h-2v-4h2v4zm0-6h-2V9h2v2zm4 6h-2v-4h2v4zm0-6h-2V9h2v2z"/></svg>`,
       bg: '#ffedd5'
     },
     // Audio
-    audio: { 
+    audio: {
       icon: `<svg viewBox="0 0 24 24"><path fill="#ec4899" d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/></svg>`,
       bg: '#fce7f3'
     },
     // Video
-    video: { 
+    video: {
       icon: `<svg viewBox="0 0 24 24"><path fill="#a855f7" d="M17 10.5V7c0-.55-.45-1-1-1H4c-.55 0-1 .45-1 1v10c0 .55.45 1 1 1h12c.55 0 1-.45 1-1v-3.5l4 4v-11l-4 4z"/></svg>`,
       bg: '#f3e8ff'
     },
   };
-  
+
   // Map extension ke icon config
   const extToType = {
     // Images
-    'png': 'image', 'jpg': 'image', 'jpeg': 'image', 
+    'png': 'image', 'jpg': 'image', 'jpeg': 'image',
     'gif': 'image', 'webp': 'image', 'svg': 'image',
     'bmp': 'image', 'ico': 'image',
     // Documents
@@ -482,16 +482,16 @@ function getFileIcon(filename, type) {
     'mp4': 'video', 'webm': 'video', 'mkv': 'video',
     'mov': 'video', 'avi': 'video', 'm4v': 'video', 'flv': 'video',
   };
-  
+
   // Cek apakah extension punya config langsung
   let config = iconConfig[ext];
-  
+
   // Jika tidak, cek mapping
   if (!config) {
     const mappedType = extToType[ext];
     config = mappedType ? iconConfig[mappedType] : iconConfig.file;
   }
-  
+
   // Return object dengan icon dan background
   return {
     html: config.icon,
@@ -510,28 +510,28 @@ function getPageRange(currentPage, totalPages) {
   if (totalPages <= 7) {
     return Array.from({ length: totalPages }, (_, i) => i + 1);
   }
-  
+
   const pages = [1];
-  
+
   if (currentPage > 3) {
     pages.push('...');
   }
-  
+
   const start = Math.max(2, currentPage - 1);
   const end = Math.min(totalPages - 1, currentPage + 1);
-  
+
   for (let i = start; i <= end; i++) {
     pages.push(i);
   }
-  
+
   if (currentPage < totalPages - 2) {
     pages.push('...');
   }
-  
+
   if (totalPages > 1) {
     pages.push(totalPages);
   }
-  
+
   return pages;
 }
 
@@ -543,9 +543,9 @@ function getPageRange(currentPage, totalPages) {
 function renderPageNumbers(currentPage, totalPages) {
   const container = document.getElementById('page-numbers');
   if (!container) return;
-  
+
   container.innerHTML = '';
-  
+
   if (totalPages <= 1) {
     // Single page - show "1" button
     const btn = document.createElement('button');
@@ -555,9 +555,9 @@ function renderPageNumbers(currentPage, totalPages) {
     container.appendChild(btn);
     return;
   }
-  
+
   const pageRange = getPageRange(currentPage, totalPages);
-  
+
   pageRange.forEach(p => {
     if (p === '...') {
       const dots = document.createElement('span');
@@ -572,14 +572,14 @@ function renderPageNumbers(currentPage, totalPages) {
         : 'page-num-btn px-2.5 py-1.5 rounded-md text-sm font-medium border border-slate-200 dark:border-white/10 dark:bg-slate-800 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors';
       btn.textContent = p;
       btn.disabled = isActive;
-      
+
       if (!isActive) {
         btn.addEventListener('click', () => {
           page = p;
           render();
         });
       }
-      
+
       container.appendChild(btn);
     }
   });
@@ -647,7 +647,7 @@ function render() {
 
     tbody.appendChild(upRow);
   }
-  
+
   const emptyState = document.getElementById('empty-state');
   if (pageItems.length === 0) {
     emptyState?.classList.remove('hidden');
@@ -658,21 +658,21 @@ function render() {
   // Function to truncate long filenames
   function truncateFileName(name, maxLength = 35) {
     if (name.length <= maxLength) return name;
-    
+
     const lastDot = name.lastIndexOf('.');
     const hasExtension = lastDot > 0 && lastDot > name.length - 10;
-    
+
     if (hasExtension) {
       const ext = name.substring(lastDot);
       const baseName = name.substring(0, lastDot);
       const tailLength = 5;
-      
+
       if (baseName.length <= maxLength - ext.length - 3 - tailLength) return name;
-      
+
       const availableForStart = maxLength - ext.length - 3 - tailLength;
       const start = baseName.substring(0, Math.max(availableForStart, 10));
       const end = baseName.substring(baseName.length - tailLength);
-      
+
       return `${start}...${end}${ext}`;
     } else {
       const tailLength = 5;
@@ -686,7 +686,7 @@ function render() {
 
   // Track last selected index for Shift+Click range selection
   let lastSelectedIndex = -1;
-  
+
   for (const f of pageItems) {
     const tr = document.createElement('tr');
     tr.dataset.id = f.id;
@@ -696,12 +696,12 @@ function render() {
     tr.draggable = true;
 
     const checked = selected.has(f.path);
-    
+
     // Add selected class if checked
     if (checked) {
       tr.classList.add('selected');
     }
-    const iconData = f.type === 'folder' 
+    const iconData = f.type === 'folder'
       ? { html: '<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="#f59e0b" d="M10 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2h-8l-2-2z"></path></svg>', type: 'folder', bg: '#fef3c7' }
       : getFileIcon(f.name, f.type);
 
@@ -740,18 +740,18 @@ function render() {
         </div>
       </td>
     `;
-    
+
     // Drag-drop handlers
     tr.addEventListener('dragstart', handleDragStart);
     tr.addEventListener('dragend', handleDragEnd);
     tr.addEventListener('dragover', handleDragOver);
     tr.addEventListener('drop', handleDrop);
     tr.addEventListener('contextmenu', handleContextMenu);
-    
+
     // Click-to-select: only works after selection mode is activated (user clicked a checkbox first)
     tr.addEventListener('click', (event) => {
       const target = event.target;
-      
+
       // Check if the click is on an interactive element that should NOT trigger selection
       const isInteractiveElement =
         target.closest('input[type="checkbox"]') ||
@@ -759,25 +759,25 @@ function render() {
         target.closest('.action-icon-btn') ||
         target.closest('.mobile-more-btn') ||
         target.closest('.row-actions');
-      
+
       if (isInteractiveElement) {
         return; // Let the element handle its own click
       }
-      
+
       // Only allow row click selection if selection mode is active
       if (!isSelectionModeActive) {
         return; // Selection mode not active yet, do nothing on row click
       }
-      
+
       const path = f.path;
       const checkbox = tr.querySelector('.sel');
       const currentIndex = parseInt(tr.dataset.index);
-      
+
       if (event.shiftKey && lastSelectedIndex !== -1) {
         // Shift+Click: Range selection
         const start = Math.min(lastSelectedIndex, currentIndex);
         const end = Math.max(lastSelectedIndex, currentIndex);
-        
+
         for (let i = start; i <= end; i++) {
           const item = pageItems[i];
           if (item) {
@@ -813,34 +813,34 @@ function render() {
           if (checkbox) checkbox.checked = true;
         }
       }
-      
+
       // Update last selected index
       lastSelectedIndex = currentIndex;
-      
+
       // Update selected count display
       if (selectedCount) selectedCount.textContent = `${selected.size} selected`;
-      
+
       // Deactivate selection mode if no items are selected
       if (selected.size === 0) {
         isSelectionModeActive = false;
       }
     });
-    
+
     tbody.appendChild(tr);
   }
 
   if (showing) showing.textContent = `Menampilkan ${start + 1}–${Math.min(end, total)} dari ${total} item`;
   if (selectedCount) selectedCount.textContent = `${selected.size} selected`;
-  
+
   // Render page numbers
   renderPageNumbers(page, pages);
-  
+
   // Update prev/next button states
   const prevBtn = document.getElementById('prevPage');
   const nextBtn = document.getElementById('nextPage');
   if (prevBtn) prevBtn.disabled = page <= 1;
   if (nextBtn) nextBtn.disabled = page >= pages;
-  
+
   // Show/hide pagination footer based on total items
   // Always show footer to maintain UI consistency
   const paginationFooter = document.querySelector('nav.footer');
@@ -855,7 +855,7 @@ function render() {
     el.addEventListener('change', e => {
       const path = e.target.dataset.path;
       const row = e.target.closest('tr');
-      
+
       if (e.target.checked) {
         selected.add(path);
         if (row) row.classList.add('selected');
@@ -865,9 +865,9 @@ function render() {
         selected.delete(path);
         if (row) row.classList.remove('selected');
       }
-      
+
       if (selectedCount) selectedCount.textContent = `${selected.size} selected`;
-      
+
       // Deactivate selection mode if no items are selected
       if (selected.size === 0) {
         isSelectionModeActive = false;
@@ -882,7 +882,7 @@ function render() {
       const action = btn.dataset.action;
       const path = btn.dataset.path;
       const fileData = files.find(f => f.path === path);
-      
+
       if (action === 'preview') {
         if (fileData?.type === 'folder') {
           await loadFiles(path);
@@ -969,7 +969,7 @@ function showMobileContextMenu(event, fileData) {
   const menu = document.createElement('div');
   menu.id = 'mobile-context-menu';
   menu.className = 'mobile-context-menu fixed z-50 bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 py-1 min-w-[160px]';
-  
+
   const menuItems = [
     { action: 'preview', icon: 'ri-folder-open-line', label: 'Buka', color: 'text-blue-600 dark:text-blue-400' },
     ...(fileData.type === 'file' ? [{ action: 'download', icon: 'ri-download-line', label: 'Unduh', color: 'text-green-600 dark:text-green-400' }] : []),
@@ -998,7 +998,7 @@ function showMobileContextMenu(event, fileData) {
   // Position the menu
   const rect = event.target.closest('button').getBoundingClientRect();
   const menuRect = menu.getBoundingClientRect();
-  
+
   let top = rect.bottom + 4;
   let left = rect.left;
 
@@ -1036,7 +1036,7 @@ function closeMobileContextMenu() {
 
 async function handleMobileAction(action, fileData) {
   const { path, type, name } = fileData;
-  
+
   if (action === 'preview') {
     if (type === 'folder') {
       await loadFiles(path);
@@ -1121,11 +1121,11 @@ function handleDragStart(e) {
   isDragging = true;
   draggedItems.clear();
   draggedItems.add(path);
-  
+
   e.dataTransfer.effectAllowed = 'move';
   e.dataTransfer.setData('text/plain', path);
   e.currentTarget.classList.add('dragging');
-  
+
   if (tbody) tbody.classList.add('drag-active');
 }
 
@@ -1140,12 +1140,12 @@ function handleDragEnd(e) {
 function handleDragOver(e) {
   // Check if this is an internal drag (file move) or external drag (file upload from computer)
   const isExternalDrag = e.dataTransfer.types.includes('Files') && !isDragging;
-  
+
   if (isExternalDrag) {
     // Allow external file drops - will be handled by card drop handler
     return;
   }
-  
+
   if (!isDragging) return;
   e.preventDefault();
   const row = e.currentTarget;
@@ -1162,15 +1162,15 @@ async function handleDrop(e) {
   // Check if this is an external file drop (from computer)
   const hasFiles = e.dataTransfer.types.includes('Files');
   const isExternalDrop = hasFiles && !isDragging && e.dataTransfer.files.length > 0;
-  
+
   if (isExternalDrop) {
     // Don't handle here - let it bubble up to card drop handler
     return;
   }
-  
+
   // This is an internal drag (moving files between folders)
   if (!isDragging) return;
-  
+
   e.preventDefault();
   const row = e.currentTarget;
   if (!isValidDropTarget(row)) {
@@ -1179,10 +1179,10 @@ async function handleDrop(e) {
   }
 
   const targetPath = row.dataset.path ?? '';
-  
+
   const sourcePaths = Array.from(draggedItems);
   row.classList.remove('drop-active');
-  
+
   // Prevent dropping a folder into itself or its own subdirectory
   for (const sourcePath of sourcePaths) {
     // Check if dropping onto itself
@@ -1196,7 +1196,7 @@ async function handleDrop(e) {
       return;
     }
   }
-  
+
   await moveItems(sourcePaths, targetPath);
 }
 
@@ -1206,35 +1206,35 @@ function handleContextMenu(e) {
   e.preventDefault();
   const path = e.currentTarget.dataset.path;
   const fileData = files.find(f => f.path === path);
-  
+
   currentContextId = path;
   contextFileData = fileData;
-  
+
   // Show context menu
   ctxMenu.classList.remove('hidden');
   ctxMenu.classList.add('visible');
   ctxMenu.style.display = 'block';
   ctxMenu.setAttribute('aria-hidden', 'false');
-  
+
   // Position the menu
   const menuWidth = ctxMenu.offsetWidth || 180;
   const menuHeight = ctxMenu.offsetHeight || 200;
   const viewportWidth = window.innerWidth;
   const viewportHeight = window.innerHeight;
-  
+
   let posX = e.pageX;
   let posY = e.pageY;
-  
+
   // Adjust if menu would overflow right edge
   if (posX + menuWidth > viewportWidth - 10) {
     posX = viewportWidth - menuWidth - 10;
   }
-  
+
   // Adjust if menu would overflow bottom edge
   if (posY + menuHeight > viewportHeight - 10) {
     posY = viewportHeight - menuHeight - 10;
   }
-  
+
   ctxMenu.style.left = posX + 'px';
   ctxMenu.style.top = posY + 'px';
 }
@@ -1250,9 +1250,9 @@ function initializeEventHandlers() {
     return;
   }
   eventHandlersInitialized = true;
-  
+
   console.log('[enhanced-ui] Initializing event handlers');
-  
+
   // Close context menus
   document.addEventListener('click', (e) => {
     // Close file context menu
@@ -1262,7 +1262,7 @@ function initializeEventHandlers() {
       ctxMenu.style.display = 'none';
       ctxMenu.setAttribute('aria-hidden', 'true');
     }
-    
+
     // Close upload context menu
     if (uploadContextMenu && !uploadContextMenu.contains(e.target) && e.target !== uploadBtn) {
       uploadContextMenu.classList.add('hidden');
@@ -1275,16 +1275,16 @@ function initializeEventHandlers() {
     e.stopPropagation();
     const action = e.target.closest('[data-action]')?.dataset.action;
     if (!action) return;
-    
+
     const path = currentContextId;
     const fileData = contextFileData;
-    
+
     // Close context menu immediately for better UX
     ctxMenu.classList.add('hidden');
     ctxMenu.classList.remove('visible');
     ctxMenu.style.display = 'none';
     ctxMenu.setAttribute('aria-hidden', 'true');
-    
+
     if (action === 'open' && fileData?.type === 'folder') {
       await loadFiles(path);
     } else if (action === 'open') {
@@ -1389,7 +1389,7 @@ function initializeEventHandlers() {
       render();
     }
   });
-  
+
   document.getElementById('nextPage')?.addEventListener('click', () => {
     const totalPages = Math.max(1, Math.ceil(files.length / pageSize));
     if (page < totalPages) {
@@ -1399,13 +1399,13 @@ function initializeEventHandlers() {
   });
 
   // Select all
-  document.getElementById('selectAll')?.addEventListener('change', function() {
+  document.getElementById('selectAll')?.addEventListener('change', function () {
     const checked = this.checked;
     document.querySelectorAll('.sel').forEach(el => {
       el.checked = checked;
       const path = el.dataset.path;
       const row = el.closest('tr');
-      
+
       if (checked) {
         selected.add(path);
         if (row) row.classList.add('selected');
@@ -1420,9 +1420,9 @@ function initializeEventHandlers() {
   // Delete selected
   document.getElementById('deleteSel')?.addEventListener('click', async () => {
     if (selected.size === 0) return showError('Tidak ada item yang dipilih');
-    
+
     const selectedPaths = Array.from(selected);
-    
+
     // Build items array with file info
     const itemsToDelete = selectedPaths.map(path => {
       const name = path.split('/').pop();
@@ -1433,7 +1433,7 @@ function initializeEventHandlers() {
         type: fileInfo?.type || 'file'
       };
     });
-    
+
     if (window.openDeleteOverlay) {
       window.openDeleteOverlay(
         itemsToDelete,
@@ -1467,16 +1467,16 @@ function initializeEventHandlers() {
       fileList.innerHTML = '';
       return;
     }
-    
+
     const files = Array.from(fileInput.files);
     const total = files.reduce((sum, f) => sum + f.size, 0);
     const totalMB = (total / 1024 / 1024).toFixed(2);
-    
+
     fileList.innerHTML = `
-      <div class="bg-blue-50 p-3 rounded-lg">
-        <p class="font-medium text-blue-900">${files.length} file dipilih</p>
-        <p class="text-sm text-blue-700">Total: ${totalMB} MB</p>
-        <ul class="text-xs text-blue-700 mt-2 space-y-1">
+      <div class="bg-blue-50 dark:bg-blue-900/20 p-3 rounded-lg">
+        <p class="font-medium text-blue-900 dark:text-blue-100">${files.length} file dipilih</p>
+        <p class="text-sm text-blue-700 dark:text-blue-300">Total: ${totalMB} MB</p>
+        <ul class="text-xs text-blue-700 dark:text-blue-300 mt-2 space-y-1">
           ${files.slice(0, 3).map(f => `<li>• ${f.name}</li>`).join('')}
           ${files.length > 3 ? `<li>• ... dan ${files.length - 3} file lainnya</li>` : ''}
         </ul>
@@ -1488,15 +1488,15 @@ function initializeEventHandlers() {
   const uploadContextMenu = document.getElementById('uploadContextMenu');
   const uploadBtn = document.getElementById('uploadBtn');
   const folderInput = document.getElementById('folderInput');
-  
+
   // Show context menu when upload button is clicked
   uploadBtn?.addEventListener('click', (e) => {
     e.preventDefault();
     e.stopPropagation();
-    
+
     // Toggle context menu
     const isVisible = !uploadContextMenu.classList.contains('hidden');
-    
+
     if (isVisible) {
       // Hide menu
       uploadContextMenu.classList.add('hidden');
@@ -1505,15 +1505,15 @@ function initializeEventHandlers() {
       // Show menu
       uploadContextMenu.classList.remove('hidden');
       uploadBtn.setAttribute('aria-expanded', 'true');
-      
+
       // Position the menu
       const rect = uploadBtn.getBoundingClientRect();
       const menuHeight = 100; // Approximate height of the menu
       const menuWidth = 160; // Width of the menu
-      
+
       let top = rect.bottom + 4;
       let left = rect.left;
-      
+
       // Adjust if menu goes off screen
       if (left + menuWidth > window.innerWidth) {
         left = window.innerWidth - menuWidth - 8;
@@ -1521,12 +1521,12 @@ function initializeEventHandlers() {
       if (top + menuHeight > window.innerHeight) {
         top = rect.top - menuHeight - 4;
       }
-      
+
       uploadContextMenu.style.top = `${top}px`;
       uploadContextMenu.style.left = `${left}px`;
     }
   });
-  
+
   // Handle upload files option click
   document.getElementById('uploadFilesOption')?.addEventListener('click', () => {
     uploadContextMenu.classList.add('hidden');
@@ -1534,7 +1534,7 @@ function initializeEventHandlers() {
     modal?.classList.remove('hidden');
     modal?.classList.add('visible');
   });
-  
+
   // Handle upload folder option click
   document.getElementById('uploadFolderOption')?.addEventListener('click', () => {
     uploadContextMenu.classList.add('hidden');
@@ -1546,29 +1546,29 @@ function initializeEventHandlers() {
   folderInput?.addEventListener('change', async (e) => {
     const files = e.target.files;
     if (!files || files.length === 0) return;
-    
+
     showLoader(true);
-    
+
     try {
       const formData = new FormData();
       const relativePaths = [];
-      
+
       for (const file of files) {
         formData.append('files[]', file);
         relativePaths.push(file.webkitRelativePath || file.name);
       }
       formData.append('relativePaths', JSON.stringify(relativePaths));
       formData.append('folderUpload', 'true');
-      
+
       const response = await fetch(`${API_BASE}?action=upload&path=${encodeURIComponent(currentPath)}`, {
         method: 'POST',
         body: formData
       });
       const data = await response.json();
-      
+
       await loadFiles(currentPath);
       folderInput.value = '';
-      
+
       if (data.success) {
         const uploadedCount = data.uploaded?.length || 0;
         const failedCount = data.failed?.length || 0;
@@ -1593,16 +1593,16 @@ function initializeEventHandlers() {
   // Drag and drop support
   fileDropZone?.addEventListener('dragover', (e) => {
     e.preventDefault();
-    fileDropZone.classList.add('border-blue-400', 'bg-blue-50');
+    fileDropZone.classList.add('border-blue-400', 'bg-blue-50', 'dark:bg-blue-900/20', 'dark:border-blue-500');
   });
 
   fileDropZone?.addEventListener('dragleave', () => {
-    fileDropZone.classList.remove('border-blue-400', 'bg-blue-50');
+    fileDropZone.classList.remove('border-blue-400', 'bg-blue-50', 'dark:bg-blue-900/20', 'dark:border-blue-500');
   });
 
   fileDropZone?.addEventListener('drop', (e) => {
     e.preventDefault();
-    fileDropZone.classList.remove('border-blue-400', 'bg-blue-50');
+    fileDropZone.classList.remove('border-blue-400', 'bg-blue-50', 'dark:bg-blue-900/20', 'dark:border-blue-500');
     if (e.dataTransfer.files.length > 0) {
       fileInput.files = e.dataTransfer.files;
       const event = new Event('change', { bubbles: true });
@@ -1627,28 +1627,28 @@ function initializeEventHandlers() {
   document.getElementById('doUpload')?.addEventListener('click', async () => {
     const files = fileInput.files;
     if (files.length === 0) return showError('Pilih file terlebih dahulu');
-    
+
     showLoader(true);
-    
+
     try {
       // Upload all files in a single request for bulk logging
       const formData = new FormData();
       for (const file of files) {
         formData.append('files[]', file);
       }
-      
+
       const response = await fetch(`${API_BASE}?action=upload&path=${encodeURIComponent(currentPath)}`, {
         method: 'POST',
         body: formData
       });
       const data = await response.json();
-      
+
       await loadFiles(currentPath);
       modal?.classList.remove('visible');
       modal?.classList.add('hidden');
       fileInput.value = '';
       fileList.innerHTML = '';
-      
+
       if (data.success) {
         const uploadedCount = data.uploaded?.length || 0;
         const failedCount = data.failed?.length || 0;
@@ -1728,12 +1728,12 @@ function initializeEventHandlers() {
         closeModal();
         return;
       }
-      
+
       // Prevent duplicate upload
       if (isUploadInProgress || pendingUploadFiles.length === 0) return;
-      
+
       isUploadInProgress = true;
-      
+
       const uploadBtn = document.getElementById('cardUploadStart');
       const cancelBtn = document.getElementById('cardUploadCancel');
       if (uploadBtn) {
@@ -1744,7 +1744,7 @@ function initializeEventHandlers() {
 
       const list = document.getElementById('cardUploadList');
       const rows = list?.querySelectorAll('.card-upload-row') || [];
-      
+
       // Set all rows to "Mengupload..." status
       rows.forEach(row => {
         const statusEl = row?.querySelector('.card-upload-status');
@@ -1763,20 +1763,20 @@ function initializeEventHandlers() {
           body: formData
         });
         const data = await response.json();
-        
+
         const uploadedFiles = data.uploaded || [];
         const failedFiles = data.failed || [];
         const successCount = uploadedFiles.length;
         const errorCount = failedFiles.length;
-        
+
         // Update individual row statuses
         rows.forEach((row, i) => {
           const file = pendingUploadFiles[i];
           const progressEl = row?.querySelector('.card-upload-progress');
           const statusEl = row?.querySelector('.card-upload-status');
-          
+
           const isUploaded = uploadedFiles.some(f => f.name === file.name || f === file.name);
-          
+
           if (progressEl) {
             progressEl.style.width = '100%';
             progressEl.classList.add(isUploaded ? 'bg-green-500' : 'bg-red-500');
@@ -1817,7 +1817,7 @@ function initializeEventHandlers() {
             statusEl.classList.add('text-red-600');
           }
         });
-        
+
         const summary = document.getElementById('cardUploadSummary');
         const summaryText = document.getElementById('cardUploadSummaryText');
         if (summary && summaryText) {
@@ -1833,7 +1833,7 @@ function initializeEventHandlers() {
         uploadBtn.disabled = false;
       }
       if (cancelBtn) cancelBtn.style.display = 'none';
-      
+
       // Mark upload as completed
       isUploadCompleted = true;
       isUploadInProgress = false;
@@ -1861,11 +1861,11 @@ function initializeEventHandlers() {
       totalSize += file.size;
       const row = document.createElement('div');
       row.className = 'card-upload-row';
-      
+
       // Get file icon based on extension
       const ext = file.name.split('.').pop()?.toLowerCase() || '';
       const iconInfo = getFileIconColor(ext);
-      
+
       row.innerHTML = `
         <div class="card-upload-row__icon-container ${iconInfo.bgClass}">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" class="${iconInfo.strokeClass}">
@@ -1965,46 +1965,46 @@ function initializeEventHandlers() {
           const data = JSON.parse(xhr.responseText || '{}');
           if (data.success) {
             if (progressEl) {
-                progressEl.style.width = '100%';
-                progressEl.classList.add('bg-green-500');
+              progressEl.style.width = '100%';
+              progressEl.classList.add('bg-green-500');
             }
             if (statusEl) {
-                statusEl.textContent = 'Selesai ✓';
-                statusEl.classList.add('text-green-600');
+              statusEl.textContent = 'Selesai ✓';
+              statusEl.classList.add('text-green-600');
             }
             resolve({ success: true, data });
           } else {
             if (progressEl) {
-                progressEl.style.width = '100%';
-                progressEl.classList.add('bg-red-500');
+              progressEl.style.width = '100%';
+              progressEl.classList.add('bg-red-500');
             }
             if (statusEl) {
-                statusEl.textContent = `Gagal: ${data.error || 'error'}`;
-                statusEl.classList.add('text-red-600');
+              statusEl.textContent = `Gagal: ${data.error || 'error'}`;
+              statusEl.classList.add('text-red-600');
             }
             resolve({ success: false, error: data.error || 'Server error' });
           }
         } catch (err) {
-            if (progressEl) {
-                progressEl.style.width = '100%';
-                progressEl.classList.add('bg-red-500');
-            }
-            if (statusEl) {
-                statusEl.textContent = 'Gagal: Invalid response';
-                statusEl.classList.add('text-red-600');
-            }
-            resolve({ success: false, error: 'Invalid response' });
+          if (progressEl) {
+            progressEl.style.width = '100%';
+            progressEl.classList.add('bg-red-500');
+          }
+          if (statusEl) {
+            statusEl.textContent = 'Gagal: Invalid response';
+            statusEl.classList.add('text-red-600');
+          }
+          resolve({ success: false, error: 'Invalid response' });
         }
       };
 
       xhr.onerror = function () {
         if (progressEl) {
-            progressEl.style.width = '100%';
-            progressEl.classList.add('bg-red-500');
+          progressEl.style.width = '100%';
+          progressEl.classList.add('bg-red-500');
         }
         if (statusEl) {
-            statusEl.textContent = 'Gagal: Network error';
-            statusEl.classList.add('text-red-600');
+          statusEl.textContent = 'Gagal: Network error';
+          statusEl.classList.add('text-red-600');
         }
         resolve({ success: false, error: 'Network error' });
       };
@@ -2089,11 +2089,11 @@ function initializeEventHandlers() {
   tbody?.addEventListener('click', async (e) => {
     const btn = e.target.closest('button');
     if (!btn) return;
-    
+
     const action = btn.dataset.action;
     const path = btn.dataset.path;
     const file = files.find(f => f.path === path);
-    
+
     if (action === 'preview') {
       if (file?.type === 'folder') {
         await loadFiles(path);
@@ -2114,12 +2114,12 @@ function initializeEventHandlers() {
   tbody?.addEventListener('dblclick', async (e) => {
     const row = e.target.closest('tr');
     if (!row) return;
-    
+
     const path = row.dataset.path;
     const file = files.find(f => f.path === path);
-    
+
     if (!file) return;
-    
+
     if (file.type === 'folder') {
       // Open folder
       await loadFiles(path);
@@ -2145,9 +2145,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     return;
   }
   appInitialized = true;
-  
+
   console.log('[enhanced-ui] Starting app initialization');
-  
+
   // Initialize DOM references
   tbody = document.getElementById('tbody');
   showing = document.getElementById('showing');
@@ -2155,7 +2155,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   loaderOverlay = document.getElementById('loader-overlay');
   ctxMenu = document.getElementById('contextMenu');
   app = document.getElementById('app');
-  
+
   // Validate all required elements exist
   if (!tbody || !showing || !selectedCount || !ctxMenu || !app) {
     console.error('[enhanced-ui] Missing required DOM elements:', {
@@ -2167,25 +2167,25 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
     return;
   }
-  
+
   console.log('[enhanced-ui] DOM elements initialized successfully');
-  
+
   // Export functions and state to window for use by modals-handler
   window.loadFiles = loadFiles;
   window.deleteItems = deleteItems;
-  
+
   // Export getter for currentPath so modals can access it
   Object.defineProperty(window, 'currentPath', {
-    get: function() { return currentPath; },
+    get: function () { return currentPath; },
     configurable: true
   });
-  
+
   // Initialize event handlers
   initializeEventHandlers();
-  
+
   // Wait a bit before loading files to ensure all handlers are ready
   await new Promise(resolve => setTimeout(resolve, 100));
-  
+
   // Load files
   await loadFiles('');
 });

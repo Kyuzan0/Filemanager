@@ -483,10 +483,6 @@
             <p class="move-error text-sm mt-2" id="move-error" role="alert"></p>
         </div>
         <footer class="move-actions flex flex-col sm:flex-row items-stretch sm:items-end gap-2 mt-4 flex-shrink-0" role="group" aria-label="Move actions">
-            <button type="button"
-                class="move-button outline inline-flex items-center justify-center gap-2 px-3 py-2 rounded-md text-sm"
-                id="move-select-here"
-                aria-label="Select current folder as destination">Pilih di sini</button>
             <div class="move-actions-spacer flex-1"></div>
             <button type="button"
                 class="move-button outline inline-flex items-center justify-center gap-2 px-3 py-2 rounded-md text-sm"
@@ -494,9 +490,9 @@
                 aria-label="Cancel move operation">Batal</button>
             <button type="button"
                 class="move-button primary inline-flex items-center justify-center gap-2 px-3 py-2 rounded-md text-sm"
-                id="move-confirm" disabled
+                id="move-confirm"
                 aria-label="Confirm move to selected folder"
-                aria-disabled="true">Pindahkan</button>
+                >Pindahkan</button>
         </footer>
     </div>
 </div>
