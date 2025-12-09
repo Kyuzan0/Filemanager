@@ -1468,7 +1468,11 @@ function move_items(string $root, array $sourcePaths, string $targetPath): array
  */
 function get_logs_directory(): string
 {
-    return __DIR__ . '/../logs';
+    // Use LOGS_DIR constant if defined, otherwise fallback to relative path
+    if (defined('LOGS_DIR')) {
+        return LOGS_DIR;
+    }
+    return dirname(__DIR__, 2) . '/storage/logs';
 }
 
 /**
@@ -1477,6 +1481,10 @@ function get_logs_directory(): string
  */
 function get_activity_log_file(): string
 {
+    // Use ACTIVITY_LOG_FILE constant if defined
+    if (defined('ACTIVITY_LOG_FILE')) {
+        return ACTIVITY_LOG_FILE;
+    }
     return get_logs_directory() . '/activity.json';
 }
 

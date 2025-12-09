@@ -112,8 +112,8 @@ $activePage = $activePage ?? 'dashboard';
             <i class="ri-delete-bin-line" aria-hidden="true"></i>
             <span>Clear</span>
         </button>
-    </div>
+</div>
 </aside>
 
 <!-- Sidebar Navigation Script -->
-<script src="assets/js/sidebar.js"></script>
+<script src="assets/js/sidebar.js?v=<?php echo time(); ?>"></script>

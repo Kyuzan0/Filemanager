@@ -1,0 +1,34 @@
+# File Manager - Root .htaccess
+# Redirects all requests to public/ directory
+
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    
+    # If the requested file exists in public/, serve it
+    RewriteCond %{REQUEST_URI} !^/public/
+    RewriteRule ^(.*)$ /public/$1 [L]
+</IfModule>
+
+# Protect sensitive directories from direct access
+<IfModule mod_authz_core.c>
+    <Directory "app">
+        Require all denied
+    </Directory>
+    <Directory "storage">
+        Require all denied
+    </Directory>
+</IfModule>
+
+# Alternatively, for Apache 2.2
+<IfModule !mod_authz_core.c>
+    <IfModule mod_access.c>
+        <Directory "app">
+            Order deny,allow
+            Deny from all
+        </Directory>
+        <Directory "storage">
+            Order deny,allow
+            Deny from all
+        </Directory>
+    </IfModule>
+</IfModule>

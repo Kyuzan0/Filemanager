@@ -1,6 +1,6 @@
 # File Manager — Modern Web-Based File Management System
 
-**Version:** 3.1 (Modular API Architecture)
+**Version:** 4.0 (Refactored Architecture)
 **Date:** December 9, 2025
 **Status:** ✅ Production Ready
 
@@ -57,83 +57,86 @@ A modern, full-featured web-based file manager built with vanilla JavaScript and
 
 ```
 Filemanager/
-├── index.php              # Main HTML entry point
-├── api.php                # RESTful API endpoint router
-│
-├── assets/
-│   ├── css/               # 🎨 Modular CSS (30 files)
-│   │   ├── main.css       # CSS orchestration (31 imports)
-│   │   ├── core/          # Variables, reset, base (3 files)
-│   │   ├── layout/        # App shell, sidebar, topbar (4 files)
-│   │   ├── components/    # Buttons, cards, forms, tables (10 files)
-│   │   ├── overlays/      # Modal-specific styles (9 files)
-│   │   ├── themes/        # Dark mode system (1 file)
-│   │   ├── utilities/     # Animations, helpers, responsive (3 files)
-│   │   └── style.css.backup # Original CSS backup
+├── public/                    # 🌐 Web-accessible files (document root)
+│   ├── index.php              # Main HTML entry point
+│   ├── api.php                # RESTful API endpoint router
+│   ├── favicon.svg            # Site favicon
+│   ├── .htaccess              # Apache configuration
 │   │
-│   └── js/                # 📜 JavaScript modules
-│       ├── index.js       # Application entry point
-│       ├── modules/       # 15 modular components
-│       │   ├── appInitializer.js    # App initialization
-│       │   ├── apiService.js        # HTTP/API layer
-│       │   ├── fileOperations.js    # File business logic
-│       │   ├── uiRenderer.js        # DOM rendering + virtual scroll
-│       │   ├── state.js             # State management
-│       │   ├── eventHandlers.js     # Event binding
-│       │   ├── dragDrop.js          # Drag & drop
-│       │   ├── modals.js            # Modal management
-│       │   ├── logManager.js        # Activity logging
-│       │   ├── storage.js           # LocalStorage persistence
-│       │   ├── utils.js             # Utility functions
-│       │   ├── constants.js         # Config & constants
-│       │   ├── debug.js             # Debug helpers
-│       │   ├── fileIcons.js         # Icon mapping
-│       │   └── moveOverlay.js       # Move dialog
-│       │
-│       ├── enhanced-ui.js    # Legacy compatibility layer
-│       ├── modals-handler.js # Legacy modal handler
-│       └── log-handler.js    # Legacy log handler
-│
-
-├── lib/                   # 🔧 PHP Backend Library
-│   ├── file_manager.php   # Core file operations + Security
-│   ├── trash_manager.php  # Trash system operations
-│   ├── archive_manager.php # ZIP/7z/RAR archive handling
-│   ├── log_manager.php    # Activity logging system
+│   ├── assets/
+│   │   ├── css/               # 🎨 Modular CSS (30 files)
+│   │   │   ├── main.css       # CSS orchestration (31 imports)
+│   │   │   ├── core/          # Variables, reset, base (3 files)
+│   │   │   ├── layout/        # App shell, sidebar, topbar (4 files)
+│   │   │   ├── components/    # Buttons, cards, forms, tables (10 files)
+│   │   │   ├── overlays/      # Modal-specific styles (9 files)
+│   │   │   ├── themes/        # Dark mode system (1 file)
+│   │   │   └── utilities/     # Animations, helpers, responsive (3 files)
+│   │   │
+│   │   └── js/                # 📜 JavaScript modules
+│   │       ├── index.js       # Application entry point
+│   │       ├── modules/       # 15 modular components
+│   │       │   ├── appInitializer.js    # App initialization
+│   │       │   ├── apiService.js        # HTTP/API layer
+│   │       │   ├── fileOperations.js    # File business logic
+│   │       │   ├── uiRenderer.js        # DOM rendering + virtual scroll
+│   │       │   ├── state.js             # State management
+│   │       │   └── ...                  # Plus 10 more modules
+│   │       │
+│   │       ├── enhanced-ui.js    # Legacy compatibility layer
+│   │       ├── modals-handler.js # Legacy modal handler
+│   │       └── log-handler.js    # Legacy log handler
 │   │
-│   └── handlers/          # 📦 API Request Handlers (Modular)
-│       ├── helpers.php        # Common utility functions
-│       ├── raw_handler.php    # Raw file streaming (media preview)
-│       ├── system_handler.php # System requirements & 7-zip status
-│       ├── logs_handler.php   # Activity logs operations
-│       ├── trash_handler.php  # Trash bin operations
-│       ├── file_handler.php   # File/folder CRUD operations
-│       └── archive_handler.php # Compression/extraction
+│   └── partials/              # 📄 HTML Partials
+│       ├── sidebar.php        # Sidebar navigation
+│       ├── table.php          # File table structure
+│       ├── overlays.php       # Modal dialogs
+│       └── ...                # Plus more partials
 │
-├── bin/                   # 📦 Bundled Binaries
-│   ├── windows/           # Windows 7-Zip (7z.exe + 7z.dll)
-│   ├── linux/             # Linux p7zip (7za)
-│   ├── setup-7zip.php     # Auto-setup script
-│   └── README.md          # Binary setup documentation
+├── app/                       # 🔧 Application Code (not web-accessible)
+│   ├── Core/                  # Core business logic classes
+│   │   ├── FileManager.php    # File operations + Security
+│   │   ├── TrashManager.php   # Trash system operations
+│   │   ├── ArchiveManager.php # ZIP/7z/RAR archive handling
+│   │   ├── LogManager.php     # Activity logging system
+│   │   └── Security.php       # Path sanitization & validation
+│   │
+│   ├── Handlers/              # 📦 API Request Handlers
+│   │   ├── FileHandler.php    # File/folder CRUD operations
+│   │   ├── TrashHandler.php   # Trash bin operations
+│   │   ├── ArchiveHandler.php # Compression/extraction
+│   │   ├── LogHandler.php     # Activity logs operations
+│   │   ├── RawHandler.php     # Raw file streaming (media preview)
+│   │   └── SystemHandler.php  # System requirements & status
+│   │
+│   ├── Helpers/
+│   │   └── helpers.php        # Common utility functions
+│   │
+│   └── Config/
+│       └── paths.php          # Centralized path constants
 │
-├── partials/              # 📄 HTML Partials
-│   ├── table.php          # File table structure
-│   ├── overlays.php       # Modal dialogs (no inline CSS)
-│   └── action-bar.php     # Action buttons
+├── storage/                   # 📂 User Data Storage
+│   ├── files/                 # User file storage directory
+│   ├── trash/                 # 🗑️ Trash storage (soft delete)
+│   ├── logs/                  # 📊 Activity logs (JSON)
+│   └── temp/                  # Temporary files
 │
-├── file/                  # 📂 User file storage directory
-├── logs/                  # 📊 Activity logs (JSON)
-│   └── activity.json      # Activity log storage
-├── .trash/                # 🗑️ Trash storage (soft delete)
+├── bin/                       # 📦 Bundled Binaries
+│   ├── windows/               # Windows 7-Zip (7z.exe + 7z.dll)
+│   ├── linux/                 # Linux p7zip (7za)
+│   └── setup.php              # OS detection & binary setup
 │
-├── docs/                  # 📚 Comprehensive Documentation
-│   ├── README.md          # Quick start & feature overview (NEW)
-│   ├── ARCHITECTURE.md    # System architecture guide (NEW)
-│   ├── API.md             # Complete API reference (NEW)
-│   ├── CONTRIBUTING.md    # Developer contribution guide (NEW)
-│   └── [legacy docs...]   # Previous documentation files
+├── docs/                      # 📚 Comprehensive Documentation
+│   ├── PROJECT_STRUCTURE.md   # Structure documentation
+│   ├── README.md              # Quick start & feature overview
+│   ├── ARCHITECTURE.md        # System architecture guide
+│   ├── API.md                 # Complete API reference
+│   └── CONTRIBUTING.md        # Developer contribution guide
 │
-└── CHANGELOG.md           # 📝 Version history (NEW)
+├── autoload.php               # Class & helper loader
+├── bootstrap.php              # Application initialization
+├── .gitignore                 # Git ignore configuration
+└── README.md                  # This file
 ```
 
 
@@ -316,19 +319,26 @@ Layer 6: UTILITIES (Helpers & Responsive)
 
 ### Architecture
 
-The backend uses a **modular handler architecture** where `api.php` acts as a lightweight router that delegates requests to specialized handler modules:
+The backend uses a **modular handler architecture** where `public/api.php` acts as a lightweight router that delegates requests to specialized handler modules:
 
 ```
-api.php (Router)
+public/api.php (Router)
+    ↓ (loads bootstrap.php & autoload.php)
     ↓
-lib/handlers/
-├── file_handler.php     → File/folder CRUD operations
-├── trash_handler.php    → Trash bin operations  
-├── logs_handler.php     → Activity log operations
-├── archive_handler.php  → Compress/extract operations
-├── system_handler.php   → System info & requirements
-├── raw_handler.php      → Media streaming
-└── helpers.php          → Shared utilities
+app/Handlers/
+├── FileHandler.php     → File/folder CRUD operations
+├── TrashHandler.php    → Trash bin operations  
+├── LogHandler.php      → Activity log operations
+├── ArchiveHandler.php  → Compress/extract operations
+├── SystemHandler.php   → System info & requirements
+└── RawHandler.php      → Media streaming
+    ↓ (uses)
+app/Core/
+├── FileManager.php     → Core file operations
+├── TrashManager.php    → Trash management
+├── ArchiveManager.php  → ZIP/7z operations
+├── LogManager.php      → Activity logging
+└── Security.php        → Path & input validation
 ```
 
 ### API Endpoints (`api.php`)
@@ -382,18 +392,24 @@ The backend automatically creates subfolder structure based on relative paths.
 
 ### Core Libraries
 
-**`lib/file_manager.php`** - File Operations
+**`app/Core/FileManager.php`** - File Operations
 - `list_directory()` - List files with metadata
-- `create_item()` - Create files/folders
+- `create_file()` / `create_folder()` - Create files/folders
 - `rename_item()` - Rename with validation
-- `move_item()` - Move files/folders
-- `delete_item()` - Delete with recursion
-- `handle_upload()` - Chunked upload processing
+- `move_items()` - Move files/folders
+- `delete_single_path()` / `delete_paths()` - Delete with recursion
+- `upload_files()` / `upload_chunk()` - Chunked upload processing
 - `upload_files_with_folders()` - Upload with folder structure preservation
-- `read_text_file()` - Read editable files
-- `save_text_file()` - Save with backup
+- `read_text_file()` / `write_text_file()` - Read/write editable files
 - `sanitize_relative_path()` - Path sanitization
 - `resolve_path()` - Prevent directory traversal
+
+**`app/Core/Security.php`** - Security Utilities
+- `sanitizeRelativePath()` - Clean and validate paths
+- `isPathWithinRoot()` - Prevent directory traversal
+- `sanitizeFilename()` - Clean filename input
+- `isExtensionAllowed()` - Validate file extensions
+- `setSecurityHeaders()` - Set HTTP security headers
 
 **`lib/logger.php`** - Activity Logging
 - `log_activity()` - Write activity logs
@@ -533,18 +549,19 @@ $resolved = resolve_path($root, $sanitized);
    cd Filemanager
    ```
 
-2. **Set up web server**
+2. **Set up web server** (point document root to `public/`)
    ```bash
    # Using PHP built-in server (development)
-   php -S localhost:8000
+   php -S localhost:8000 -t public
    
-   # Or configure Apache/Nginx virtual host
+   # Or configure Apache/Nginx virtual host with document root = public/
    ```
 
-3. **Create file directory**
+3. **Verify storage directories exist**
    ```bash
-   mkdir -p file logs
-   chmod 755 file logs
+   # Storage directories are auto-created, but you can verify:
+   ls -la storage/
+   # Should contain: files/, trash/, logs/, temp/
    ```
 
 4. **Access the application**

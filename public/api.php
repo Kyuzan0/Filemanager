@@ -10,23 +10,10 @@
  */
 
 // =============================================================================
-// DEPENDENCIES
+// BOOTSTRAP
 // =============================================================================
 
-// Core libraries
-require_once __DIR__ . '/lib/file_manager.php';
-require_once __DIR__ . '/lib/trash_manager.php';
-require_once __DIR__ . '/lib/log_manager.php';
-require_once __DIR__ . '/lib/archive_manager.php';
-
-// Handler modules
-require_once __DIR__ . '/lib/handlers/helpers.php';
-require_once __DIR__ . '/lib/handlers/raw_handler.php';
-require_once __DIR__ . '/lib/handlers/system_handler.php';
-require_once __DIR__ . '/lib/handlers/logs_handler.php';
-require_once __DIR__ . '/lib/handlers/trash_handler.php';
-require_once __DIR__ . '/lib/handlers/file_handler.php';
-require_once __DIR__ . '/lib/handlers/archive_handler.php';
+require_once dirname(__DIR__) . '/bootstrap.php';
 
 // =============================================================================
 // INITIALIZATION
@@ -35,7 +22,7 @@ require_once __DIR__ . '/lib/handlers/archive_handler.php';
 header('Content-Type: application/json; charset=utf-8');
 
 // Validate root directory
-$root = realpath(__DIR__ . '/file');
+$root = get_root_path();
 if ($root === false) {
     http_response_code(500);
     echo json_encode([

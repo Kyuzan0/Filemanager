@@ -1,16 +1,47 @@
-# Ignore all contents in the file folder
+# =============================================================================
+# File Manager - .gitignore
+# =============================================================================
+
+# Storage directories (user data)
+storage/files/*
+storage/trash/*
+storage/logs/*
+storage/temp/*
+
+# Keep directory structure
+!storage/files/.gitkeep
+!storage/trash/.gitkeep
+!storage/logs/.gitkeep
+!storage/temp/.gitkeep
+
+# Legacy paths (to be removed after migration)
 file/*
-
-# Keep the file folder itself but ignore all contents
-# This ensures the folder structure is preserved
-
 logs/*
+.trash/*
 
+# Development
+node_modules/
 bak/
 bak2/
 
-node_modules/
+# Build artifacts
+build/
 
+# IDE
+.vscode/
+.idea/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# PHP
+*.log
+php_errors.log
+
+# Environment
+.env
+.env.local
+
+# Documentation
 docs/
-
-.trash/*

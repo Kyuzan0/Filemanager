@@ -16,11 +16,11 @@
  */
 function write_activity_log(string $action, string $target, string $targetType, string $path = '', array $extra = []): void
 {
-    ensure_logs_directory();
-    
-    $logFile = get_activity_log_file();
+    ensure_directories();
+
+    $logFile = ACTIVITY_LOG_FILE;
     $logs = [];
-    
+
     if (file_exists($logFile)) {
         $content = file_get_contents($logFile);
         if ($content) {
@@ -30,7 +30,7 @@ function write_activity_log(string $action, string $target, string $targetType, 
             }
         }
     }
-    
+
     $entry = [
         'timestamp' => time(),
         'action' => $action,
@@ -40,15 +40,15 @@ function write_activity_log(string $action, string $target, string $targetType, 
         'ip' => $_SERVER['REMOTE_ADDR'] ?? 'unknown',
         'userAgent' => $_SERVER['HTTP_USER_AGENT'] ?? '',
     ];
-    
+
     // Merge extra data (for count, items, etc)
     $entry = array_merge($entry, $extra);
-    
+
     array_unshift($logs, $entry);
-    
+
     // Keep only last 10000 entries to prevent unbounded growth
     $logs = array_slice($logs, 0, 10000);
-    
+
     if (!@file_put_contents($logFile, json_encode($logs, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT))) {
         throw new RuntimeException('Gagal menulis log aktivitas.');
     }
@@ -63,8 +63,8 @@ function write_activity_log(string $action, string $target, string $targetType, 
  */
 function read_activity_logs(int $limit = 15, int $page = 1, array $filters = []): array
 {
-    $logFile = get_activity_log_file();
-    
+    $logFile = ACTIVITY_LOG_FILE;
+
     if (!file_exists($logFile)) {
         return [
             'logs' => [],
@@ -72,7 +72,7 @@ function read_activity_logs(int $limit = 15, int $page = 1, array $filters = [])
             'totalPages' => 0,
         ];
     }
-    
+
     $content = file_get_contents($logFile);
     if ($content === false) {
         return [
@@ -81,29 +81,29 @@ function read_activity_logs(int $limit = 15, int $page = 1, array $filters = [])
             'totalPages' => 0,
         ];
     }
-    
+
     $allLogs = json_decode($content, true);
     if (!is_array($allLogs)) {
         $allLogs = [];
     }
-    
+
     // Sort by timestamp descending (newest first)
-    usort($allLogs, function($a, $b) {
+    usort($allLogs, function ($a, $b) {
         return ($b['timestamp'] ?? 0) - ($a['timestamp'] ?? 0);
     });
-    
+
     // Apply filters
-    $filteredLogs = array_filter($allLogs, function($log) use ($filters) {
+    $filteredLogs = array_filter($allLogs, function ($log) use ($filters) {
         // Action filter
         if (!empty($filters['action']) && ($log['action'] ?? '') !== $filters['action']) {
             return false;
         }
-        
+
         // Type filter
         if (!empty($filters['type']) && ($log['targetType'] ?? '') !== $filters['type']) {
             return false;
         }
-        
+
         // Search filter (search in filename, path, action)
         if (!empty($filters['search'])) {
             $search = strtolower($filters['search']);
@@ -111,21 +111,23 @@ function read_activity_logs(int $limit = 15, int $page = 1, array $filters = [])
             $path = strtolower($log['path'] ?? '');
             $action = strtolower($log['action'] ?? '');
             $ip = $log['ip'] ?? '';
-            
-            if (strpos($filename, $search) === false &&
+
+            if (
+                strpos($filename, $search) === false &&
                 strpos($path, $search) === false &&
                 strpos($action, $search) === false &&
-                strpos($ip, $search) === false) {
+                strpos($ip, $search) === false
+            ) {
                 return false;
             }
         }
-        
+
         return true;
     });
-    
+
     $total = count($filteredLogs);
     $totalPages = $limit > 0 ? ceil($total / $limit) : 1;
-    
+
     // Pagination
     if ($limit > 0) {
         $page = max(1, min($page, $totalPages));
@@ -134,7 +136,7 @@ function read_activity_logs(int $limit = 15, int $page = 1, array $filters = [])
     } else {
         $logs = $filteredLogs;
     }
-    
+
     return [
         'logs' => $logs,
         'total' => $total,
@@ -149,15 +151,15 @@ function read_activity_logs(int $limit = 15, int $page = 1, array $filters = [])
  */
 function get_activity_log(int $index): ?array
 {
-    $logFile = get_activity_log_file();
-    
+    $logFile = ACTIVITY_LOG_FILE;
+
     if (!file_exists($logFile)) {
         return null;
     }
-    
+
     $content = file_get_contents($logFile);
     $logs = json_decode($content, true);
-    
+
     return isset($logs[$index]) ? $logs[$index] : null;
 }
 
@@ -180,33 +182,33 @@ function export_activity_logs(array $filters = [], int $limit = 10000): array
  */
 function cleanup_activity_logs(int $days = 30): int
 {
-    $logFile = get_activity_log_file();
-    
+    $logFile = ACTIVITY_LOG_FILE;
+
     if (!file_exists($logFile)) {
         return 0;
     }
-    
+
     $content = file_get_contents($logFile);
     $logs = json_decode($content, true);
-    
+
     if (!is_array($logs)) {
         return 0;
     }
-    
+
     $cutoffTime = time() - ($days * 86400);
     $initialCount = count($logs);
-    
-    $logs = array_filter($logs, function($log) use ($cutoffTime) {
+
+    $logs = array_filter($logs, function ($log) use ($cutoffTime) {
         return ($log['timestamp'] ?? 0) > $cutoffTime;
     });
-    
+
     // Reindex array
     $logs = array_values($logs);
-    
+
     if (!@file_put_contents($logFile, json_encode($logs, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT))) {
         throw new RuntimeException('Gagal membersihkan log aktivitas.');
     }
-    
+
     return $initialCount - count($logs);
 }
 
@@ -216,8 +218,8 @@ function cleanup_activity_logs(int $days = 30): int
  */
 function get_log_statistics(): array
 {
-    $logFile = get_activity_log_file();
-    
+    $logFile = ACTIVITY_LOG_FILE;
+
     if (!file_exists($logFile)) {
         return [
             'total' => 0,
@@ -225,10 +227,10 @@ function get_log_statistics(): array
             'byType' => [],
         ];
     }
-    
+
     $content = file_get_contents($logFile);
     $logs = json_decode($content, true);
-    
+
     if (!is_array($logs)) {
         return [
             'total' => 0,
@@ -236,18 +238,18 @@ function get_log_statistics(): array
             'byType' => [],
         ];
     }
-    
+
     $byAction = [];
     $byType = [];
-    
+
     foreach ($logs as $log) {
         $action = $log['action'] ?? 'unknown';
         $type = $log['targetType'] ?? 'unknown';
-        
+
         $byAction[$action] = ($byAction[$action] ?? 0) + 1;
         $byType[$type] = ($byType[$type] ?? 0) + 1;
     }
-    
+
     return [
         'total' => count($logs),
         'byAction' => $byAction,

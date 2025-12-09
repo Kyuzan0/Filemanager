@@ -483,7 +483,11 @@ function detect_os(): string
  */
 function get_bin_directory(): string
 {
-    return dirname(__DIR__) . DIRECTORY_SEPARATOR . 'bin';
+    // Use BIN_DIR constant if defined, otherwise fallback to relative path
+    if (defined('BIN_DIR')) {
+        return BIN_DIR;
+    }
+    return dirname(__DIR__, 2) . DIRECTORY_SEPARATOR . 'bin';
 }
 
 /**
