@@ -434,9 +434,114 @@ function get_archive_type(string $filename): ?string
     return null;
 }
 
+// ============================================================================
+// 7-ZIP INTEGRATION WITH BUNDLED BINARIES
+// ============================================================================
+
+/**
+ * Detect the current operating system
+ * 
+ * @return string 'windows', 'linux', 'macos', or 'unknown'
+ */
+function detect_os(): string
+{
+    $os = strtoupper(PHP_OS);
+
+    if (substr($os, 0, 3) === 'WIN') {
+        return 'windows';
+    }
+
+    if ($os === 'LINUX') {
+        return 'linux';
+    }
+
+    if ($os === 'DARWIN') {
+        return 'macos';
+    }
+
+    // Try uname for more accurate detection
+    if (function_exists('php_uname')) {
+        $uname = strtolower(php_uname('s'));
+        if (strpos($uname, 'linux') !== false) {
+            return 'linux';
+        }
+        if (strpos($uname, 'darwin') !== false) {
+            return 'macos';
+        }
+        if (strpos($uname, 'windows') !== false || strpos($uname, 'win') !== false) {
+            return 'windows';
+        }
+    }
+
+    return 'unknown';
+}
+
+/**
+ * Get the base directory for bundled binaries
+ * 
+ * @return string
+ */
+function get_bin_directory(): string
+{
+    return dirname(__DIR__) . DIRECTORY_SEPARATOR . 'bin';
+}
+
+/**
+ * Get the bundled 7-Zip binary path based on OS
+ * 
+ * @return string|null Path to bundled binary or null if not found
+ */
+function get_bundled_7zip_path(): ?string
+{
+    $binDir = get_bin_directory();
+    $os = detect_os();
+
+    switch ($os) {
+        case 'windows':
+            // Check for 7z.exe in bin/windows/
+            $paths = [
+                $binDir . DIRECTORY_SEPARATOR . 'windows' . DIRECTORY_SEPARATOR . '7z.exe',
+                $binDir . DIRECTORY_SEPARATOR . 'windows' . DIRECTORY_SEPARATOR . '7za.exe',
+            ];
+            break;
+
+        case 'linux':
+        case 'macos':
+            // Check for 7za in bin/linux/
+            $paths = [
+                $binDir . DIRECTORY_SEPARATOR . 'linux' . DIRECTORY_SEPARATOR . '7za',
+                $binDir . DIRECTORY_SEPARATOR . 'linux' . DIRECTORY_SEPARATOR . '7z',
+                $binDir . DIRECTORY_SEPARATOR . 'linux' . DIRECTORY_SEPARATOR . '7zr',
+            ];
+            break;
+
+        default:
+            return null;
+    }
+
+    foreach ($paths as $path) {
+        if (file_exists($path)) {
+            // On Linux/macOS, check if executable
+            if ($os !== 'windows' && !is_executable($path)) {
+                // Try to make it executable
+                @chmod($path, 0755);
+            }
+
+            // Verify it works
+            $testCmd = escapeshellarg($path) . ' 2>&1';
+            $result = @shell_exec($testCmd);
+            if ($result !== null && strpos($result, '7-Zip') !== false) {
+                return $path;
+            }
+        }
+    }
+
+    return null;
+}
+
 /**
  * Check if 7-Zip command line tool is available
- * Supports both Windows and Linux
+ * Checks bundled binaries first, then system-installed
  * 
  * @return bool
  */
@@ -454,35 +559,60 @@ function is_7zip_available(): bool
 
 /**
  * Get the 7-Zip executable path
- * Supports both Windows and Linux
+ * Priority: Bundled binaries > PATH commands > System installations
  * 
  * @return string|null
  */
 function get_7zip_path(): ?string
 {
-    // Try common 7z executable names in PATH (works on both Windows and Linux)
-    $commands = ['7z', '7za', '7zr'];
+    static $cachedPath = null;
+    static $pathChecked = false;
 
+    // Return cached result
+    if ($pathChecked) {
+        return $cachedPath;
+    }
+    $pathChecked = true;
+
+    // 1. First, check bundled binaries
+    $bundledPath = get_bundled_7zip_path();
+    if ($bundledPath !== null) {
+        $cachedPath = $bundledPath;
+        return $cachedPath;
+    }
+
+    // 2. Try common 7z executable names in PATH
+    $commands = ['7z', '7za', '7zr'];
     foreach ($commands as $cmd) {
         $result = @shell_exec($cmd . ' 2>&1');
         if ($result !== null && strpos($result, '7-Zip') !== false) {
-            return $cmd;
+            $cachedPath = $cmd;
+            return $cachedPath;
         }
     }
 
-    // Detect OS
-    $isWindows = strtoupper(substr(PHP_OS, 0, 3)) === 'WIN';
+    // 3. Check system installation paths
+    $os = detect_os();
+    $paths = [];
 
-    if ($isWindows) {
-        // Windows installation paths
+    if ($os === 'windows') {
         $paths = [
             'C:\\Program Files\\7-Zip\\7z.exe',
             'C:\\Program Files (x86)\\7-Zip\\7z.exe',
-            getenv('ProgramFiles') . '\\7-Zip\\7z.exe',
-            getenv('ProgramFiles(x86)') . '\\7-Zip\\7z.exe',
         ];
+
+        // Add environment variable paths
+        $programFiles = getenv('ProgramFiles');
+        $programFilesX86 = getenv('ProgramFiles(x86)');
+
+        if ($programFiles) {
+            $paths[] = $programFiles . '\\7-Zip\\7z.exe';
+        }
+        if ($programFilesX86) {
+            $paths[] = $programFilesX86 . '\\7-Zip\\7z.exe';
+        }
     } else {
-        // Linux/Unix installation paths
+        // Linux/macOS/Unix paths
         $paths = [
             '/usr/bin/7z',
             '/usr/bin/7za',
@@ -490,16 +620,52 @@ function get_7zip_path(): ?string
             '/usr/local/bin/7z',
             '/usr/local/bin/7za',
             '/snap/bin/7z',
+            '/opt/homebrew/bin/7z',  // macOS Homebrew
+            '/opt/homebrew/bin/7za',
         ];
     }
 
     foreach ($paths as $path) {
         if (file_exists($path) && is_executable($path)) {
-            return $path;
+            $cachedPath = $path;
+            return $cachedPath;
         }
     }
 
     return null;
+}
+
+/**
+ * Get information about 7-Zip availability
+ * Useful for debugging and status display
+ * 
+ * @return array
+ */
+function get_7zip_info(): array
+{
+    $os = detect_os();
+    $path = get_7zip_path();
+    $bundledPath = get_bundled_7zip_path();
+
+    $info = [
+        'available' => $path !== null,
+        'os' => $os,
+        'path' => $path,
+        'isBundled' => $bundledPath !== null && $path === $bundledPath,
+        'bundledPath' => $bundledPath,
+        'version' => null,
+    ];
+
+    // Get version info
+    if ($path !== null) {
+        $versionCmd = escapeshellarg($path) . ' 2>&1';
+        $output = @shell_exec($versionCmd);
+        if ($output !== null && preg_match('/7-Zip[^\d]*(\d+\.\d+)/i', $output, $matches)) {
+            $info['version'] = $matches[1];
+        }
+    }
+
+    return $info;
 }
 
 /**

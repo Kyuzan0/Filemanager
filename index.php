@@ -289,6 +289,8 @@
     <script src="assets/js/modules/router.js"></script>
     <!-- Favorites & Recent Files Manager -->
     <script src="assets/js/modules/favorites-manager.js"></script>
+    <!-- System Requirements Handler -->
+    <script src="assets/js/modules/systemRequirements.js"></script>
 </body>
 
 </html>

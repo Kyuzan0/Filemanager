@@ -69,6 +69,24 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
   - `generate_secure_token()`: Cryptographically secure token generation
   - `generate_csrf_token()` / `verify_csrf_token()`: CSRF protection
 
+#### Added - Bundled 7-Zip Binaries
+- **`bin/`**: New directory for bundled 7-Zip/p7zip binaries:
+  - `bin/windows/`: Directory for Windows 7z.exe + 7z.dll
+  - `bin/linux/`: Directory for Linux p7zip (7za)
+  - `bin/README.md`: Setup instructions for bundled binaries
+  - `bin/setup-7zip.php`: Auto-setup script for Windows/Linux
+- **`lib/archive_manager.php`**: Enhanced with cross-platform binary detection:
+  - `detect_os()`: Detects Windows/Linux/macOS
+  - `get_bin_directory()`: Returns bundled binary directory path
+  - `get_bundled_7zip_path()`: Finds bundled 7-Zip binary based on OS
+  - `get_7zip_info()`: Returns complete 7-Zip status information
+  - Priority order: Bundled binaries → PATH commands → System installations
+- **`api.php`**: New API endpoint `?action=7zip-status`:
+  - Returns 7-Zip availability status
+  - Shows detected OS, binary path, version
+  - Indicates if bundled binary is being used
+  - Lists supported archive formats
+
 ---
 
 ## Phase 3: Feature Enhancements

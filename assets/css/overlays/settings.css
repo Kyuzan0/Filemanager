@@ -89,11 +89,11 @@
   transition: transform 0.2s;
 }
 
-.toggle-input:checked + .toggle-switch {
+.toggle-input:checked+.toggle-switch {
   background: var(--accent);
 }
 
-.toggle-input:checked + .toggle-switch .toggle-switch-dot {
+.toggle-input:checked+.toggle-switch .toggle-switch-dot {
   transform: translateX(1.5rem);
 }
 
@@ -118,6 +118,186 @@
 @media (min-width: 640px) {
   .settings-footer {
     flex-direction: row;
+  }
+}
+
+/* Settings Tab Styling */
+.settings-tabs {
+  display: flex;
+  border-bottom: 1px solid #e5e7eb;
+  margin-bottom: 1rem;
+}
+
+[data-theme="dark"] .settings-tabs {
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+.settings-tab {
+  position: relative;
+  padding: 0.5rem 1rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #6b7280;
+  border-bottom: 2px solid transparent;
+  transition: all 0.2s ease;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+}
+
+.settings-tab:hover {
+  color: #3b82f6;
+}
+
+.settings-tab.active {
+  color: #3b82f6;
+  border-bottom-color: #3b82f6;
+}
+
+[data-theme="dark"] .settings-tab {
+  color: #9ca3af;
+}
+
+[data-theme="dark"] .settings-tab:hover {
+  color: #60a5fa;
+}
+
+[data-theme="dark"] .settings-tab.active {
+  color: #60a5fa;
+  border-bottom-color: #60a5fa;
+}
+
+/* Settings Panel */
+.settings-panel {
+  transition: opacity 0.2s ease;
+}
+
+.settings-panel.hidden {
+  display: none;
+}
+
+/* System Requirements Styles */
+.req-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  padding: 0.75rem;
+  border-radius: 0.5rem;
+  border: 1px solid #f3f4f6;
+  background: #f9fafb;
+  transition: all 0.2s ease;
+}
+
+[data-theme="dark"] .req-item {
+  border-color: rgba(255, 255, 255, 0.1);
+  background: rgba(0, 0, 0, 0.2);
+}
+
+.req-item:hover {
+  background: rgba(59, 130, 246, 0.05);
+}
+
+[data-theme="dark"] .req-item:hover {
+  background: rgba(59, 130, 246, 0.1);
+}
+
+.req-icon {
+  width: 2rem;
+  height: 2rem;
+  border-radius: 9999px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  background: #e5e7eb;
+}
+
+[data-theme="dark"] .req-icon {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.req-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.req-name {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--muted);
+}
+
+.req-status {
+  font-size: 0.75rem;
+  padding: 0.125rem 0.5rem;
+  border-radius: 9999px;
+  font-weight: 500;
+  flex-shrink: 0;
+}
+
+.req-detail {
+  font-size: 0.75rem;
+  color: #9ca3af;
+  margin-top: 0.25rem;
+}
+
+/* Loading animation */
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-spin {
+  animation: spin 1s linear infinite;
+}
+
+/* Settings Dialog Animation */
+.settings-dialog {
+  animation: settingsSlideIn 0.2s ease-out;
+  max-width: 42rem;
+}
+
+@keyframes settingsSlideIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* Responsive adjustments */
+@media (max-width: 640px) {
+  .settings-tabs {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .settings-tab {
+    white-space: nowrap;
+    padding: 0.5rem 0.75rem;
+    font-size: 0.8125rem;
+  }
+
+  .req-item {
+    padding: 0.625rem;
+  }
+
+  .req-icon {
+    width: 1.75rem;
+    height: 1.75rem;
+  }
+
+  .req-name {
+    font-size: 0.8125rem;
+  }
+
+  .req-detail {
+    font-size: 0.6875rem;
   }
 }
 

@@ -9,16 +9,16 @@
     id="shortcuts-help-overlay" aria-hidden="true">
     <div class="shortcuts-help-dialog bg-white dark:bg-[#1a2332] rounded-lg shadow-lg w-full max-w-2xl max-h-[80vh] overflow-hidden"
         role="dialog" aria-modal="true" aria-labelledby="shortcuts-help-title">
-        <header class="shortcuts-help-header px-6 py-4 border-b border-gray-100 dark:border-white/10 flex items-center justify-between">
+        <header
+            class="shortcuts-help-header px-6 py-4 border-b border-gray-100 dark:border-white/10 flex items-center justify-between">
             <h2 class="shortcuts-help-title text-lg font-semibold dark:text-slate-200" id="shortcuts-help-title">
                 Keyboard Shortcuts
             </h2>
-            <button type="button"
-                    id="shortcuts-help-close"
-                    class="shortcuts-help-close-btn"
-                    aria-label="Close keyboard shortcuts help">
+            <button type="button" id="shortcuts-help-close" class="shortcuts-help-close-btn"
+                aria-label="Close keyboard shortcuts help">
                 <svg viewBox="0 0 24 24" fill="currentColor" class="w-5 h-5" aria-hidden="true">
-                    <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+                    <path
+                        d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z" />
                 </svg>
             </button>
         </header>
@@ -35,7 +35,8 @@
 
 <div class="preview-overlay fixed inset-0 items-center justify-center bg-black/45 p-2 md:p-4 z-50 hidden"
     id="preview-overlay" aria-hidden="true" data-action="preview" data-open="preview">
-    <div class="preview-dialog" role="dialog" aria-modal="true" aria-labelledby="preview-title" aria-describedby="preview-meta">
+    <div class="preview-dialog" role="dialog" aria-modal="true" aria-labelledby="preview-title"
+        aria-describedby="preview-meta">
         <header class="preview-header mb-4 flex-shrink-0">
             <div class="preview-title-group">
                 <span class="preview-label text-sm text-gray-600 dark:text-slate-400" id="preview-label">Editor</span>
@@ -43,11 +44,8 @@
                     Pratinjau</h2>
             </div>
             <div class="preview-controls flex items-center gap-2">
-                <button class="btn-word-wrap"
-                        id="previewWordWrapToggle"
-                        title="Toggle Word Wrap"
-                        aria-label="Toggle word wrap in editor"
-                        aria-pressed="false">
+                <button class="btn-word-wrap" id="previewWordWrapToggle" title="Toggle Word Wrap"
+                    aria-label="Toggle word wrap in editor" aria-pressed="false">
                     <i class="ri-text-wrap" aria-hidden="true"></i>
                     <span class="hidden sm:inline text-xs">Wrap</span>
                 </button>
@@ -92,40 +90,32 @@
             </div>
         </div>
         <!-- Image zoom controls (shown only for images) -->
-        <div class="preview-image-controls" id="preview-image-controls" role="toolbar" aria-label="Image zoom controls" style="display: none;">
-            <button type="button"
-                    class="preview-zoom-btn"
-                    id="preview-zoom-out"
-                    title="Zoom Out"
-                    aria-label="Zoom out image">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                    stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <div class="preview-image-controls" id="preview-image-controls" role="toolbar" aria-label="Image zoom controls"
+            style="display: none;">
+            <button type="button" class="preview-zoom-btn" id="preview-zoom-out" title="Zoom Out"
+                aria-label="Zoom out image">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                    stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                     <circle cx="11" cy="11" r="8" />
                     <line x1="21" y1="21" x2="16.65" y2="16.65" />
                     <line x1="8" y1="11" x2="14" y2="11" />
                 </svg>
             </button>
             <span class="preview-zoom-level" id="preview-zoom-level" aria-live="polite" aria-atomic="true">100%</span>
-            <button type="button"
-                    class="preview-zoom-btn"
-                    id="preview-zoom-in"
-                    title="Zoom In"
-                    aria-label="Zoom in image">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                    stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <button type="button" class="preview-zoom-btn" id="preview-zoom-in" title="Zoom In"
+                aria-label="Zoom in image">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                    stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                     <circle cx="11" cy="11" r="8" />
                     <line x1="21" y1="21" x2="16.65" y2="16.65" />
                     <line x1="11" y1="8" x2="11" y2="14" />
                     <line x1="8" y1="11" x2="14" y2="11" />
                 </svg>
             </button>
-            <button type="button"
-                    class="preview-zoom-btn"
-                    id="preview-zoom-reset"
-                    title="Reset Zoom"
-                    aria-label="Reset zoom to 100%">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                    stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <button type="button" class="preview-zoom-btn" id="preview-zoom-reset" title="Reset Zoom"
+                aria-label="Reset zoom to 100%">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                    stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                     <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
                     <path d="M3 3v5h5" />
                 </svg>
@@ -140,19 +130,18 @@
             </div>
             <div class="preview-footer-actions" role="group" aria-label="File actions">
                 <a id="preview-open-raw" href="#" target="_blank" rel="noopener"
-                    class="preview-action-btn preview-action-btn--primary"
-                    data-tooltip="Buka file asli di tab baru"
+                    class="preview-action-btn preview-action-btn--primary" data-tooltip="Buka file asli di tab baru"
                     aria-label="Open original file in new tab">
-                    <svg class="preview-action-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                    <svg class="preview-action-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                        stroke-width="2" aria-hidden="true">
                         <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6M15 3h6v6M10 14L21 3" />
                     </svg>
                     <span class="preview-action-label">Buka</span>
                 </a>
-                <a id="preview-download" href="#" download
-                    class="preview-action-btn preview-action-btn--success"
-                    data-tooltip="Unduh file ke perangkat"
-                    aria-label="Download file">
-                    <svg class="preview-action-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                <a id="preview-download" href="#" download class="preview-action-btn preview-action-btn--success"
+                    data-tooltip="Unduh file ke perangkat" aria-label="Download file">
+                    <svg class="preview-action-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                        stroke-width="2" aria-hidden="true">
                         <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
                         <polyline points="7 10 12 15 17 10" />
                         <line x1="12" y1="15" x2="12" y2="3" />
@@ -160,21 +149,20 @@
                     <span class="preview-action-label">Unduh</span>
                 </a>
                 <button type="button" id="preview-copy" data-action="preview-copy"
-                    class="preview-action-btn preview-action-btn--secondary"
-                    data-tooltip="Salin konten ke clipboard"
+                    class="preview-action-btn preview-action-btn--secondary" data-tooltip="Salin konten ke clipboard"
                     aria-label="Copy content to clipboard">
-                    <svg class="preview-action-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                    <svg class="preview-action-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                        stroke-width="2" aria-hidden="true">
                         <rect x="9" y="9" width="13" height="13" rx="2" />
                         <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
                     </svg>
                     <span class="preview-action-label">Salin</span>
                 </button>
                 <button type="button" id="preview-save" data-action="preview-save" disabled
-                    class="preview-action-btn preview-action-btn--save"
-                    data-tooltip="Simpan perubahan (Ctrl+S)"
-                    aria-disabled="true"
-                    aria-label="Save changes to file">
-                    <svg class="preview-action-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                    class="preview-action-btn preview-action-btn--save" data-tooltip="Simpan perubahan (Ctrl+S)"
+                    aria-disabled="true" aria-label="Save changes to file">
+                    <svg class="preview-action-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                        stroke-width="2" aria-hidden="true">
                         <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z" />
                         <polyline points="17 21 17 13 7 13 7 21" />
                         <polyline points="7 3 7 8 15 8" />
@@ -182,10 +170,10 @@
                     <span class="preview-action-label">Simpan</span>
                 </button>
                 <button type="button" id="preview-close" data-action="preview-close"
-                    class="preview-action-btn preview-action-btn--close"
-                    data-tooltip="Tutup pratinjau (Esc)"
+                    class="preview-action-btn preview-action-btn--close" data-tooltip="Tutup pratinjau (Esc)"
                     aria-label="Close preview (Escape)">
-                    <svg class="preview-action-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                    <svg class="preview-action-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                        stroke-width="2" aria-hidden="true">
                         <line x1="18" y1="6" x2="6" y2="18" />
                         <line x1="6" y1="6" x2="18" y2="18" />
                     </svg>
@@ -218,15 +206,14 @@
             <p class="confirm-description text-sm text-gray-700" id="confirm-description"></p>
             <ul class="confirm-list text-sm text-gray-700 mt-2" id="confirm-list" hidden></ul>
         </div>
-        <div class="confirm-actions flex gap-2 border-t border-gray-100 bg-gray-50 px-6 py-3 rounded-b-lg" role="group" aria-label="Confirmation actions">
+        <div class="confirm-actions flex gap-2 border-t border-gray-100 bg-gray-50 px-6 py-3 rounded-b-lg" role="group"
+            aria-label="Confirmation actions">
             <button type="button"
                 class="confirm-button outline flex-1 inline-flex items-center justify-center gap-2 px-3 py-2 rounded-md text-sm btn"
-                id="confirm-cancel" data-action="confirm-cancel"
-                aria-label="Cancel action">Batal</button>
+                id="confirm-cancel" data-action="confirm-cancel" aria-label="Cancel action">Batal</button>
             <button type="button"
                 class="confirm-button danger flex-1 inline-flex items-center justify-center gap-2 px-3 py-2 rounded-md text-sm bg-red-600 text-white hover:bg-red-700 focus:outline-none font-medium transition-colors"
-                id="confirm-confirm" data-action="confirm-confirm"
-                aria-label="Confirm deletion">Hapus</button>
+                id="confirm-confirm" data-action="confirm-confirm" aria-label="Confirm deletion">Hapus</button>
         </div>
     </div>
 </div>
@@ -311,12 +298,10 @@
         <footer class="rename-actions flex gap-2 px-6 py-3 rounded-b-lg" role="group" aria-label="Rename actions">
             <button type="button"
                 class="rename-button outline flex-1 inline-flex items-center justify-center gap-2 px-3 py-2 rounded-md text-sm"
-                id="rename-cancel" data-action="rename-cancel"
-                aria-label="Cancel rename">Batal</button>
+                id="rename-cancel" data-action="rename-cancel" aria-label="Cancel rename">Batal</button>
             <button type="submit" form="rename-form"
                 class="rename-button primary flex-1 inline-flex items-center justify-center gap-2 px-3 py-2 rounded-md text-sm font-medium"
-                id="rename-submit" data-action="rename-submit"
-                aria-label="Confirm rename">Rename</button>
+                id="rename-submit" data-action="rename-submit" aria-label="Confirm rename">Rename</button>
         </footer>
     </div>
 </div>
@@ -339,19 +324,19 @@
                     belum disimpan. Apa yang ingin Anda lakukan?</p>
             </div>
         </div>
-        <div class="unsaved-actions flex flex-col sm:flex-row items-stretch sm:items-end gap-2" role="group" aria-label="Unsaved changes actions">
+        <div class="unsaved-actions flex flex-col sm:flex-row items-stretch sm:items-end gap-2" role="group"
+            aria-label="Unsaved changes actions">
             <button type="button"
                 class="unsaved-button outline inline-flex items-center justify-center gap-2 px-3 py-2 rounded-md text-sm bg-white dark:bg-white/5 hover:bg-gray-50 dark:hover:bg-white/10 text-gray-700 dark:text-gray-200 border border-gray-200 dark:border-white/10 focus:outline-none transition-colors"
-                id="unsaved-save" data-action="unsaved-save"
-                aria-label="Save changes before closing">Simpan Perubahan</button>
+                id="unsaved-save" data-action="unsaved-save" aria-label="Save changes before closing">Simpan
+                Perubahan</button>
             <button type="button"
                 class="unsaved-button outline inline-flex items-center justify-center gap-2 px-3 py-2 rounded-md text-sm bg-white border border-gray-200 text-slate-700 hover:bg-gray-50 focus:outline-none"
-                id="unsaved-discard" data-action="unsaved-discard"
-                aria-label="Discard changes and close">Tutup Tanpa Simpan</button>
+                id="unsaved-discard" data-action="unsaved-discard" aria-label="Discard changes and close">Tutup Tanpa
+                Simpan</button>
             <button type="button"
                 class="unsaved-button primary inline-flex items-center justify-center gap-2 px-3 py-2 rounded-md text-sm bg-blue-600 text-white hover:bg-blue-700 focus:outline-none transition-colors"
-                id="unsaved-cancel" data-action="unsaved-cancel"
-                aria-label="Cancel and return to editor">Batal</button>
+                id="unsaved-cancel" data-action="unsaved-cancel" aria-label="Cancel and return to editor">Batal</button>
         </div>
     </div>
 </div>
@@ -384,15 +369,14 @@
                 <span>Tindakan ini tidak dapat dibatalkan.</span>
             </p>
         </div>
-        <footer class="delete-actions flex gap-2 px-6 py-3 rounded-b-lg" role="group" aria-label="Delete confirmation actions">
+        <footer class="delete-actions flex gap-2 px-6 py-3 rounded-b-lg" role="group"
+            aria-label="Delete confirmation actions">
             <button type="button"
                 class="delete-button outline flex-1 inline-flex items-center justify-center gap-2 px-3 py-2 rounded-md text-sm"
-                id="delete-cancel" data-action="delete-cancel"
-                aria-label="Cancel deletion">Batal</button>
+                id="delete-cancel" data-action="delete-cancel" aria-label="Cancel deletion">Batal</button>
             <button type="button"
                 class="delete-button danger flex-1 inline-flex items-center justify-center gap-2 px-3 py-2 rounded-md text-sm font-medium"
-                id="delete-confirm" data-action="delete-confirm"
-                aria-label="Confirm deletion">
+                id="delete-confirm" data-action="delete-confirm" aria-label="Confirm deletion">
                 <svg viewBox="0 0 24 24" fill="currentColor" class="w-4 h-4" aria-hidden="true">
                     <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z" />
                 </svg>
@@ -436,15 +420,14 @@
             <p class="download-message text-sm" id="download-message">File akan diunduh ke folder unduhan default Anda.
             </p>
         </div>
-        <footer class="download-actions flex gap-2 px-6 py-3 rounded-b-lg" role="group" aria-label="Download confirmation actions">
+        <footer class="download-actions flex gap-2 px-6 py-3 rounded-b-lg" role="group"
+            aria-label="Download confirmation actions">
             <button type="button"
                 class="download-button outline flex-1 inline-flex items-center justify-center gap-2 px-3 py-2 rounded-md text-sm"
-                id="download-cancel" data-action="download-cancel"
-                aria-label="Cancel download">Batal</button>
+                id="download-cancel" data-action="download-cancel" aria-label="Cancel download">Batal</button>
             <button type="button"
                 class="download-button primary flex-1 inline-flex items-center justify-center gap-2 px-3 py-2 rounded-md text-sm font-medium"
-                id="download-confirm" data-action="download-confirm"
-                aria-label="Confirm download">
+                id="download-confirm" data-action="download-confirm" aria-label="Confirm download">
                 <svg viewBox="0 0 24 24" fill="currentColor" class="w-4 h-4" aria-hidden="true">
                     <path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z" />
                 </svg>
@@ -482,17 +465,15 @@
             <ul class="move-list flex-1 overflow-y-auto" id="move-list" aria-label="Daftar folder tujuan"></ul>
             <p class="move-error text-sm mt-2" id="move-error" role="alert"></p>
         </div>
-        <footer class="move-actions flex flex-col sm:flex-row items-stretch sm:items-end gap-2 mt-4 flex-shrink-0" role="group" aria-label="Move actions">
+        <footer class="move-actions flex flex-col sm:flex-row items-stretch sm:items-end gap-2 mt-4 flex-shrink-0"
+            role="group" aria-label="Move actions">
             <div class="move-actions-spacer flex-1"></div>
             <button type="button"
                 class="move-button outline inline-flex items-center justify-center gap-2 px-3 py-2 rounded-md text-sm"
-                id="move-cancel"
-                aria-label="Cancel move operation">Batal</button>
+                id="move-cancel" aria-label="Cancel move operation">Batal</button>
             <button type="button"
                 class="move-button primary inline-flex items-center justify-center gap-2 px-3 py-2 rounded-md text-sm"
-                id="move-confirm"
-                aria-label="Confirm move to selected folder"
-                >Pindahkan</button>
+                id="move-confirm" aria-label="Confirm move to selected folder">Pindahkan</button>
         </footer>
     </div>
 </div>
@@ -719,14 +700,16 @@
             <div class="details-icon w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0"
                 id="details-icon" aria-hidden="true">
                 <svg viewBox="0 0 24 24" fill="currentColor" class="w-6 h-6">
-                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/>
+                    <path
+                        d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z" />
                 </svg>
             </div>
             <div class="details-title-group flex-1 min-w-0">
                 <h2 class="details-title text-base font-semibold" id="details-title">Detail Item</h2>
                 <p class="details-subtitle text-xs mt-0.5 truncate" id="details-subtitle">Informasi lengkap</p>
             </div>
-            <button type="button" class="details-close-btn" id="details-close-btn" data-action="details-close" aria-label="Tutup">
+            <button type="button" class="details-close-btn" id="details-close-btn" data-action="details-close"
+                aria-label="Tutup">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-5 h-5">
                     <line x1="18" y1="6" x2="6" y2="18"></line>
                     <line x1="6" y1="6" x2="18" y2="18"></line>
@@ -761,25 +744,29 @@
             <div class="details-actions-grid">
                 <button type="button" class="details-action-btn" id="details-open" data-action="details-open">
                     <svg viewBox="0 0 24 24" fill="currentColor" class="w-4 h-4">
-                        <path d="M19 19H5V5h7V3H5a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7h-2v7zM14 3v2h3.59l-9.83 9.83 1.41 1.41L19 6.41V10h2V3h-7z"/>
+                        <path
+                            d="M19 19H5V5h7V3H5a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7h-2v7zM14 3v2h3.59l-9.83 9.83 1.41 1.41L19 6.41V10h2V3h-7z" />
                     </svg>
                     <span>Buka</span>
                 </button>
                 <button type="button" class="details-action-btn" id="details-rename" data-action="details-rename">
                     <svg viewBox="0 0 24 24" fill="currentColor" class="w-4 h-4">
-                        <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04a.996.996 0 000-1.41l-2.34-2.34a.996.996 0 00-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/>
+                        <path
+                            d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04a.996.996 0 000-1.41l-2.34-2.34a.996.996 0 00-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z" />
                     </svg>
                     <span>Rename</span>
                 </button>
                 <button type="button" class="details-action-btn" id="details-move" data-action="details-move">
                     <svg viewBox="0 0 24 24" fill="currentColor" class="w-4 h-4">
-                        <path d="M20 6h-8l-2-2H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm-6 12l-4-4h3V10h2v4h3l-4 4z"/>
+                        <path
+                            d="M20 6h-8l-2-2H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm-6 12l-4-4h3V10h2v4h3l-4 4z" />
                     </svg>
                     <span>Pindahkan</span>
                 </button>
-                <button type="button" class="details-action-btn details-action-btn-danger" id="details-delete" data-action="details-delete">
+                <button type="button" class="details-action-btn details-action-btn-danger" id="details-delete"
+                    data-action="details-delete">
                     <svg viewBox="0 0 24 24" fill="currentColor" class="w-4 h-4">
-                        <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/>
+                        <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z" />
                     </svg>
                     <span>Hapus</span>
                 </button>
@@ -861,9 +848,10 @@
     </div>
 </div>
 
-<!-- Settings overlay -->
+<!-- Settings overlay - REPLACED by settings-modal.php which includes System Requirements tab -->
+<!-- OLD SETTINGS MODAL COMMENTED OUT:
 <div class="settings-overlay fixed inset-0 items-center justify-center bg-black/45 p-2 md:p-4 z-50 hidden"
-    id="settings-overlay" aria-hidden="true" data-action="settings" data-open="settings">
+    id="settings-overlay-old" aria-hidden="true" data-action="settings" data-open="settings">
     <div class="settings-dialog bg-white rounded-lg p-4 md:p-6 w-full max-w-xl shadow-lg" role="dialog"
         aria-modal="true" aria-labelledby="settings-title">
         <header class="settings-header mb-4 flex items-center justify-between">
@@ -940,3 +928,8 @@
         <span>Hapus</span>
     </button>
 </div>
+
+<?php
+// Include enhanced settings modal with System Requirements tab
+include __DIR__ . '/settings-modal.php';
+?>

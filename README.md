@@ -94,10 +94,18 @@ Filemanager/
 │       ├── modals-handler.js # Legacy modal handler
 │       └── log-handler.js    # Legacy log handler
 │
+
 ├── lib/                   # 🔧 PHP Backend Library
 │   ├── file_manager.php   # Core file operations + Security
 │   ├── trash_manager.php  # Trash system operations
+│   ├── archive_manager.php # ZIP/7z/RAR archive handling
 │   └── log_manager.php    # Activity logging system
+│
+├── bin/                   # 📦 Bundled Binaries
+│   ├── windows/           # Windows 7-Zip (7z.exe + 7z.dll)
+│   ├── linux/             # Linux p7zip (7za)
+│   ├── setup-7zip.php     # Auto-setup script
+│   └── README.md          # Binary setup documentation
 │
 ├── partials/              # 📄 HTML Partials
 │   ├── table.php          # File table structure
@@ -118,6 +126,7 @@ Filemanager/
 │
 └── CHANGELOG.md           # 📝 Version history (NEW)
 ```
+
 
 ---
 
