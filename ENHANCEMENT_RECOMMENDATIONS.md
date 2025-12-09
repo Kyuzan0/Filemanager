@@ -101,25 +101,23 @@ let clipboard = {
 
 ---
 
-### 4. 🗜️ Archive Support (Zip/Unzip)
-**Status:** Belum ada  
+### 4. ✅ Archive Support (Zip/Unzip) (IMPLEMENTED)
+**Status:** ✅ Completed - December 9, 2025  
 **Effort:** Medium  
-**Impact:** High - Sering dibutuhkan user
+**Impact:** High
 
-**Enhancement:**
-- Create ZIP dari selected files
-- Extract ZIP file
-- Preview ZIP contents tanpa extract
-- Progress indicator untuk operasi besar
-- Support format: ZIP, TAR, 7Z (optional)
+**Fitur yang diimplementasikan:**
+- Create ZIP dari selected files via context menu
+- Extract ZIP file via context menu
+- Support multi-format: ZIP (native PHP), 7Z, RAR, TAR.GZ (via 7-Zip CLI)
+- Cross-platform: Windows & Linux
 
-**Implementation Notes:**
-```php
-// Backend: Use PHP ZipArchive
-// lib/archive_manager.php
-// - createZip($paths, $outputPath)
-// - extractZip($zipPath, $extractTo)
-// - listZipContents($zipPath)
+**Files:**
+```
+lib/archive_manager.php              - Backend archive functions
+assets/js/enhanced-ui.js             - Frontend handlers
+api.php                              - API endpoints (compress, extract)
+REQUIREMENTS.md                      - 7-Zip installation guide
 ```
 
 ---
@@ -206,28 +204,26 @@ function get_folder_stats($path) {
 
 ---
 
-### 9. 🕐 Recent Files & Favorites
+### 9. ✅ Recent Files & Favorites (IMPLEMENTED)
 **Effort:** Low-Medium  
 **Impact:** Medium
+**Status:** ✅ Completed - December 9, 2025
 
-**Enhancement:**
+**Fitur yang diimplementasikan:**
+- "Favorites" section di sidebar
 - "Recent Files" section di sidebar
-- Star/favorite files
-- Quick access panel
+- Star/unstar files via context menu
+- Quick access ke file favorit
+- Recent files tracking saat file dibuka
 - Persist di localStorage
 - Clear history option
+- Collapsible sections
 
-**Implementation Notes:**
-```javascript
-// LocalStorage structure:
-{
-  recentFiles: [
-    { path: "...", name: "...", accessedAt: timestamp }
-  ],
-  favorites: [
-    { path: "...", name: "..." }
-  ]
-}
+**Files:**
+```
+assets/js/modules/favorites-manager.js  - Core module
+assets/css/layout/sidebar.css           - Sidebar section styles
+partials/sidebar.php                    - HTML structure
 ```
 
 ---

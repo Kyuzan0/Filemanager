@@ -314,6 +314,18 @@ function injectArchiveContextMenuItems() {
   // Get the last divider (before delete button)
   const lastDivider = dividers[dividers.length - 1];
 
+  // Create Favorite button
+  const favoriteBtn = document.createElement('button');
+  favoriteBtn.id = 'context-favorite-btn';
+  favoriteBtn.className = 'context-menu-item';
+  favoriteBtn.setAttribute('data-action', 'favorite');
+  favoriteBtn.setAttribute('role', 'menuitem');
+  favoriteBtn.setAttribute('aria-label', 'Add to favorites');
+  favoriteBtn.innerHTML = `
+    <i class="ri-star-line context-menu-icon" aria-hidden="true"></i>
+    <span>Tambah ke Favorit</span>
+  `;
+
   // Create Compress button
   const compressBtn = document.createElement('button');
   compressBtn.className = 'context-menu-item';
@@ -344,12 +356,13 @@ function injectArchiveContextMenuItems() {
   archiveDivider.setAttribute('role', 'separator');
   archiveDivider.setAttribute('aria-hidden', 'true');
 
-  // Insert: divider, compress, extract, then existing last divider comes after
+  // Insert: divider, favorite, compress, extract, then existing last divider comes after
   contextMenu.insertBefore(archiveDivider, lastDivider);
+  contextMenu.insertBefore(favoriteBtn, lastDivider);
   contextMenu.insertBefore(compressBtn, lastDivider);
   contextMenu.insertBefore(extractBtn, lastDivider);
 
-  console.log('[enhanced-ui] Archive context menu items injected successfully');
+  console.log('[enhanced-ui] Context menu items injected successfully');
 }
 
 // ============= UI Utilities =============
@@ -1140,7 +1153,11 @@ function render() {
       const path = btn.dataset.path;
       const type = btn.dataset.type;
       const name = btn.dataset.name;
-      showMobileContextMenu(e, { path, type, name });
+
+      // Get full file data from files array for complete info (size, modified, etc)
+      const fullFileData = files.find(f => f.path === path) || { path, type, name };
+
+      showMobileContextMenu(e, fullFileData);
     });
   });
 }
@@ -1156,11 +1173,21 @@ function showMobileContextMenu(event, fileData) {
   menu.id = 'mobile-context-menu';
   menu.className = 'mobile-context-menu fixed z-50 bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 py-1 min-w-[160px]';
 
+  // Check if file is archive
+  const isArchive = fileData.name && isArchiveFile(fileData.name);
+
+  // Check if file is favorited
+  const isFavorited = window.FavoritesManager && window.FavoritesManager.isFavorite(fileData.path);
+
   const menuItems = [
     { action: 'preview', icon: 'ri-folder-open-line', label: 'Buka', color: 'text-blue-600 dark:text-blue-400' },
     ...(fileData.type === 'file' ? [{ action: 'download', icon: 'ri-download-line', label: 'Unduh', color: 'text-green-600 dark:text-green-400' }] : []),
     { action: 'rename', icon: 'ri-edit-line', label: 'Ganti Nama', color: 'text-amber-600 dark:text-amber-400' },
     { action: 'move', icon: 'ri-folder-transfer-line', label: 'Pindahkan', color: 'text-purple-600 dark:text-purple-400' },
+    { divider: true },
+    { action: 'favorite', icon: isFavorited ? 'ri-star-fill' : 'ri-star-line', label: isFavorited ? 'Hapus dari Favorit' : 'Tambah ke Favorit', color: 'text-yellow-500 dark:text-yellow-400' },
+    { action: 'compress', icon: 'ri-file-zip-line', label: 'Kompres ke ZIP', color: 'text-indigo-600 dark:text-indigo-400' },
+    ...(isArchive ? [{ action: 'extract', icon: 'ri-folder-zip-line', label: 'Ekstrak di Sini', color: 'text-teal-600 dark:text-teal-400' }] : []),
     { divider: true },
     { action: 'details', icon: 'ri-information-line', label: 'Detail', color: 'text-blue-500 dark:text-blue-400' },
     { divider: true },
@@ -1286,6 +1313,31 @@ async function handleMobileAction(action, fileData) {
     if (window.openDetailsOverlay) {
       window.openDetailsOverlay({ name, type, path, ...fileData });
     }
+  } else if (action === 'compress') {
+    // Compress file/folder to ZIP
+    try {
+      await compressItems([path]);
+    } catch (error) {
+      console.error('[enhanced-ui] Mobile compress error:', error);
+      showError('Gagal mengompres file');
+    }
+  } else if (action === 'extract') {
+    // Extract archive file
+    if (isArchiveFile(name)) {
+      try {
+        await extractZip(path);
+      } catch (error) {
+        console.error('[enhanced-ui] Mobile extract error:', error);
+        showError('Gagal mengekstrak arsip');
+      }
+    } else {
+      showError('File ini bukan format arsip yang didukung');
+    }
+  } else if (action === 'favorite') {
+    // Toggle favorite status
+    if (window.FavoritesManager) {
+      window.FavoritesManager.toggleFavorite(path, name, type);
+    }
   }
 }
 
@@ -1403,6 +1455,20 @@ function handleContextMenu(e) {
     extractBtn.style.display = isArchive ? '' : 'none';
   }
 
+  // Update favorite button based on favorite status
+  const favoriteBtn = document.getElementById('context-favorite-btn');
+  if (favoriteBtn && window.FavoritesManager) {
+    const isFav = window.FavoritesManager.isFavorite(path);
+    const icon = favoriteBtn.querySelector('i');
+    const span = favoriteBtn.querySelector('span');
+    if (icon) {
+      icon.className = isFav ? 'ri-star-fill context-menu-icon' : 'ri-star-line context-menu-icon';
+    }
+    if (span) {
+      span.textContent = isFav ? 'Hapus dari Favorit' : 'Tambah ke Favorit';
+    }
+  }
+
   // Show context menu
   ctxMenu.classList.remove('hidden');
   ctxMenu.classList.add('visible');
@@ -1480,10 +1546,18 @@ function initializeEventHandlers() {
 
     if (action === 'open' && fileData?.type === 'folder') {
       await loadFiles(path);
+      // Track folder access
+      if (window.FavoritesManager) {
+        window.FavoritesManager.addToRecent(path, fileData.name, 'directory');
+      }
     } else if (action === 'open') {
       // Open file in preview/editor modal
       if (window.openPreviewModal) {
         window.openPreviewModal(path, fileData?.name);
+      }
+      // Track file access
+      if (window.FavoritesManager && fileData) {
+        window.FavoritesManager.addToRecent(path, fileData.name, 'file');
       }
     } else if (action === 'download') {
       // Show download modal first, then download on confirm
@@ -1574,6 +1648,11 @@ function initializeEventHandlers() {
         }
       } else {
         showError('File ini bukan format arsip yang didukung');
+      }
+    } else if (action === 'favorite') {
+      // Toggle favorite status
+      if (window.FavoritesManager && fileData) {
+        window.FavoritesManager.toggleFavorite(path, fileData.name, fileData.type);
       }
     }
   });

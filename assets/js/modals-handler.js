@@ -1633,7 +1633,13 @@ function openDetailsOverlay(item, onAction = null) {
     if (item.type === 'folder') {
       sizeEl.textContent = '-';
     } else {
-      sizeEl.textContent = item.size || formatFileSize(item.sizeBytes || 0);
+      // item.size from API is in bytes (number), format it properly
+      const sizeValue = item.size || item.sizeBytes || 0;
+      if (typeof sizeValue === 'number') {
+        sizeEl.textContent = formatFileSize(sizeValue);
+      } else {
+        sizeEl.textContent = sizeValue; // Already formatted string
+      }
     }
   }
 

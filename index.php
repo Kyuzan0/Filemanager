@@ -287,6 +287,8 @@
     <script type="module" src="assets/js/modules/wordWrapToggle.js"></script>
     <!-- SPA Router -->
     <script src="assets/js/modules/router.js"></script>
+    <!-- Favorites & Recent Files Manager -->
+    <script src="assets/js/modules/favorites-manager.js"></script>
 </body>
 
 </html>
