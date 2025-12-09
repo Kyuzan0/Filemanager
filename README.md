@@ -1,7 +1,7 @@
 # File Manager — Modern Web-Based File Management System
 
-**Version:** 3.0 (Phase 4 Complete)
-**Date:** December 6, 2025
+**Version:** 3.1 (Modular API Architecture)
+**Date:** December 9, 2025
 **Status:** ✅ Production Ready
 
 📚 **[Documentation](docs/README.md)** | 📖 **[API Reference](docs/API.md)** | 🏗️ **[Architecture](docs/ARCHITECTURE.md)** | 📋 **[Requirements](REQUIREMENTS.md)** | 🤝 **[Contributing](docs/CONTRIBUTING.md)**
@@ -99,7 +99,16 @@ Filemanager/
 │   ├── file_manager.php   # Core file operations + Security
 │   ├── trash_manager.php  # Trash system operations
 │   ├── archive_manager.php # ZIP/7z/RAR archive handling
-│   └── log_manager.php    # Activity logging system
+│   ├── log_manager.php    # Activity logging system
+│   │
+│   └── handlers/          # 📦 API Request Handlers (Modular)
+│       ├── helpers.php        # Common utility functions
+│       ├── raw_handler.php    # Raw file streaming (media preview)
+│       ├── system_handler.php # System requirements & 7-zip status
+│       ├── logs_handler.php   # Activity logs operations
+│       ├── trash_handler.php  # Trash bin operations
+│       ├── file_handler.php   # File/folder CRUD operations
+│       └── archive_handler.php # Compression/extraction
 │
 ├── bin/                   # 📦 Bundled Binaries
 │   ├── windows/           # Windows 7-Zip (7z.exe + 7z.dll)
@@ -305,21 +314,61 @@ Layer 6: UTILITIES (Helpers & Responsive)
 
 ## 🔧 Backend (PHP)
 
+### Architecture
+
+The backend uses a **modular handler architecture** where `api.php` acts as a lightweight router that delegates requests to specialized handler modules:
+
+```
+api.php (Router)
+    ↓
+lib/handlers/
+├── file_handler.php     → File/folder CRUD operations
+├── trash_handler.php    → Trash bin operations  
+├── logs_handler.php     → Activity log operations
+├── archive_handler.php  → Compress/extract operations
+├── system_handler.php   → System info & requirements
+├── raw_handler.php      → Media streaming
+└── helpers.php          → Shared utilities
+```
+
 ### API Endpoints (`api.php`)
 
+**File Management:**
 ```php
 GET  api.php?action=list&path=...       # List directory
 POST api.php?action=create              # Create file/folder
 POST api.php?action=rename              # Rename item
-POST api.php?action=move                # Move item
-POST api.php?action=delete              # Delete item
+POST api.php?action=move                # Move items
+POST api.php?action=delete              # Delete (move to trash)
 POST api.php?action=upload              # Upload files (chunked)
-POST api.php?action=upload              # Upload folder (with folderUpload=true & relativePaths)
 GET  api.php?action=content&path=...    # Read file content
 POST api.php?action=save                # Save file content
-GET  api.php?action=download&path=...   # Download file
+GET  api.php?action=raw&path=...        # Stream raw file (media preview)
+```
+
+**Archive Operations:**
+```php
+POST api.php?action=compress            # Create ZIP archive
+POST api.php?action=extract             # Extract archive
+GET  api.php?action=zip-contents&path=...  # List archive contents
+```
+
+**Trash Operations:**
+```php
+GET  api.php?action=trash-list          # List trash items
+POST api.php?action=trash-restore       # Restore from trash
+POST api.php?action=trash-delete        # Permanently delete
+POST api.php?action=trash-empty         # Empty trash
+POST api.php?action=trash-cleanup       # Cleanup old items
+```
+
+**Logs & System:**
+```php
 GET  api.php?action=logs                # Get activity logs
-POST api.php?action=cleanup-logs        # Cleanup old logs
+POST api.php?action=logs-cleanup        # Cleanup old logs
+GET  api.php?action=logs-export         # Export logs (JSON/CSV)
+GET  api.php?action=system-requirements # Check system requirements
+GET  api.php?action=7zip-status         # Check 7-Zip availability
 ```
 
 ### Folder Upload Parameters
@@ -739,7 +788,18 @@ assets/
 ```
 lib/
 ├── file_manager.php       # File operations, sanitization, upload
-└── logger.php             # Activity logging system
+├── trash_manager.php      # Trash system operations
+├── archive_manager.php    # ZIP/7z/RAR archive handling
+├── log_manager.php        # Activity logging system
+│
+└── handlers/              # API Request Handlers (Modular)
+    ├── helpers.php        # Common utility functions (JSON parsing, responses)
+    ├── raw_handler.php    # Raw file streaming for media preview
+    ├── system_handler.php # System requirements & 7-zip status
+    ├── logs_handler.php   # Activity logs (list, cleanup, export)
+    ├── trash_handler.php  # Trash operations (list, restore, delete, empty)
+    ├── file_handler.php   # File/folder CRUD (create, upload, save, delete, rename, move, list)
+    └── archive_handler.php # Compression/extraction operations
 ```
 
 ### Data
