@@ -4,7 +4,7 @@
 **Date:** December 6, 2025
 **Status:** ✅ Production Ready
 
-📚 **[Documentation](docs/README.md)** | 📖 **[API Reference](docs/API.md)** | 🏗️ **[Architecture](docs/ARCHITECTURE.md)** | 🤝 **[Contributing](docs/CONTRIBUTING.md)**
+📚 **[Documentation](docs/README.md)** | 📖 **[API Reference](docs/API.md)** | 🏗️ **[Architecture](docs/ARCHITECTURE.md)** | 📋 **[Requirements](REQUIREMENTS.md)** | 🤝 **[Contributing](docs/CONTRIBUTING.md)**
 
 ---
 
@@ -441,6 +441,7 @@ $resolved = resolve_path($root, $sanitized);
 | 📚 **[docs/README.md](docs/README.md)** | Quick start guide and feature overview |
 | 🏗️ **[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)** | System architecture and design patterns |
 | 📖 **[docs/API.md](docs/API.md)** | Complete API reference with examples |
+| 📋 **[REQUIREMENTS.md](REQUIREMENTS.md)** | System requirements and dependencies |
 | 🤝 **[docs/CONTRIBUTING.md](docs/CONTRIBUTING.md)** | Developer contribution guidelines |
 | 📝 **[CHANGELOG.md](CHANGELOG.md)** | Version history and release notes |
 
@@ -458,9 +459,13 @@ $resolved = resolve_path($root, $sanitized);
 ## 🛠️ Setup & Installation
 
 ### Requirements
+
+> 📋 **See [REQUIREMENTS.md](REQUIREMENTS.md) for detailed system requirements**
+
 - **PHP:** 7.4 or higher
 - **Web Server:** Apache, Nginx, or PHP built-in server
 - **Browser:** Modern browser with ES6+ support
+- **Optional:** 7-Zip for multi-format archive extraction (.7z, .rar, .tar.gz)
 
 ### Installation
 

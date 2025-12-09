@@ -275,15 +275,16 @@ async function getZipContents(zipPath) {
 
 /**
  * Check if a file is an extractable archive based on extension
- * Note: PHP only natively supports ZIP extraction
+ * Supports: ZIP (PHP native), 7z, RAR, TAR.GZ (via 7-Zip CLI)
  * @param {string} filename
  * @returns {boolean}
  */
 function isArchiveFile(filename) {
   if (!filename) return false;
   const ext = filename.toLowerCase();
-  // Only ZIP is supported natively by PHP without external tools
-  return ext.endsWith('.zip');
+  return ext.endsWith('.zip') || ext.endsWith('.7z') || ext.endsWith('.rar') ||
+    ext.endsWith('.tar.gz') || ext.endsWith('.tgz') || ext.endsWith('.tar') ||
+    ext.endsWith('.gz') || ext.endsWith('.bz2');
 }
 
 // Alias for backward compatibility

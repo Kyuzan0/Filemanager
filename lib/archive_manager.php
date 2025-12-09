@@ -436,6 +436,7 @@ function get_archive_type(string $filename): ?string
 
 /**
  * Check if 7-Zip command line tool is available
+ * Supports both Windows and Linux
  * 
  * @return bool
  */
@@ -447,19 +448,58 @@ function is_7zip_available(): bool
         return $available;
     }
 
-    // Try common 7z executable names
+    $available = get_7zip_path() !== null;
+    return $available;
+}
+
+/**
+ * Get the 7-Zip executable path
+ * Supports both Windows and Linux
+ * 
+ * @return string|null
+ */
+function get_7zip_path(): ?string
+{
+    // Try common 7z executable names in PATH (works on both Windows and Linux)
     $commands = ['7z', '7za', '7zr'];
 
     foreach ($commands as $cmd) {
         $result = @shell_exec($cmd . ' 2>&1');
         if ($result !== null && strpos($result, '7-Zip') !== false) {
-            $available = true;
-            return true;
+            return $cmd;
         }
     }
 
-    $available = false;
-    return false;
+    // Detect OS
+    $isWindows = strtoupper(substr(PHP_OS, 0, 3)) === 'WIN';
+
+    if ($isWindows) {
+        // Windows installation paths
+        $paths = [
+            'C:\\Program Files\\7-Zip\\7z.exe',
+            'C:\\Program Files (x86)\\7-Zip\\7z.exe',
+            getenv('ProgramFiles') . '\\7-Zip\\7z.exe',
+            getenv('ProgramFiles(x86)') . '\\7-Zip\\7z.exe',
+        ];
+    } else {
+        // Linux/Unix installation paths
+        $paths = [
+            '/usr/bin/7z',
+            '/usr/bin/7za',
+            '/usr/bin/7zr',
+            '/usr/local/bin/7z',
+            '/usr/local/bin/7za',
+            '/snap/bin/7z',
+        ];
+    }
+
+    foreach ($paths as $path) {
+        if (file_exists($path) && is_executable($path)) {
+            return $path;
+        }
+    }
+
+    return null;
 }
 
 /**
@@ -471,15 +511,8 @@ function is_7zip_available(): bool
  */
 function extract_with_7zip(string $archivePath, string $extractDir): array
 {
-    // Find available 7z command
-    $cmd = null;
-    foreach (['7z', '7za', '7zr'] as $exe) {
-        $result = @shell_exec($exe . ' 2>&1');
-        if ($result !== null && strpos($result, '7-Zip') !== false) {
-            $cmd = $exe;
-            break;
-        }
-    }
+    // Get 7-Zip executable path
+    $cmd = get_7zip_path();
 
     if ($cmd === null) {
         throw new RuntimeException('7-Zip tidak tersedia di server. Install 7-Zip untuk mengekstrak file ini.');
@@ -488,17 +521,21 @@ function extract_with_7zip(string $archivePath, string $extractDir): array
     // Build extraction command
     // -y = assume Yes on all queries
     // -o = set output directory
+    // Wrap path in quotes for Windows paths with spaces
+    if (strpos($cmd, ' ') !== false || strpos($cmd, '\\') !== false) {
+        $cmd = '"' . $cmd . '"';
+    }
     $escapedArchive = escapeshellarg($archivePath);
     $escapedDir = escapeshellarg($extractDir);
 
     $command = "$cmd x $escapedArchive -o$escapedDir -y 2>&1";
 
     $output = shell_exec($command);
-    $success = strpos($output, 'Everything is Ok') !== false || strpos($output, 'Ok') !== false;
+    $success = $output !== null && (strpos($output, 'Everything is Ok') !== false || strpos($output, 'Ok') !== false);
 
     return [
         'success' => $success,
-        'output' => $output
+        'output' => $output ?? 'No output'
     ];
 }
 
