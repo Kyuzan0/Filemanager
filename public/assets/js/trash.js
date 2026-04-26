@@ -363,25 +363,24 @@ const TrashHandler = (function() {
         toggle.addEventListener('click', function(e) {
             e && e.preventDefault && e.preventDefault();
 
-            if (window.openSidebar && typeof window.openSidebar === 'function') {
-                try { window.openSidebar(); } catch (err) { console.debug('openSidebar error', err); }
-                return;
-            }
+        if (window.openSidebar && typeof window.openSidebar === 'function') {
+                 try { window.openSidebar(); } catch (err) { }
+                 return;
+             }
 
-            let attempts = 0;
-            const max = 12;
-            const id = setInterval(() => {
-                attempts++;
-                if (window.openSidebar && typeof window.openSidebar === 'function') {
-                    try { window.openSidebar(); } catch (err) { console.debug('openSidebar error', err); }
-                    clearInterval(id);
-                    return;
-                }
-                if (attempts >= max) {
-                    clearInterval(id);
-                    console.debug('Mobile sidebar fallback: openSidebar not available');
-                }
-            }, 100);
+             let attempts = 0;
+             const max = 12;
+             const id = setInterval(() => {
+                 attempts++;
+                 if (window.openSidebar && typeof window.openSidebar === 'function') {
+                     try { window.openSidebar(); } catch (err) { }
+                     clearInterval(id);
+                     return;
+                 }
+                 if (attempts >= max) {
+                     clearInterval(id);
+                 }
+             }, 100);
         });
     }
 

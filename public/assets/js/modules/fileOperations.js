@@ -48,7 +48,7 @@ export async function deleteItems(
     btnDeleteSelected
 ) {
     debugLog('[DEBUG] deleteItems called with paths:', paths);
-    
+
     if (!Array.isArray(paths) || paths.length === 0) {
         debugLog('[DEBUG] No paths provided for deletion');
         return;
@@ -66,7 +66,7 @@ export async function deleteItems(
 
         const deletedList = Array.isArray(data.deleted) ? data.deleted : [];
         const failedList = Array.isArray(data.failed) ? data.failed : [];
-        
+
         debugLog('[DEBUG] Deleted items:', deletedList);
         debugLog('[DEBUG] Failed items:', failedList);
 
@@ -116,13 +116,13 @@ export async function deleteItems(
         await fetchDirectory(state.currentPath, { silent: true });
     } catch (error) {
         debugError('[ERROR] Delete operation error:', error);
-        
+
         // Use centralized error handler for consistent error processing
         const processedError = deleteErrorHandler(error, {
             silent: true, // We'll show error via setError instead
             context: 'deleteItems'
         });
-        
+
         // Get user-friendly message
         const message = processedError instanceof FileManagerError
             ? processedError.getUserMessage()
@@ -172,24 +172,24 @@ export async function moveItem(
     // Import optimistic update functions
     const { optimisticUpdate, commitOptimisticUpdate } = await import('./state.js');
     const { moveRowInDOM, rollbackMove } = await import('./uiRenderer.js');
-    
+
     let rollbackFn = null;
     let domRollback = null;
     let optimisticStart = null;
     let optimisticEnd = null;
-    
+
     try {
         debugLog('[PERF] Move operation started:', sourcePath, '->', targetPath);
         const perfStart = performance.now();
-        
+
         if (optimistic) {
             // OPTIMISTIC UPDATE: Immediately update UI before API call
             debugLog('[PERF] Applying optimistic UI update');
             optimisticStart = performance.now();
-            
+
             // Remove row from DOM immediately
             domRollback = moveRowInDOM(sourcePath);
-            
+
             // Update state optimistically
             rollbackFn = optimisticUpdate(
                 () => {
@@ -208,61 +208,61 @@ export async function moveItem(
                     }
                 }
             );
-            
+
             optimisticEnd = performance.now();
             debugPerf('Optimistic UI update completed in', optimisticEnd - optimisticStart);
         }
-        
+
         // Perform the actual move operation in background (non-blocking for UI)
         debugLog('[PERF] Starting API call');
         const apiStart = performance.now();
         const data = await apiMoveItem(sourcePath, targetPath);
         const apiEnd = performance.now();
         debugPerf('API call completed in', apiEnd - apiStart);
-        
+
         if (optimistic) {
             // Commit the optimistic update (clear snapshot)
             commitOptimisticUpdate();
         }
-        
+
         // Show success message
         if (flashStatus) {
             flashStatus(`"${data.item.name}" berhasil dipindahkan.`);
         }
-        
+
         // Only refresh if needed (viewing target directory or moved a folder)
         const movedItem = state.itemMap.get(sourcePath);
         const needsRefresh =
             state.currentPath === targetPath ||
             state.currentPath === '' ||
             (movedItem && movedItem.type === 'folder');
-        
+
         if (needsRefresh && !optimistic) {
             debugLog('[PERF] Refreshing directory');
             await fetchDirectory(state.currentPath, { silent: true });
         }
-        
+
         const perfEnd = performance.now();
         debugPerf('Total move operation time', perfEnd - perfStart);
         debugPerf('User perceived time', (optimistic && optimisticStart !== null && optimisticEnd !== null)
             ? (optimisticEnd - optimisticStart)
             : (perfEnd - perfStart));
-        
+
     } catch (error) {
         debugError('[ERROR] Move operation failed:', error);
-        
+
         // ROLLBACK: Restore UI and state on error
         if (optimistic && rollbackFn) {
             debugLog('[PERF] Rolling back optimistic update');
             rollbackFn();
         }
-        
+
         // Use centralized error handler for consistent error processing
         const processedError = moveErrorHandler(error, {
             silent: true, // We'll show error via setError instead
             context: 'moveItem'
         });
-        
+
         // Get user-friendly message
         const message = processedError instanceof FileManagerError
             ? processedError.getUserMessage()
@@ -270,7 +270,7 @@ export async function moveItem(
         if (setError) {
             setError(message);
         }
-        
+
         // Refresh to ensure correct state
         if (fetchDirectory) {
             await fetchDirectory(state.currentPath, { silent: true });
@@ -298,17 +298,17 @@ export async function moveItemComplex(
 ) {
     try {
         setLoading(true);
-        
+
         debugLog('[DEBUG] Moving item from', sourcePath, 'to', targetPath);
-        
+
         const data = await apiMoveItem(sourcePath, targetPath);
         debugLog('[DEBUG] Move response:', data);
-        
+
         flashStatus(`"${data.item.name}" berhasil dipindahkan.`);
-        
+
         // Refresh the directory
         await fetchDirectory(state.currentPath, { silent: true });
-        
+
         // If the moved item is currently open in preview, update the preview
         if (state.preview.isOpen && state.preview.path === sourcePath) {
             state.preview.path = data.item.path;
@@ -319,9 +319,8 @@ export async function moveItemComplex(
             );
             previewOpenRaw.href = buildFileUrl(data.item.path);
         }
-        
+
     } catch (error) {
-        debugError(error);
         const message = error instanceof Error ? error.message : 'Terjadi kesalahan saat memindahkan item.';
         setError(message);
     } finally {
@@ -376,10 +375,10 @@ export async function renameItem(
         renameName.disabled = true;
 
         const data = await apiRenameItem(oldPath, newName, newPath);
-        
+
         flashStatus(`${item.name} berhasil diubah namanya menjadi ${newName}.`);
         closeRenameOverlay();
-        
+
         // If renamed item is currently open in preview, update the preview
         if (state.preview.isOpen && state.preview.path === oldPath) {
             state.preview.path = newPath;
@@ -387,7 +386,7 @@ export async function renameItem(
             previewMeta.textContent = previewMeta.textContent.replace(item.name, newName);
             previewOpenRaw.href = buildFileUrl(newPath);
         }
-        
+
         return fetchDirectory(state.currentPath, { silent: true });
     } catch (error) {
         // Use centralized error handler for consistent error processing
@@ -395,7 +394,7 @@ export async function renameItem(
             silent: true, // We'll show error via setError/renameHint instead
             context: 'renameItem'
         });
-        
+
         // Get user-friendly message
         const message = processedError instanceof FileManagerError
             ? processedError.getUserMessage()
@@ -462,7 +461,7 @@ export async function createItem(
             silent: true, // We'll show error via setError/createHint instead
             context: 'createItem'
         });
-        
+
         // Get user-friendly message
         const message = processedError instanceof FileManagerError
             ? processedError.getUserMessage()
@@ -512,7 +511,9 @@ export async function uploadFiles(
 
     try {
         setLoading(true);
-        if (btnUpload) btnUpload.disabled = true;
+        if (btnUpload) {
+            btnUpload.disabled = true;
+        }
 
         const fileArray = Array.from(files);
         let anyUploadedNames = [];
@@ -521,7 +522,7 @@ export async function uploadFiles(
         // Separate small and large files
         const smallFiles = fileArray.filter(file => file.size <= CHUNK_SIZE);
         const largeFiles = fileArray.filter(file => file.size > CHUNK_SIZE);
-        
+
         // Upload all small files together in a single request for bulk logging
         if (smallFiles.length > 0) {
             const fd = new FormData();
@@ -534,7 +535,7 @@ export async function uploadFiles(
                 const data = await sendFormData(fd);
                 const uploaded = Array.isArray(data.uploaded) ? data.uploaded : [];
                 const failures = Array.isArray(data.errors) ? data.errors : [];
-                
+
                 if (uploaded.length > 0) {
                     anyUploadedNames = anyUploadedNames.concat(uploaded.map(u => u.name));
                 }
@@ -547,7 +548,7 @@ export async function uploadFiles(
                 await uploadFilesIndividually(smallFiles, state, CHUNK_SIZE, sendFormData, flashStatus, anyUploadedNames, anyFailures);
             }
         }
-        
+
         // Upload large files individually (chunked)
         if (largeFiles.length > 0) {
             await uploadFilesIndividually(largeFiles, state, CHUNK_SIZE, sendFormData, flashStatus, anyUploadedNames, anyFailures);
@@ -556,9 +557,13 @@ export async function uploadFiles(
         // Prepare user feedback
         if (anyUploadedNames.length > 0) {
             const names = anyUploadedNames.join(', ');
-            if (flashStatus) flashStatus(`File diunggah: ${names}`);
+            if (flashStatus) {
+                flashStatus(`File diunggah: ${names}`);
+            }
         } else {
-            if (flashStatus) flashStatus('Tidak ada file yang diunggah.');
+            if (flashStatus) {
+                flashStatus('Tidak ada file yang diunggah.');
+            }
         }
 
         if (anyFailures.length > 0) {
@@ -578,7 +583,7 @@ export async function uploadFiles(
             silent: true, // We'll show error via setError instead
             context: 'uploadFiles'
         });
-        
+
         // Get user-friendly message
         const message = processedError instanceof FileManagerError
             ? processedError.getUserMessage()
@@ -586,7 +591,9 @@ export async function uploadFiles(
         setError(message);
     } finally {
         setLoading(false);
-        if (btnUpload) btnUpload.disabled = false;
+        if (btnUpload) {
+            btnUpload.disabled = false;
+        }
     }
 }
 
@@ -713,7 +720,9 @@ export async function uploadFolder(
 
     try {
         setLoading(true);
-        if (btnUpload) btnUpload.disabled = true;
+        if (btnUpload) {
+            btnUpload.disabled = true;
+        }
 
         const fileArray = Array.from(files);
         let anyUploadedNames = [];
@@ -723,10 +732,10 @@ export async function uploadFolder(
         const folderGroups = new Map();
         for (const file of fileArray) {
             const relativePath = file.webkitRelativePath || file.name;
-            const folderPath = relativePath.includes('/') 
+            const folderPath = relativePath.includes('/')
                 ? relativePath.substring(0, relativePath.lastIndexOf('/'))
                 : '';
-            
+
             if (!folderGroups.has(folderPath)) {
                 folderGroups.set(folderPath, []);
             }
@@ -735,12 +744,14 @@ export async function uploadFolder(
 
         // Get root folder name for display
         const rootFolderName = fileArray[0]?.webkitRelativePath?.split('/')[0] || 'folder';
-        if (flashStatus) flashStatus(`Mengunggah folder: ${rootFolderName}...`);
+        if (flashStatus) {
+            flashStatus(`Mengunggah folder: ${rootFolderName}...`);
+        }
 
         // Process each folder group
         for (const [folderPath, folderFiles] of folderGroups) {
             // Calculate target path including subfolders
-            const targetPath = folderPath 
+            const targetPath = folderPath
                 ? (state.currentPath ? `${state.currentPath}/${folderPath}` : folderPath)
                 : state.currentPath;
 
@@ -762,7 +773,7 @@ export async function uploadFolder(
                     const data = await sendFormData(fd);
                     const uploaded = Array.isArray(data.uploaded) ? data.uploaded : [];
                     const failures = Array.isArray(data.errors) ? data.errors : [];
-                    
+
                     if (uploaded.length > 0) {
                         anyUploadedNames = anyUploadedNames.concat(uploaded.map(u => u.name));
                     }
@@ -790,9 +801,9 @@ export async function uploadFolder(
                                 anyFailures.push(...failures);
                             }
                         } catch (err) {
-                            anyFailures.push({ 
-                                name: file.webkitRelativePath || file.name, 
-                                error: err instanceof Error ? err.message : String(err) 
+                            anyFailures.push({
+                                name: file.webkitRelativePath || file.name,
+                                error: err instanceof Error ? err.message : String(err)
                             });
                         }
                     }
@@ -837,20 +848,22 @@ export async function uploadFolder(
                             flashStatus(`Mengunggah ${file.webkitRelativePath || file.name}: ${percent}%`);
                         }
 
-                        if (finished) break;
+                        if (finished) {
+                            break;
+                        }
                     } catch (e) {
-                        anyFailures.push({ 
-                            name: file.webkitRelativePath || file.name, 
-                            error: e instanceof Error ? e.message : String(e) 
+                        anyFailures.push({
+                            name: file.webkitRelativePath || file.name,
+                            error: e instanceof Error ? e.message : String(e)
                         });
                         break;
                     }
                 }
 
                 if (!finished && !anyFailures.find(f => f.name === (file.webkitRelativePath || file.name))) {
-                    anyFailures.push({ 
-                        name: file.webkitRelativePath || file.name, 
-                        error: 'Upload chunked tidak selesai.' 
+                    anyFailures.push({
+                        name: file.webkitRelativePath || file.name,
+                        error: 'Upload chunked tidak selesai.'
                     });
                 }
             }
@@ -858,9 +871,13 @@ export async function uploadFolder(
 
         // Prepare user feedback
         if (anyUploadedNames.length > 0) {
-            if (flashStatus) flashStatus(`Folder "${rootFolderName}" berhasil diunggah (${anyUploadedNames.length} file)`);
+            if (flashStatus) {
+                flashStatus(`Folder "${rootFolderName}" berhasil diunggah (${anyUploadedNames.length} file)`);
+            }
         } else {
-            if (flashStatus) flashStatus('Tidak ada file yang diunggah dari folder.');
+            if (flashStatus) {
+                flashStatus('Tidak ada file yang diunggah dari folder.');
+            }
         }
 
         if (anyFailures.length > 0) {
@@ -880,7 +897,7 @@ export async function uploadFolder(
             silent: true, // We'll show error via setError instead
             context: 'uploadFolder'
         });
-        
+
         // Get user-friendly message
         const message = processedError instanceof FileManagerError
             ? processedError.getUserMessage()
@@ -888,7 +905,9 @@ export async function uploadFolder(
         setError(message);
     } finally {
         setLoading(false);
-        if (btnUpload) btnUpload.disabled = false;
+        if (btnUpload) {
+            btnUpload.disabled = false;
+        }
     }
 }
 
@@ -933,7 +952,7 @@ export function openInWord(
 
     // Final fallback setelah semua percobaan: buka tab web dan tampilkan overlay bantuan
     const finalFallback = () => {
-        flashStatus(`Word tidak dapat membuka langsung. File dibuka di tab baru. Jika masih gagal, lihat bantuan konfigurasi untuk membuka di Word.`);
+        flashStatus('Word tidak dapat membuka langsung. File dibuka di tab baru. Jika masih gagal, lihat bantuan konfigurasi untuk membuka di Word.');
         const url = buildFileUrl(item.path);
         const win = window.open(url, '_blank');
         if (win) {
@@ -1012,19 +1031,19 @@ export function openInWord(
                 copyBtn.classList.add('btn');
                 copyBtn.textContent = 'Salin UNC';
                 copyBtn.style.padding = '8px 12px';
-                
+
                 const tryHttpBtn = document.createElement('button');
                 tryHttpBtn.type = 'button';
                 tryHttpBtn.classList.add('btn');
                 tryHttpBtn.textContent = 'Coba via HTTP';
                 tryHttpBtn.style.padding = '8px 12px';
-                
+
                 const closeBtn = document.createElement('button');
                 closeBtn.type = 'button';
                 closeBtn.classList.add('btn');
                 closeBtn.textContent = 'Tutup';
                 closeBtn.style.padding = '8px 12px';
-                
+
                 buttons.append(copyBtn, tryHttpBtn, closeBtn);
 
                 panel.append(h, p, steps, label, input, buttons);
@@ -1093,7 +1112,9 @@ export function openInWord(
  * @returns {Object} Hasil validasi { valid: boolean, message: string }
  */
 export function validateMoveTarget(targetPath, sources, state) {
-    if (typeof targetPath !== 'string') return { valid: false, message: 'Pilih folder tujuan.' };
+    if (typeof targetPath !== 'string') {
+        return { valid: false, message: 'Pilih folder tujuan.' };
+    }
     for (const sp of sources) {
         const item = state.itemMap.get(sp);
         const isDir = item ? item.type === 'folder' : false;
@@ -1134,15 +1155,17 @@ export async function performMove(
     updateMoveConfirmState,
     addRecentDestination
 ) {
-    if (!Array.isArray(sources) || sources.length === 0) return;
+    if (!Array.isArray(sources) || sources.length === 0) {
+        return;
+    }
     const check = validateMoveTarget(targetFolder ?? '', sources, state);
     if (!check.valid) {
         setError(check.message || 'Tujuan tidak valid.');
         return;
     }
-    
+
     setLoading(true);
-    
+
     try {
         const results = [];
         for (const sp of sources) {
@@ -1175,18 +1198,9 @@ export async function performMove(
             }
         }
         if (failCount > 0) {
-            const example = results.find(r => !r.ok);
-            const detail = example ? `${example.path}: ${example.error}` : '';
-            setError(`Sebagian item gagal dipindahkan. ${detail}`);
-        } else {
-            setError('');
+            flashStatus(`${failCount.toLocaleString('id-ID')} item gagal dipindahkan.`, 'error');
         }
-
-        // Refresh once
-        await fetchDirectory(state.currentPath, { silent: true });
-        closeMoveOverlay();
-    } finally {
-        setLoading(false);
-        updateMoveConfirmState();
+    } catch (error) {
+        flashStatus('Gagal memindahkan item.', 'error');
     }
 }

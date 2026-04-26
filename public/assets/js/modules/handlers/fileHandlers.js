@@ -18,13 +18,17 @@ export function setupRefreshHandler(
     confirmDiscardChanges,
     fetchDirectory
 ) {
-    if (!btnRefresh) return;
-    
+    if (!btnRefresh) {
+        return;
+    }
+
     btnRefresh.addEventListener('click', () => {
         if (hasUnsavedChanges()) {
             confirmDiscardChanges('Perubahan belum disimpan. Muat ulang daftar dan buang perubahan?')
                 .then((confirmed) => {
-                    if (!confirmed) return;
+                    if (!confirmed) {
+                        return;
+                    }
                     fetchDirectory(state.currentPath);
                 });
             return;
@@ -41,8 +45,10 @@ export function setupRefreshHandler(
  * @param {Function} navigateTo - Navigation function
  */
 export function setupUpHandler(btnUp, state, navigateTo) {
-    if (!btnUp) return;
-    
+    if (!btnUp) {
+        return;
+    }
+
     btnUp.addEventListener('click', () => {
         const parent = btnUp.dataset.parentPath || '';
         if (parent !== state.currentPath) {
@@ -58,8 +64,10 @@ export function setupUpHandler(btnUp, state, navigateTo) {
  * @param {Function} setSelectionForVisible - Function to set selection for visible items
  */
 export function setupSelectAllHandler(selectAllCheckbox, state, setSelectionForVisible) {
-    if (!selectAllCheckbox) return;
-    
+    if (!selectAllCheckbox) {
+        return;
+    }
+
     selectAllCheckbox.addEventListener('change', (event) => {
         if (state.isLoading || state.isDeleting) {
             event.preventDefault();
@@ -84,8 +92,10 @@ export function setupDeleteSelectedHandler(
     confirmDiscardChanges,
     openConfirmOverlay
 ) {
-    if (!btnDeleteSelected) return;
-    
+    if (!btnDeleteSelected) {
+        return;
+    }
+
     btnDeleteSelected.addEventListener('click', () => {
         if (state.isLoading || state.isDeleting || state.selected.size === 0) {
             return;
@@ -100,8 +110,10 @@ export function setupDeleteSelectedHandler(
         if (hasUnsavedChanges()) {
             confirmDiscardChanges('Perubahan belum disimpan. Tetap hapus item terpilih?')
                 .then((proceed) => {
-                    if (!proceed) return;
-                    
+                    if (!proceed) {
+                        return;
+                    }
+
                     const paths = Array.from(state.selected);
                     const labels = paths.map((path) => {
                         const item = state.itemMap.get(path);
@@ -111,7 +123,7 @@ export function setupDeleteSelectedHandler(
                         ? `Hapus "${labels[0]}"?`
                         : `Hapus ${paths.length.toLocaleString('id-ID')} item terpilih?`;
                     const description = 'Item yang dihapus tidak dapat dikembalikan.';
-                    
+
                     openConfirmOverlay({
                         message,
                         description,
@@ -154,8 +166,10 @@ export function setupDeleteSelectedDesktopHandler(
     confirmDiscardChanges,
     openConfirmOverlay
 ) {
-    if (!btnDeleteSelectedDesktop) return;
-    
+    if (!btnDeleteSelectedDesktop) {
+        return;
+    }
+
     btnDeleteSelectedDesktop.addEventListener('click', () => {
         if (state.isLoading || state.isDeleting || state.selected.size === 0) {
             return;
@@ -170,8 +184,10 @@ export function setupDeleteSelectedDesktopHandler(
         if (hasUnsavedChanges()) {
             confirmDiscardChanges('Perubahan belum disimpan. Tetap hapus item terpilih?')
                 .then((proceed) => {
-                    if (!proceed) return;
-                    
+                    if (!proceed) {
+                        return;
+                    }
+
                     const paths = Array.from(state.selected);
                     const labels = paths.map((path) => {
                         const item = state.itemMap.get(path);
@@ -181,7 +197,7 @@ export function setupDeleteSelectedDesktopHandler(
                         ? `Hapus "${labels[0]}"?`
                         : `Hapus ${paths.length.toLocaleString('id-ID')} item terpilih?`;
                     const description = 'Item yang dihapus tidak dapat dikembalikan.';
-                    
+
                     openConfirmOverlay({
                         message,
                         description,
@@ -241,15 +257,13 @@ export function setupContextMenuHandler(
     handleContextMenuAction,
     closeContextMenu
 ) {
-    if (!contextMenuItems || !contextMenu) return;
-    
-    console.log('[DEBUG] Setting up context menu event listeners for', contextMenuItems.length, 'items');
-    
-    contextMenuItems.forEach((item, index) => {
-        console.log('[DEBUG] Setting up listener for context menu item', index, 'with action:', item.dataset.action);
+    if (!contextMenuItems || !contextMenu) {
+        return;
+    }
+
+    contextMenuItems.forEach((item) => {
         item.addEventListener('click', (event) => {
             const action = event.currentTarget.dataset.action;
-            console.log('[DEBUG] Context menu item clicked with action:', action);
             handleContextMenuAction(action);
         });
     });
@@ -305,20 +319,15 @@ export function setupSelectAllMobileButtonHandler(
     btnSelectAllMobile.addEventListener('click', (event) => {
         event.preventDefault();
         event.stopPropagation();
-        
+
         if (state.isLoading || state.isDeleting) {
-            console.warn('[setupSelectAllMobileButtonHandler] Loading or deleting - ignoring click');
             return;
         }
-        
-        console.log('[setupSelectAllMobileButtonHandler] Click detected, current checked state:', selectAllCheckboxMobile.checked);
-        
+
         // Toggle select all
         const newState = !selectAllCheckboxMobile.checked;
         selectAllCheckboxMobile.checked = newState;
-        
-        console.log('[setupSelectAllMobileButtonHandler] New state:', newState);
-        
+
         setSelectionForVisible(newState);
     });
 }
@@ -357,7 +366,7 @@ export function setupMobileActionsHandler(
     mediaPreviewableExtensions
 ) {
     if (!mobileActionsMenu) {
-        console.warn('[setupMobileActionsHandler] Context menu not found');
+        // Error handled silently
         return;
     }
 
@@ -375,24 +384,24 @@ export function setupMobileActionsHandler(
         currentActionItem = item;
         mobileActionsMenu.classList.remove('hidden');
         mobileActionsMenu.setAttribute('aria-hidden', 'false');
-        
+
         // Position menu at click location, adjusted if near edge
         let left = x;
         let top = y;
-        
+
         // Adjust if menu goes off screen
         const rect = mobileActionsMenu.getBoundingClientRect();
         const menuWidth = rect.width || 150;
         const menuHeight = rect.height || 120;
-        
+
         if (left + menuWidth > window.innerWidth) {
             left = window.innerWidth - menuWidth - 10;
         }
-        
+
         if (top + menuHeight > window.innerHeight) {
             top = window.innerHeight - menuHeight - 10;
         }
-        
+
         mobileActionsMenu.style.left = left + 'px';
         mobileActionsMenu.style.top = top + 'px';
     };
@@ -400,10 +409,12 @@ export function setupMobileActionsHandler(
     // View button handler
     if (mobileActionsViewBtn) {
         mobileActionsViewBtn.addEventListener('click', () => {
-            if (!currentActionItem) return;
-            
+            if (!currentActionItem) {
+                return;
+            }
+
             const ext = currentActionItem.name.split('.').pop().toLowerCase();
-            
+
             if (currentActionItem.type === 'folder') {
                 navigateTo(currentActionItem.path);
                 closeMenu();
@@ -420,8 +431,10 @@ export function setupMobileActionsHandler(
     // Edit button handler
     if (mobileActionsEditBtn) {
         mobileActionsEditBtn.addEventListener('click', () => {
-            if (!currentActionItem) return;
-            
+            if (!currentActionItem) {
+                return;
+            }
+
             openRenameOverlayWrapper(currentActionItem);
             closeMenu();
         });
@@ -430,8 +443,10 @@ export function setupMobileActionsHandler(
     // Move button handler
     if (mobileActionsMoveBtn) {
         mobileActionsMoveBtn.addEventListener('click', async () => {
-            if (!currentActionItem) return;
-            
+            if (!currentActionItem) {
+                return;
+            }
+
             try {
                 const moveOverlayModule = await import('../moveOverlay.js');
                 if (moveOverlayModule.openMoveOverlay) {
@@ -448,8 +463,10 @@ export function setupMobileActionsHandler(
     // Delete button handler
     if (mobileActionsDeleteBtn) {
         mobileActionsDeleteBtn.addEventListener('click', () => {
-            if (!currentActionItem) return;
-            
+            if (!currentActionItem) {
+                return;
+            }
+
             openConfirmOverlayWrapper({
                 message: `Hapus "${currentActionItem.name}"?`,
                 description: 'Item yang dihapus tidak dapat dikembalikan.',
@@ -463,7 +480,7 @@ export function setupMobileActionsHandler(
 
     // Close menu when clicking outside
     document.addEventListener('click', (event) => {
-        if (!mobileActionsMenu.classList.contains('hidden') && 
+        if (!mobileActionsMenu.classList.contains('hidden') &&
             !mobileActionsMenu.contains(event.target)) {
             closeMenu();
         }

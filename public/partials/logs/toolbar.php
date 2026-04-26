@@ -3,8 +3,8 @@
     <!-- Left Group: Mobile Toggle, Search, Filters -->
     <div class="toolbar-left">
         <!-- Mobile Menu Toggle -->
-        <button class="btn btn-icon md:hidden p-0.5 hover:bg-slate-100 dark:hover:bg-white/5 rounded flex-shrink-0" id="mobile-menu-toggle" title="Menu">
-            <i class="ri-menu-line text-base text-slate-600 dark:text-gray-400"></i>
+        <button class="btn btn-icon md\:d-none toolbar-menu-toggle" id="mobile-menu-toggle" title="Menu">
+            <i class="ri-menu-line text-base text-muted"></i>
         </button>
         <div class="search-box">
             <i class="ri-search-line"></i>

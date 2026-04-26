@@ -21,16 +21,36 @@ export function fileKindFromExtension(ext) {
     const docs = new Set(['doc','docx','odt','rtf']);
     const ppts = new Set(['ppt','pptx','odp']);
 
-    if (images.has(e)) return 'image';
-    if (pdf.has(e)) return 'pdf';
-    if (docs.has(e)) return 'doc';
-    if (ppts.has(e)) return 'ppt';
-    if (sheets.has(e)) return 'sheet';
-    if (archives.has(e)) return 'archive';
-    if (audio.has(e)) return 'audio';
-    if (video.has(e)) return 'video';
-    if (code.has(e)) return 'code';
-    if (text.has(e)) return 'text';
+    if (images.has(e)) {
+        return 'image';
+    }
+    if (pdf.has(e)) {
+        return 'pdf';
+    }
+    if (docs.has(e)) {
+        return 'doc';
+    }
+    if (ppts.has(e)) {
+        return 'ppt';
+    }
+    if (sheets.has(e)) {
+        return 'sheet';
+    }
+    if (archives.has(e)) {
+        return 'archive';
+    }
+    if (audio.has(e)) {
+        return 'audio';
+    }
+    if (video.has(e)) {
+        return 'video';
+    }
+    if (code.has(e)) {
+        return 'code';
+    }
+    if (text.has(e)) {
+        return 'text';
+    }
     return 'file';
 }
 
@@ -40,7 +60,9 @@ function createSvg(viewBox, pathDs, fillColor = 'currentColor') {
     svg.setAttribute('viewBox', viewBox);
     svg.setAttribute('aria-hidden', 'true');
     svg.setAttribute('style', 'width: 100%; height: 100%; display: block;');
-    if (!Array.isArray(pathDs)) pathDs = [pathDs];
+    if (!Array.isArray(pathDs)) {
+        pathDs = [pathDs];
+    }
     pathDs.forEach(d => {
         const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
         path.setAttribute('fill', fillColor);
@@ -72,29 +94,29 @@ export function getItemIcon(item) {
         const svg = (typeof itemTypeIcons.file === 'function') ? itemTypeIcons.file() : itemTypeIcons.file;
         return { className: 'file', svg };
     }
-    
+
     // Folders always use the same icon
     if (item.type === 'folder') {
         const svg = (typeof itemTypeIcons.folder === 'function') ? itemTypeIcons.folder() : itemTypeIcons.folder;
         return { className: 'folder', svg };
     }
-    
+
     // Extract extension for caching
     const ext = typeof item.name === 'string' ? getFileExtension(item.name) : '';
-    
+
     // Check cache first
     const cacheKey = `file-${ext}`;
     if (iconCache.has(cacheKey)) {
         return iconCache.get(cacheKey);
     }
-    
+
     // Compute and cache the result
     const kind = fileKindFromExtension(ext);
     const svgSource = (typeof itemTypeIcons[kind] === 'function')
         ? itemTypeIcons[kind]()
         : (itemTypeIcons[kind] || ((typeof itemTypeIcons.file === 'function') ? itemTypeIcons.file() : itemTypeIcons.file));
     const result = { className: `file ${kind}`, svg: svgSource };
-    
+
     iconCache.set(cacheKey, result);
     return result;
 }

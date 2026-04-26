@@ -26,6 +26,7 @@
 @import 'layout/app.css';
 @import 'layout/sidebar.css';
 @import 'layout/topbar.css';
+@import 'layout/action-bar.css';
 @import 'layout/footer.css';
 
 /* ============================================================================
@@ -42,6 +43,7 @@
 @import 'components/loader.css';
 @import 'components/navigation.css';
 @import 'components/toast.css';
+@import 'components/enhanced-ui.css';
 
 /* ============================================================================
    OVERLAYS - Create, Preview, Confirm, Move, Rename, Log, Settings, Context Menu
@@ -57,7 +59,9 @@
 @import 'overlays/details.css';
 @import 'overlays/log.css';
 @import 'overlays/settings.css';
+@import 'overlays/trash.css';
 @import 'overlays/context-menu.css';
+@import 'overlays/shortcuts.css';
 
 /* ============================================================================
    THEMES - Dark Mode and Other Theme Variations

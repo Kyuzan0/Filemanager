@@ -691,14 +691,11 @@ function extract_with_7zip(string $archivePath, string $extractDir): array
     // Build extraction command
     // -y = assume Yes on all queries
     // -o = set output directory
-    // Wrap path in quotes for Windows paths with spaces
-    if (strpos($cmd, ' ') !== false || strpos($cmd, '\\') !== false) {
-        $cmd = '"' . $cmd . '"';
-    }
+    $escapedCmd = escapeshellarg($cmd);
     $escapedArchive = escapeshellarg($archivePath);
     $escapedDir = escapeshellarg($extractDir);
 
-    $command = "$cmd x $escapedArchive -o$escapedDir -y 2>&1";
+    $command = "$escapedCmd x $escapedArchive -o$escapedDir -y 2>&1";
 
     $output = shell_exec($command);
     $success = $output !== null && (strpos($output, 'Everything is Ok') !== false || strpos($output, 'Ok') !== false);

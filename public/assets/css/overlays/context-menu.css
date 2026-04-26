@@ -36,7 +36,7 @@
 }
 
 .context-menu.hidden {
-  display: none !important;
+  display: none;
 }
 
 .context-menu:not(.hidden) {
@@ -192,7 +192,7 @@
 }
 
 .mobile-actions-menu.hidden {
-  display: none !important;
+  display: none;
 }
 
 .mobile-actions-menu[aria-hidden="false"] {
@@ -306,3 +306,66 @@
     min-height: 44px;
   }
 }
+
+/* ============================================================================
+   MOBILE CONTEXT MENU (overlayRenderer.js)
+   ============================================================================ */
+
+.mobile-context-menu {
+  position: fixed;
+  z-index: 50;
+  background: var(--card);
+  border-radius: 0.5rem;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+  border: 1px solid var(--card-border);
+  padding: 0.25rem 0;
+  min-width: 160px;
+}
+
+[data-theme="dark"] .mobile-context-menu {
+  background: #1f2937;
+  border-color: #374151;
+}
+
+.mobile-context-item {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.625rem 1rem;
+  text-align: left;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.mobile-context-item:hover {
+  background: var(--surface-hover);
+}
+
+[data-theme="dark"] .mobile-context-item:hover {
+  background: #374151;
+}
+
+.context-item-label {
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+}
+
+[data-theme="dark"] .context-item-label {
+  color: #e5e7eb;
+}
+
+/* Context menu action colors */
+.context-action-open { color: var(--accent); }
+.context-action-download { color: var(--success); }
+.context-action-rename { color: var(--warning); }
+.context-action-move { color: #8b5cf6; }
+.context-action-delete { color: var(--danger); }
+
+[data-theme="dark"] .context-action-open { color: var(--accent-light); }
+[data-theme="dark"] .context-action-download { color: #6ee7b7; }
+[data-theme="dark"] .context-action-rename { color: #fbbf24; }
+[data-theme="dark"] .context-action-move { color: #a78bfa; }
+[data-theme="dark"] .context-action-delete { color: #f87171; }

@@ -14,37 +14,37 @@ export const elements = {
     statusTime: document.getElementById('status-time'),
     statusSort: document.getElementById('status-sort'),
     statusFilter: document.getElementById('status-filter'),
-    
+
     // Buttons
     btnUpload: document.getElementById('btn-upload'),
     btnUploadFolder: document.getElementById('btn-upload-folder'),
     btnDeleteSelected: document.getElementById('btn-delete-selected'),
     btnMoveSelected: document.getElementById('btn-move-selected'),
-    
+
     // New top bar buttons
     uploadBtn: document.getElementById('uploadBtn'),
     fileInput: document.getElementById('fileInput'),
     uploadFolderBtn: document.getElementById('uploadFolderBtn'),
     folderInput: document.getElementById('folderInput'),
-    
+
     // Desktop buttons
     btnUploadDesktop: document.getElementById('btn-upload-desktop'),
     uploadInputDesktop: document.getElementById('upload-input-desktop'),
     btnUploadFolderDesktop: document.getElementById('btn-upload-folder-desktop'),
     uploadFolderInputDesktop: document.getElementById('upload-folder-input-desktop'),
     btnDeleteSelectedDesktop: document.getElementById('btn-delete-selected-desktop'),
-    
+
     // Split action
     splitAction: document.querySelector('.split-action'),
     splitToggle: document.querySelector('.split-toggle'),
     splitMenu: document.querySelector('.split-menu'),
     splitOptions: document.querySelectorAll('.split-menu-option'),
     splitMain: document.querySelector('.split-main'),
-    
+
     // Upload
     uploadInput: document.getElementById('upload-input'),
     uploadFolderInput: document.getElementById('upload-folder-input'),
-    
+
     // Filter
     filterInput: document.getElementById('filter-input'),
     clearSearch: document.getElementById('clear-search'),
@@ -52,28 +52,28 @@ export const elements = {
     btnSelectAllMobile: document.getElementById('btn-select-all-mobile'),
     mobileSelectedCount: document.getElementById('mobile-selected-count'),
     mobileClearSelection: document.getElementById('mobile-clear-selection'),
-    
+
     // Search modal
     searchModal: document.getElementById('search-modal'),
     searchModalInput: document.getElementById('search-modal-input'),
     searchClose: document.getElementById('search-close'),
     searchClear: document.getElementById('search-clear'),
     searchApply: document.getElementById('search-apply'),
-    
+
     // Loading and error
     loaderOverlay: document.getElementById('loader-overlay'),
     errorBanner: document.getElementById('error-banner'),
-    
+
     // Drag and drop
     fileCard: document.querySelector('.file-card'),
-    
+
     // Sort headers
     sortHeaders: document.querySelectorAll('th[data-sort-key]'),
-    
+
     // Selection
     selectAllCheckbox: document.getElementById('select-all'),
     selectAllCheckboxMobile: document.getElementById('select-all-mobile'),
-    
+
     // Preview elements
     previewOverlay: document.getElementById('preview-overlay'),
     previewTitle: document.getElementById('preview-title'),
@@ -89,7 +89,7 @@ export const elements = {
     previewOpenRaw: document.getElementById('preview-open-raw'),
     previewEditorWrapper: document.querySelector('.preview-editor-wrapper'),
     previewBody: document.querySelector('.preview-body'),
-    
+
     // Confirm dialog
     confirmOverlay: document.getElementById('confirm-overlay'),
     confirmMessage: document.getElementById('confirm-message'),
@@ -97,7 +97,7 @@ export const elements = {
     confirmList: document.getElementById('confirm-list'),
     confirmCancel: document.getElementById('confirm-cancel'),
     confirmConfirm: document.getElementById('confirm-confirm'),
-    
+
     // Create dialog
     createOverlay: document.getElementById('create-overlay'),
     createForm: document.getElementById('create-form'),
@@ -108,7 +108,7 @@ export const elements = {
     createHint: document.getElementById('create-hint'),
     createCancel: document.getElementById('create-cancel'),
     createSubmit: document.getElementById('create-submit'),
-    
+
     // Rename dialog
     renameOverlay: document.getElementById('rename-overlay'),
     renameForm: document.getElementById('rename-form'),
@@ -119,7 +119,7 @@ export const elements = {
     renameHint: document.getElementById('rename-hint'),
     renameCancel: document.getElementById('rename-cancel'),
     renameSubmit: document.getElementById('rename-submit'),
-    
+
     // Unsaved dialog
     unsavedOverlay: document.getElementById('unsaved-overlay'),
     unsavedTitle: document.getElementById('unsaved-title'),
@@ -127,11 +127,11 @@ export const elements = {
     unsavedSave: document.getElementById('unsaved-save'),
     unsavedDiscard: document.getElementById('unsaved-discard'),
     unsavedCancel: document.getElementById('unsaved-cancel'),
-    
+
     // Context menu
     contextMenu: document.getElementById('context-menu'),
     contextMenuItems: document.querySelectorAll('.context-menu-item'),
-    
+
     // Move overlay elements
     moveOverlay: document.getElementById('move-overlay'),
     moveForm: document.getElementById('move-form'),
@@ -147,10 +147,10 @@ export const elements = {
     moveConfirm: document.getElementById('move-confirm'),
     moveSearchInput: document.getElementById('move-search'),
     moveRecents: document.getElementById('move-recents'),
-    
+
     // Pagination elements
     paginationContainer: document.getElementById('pagination-container'),
-    
+
     // Mobile actions context menu
     mobileActionsMenu: document.getElementById('mobile-actions-menu'),
     mobileActionsViewBtn: document.getElementById('mobile-actions-view'),
@@ -226,34 +226,34 @@ export const config = {
     debugMode: _stored_debug !== null ? _stored_debug === 'true' : false,
     // Backwards compatibility: some modules check `config.debug`
     debug: _stored_debug !== null ? _stored_debug === 'true' : false,
-    
+
     // API base URL
     apiBaseUrl: 'api.php',
-    
+
     // Polling interval in milliseconds
     pollingInterval: 5000,
-    
+
     // Auto-refresh interval for logs in milliseconds
     logRefreshInterval: 30000,
-    
+
     // Maximum number of recent destinations to store
     maxRecentDestinations: 10,
-    
+
     // Debounce time for search input in milliseconds
     searchDebounceTime: 500,
-    
+
     // Animation duration in milliseconds
     animationDuration: 200,
-    
+
     // Maximum number of log entries per page
     logPageSize: 50,
-    
+
     // Maximum number of items to show in confirm dialog
     maxConfirmItems: 5,
-    
+
     // File size formatting
     fileSizeUnits: ['B', 'KB', 'MB', 'GB', 'TB'],
-    
+
     // Date formatting options
     dateFormatOptions: {
         year: 'numeric',
@@ -263,7 +263,7 @@ export const config = {
         minute: '2-digit',
         second: '2-digit'
     },
-    
+
     // Short date format for small screens
     shortDateFormatOptions: {
         month: 'short',
@@ -271,22 +271,22 @@ export const config = {
         hour: '2-digit',
         minute: '2-digit'
     },
-    
+
     // Virtual scrolling configuration
     virtualScroll: {
-        enabled: true,           // Enable/disable virtual scrolling globally
-        itemHeight: 40,          // Height of each row in pixels (must match CSS)
-        overscan: 5,             // Number of extra items to render above/below viewport
-        threshold: 100,          // Minimum number of items to activate virtual scrolling
-        bufferMultiplier: 1.5,   // Multiplier for buffer zone calculation
+        enabled: true, // Enable/disable virtual scrolling globally
+        itemHeight: 40, // Height of each row in pixels (must match CSS)
+        overscan: 5, // Number of extra items to render above/below viewport
+        threshold: 100, // Minimum number of items to activate virtual scrolling
+        bufferMultiplier: 1.5, // Multiplier for buffer zone calculation
     },
-    
+
     // Hybrid pagination configuration (for scroll-based pagination)
     pagination: {
-        enabled: true,           // Enable pagination indicator
-        itemsPerPage: 10,        // Items per "virtual page"
-        showControls: true,      // Show pagination controls
-        showInStatusBar: true,   // Show page info in status bar
+        enabled: true, // Enable pagination indicator
+        itemsPerPage: 10, // Items per "virtual page"
+        showControls: true, // Show pagination controls
+        showInStatusBar: true, // Show page info in status bar
     },
 };
 
@@ -296,7 +296,7 @@ export const config = {
    Temporarily force debugEnabled = true so diagnostic logs from the page
    (transient UI debug statements) are not suppressed by this module.
    If console was previously wrapped, restore originals when possible. */
-(function () {
+(function() {
     try {
         // Force debug enabled during QA to surface diagnostics
         const debugEnabled = true;
@@ -314,14 +314,14 @@ export const config = {
         if (!debugEnabled && typeof console !== 'undefined') {
             if (!console._orig) {
                 console._orig = {
-                    log: console.log ? console.log.bind(console) : function () {},
-                    debug: console.debug ? console.debug.bind(console) : (console.log ? console.log.bind(console) : function () {}),
-                    info: console.info ? console.info.bind(console) : (console.log ? console.log.bind(console) : function () {}),
+                    log: console.log ? console.log.bind(console) : function() {},
+                    debug: console.debug ? console.debug.bind(console) : (console.log ? console.log.bind(console) : function() {}),
+                    info: console.info ? console.info.bind(console) : (console.log ? console.log.bind(console) : function() {}),
                 };
             }
-            console.log = function () {};
-            console.debug = function () {};
-            console.info = function () {};
+            console.log = function() {};
+            console.debug = function() {};
+            console.info = function() {};
         }
     } catch (e) {
         // swallow errors to avoid breaking app when localStorage or console is restricted

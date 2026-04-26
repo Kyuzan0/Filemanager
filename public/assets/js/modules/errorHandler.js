@@ -27,9 +27,9 @@ export const ErrorCategory = {
  * Error Severity Levels
  */
 export const ErrorSeverity = {
-    LOW: 'low',         // Minor issues, can be ignored
-    MEDIUM: 'medium',   // Issues that affect functionality but not critical
-    HIGH: 'high',       // Critical issues that need immediate attention
+    LOW: 'low', // Minor issues, can be ignored
+    MEDIUM: 'medium', // Issues that affect functionality but not critical
+    HIGH: 'high', // Critical issues that need immediate attention
     CRITICAL: 'critical' // System-breaking issues
 };
 
@@ -82,13 +82,13 @@ export class FileManagerError extends Error {
         this.retryable = options.retry !== undefined ? options.retry : this._isRetryable();
         this.timestamp = new Date().toISOString();
         this.id = this._generateErrorId();
-        
+
         // Capture stack trace
         if (Error.captureStackTrace) {
             Error.captureStackTrace(this, FileManagerError);
         }
     }
-    
+
     /**
      * Determine if error is retryable based on category
      * @returns {boolean}
@@ -101,7 +101,7 @@ export class FileManagerError extends Error {
         ];
         return retryableCategories.includes(this.category);
     }
-    
+
     /**
      * Generate unique error ID
      * @returns {string}
@@ -109,7 +109,7 @@ export class FileManagerError extends Error {
     _generateErrorId() {
         return `${this.category}_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
     }
-    
+
     /**
      * Get user-friendly message for this error
      * @returns {string}
@@ -117,7 +117,7 @@ export class FileManagerError extends Error {
     getUserMessage() {
         return userFriendlyMessages[this.category] || this.message;
     }
-    
+
     /**
      * Convert error to JSON for logging
      * @returns {Object}
@@ -150,11 +150,13 @@ export class FileManagerError extends Error {
  * @returns {string} Error category
  */
 export function categorizeError(error) {
-    if (!error) return ErrorCategory.UNKNOWN;
-    
+    if (!error) {
+        return ErrorCategory.UNKNOWN;
+    }
+
     const message = error.message?.toLowerCase() || '';
     const name = error.name?.toLowerCase() || '';
-    
+
     // Network errors
     if (
         name === 'typeerror' && message.includes('failed to fetch') ||
@@ -168,7 +170,7 @@ export function categorizeError(error) {
     ) {
         return ErrorCategory.NETWORK;
     }
-    
+
     // Timeout errors
     if (
         message.includes('timeout') ||
@@ -177,7 +179,7 @@ export function categorizeError(error) {
     ) {
         return ErrorCategory.TIMEOUT;
     }
-    
+
     // Permission errors
     if (
         message.includes('permission') ||
@@ -189,7 +191,7 @@ export function categorizeError(error) {
     ) {
         return ErrorCategory.PERMISSION;
     }
-    
+
     // Not found errors
     if (
         message.includes('not found') ||
@@ -199,7 +201,7 @@ export function categorizeError(error) {
     ) {
         return ErrorCategory.NOT_FOUND;
     }
-    
+
     // Server errors
     if (
         message.includes('500') ||
@@ -210,7 +212,7 @@ export function categorizeError(error) {
     ) {
         return ErrorCategory.SERVER;
     }
-    
+
     // Validation errors
     if (
         message.includes('valid') ||
@@ -221,7 +223,7 @@ export function categorizeError(error) {
     ) {
         return ErrorCategory.VALIDATION;
     }
-    
+
     // File operation errors
     if (
         message.includes('file') ||
@@ -236,7 +238,7 @@ export function categorizeError(error) {
     ) {
         return ErrorCategory.FILE_OPERATION;
     }
-    
+
     return ErrorCategory.UNKNOWN;
 }
 
@@ -246,7 +248,7 @@ export function categorizeError(error) {
  * @param {string} context - Context where error occurred
  */
 export function logError(error, context = '') {
-    const errorEntry = error instanceof FileManagerError 
+    const errorEntry = error instanceof FileManagerError
         ? error.toJSON()
         : {
             name: error.name || 'Error',
@@ -256,19 +258,19 @@ export function logError(error, context = '') {
             timestamp: new Date().toISOString(),
             category: categorizeError(error)
         };
-    
+
     // Add to error log
     errorLog.unshift(errorEntry);
-    
+
     // Trim log if too large
     if (errorLog.length > MAX_ERROR_LOG_SIZE) {
         errorLog.length = MAX_ERROR_LOG_SIZE;
     }
-    
+
     // Console logging based on severity
     const severity = errorEntry.severity || ErrorSeverity.MEDIUM;
     const logPrefix = `[ErrorHandler${context ? ` - ${context}` : ''}]`;
-    
+
     if (severity === ErrorSeverity.CRITICAL || severity === ErrorSeverity.HIGH) {
         console.error(logPrefix, errorEntry);
     } else if (severity === ErrorSeverity.MEDIUM) {
@@ -276,14 +278,14 @@ export function logError(error, context = '') {
     } else {
         console.log(logPrefix, errorEntry);
     }
-    
+
     // Trigger global error event for external monitoring
     if (typeof window !== 'undefined') {
-        window.dispatchEvent(new CustomEvent('filemanager:error', { 
-            detail: errorEntry 
+        window.dispatchEvent(new CustomEvent('filemanager:error', {
+            detail: errorEntry
         }));
     }
-    
+
     return errorEntry;
 }
 
@@ -299,7 +301,7 @@ export function logError(error, context = '') {
  */
 export function handleError(error, options = {}) {
     const { context = '', silent = false, customMessage = null, onRetry = null } = options;
-    
+
     // Convert to FileManagerError if not already
     let processedError;
     if (error instanceof FileManagerError) {
@@ -316,18 +318,18 @@ export function handleError(error, options = {}) {
             }
         );
     }
-    
+
     // Log the error
     logError(processedError, context);
-    
+
     // Show user notification unless silent
     if (!silent && typeof window !== 'undefined' && typeof window.showError === 'function') {
         const userMessage = customMessage || processedError.getUserMessage();
         window.showError(userMessage);
-        
+
         // If retryable and onRetry provided, could add retry button in future
     }
-    
+
     return processedError;
 }
 
@@ -405,40 +407,40 @@ export function withRetry(fn, options = {}) {
         onRetry = null,
         context = ''
     } = options;
-    
+
     return async function(...args) {
         let lastError;
         let currentDelay = delay;
-        
+
         for (let attempt = 0; attempt <= maxRetries; attempt++) {
             try {
                 return await fn.apply(this, args);
             } catch (error) {
                 lastError = error;
-                
+
                 const canRetry = attempt < maxRetries && shouldRetry(error);
-                
+
                 if (!canRetry) {
                     throw error;
                 }
-                
+
                 // Log retry attempt
                 console.log(
                     `[ErrorHandler${context ? ` - ${context}` : ''}] ` +
                     `Retry attempt ${attempt + 1}/${maxRetries} after ${currentDelay}ms`
                 );
-                
+
                 // Call onRetry callback if provided
                 if (onRetry) {
                     onRetry(error, attempt + 1, maxRetries);
                 }
-                
+
                 // Wait before retry with exponential backoff
                 await new Promise(resolve => setTimeout(resolve, currentDelay));
                 currentDelay *= backoffMultiplier;
             }
         }
-        
+
         throw lastError;
     };
 }
@@ -503,22 +505,22 @@ export function getErrorStats() {
         retryable: 0,
         lastError: errorLog[0] || null
     };
-    
+
     errorLog.forEach(error => {
         // Count by category
         const category = error.category || ErrorCategory.UNKNOWN;
         stats.byCategory[category] = (stats.byCategory[category] || 0) + 1;
-        
+
         // Count by severity
         const severity = error.severity || ErrorSeverity.MEDIUM;
         stats.bySeverity[severity] = (stats.bySeverity[severity] || 0) + 1;
-        
+
         // Count retryable
         if (error.retryable) {
             stats.retryable++;
         }
     });
-    
+
     return stats;
 }
 

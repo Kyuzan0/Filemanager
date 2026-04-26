@@ -52,7 +52,7 @@ export function logDebug(message, data) {
 export function logWithTimestamp(level, message, data) {
     const timestamp = new Date().toISOString();
     const logMessage = `[${timestamp}] [${level}] ${message}`;
-    
+
     switch (level) {
         case 'ERROR':
             console.error(logMessage, data);
@@ -133,7 +133,7 @@ export const eventLogger = createLogger('EVENT');
 export async function measurePerformance(operationName, operation, logger = logInfo) {
     const startTime = performance.now();
     logger(`Starting ${operationName}`);
-    
+
     try {
         const result = await operation();
         const endTime = performance.now();
@@ -162,7 +162,7 @@ export function logDetailedError(error, context, additionalData = {}) {
         timestamp: new Date().toISOString(),
         ...additionalData
     };
-    
+
     logError(`Detailed error in ${context}`, errorDetails);
 }
 
@@ -182,7 +182,7 @@ export function logNetworkOperation(url, options, response, duration) {
         duration: `${duration.toFixed(2)}ms`,
         timestamp: new Date().toISOString()
     };
-    
+
     if (response.ok) {
         apiLogger.info('Network request successful', logData);
     } else {
@@ -205,7 +205,7 @@ export function logFileOperation(operation, path, success, additionalData = {}) 
         timestamp: new Date().toISOString(),
         ...additionalData
     };
-    
+
     if (success) {
         fileLogger.info(`File ${operation} successful`, logData);
     } else {
@@ -226,7 +226,7 @@ export function logUIOperation(component, action, additionalData = {}) {
         timestamp: new Date().toISOString(),
         ...additionalData
     };
-    
+
     uiLogger.info(`UI operation: ${component}.${action}`, logData);
 }
 
@@ -245,7 +245,7 @@ export function logStateOperation(action, key, value = null, additionalData = {}
         timestamp: new Date().toISOString(),
         ...additionalData
     };
-    
+
     stateLogger.debug(`State operation: ${action}.${key}`, logData);
 }
 
@@ -262,7 +262,7 @@ export function logEventOperation(eventType, target, additionalData = {}) {
         timestamp: new Date().toISOString(),
         ...additionalData
     };
-    
+
     eventLogger.debug(`Event: ${eventType} on ${target}`, logData);
 }
 
@@ -279,7 +279,7 @@ export function logModalOperation(modalType, action, additionalData = {}) {
         timestamp: new Date().toISOString(),
         ...additionalData
     };
-    
+
     modalLogger.info(`Modal operation: ${action} ${modalType}`, logData);
 }
 
@@ -298,7 +298,7 @@ export function logDragDropOperation(operation, source, target = null, additiona
         timestamp: new Date().toISOString(),
         ...additionalData
     };
-    
+
     dragDropLogger.info(`Drag & drop operation: ${operation}`, logData);
 }
 
@@ -315,7 +315,7 @@ export function logAuditTrail(action, user = null, details = {}) {
         timestamp: new Date().toISOString(),
         details
     };
-    
+
     logInfo(`Audit trail: ${action}`, auditData);
 }
 
@@ -329,14 +329,14 @@ export function exportLogsToFile(logs, filename = 'logs.json') {
         const dataStr = JSON.stringify(logs, null, 2);
         const dataBlob = new Blob([dataStr], { type: 'application/json' });
         const url = URL.createObjectURL(dataBlob);
-        
+
         const link = document.createElement('a');
         link.href = url;
         link.download = filename;
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
-        
+
         URL.revokeObjectURL(url);
         logInfo(`Logs exported to ${filename}`);
     } catch (error) {
@@ -369,7 +369,7 @@ export function formatLogEntry(log) {
         minute: '2-digit',
         second: '2-digit'
     });
-    
+
     const actionLabels = {
         'create': 'Buat',
         'delete': 'Hapus',
@@ -389,7 +389,7 @@ export function formatLogEntry(log) {
         'cleanup_trash': 'Bersihkan Trash',
         'unknown': 'Tidak Diketahui'
     };
-    
+
     const typeLabels = {
         'file': 'File',
         'folder': 'Folder',
@@ -397,7 +397,7 @@ export function formatLogEntry(log) {
         'system': 'Sistem',
         'unknown': 'Tidak Diketahui'
     };
-    
+
     return {
         ...log,
         formattedDate: formattedDate,
@@ -413,13 +413,11 @@ export function formatLogEntry(log) {
  * @param {HTMLElement} logEmpty - Empty state element
  */
 export function renderLogTable(logs, logTableBody, logEmpty) {
-    console.log('[DEBUG] renderLogTable called with logs:', logs);
-    
     if (!logTableBody) {
         console.error('[DEBUG] logTableBody element not found');
         return;
     }
-    
+
     if (!logs || logs.length === 0) {
         // Clear rows safely without parsing HTML
         logTableBody.textContent = '';
@@ -428,76 +426,76 @@ export function renderLogTable(logs, logTableBody, logEmpty) {
         }
         return;
     }
-    
+
     if (logEmpty) {
         logEmpty.hidden = true;
     }
-    
+
     // Clear existing rows using textContent for safety
     logTableBody.textContent = '';
-    
+
     logs.forEach(log => {
         const formattedLog = formatLogEntry(log);
         const row = document.createElement('tr');
-        
+
         // Handle special display for bulk actions
         let displayTarget = log.target_path || '-';
         let displayFilename = log.filename || log.target || '-';
-        
+
         if (log.action === 'bulk_trash') {
             // For bulk actions, show summary instead of individual filename
             displayTarget = log.filename || `${log.count || 0} items`;
             displayFilename = log.filename || `${log.count || 0} items`;
         }
-        
+
         // Check if the table structure matches overlays.php (with IP Address) or the provided HTML (without IP Address)
         const table = logTableBody.parentElement;
         const headerRow = table.querySelector('thead tr');
         const headerCells = headerRow ? Array.from(headerRow.querySelectorAll('th')) : [];
-        
+
         // Count visible headers (not hidden by Tailwind classes)
         const hasIpAddressColumn = headerCells.some(th => th.textContent.includes('IP Address'));
         const hasTargetColumn = headerCells.some(th => th.textContent.includes('Target'));
-        
+
         if (hasIpAddressColumn && hasTargetColumn) {
-            // Structure from overlays.php: Waktu, Aksi, Target (hidden sm:), Tipe (hidden sm:), IP Address (hidden md:)
+            // Structure from overlays.php: Waktu, Aksi, Target (responsive-sm), Tipe (responsive-sm), IP Address (responsive-md)
             // For mobile, only show: Waktu, Aksi
             // For tablet/desktop, show: Waktu, Aksi, Target, Tipe, IP Address
-            
+
             // Timestamp cell
             const timeCell = document.createElement('td');
             timeCell.textContent = formattedLog.formattedDate;
             timeCell.setAttribute('data-label', 'Waktu');
-            timeCell.className = 'px-3 py-2 text-xs';
+            timeCell.className = 'log-cell';
             row.appendChild(timeCell);
-            
+
             // Action cell
             const actionCell = document.createElement('td');
             actionCell.textContent = formattedLog.actionLabel;
             actionCell.setAttribute('data-label', 'Aksi');
             actionCell.classList.add('log-action', `log-action-${log.action}`);
-            actionCell.className = 'px-3 py-2 text-xs';
+            actionCell.className = 'log-cell';
             row.appendChild(actionCell);
-            
+
             // Target cell (hidden on mobile)
             const targetCell = document.createElement('td');
             targetCell.textContent = displayTarget;
             targetCell.setAttribute('data-label', 'Target');
-            targetCell.className = 'px-3 py-2 text-xs hidden sm:table-cell';
+            targetCell.className = 'log-cell log-cell-responsive-sm';
             row.appendChild(targetCell);
-            
+
             // Type cell (hidden on mobile and tablet)
             const typeCell = document.createElement('td');
             typeCell.textContent = formattedLog.typeLabel;
             typeCell.setAttribute('data-label', 'Tipe');
-            typeCell.className = 'px-3 py-2 text-xs hidden sm:table-cell';
+            typeCell.className = 'log-cell log-cell-responsive-sm';
             row.appendChild(typeCell);
-            
+
             // IP Address cell (hidden on mobile and tablet)
             const ipCell = document.createElement('td');
             ipCell.textContent = log.ip_address || '-';
             ipCell.setAttribute('data-label', 'IP Address');
-            ipCell.className = 'px-3 py-2 text-xs hidden md:table-cell';
+            ipCell.className = 'log-cell log-cell-responsive-md';
             row.appendChild(ipCell);
         } else {
             // Structure from provided HTML: Waktu, Aksi, Tipe, Path, IP Address
@@ -505,46 +503,44 @@ export function renderLogTable(logs, logTableBody, logEmpty) {
             const timeCell = document.createElement('td');
             timeCell.textContent = formattedLog.formattedDate;
             timeCell.setAttribute('data-label', 'Waktu');
-            timeCell.className = 'px-3 py-2 text-xs';
+            timeCell.className = 'log-cell';
             row.appendChild(timeCell);
-            
+
             // Action cell
             const actionCell = document.createElement('td');
             actionCell.textContent = formattedLog.actionLabel;
             actionCell.setAttribute('data-label', 'Aksi');
             actionCell.classList.add('log-action', `log-action-${log.action}`);
-            actionCell.className = 'px-3 py-2 text-xs';
+            actionCell.className = 'log-cell';
             row.appendChild(actionCell);
-            
+
             // Type cell
             const typeCell = document.createElement('td');
             typeCell.textContent = formattedLog.typeLabel;
             typeCell.setAttribute('data-label', 'Tipe');
-            typeCell.className = 'px-3 py-2 text-xs';
+            typeCell.className = 'log-cell';
             row.appendChild(typeCell);
-            
+
             // Path cell
             const pathCell = document.createElement('td');
             pathCell.textContent = displayTarget;
             pathCell.setAttribute('data-label', 'Path');
             pathCell.classList.add('log-path');
-            pathCell.className = 'px-3 py-2 text-xs';
+            pathCell.className = 'log-cell';
             row.appendChild(pathCell);
-            
+
             // IP Address cell
             const ipAddressCell = document.createElement('td');
             ipAddressCell.textContent = log.ip_address || '-';
             ipAddressCell.setAttribute('data-label', 'IP Address');
             ipAddressCell.classList.add('log-ip-address');
-            ipAddressCell.className = 'px-3 py-2 text-xs';
+            ipAddressCell.className = 'log-cell';
             row.appendChild(ipAddressCell);
         }
-        
-        row.className = 'log-table-row border-b border-gray-200 text-gray-900';
+
+        row.className = 'log-table-row';
         logTableBody.appendChild(row);
     });
-    
-    console.log('[DEBUG] Rendered', logs.length, 'log entries');
 }
 
 /**
@@ -556,7 +552,7 @@ export function exportLogsToCSV(logs) {
     if (!logs || logs.length === 0) {
         return '';
     }
-    
+
     // Check if table structure includes IP Address or Target column
     const logTableBody = document.getElementById('log-table-body');
     let hasIpAddressColumn = false;
@@ -568,25 +564,25 @@ export function exportLogsToCSV(logs) {
         hasIpAddressColumn = headerCells.some(th => th.textContent.includes('IP Address'));
         hasTargetColumn = headerCells.some(th => th.textContent.includes('Target'));
     }
-    
+
     // CSV header based on table structure
     const headers = (hasIpAddressColumn && hasTargetColumn)
         ? ['Waktu', 'Aksi', 'Target', 'Tipe', 'IP Address']
         : ['Waktu', 'Aksi', 'Tipe', 'Path', 'IP Address'];
     let csv = headers.join(',') + '\n';
-    
+
     // CSV rows
     logs.forEach(log => {
         const formattedLog = formatLogEntry(log);
-        
+
         // Handle special display for bulk actions
         let displayTarget = log.target_path || '-';
-        
+
         if (log.action === 'bulk_trash') {
             // For bulk actions, show summary instead of individual filename
             displayTarget = log.filename || `${log.count || 0} items`;
         }
-        
+
         if (hasIpAddressColumn && hasTargetColumn) {
             // Structure from overlays.php (new responsive structure)
             const row = [
@@ -609,7 +605,7 @@ export function exportLogsToCSV(logs) {
             csv += row.join(',') + '\n';
         }
     });
-    
+
     return csv;
 }
 
@@ -631,14 +627,14 @@ export function exportLogsToJSON(logs) {
 export function downloadLogFile(content, filename, mimeType) {
     const blob = new Blob([content], { type: mimeType });
     const url = URL.createObjectURL(blob);
-    
+
     const link = document.createElement('a');
     link.href = url;
     link.download = filename;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
-    
+
     URL.revokeObjectURL(url);
     logInfo(`Logs exported to ${filename}`);
 }
@@ -656,45 +652,45 @@ export function applyLogFilter(state, fetchLogDataCallback) {
     const pathSearchInput = document.getElementById('log-path-search');
     const sortBySelect = document.getElementById('log-sort-by');
     const sortOrderSelect = document.getElementById('log-sort-order');
-    
+
     // Build filter object
     const filters = {};
-    
+
     if (filterSelect && filterSelect.value) {
         filters.log_action = filterSelect.value;
     }
-    
+
     if (startDateInput && startDateInput.value) {
         filters.start_date = startDateInput.value;
     }
-    
+
     if (endDateInput && endDateInput.value) {
         filters.end_date = endDateInput.value;
     }
-    
+
     if (targetTypeSelect && targetTypeSelect.value) {
         filters.target_type = targetTypeSelect.value;
     }
-    
+
     if (pathSearchInput && pathSearchInput.value) {
         filters.path_search = pathSearchInput.value;
     }
-    
+
     if (sortBySelect && sortBySelect.value) {
         filters.sort_by = sortBySelect.value;
     }
-    
+
     if (sortOrderSelect && sortOrderSelect.value) {
         filters.sort_order = sortOrderSelect.value;
     }
-    
+
     // Reset to first page when applying new filters
     state.logs.currentPage = 1;
     state.logs.activeFilters = filters;
-    
+
     // Add visual feedback for active filters
     updateActiveFiltersDisplay(filters);
-    
+
     // Fetch data with new filters
     if (fetchLogDataCallback) {
         fetchLogDataCallback(filters);
@@ -707,30 +703,34 @@ export function applyLogFilter(state, fetchLogDataCallback) {
  */
 export function updateActiveFiltersDisplay(filters) {
     const activeFiltersContainer = document.getElementById('active-filters-display');
-    if (!activeFiltersContainer) return;
-    
+    if (!activeFiltersContainer) {
+        return;
+    }
+
     // Clear existing badges
     activeFiltersContainer.innerHTML = '';
-    
+
     // If no filters, hide the container
     if (Object.keys(filters).length === 0) {
         activeFiltersContainer.style.display = 'none';
         return;
     }
-    
+
     // Show container and add badges for active filters
     activeFiltersContainer.style.display = 'flex';
-    
+
     // Create badge for each active filter
     Object.entries(filters).forEach(([key, value]) => {
-        if (!value) return;
-        
+        if (!value) {
+            return;
+        }
+
         const badge = document.createElement('div');
         badge.classList.add('active-filter-badge');
-        
+
         // Get readable label for the filter
         let label = '';
-        switch(key) {
+        switch (key) {
             case 'log_action':
                 label = `Action: ${value}`;
                 break;
@@ -755,9 +755,9 @@ export function updateActiveFiltersDisplay(filters) {
             default:
                 label = `${key}: ${value}`;
         }
-        
+
         badge.textContent = label;
-        
+
         // Add remove button
         const removeBtn = document.createElement('button');
         removeBtn.classList.add('remove-filter');
@@ -776,13 +776,13 @@ export function updateActiveFiltersDisplay(filters) {
                     inputElement.value = '';
                 }
             }
-            
+
             // Rebuild and re-apply filters
             const updatedFilters = { ...filters };
             delete updatedFilters[key];
             updateActiveFiltersDisplay(updatedFilters);
         });
-        
+
         badge.appendChild(removeBtn);
         activeFiltersContainer.appendChild(badge);
     });
@@ -800,7 +800,7 @@ export async function performLogCleanup(days, cleanupLogsCallback, onSuccess, on
     try {
         logInfo(`Starting log cleanup for logs older than ${days} days`);
         const result = await cleanupLogsCallback(days);
-        
+
         if (result.success) {
             const message = `Berhasil membersihkan ${result.deleted || 0} log entry`;
             logInfo(message);
@@ -830,7 +830,7 @@ export function setupLogAutoRefresh(state, fetchCallback, interval = 30000) {
         clearInterval(state.logs.refreshInterval);
         state.logs.refreshInterval = null;
     }
-    
+
     // Setup new interval
     state.logs.refreshInterval = setInterval(() => {
         if (state.logs.isOpen && !state.logs.isLoading) {
@@ -838,7 +838,7 @@ export function setupLogAutoRefresh(state, fetchCallback, interval = 30000) {
             fetchCallback();
         }
     }, interval);
-    
+
     logInfo(`Auto-refresh enabled with ${interval}ms interval`);
 }
 

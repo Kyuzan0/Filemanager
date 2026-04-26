@@ -3,7 +3,7 @@
  * Manages recent files history and user favorites with localStorage persistence
  */
 
-(function () {
+(function() {
     'use strict';
 
     // Configuration
@@ -72,7 +72,9 @@
      * @param {string} type - File type (file or directory)
      */
     function addToRecent(path, name, type = 'file') {
-        if (!path || !name) return;
+        if (!path || !name) {
+            return;
+        }
 
         // Remove if already exists
         recentFiles = recentFiles.filter(item => item.path !== path);
@@ -130,11 +132,12 @@
      * @param {string} type - File type (file or directory)
      */
     function addToFavorites(path, name, type = 'file') {
-        if (!path || !name) return;
+        if (!path || !name) {
+            return;
+        }
 
         // Check if already in favorites
         if (favorites.some(item => item.path === path)) {
-            console.log('[favorites-manager] Already in favorites:', path);
             return false;
         }
 
@@ -268,18 +271,24 @@
         const listEl = document.getElementById('recent-list');
         const emptyEl = document.getElementById('recent-empty');
 
-        if (!listEl) return;
+        if (!listEl) {
+            return;
+        }
 
         // Clear existing items (except empty message)
         const existingItems = listEl.querySelectorAll('.sidebar-section-item');
         existingItems.forEach(item => item.remove());
 
         if (recentFiles.length === 0) {
-            if (emptyEl) emptyEl.style.display = '';
+            if (emptyEl) {
+                emptyEl.style.display = '';
+            }
             return;
         }
 
-        if (emptyEl) emptyEl.style.display = 'none';
+        if (emptyEl) {
+            emptyEl.style.display = 'none';
+        }
 
         recentFiles.forEach(file => {
             const li = document.createElement('li');
@@ -309,18 +318,24 @@
         const listEl = document.getElementById('favorites-list');
         const emptyEl = document.getElementById('favorites-empty');
 
-        if (!listEl) return;
+        if (!listEl) {
+            return;
+        }
 
         // Clear existing items (except empty message)
         const existingItems = listEl.querySelectorAll('.sidebar-section-item');
         existingItems.forEach(item => item.remove());
 
         if (favorites.length === 0) {
-            if (emptyEl) emptyEl.style.display = '';
+            if (emptyEl) {
+                emptyEl.style.display = '';
+            }
             return;
         }
 
-        if (emptyEl) emptyEl.style.display = 'none';
+        if (emptyEl) {
+            emptyEl.style.display = 'none';
+        }
 
         favorites.forEach(file => {
             const li = document.createElement('li');
@@ -462,7 +477,6 @@
         renderRecentFiles();
         renderFavorites();
         initEventHandlers();
-        console.log('[favorites-manager] Initialized with', recentFiles.length, 'recent files and', favorites.length, 'favorites');
     }
 
     // Wait for DOM ready

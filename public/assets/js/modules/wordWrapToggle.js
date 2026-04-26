@@ -18,31 +18,31 @@ export function initWordWrapToggle() {
     const previewToggleButton = document.getElementById('previewWordWrapToggle');
     const appContainer = document.getElementById('app');
     const previewDialog = document.querySelector('.preview-dialog');
-    
+
     if (!mainToggleButton || !appContainer) {
         console.warn('[WordWrap] Main toggle button or app container not found');
     }
-    
+
     if (!previewToggleButton) {
         console.warn('[WordWrap] Preview toggle button not found');
     }
-    
+
     // Load saved preference
     const savedPreference = localStorage.getItem(WORD_WRAP_STORAGE_KEY);
     const isWordWrapEnabled = savedPreference === 'true';
-    
+
     // Apply initial state
     updateWordWrapState(isWordWrapEnabled);
-    
+
     // Add click event listeners
     if (mainToggleButton) {
         mainToggleButton.addEventListener('click', handleMainWordWrapToggle);
     }
-    
+
     if (previewToggleButton) {
         previewToggleButton.addEventListener('click', handlePreviewWordWrapToggle);
     }
-    
+
     // Store reference to CodeMirror editor for dynamic control
     if (window.CodeMirrorEditor) {
         // Override the init function to store editor reference
@@ -58,7 +58,7 @@ export function initWordWrapToggle() {
             return result;
         };
     }
-    
+
     console.log('[WordWrap] Initialized with state:', isWordWrapEnabled);
 }
 
@@ -68,22 +68,24 @@ export function initWordWrapToggle() {
 function handleMainWordWrapToggle() {
     const appContainer = document.getElementById('app');
     const toggleButton = document.getElementById('wordWrapToggle');
-    
-    if (!appContainer || !toggleButton) return;
-    
+
+    if (!appContainer || !toggleButton) {
+        return;
+    }
+
     // Toggle the word wrap state
     const isCurrentlyEnabled = appContainer.classList.contains('word-wrap-enabled');
     const newState = !isCurrentlyEnabled;
-    
+
     // Update UI state
     updateWordWrapState(newState);
-    
+
     // Save preference
     localStorage.setItem(WORD_WRAP_STORAGE_KEY, newState.toString());
-    
+
     // Show feedback
     showWordWrapFeedback(newState);
-    
+
     console.log('[WordWrap] Main toggled to:', newState);
 }
 
@@ -93,22 +95,24 @@ function handleMainWordWrapToggle() {
 function handlePreviewWordWrapToggle() {
     const previewDialog = document.querySelector('.preview-dialog');
     const toggleButton = document.getElementById('previewWordWrapToggle');
-    
-    if (!previewDialog || !toggleButton) return;
-    
+
+    if (!previewDialog || !toggleButton) {
+        return;
+    }
+
     // Toggle the word wrap state
     const isCurrentlyEnabled = previewDialog.classList.contains('word-wrap-enabled');
     const newState = !isCurrentlyEnabled;
-    
+
     // Update UI state for preview dialog
     updatePreviewWordWrapState(newState);
-    
+
     // Save preference
     localStorage.setItem(WORD_WRAP_STORAGE_KEY, newState.toString());
-    
+
     // Show feedback
     showWordWrapFeedback(newState);
-    
+
     console.log('[WordWrap] Preview toggled to:', newState);
 }
 
@@ -119,7 +123,7 @@ function handlePreviewWordWrapToggle() {
 function updateWordWrapState(isEnabled) {
     const appContainer = document.getElementById('app');
     const mainToggleButton = document.getElementById('wordWrapToggle');
-    
+
     // Update main app
     if (appContainer && mainToggleButton) {
         if (isEnabled) {
@@ -134,10 +138,10 @@ function updateWordWrapState(isEnabled) {
             mainToggleButton.title = 'Enable Word Wrap';
         }
     }
-    
+
     // Update preview dialog
     updatePreviewWordWrapState(isEnabled);
-    
+
     // Apply word wrap to CodeMirror editor
     applyCodeMirrorWordWrap(isEnabled);
 }
@@ -149,7 +153,7 @@ function updateWordWrapState(isEnabled) {
 function updatePreviewWordWrapState(isEnabled) {
     const previewDialog = document.querySelector('.preview-dialog');
     const previewToggleButton = document.getElementById('previewWordWrapToggle');
-    
+
     if (previewDialog && previewToggleButton) {
         if (isEnabled) {
             previewDialog.classList.add('word-wrap-enabled');
@@ -194,14 +198,14 @@ function showWordWrapFeedback(isEnabled) {
             opacity: 0;
             transition: opacity 0.3s ease;
         `;
-        
+
         document.body.appendChild(notification);
-        
+
         // Fade in
         setTimeout(() => {
             notification.style.opacity = '1';
         }, 10);
-        
+
         // Remove after 2 seconds
         setTimeout(() => {
             notification.style.opacity = '0';
@@ -257,11 +261,11 @@ function applyCodeMirrorWordWrap(isEnabled) {
             return; // No CodeMirror editor found
         }
     }
-    
+
     try {
         // Reconfigure the editor with or without line wrapping
         const { EditorView } = codeMirrorEditor.constructor.module || {};
-        
+
         if (isEnabled) {
             // Enable line wrapping
             codeMirrorEditor.dispatch({
@@ -273,15 +277,15 @@ function applyCodeMirrorWordWrap(isEnabled) {
                 effects: [EditorView.lineWrapping.of(false)]
             });
         }
-        
+
         console.log('[WordWrap] CodeMirror word wrap set to:', isEnabled);
     } catch (error) {
-        console.warn('[WordWrap] Failed to apply CodeMirror word wrap:', error);
-        
+        // Error handled silently
+
         // Fallback: manipulate CSS directly
         const cmContent = document.querySelector('.cm-content');
         const cmLines = document.querySelectorAll('.cm-line');
-        
+
         if (cmContent) {
             if (isEnabled) {
                 cmContent.style.whiteSpace = 'pre-wrap';
@@ -295,7 +299,7 @@ function applyCodeMirrorWordWrap(isEnabled) {
                 cmContent.style.wordBreak = 'normal';
             }
         }
-        
+
         cmLines.forEach(line => {
             if (isEnabled) {
                 line.style.whiteSpace = 'pre-wrap';

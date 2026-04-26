@@ -22,7 +22,7 @@ export function setupDragDropHandlers(
     if (tableBody) {
         setupDragListeners(tableBody, state, handleDrop, updateDropIndicator);
     }
-    
+
     // Setup for mobile list
     if (mobileList) {
         setupDragListeners(mobileList, state, handleDrop, updateDropIndicator);
@@ -76,12 +76,12 @@ export function handleDragStart(event, state) {
 
     // Add visual feedback
     row.classList.add('dragging');
-    
+
     // If multiple items are selected, show count
     if (state.dragState.draggedPaths.length > 1) {
         const dragImage = createDragImage(state.dragState.draggedPaths.length);
         event.dataTransfer.setDragImage(dragImage, 0, 0);
-        
+
         // Clean up drag image after a brief delay
         setTimeout(() => {
             if (dragImage.parentNode) {
@@ -90,7 +90,6 @@ export function handleDragStart(event, state) {
         }, 100);
     }
 
-    console.log('[DragHandlers] Drag started:', state.dragState.draggedPaths);
 }
 
 /**
@@ -127,7 +126,7 @@ function createDragImage(count) {
  */
 export function handleDragOver(event, state, updateDropIndicator) {
     event.preventDefault();
-    
+
     const row = event.target.closest('tr[data-path], .mobile-item[data-path]');
     if (!row) {
         event.dataTransfer.dropEffect = 'none';
@@ -153,11 +152,11 @@ export function handleDragOver(event, state, updateDropIndicator) {
 
     // Valid drop target
     event.dataTransfer.dropEffect = 'move';
-    
+
     // Update visual feedback
     clearDropHighlight();
     row.classList.add('drop-target');
-    
+
     if (updateDropIndicator) {
         updateDropIndicator(row, event);
     }
@@ -195,19 +194,20 @@ export function handleDropEvent(event, state, handleDrop) {
     clearDropHighlight();
 
     const row = event.target.closest('tr[data-path], .mobile-item[data-path]');
-    if (!row) return;
+    if (!row) {
+        return;
+    }
 
     const targetPath = row.dataset.path;
     const targetItem = state.itemMap.get(targetPath);
 
     if (!targetItem || targetItem.type !== 'folder') {
-        console.warn('[DragHandlers] Invalid drop target');
         return;
     }
 
     // Get dragged paths
     let draggedPaths = [];
-    
+
     if (state.dragState && state.dragState.draggedPaths) {
         draggedPaths = state.dragState.draggedPaths;
     } else {
@@ -215,18 +215,15 @@ export function handleDropEvent(event, state, handleDrop) {
             const data = event.dataTransfer.getData('text/plain');
             draggedPaths = JSON.parse(data);
         } catch (e) {
-            console.error('[DragHandlers] Failed to parse drag data:', e);
+            // Error handled silently
             return;
         }
     }
 
     // Can't drop on self
     if (draggedPaths.includes(targetPath)) {
-        console.warn('[DragHandlers] Cannot drop on self');
         return;
     }
-
-    console.log('[DragHandlers] Dropping', draggedPaths.length, 'items into', targetPath);
 
     // Call drop handler
     if (handleDrop) {
@@ -254,7 +251,6 @@ export function handleDragEnd(event, state) {
     // Clean up drag state
     cleanupDragState(state);
 
-    console.log('[DragHandlers] Drag ended');
 }
 
 /**
@@ -277,7 +273,9 @@ function cleanupDragState(state) {
  * @param {Object} options - Options
  */
 export function setupUploadDropZone(dropZone, handleFileUpload, options = {}) {
-    if (!dropZone) return;
+    if (!dropZone) {
+        return;
+    }
 
     const {
         highlightClass = 'upload-highlight',
@@ -290,11 +288,13 @@ export function setupUploadDropZone(dropZone, handleFileUpload, options = {}) {
     dropZone.addEventListener('dragenter', (event) => {
         event.preventDefault();
         dragCounter++;
-        
+
         // Check if dropping files (not internal drag)
         if (event.dataTransfer.types.includes('Files')) {
             dropZone.classList.add(highlightClass);
-            if (onDragEnter) onDragEnter(event);
+            if (onDragEnter) {
+                onDragEnter(event);
+            }
         }
     });
 
@@ -308,10 +308,12 @@ export function setupUploadDropZone(dropZone, handleFileUpload, options = {}) {
     dropZone.addEventListener('dragleave', (event) => {
         event.preventDefault();
         dragCounter--;
-        
+
         if (dragCounter === 0) {
             dropZone.classList.remove(highlightClass);
-            if (onDragLeave) onDragLeave(event);
+            if (onDragLeave) {
+                onDragLeave(event);
+            }
         }
     });
 
@@ -322,7 +324,6 @@ export function setupUploadDropZone(dropZone, handleFileUpload, options = {}) {
 
         const files = event.dataTransfer.files;
         if (files && files.length > 0) {
-            console.log('[DragHandlers] Files dropped:', files.length);
             if (handleFileUpload) {
                 handleFileUpload(files);
             }
@@ -337,7 +338,9 @@ export function setupUploadDropZone(dropZone, handleFileUpload, options = {}) {
  * @param {Object} options - Options
  */
 export function setupSortableDrag(container, onReorder, options = {}) {
-    if (!container) return;
+    if (!container) {
+        return;
+    }
 
     const {
         itemSelector = '[data-sortable]',
@@ -352,7 +355,7 @@ export function setupSortableDrag(container, onReorder, options = {}) {
     container.addEventListener('dragstart', (event) => {
         const handle = event.target.closest(handleSelector);
         const item = event.target.closest(itemSelector);
-        
+
         if (!item) {
             event.preventDefault();
             return;
@@ -366,7 +369,7 @@ export function setupSortableDrag(container, onReorder, options = {}) {
 
         draggedItem = item;
         initialIndex = Array.from(container.querySelectorAll(itemSelector)).indexOf(item);
-        
+
         item.classList.add(chosenClass);
         event.dataTransfer.effectAllowed = 'move';
         event.dataTransfer.setData('text/plain', initialIndex.toString());
@@ -374,18 +377,20 @@ export function setupSortableDrag(container, onReorder, options = {}) {
 
     container.addEventListener('dragover', (event) => {
         event.preventDefault();
-        
+
         const item = event.target.closest(itemSelector);
-        if (!item || item === draggedItem) return;
+        if (!item || item === draggedItem) {
+            return;
+        }
 
         const rect = item.getBoundingClientRect();
         const midY = rect.top + rect.height / 2;
-        
+
         // Clear previous ghost class
         container.querySelectorAll(`.${ghostClass}`).forEach(el => {
             el.classList.remove(ghostClass);
         });
-        
+
         // Determine insert position
         if (event.clientY < midY) {
             item.classList.add(ghostClass);
@@ -397,7 +402,9 @@ export function setupSortableDrag(container, onReorder, options = {}) {
     });
 
     container.addEventListener('dragend', (event) => {
-        if (!draggedItem) return;
+        if (!draggedItem) {
+            return;
+        }
 
         draggedItem.classList.remove(chosenClass);
         container.querySelectorAll(`.${ghostClass}`).forEach(el => {
@@ -423,7 +430,9 @@ export function setupSortableDrag(container, onReorder, options = {}) {
  * @param {Object} state - Application state
  */
 export function setupBreadcrumbDropZones(breadcrumbContainer, handleBreadcrumbDrop, state) {
-    if (!breadcrumbContainer) return;
+    if (!breadcrumbContainer) {
+        return;
+    }
 
     breadcrumbContainer.addEventListener('dragover', (event) => {
         const breadcrumb = event.target.closest('[data-path]');
@@ -446,16 +455,18 @@ export function setupBreadcrumbDropZones(breadcrumbContainer, handleBreadcrumbDr
 
     breadcrumbContainer.addEventListener('drop', (event) => {
         event.preventDefault();
-        
+
         const breadcrumb = event.target.closest('[data-path]');
-        if (!breadcrumb) return;
+        if (!breadcrumb) {
+            return;
+        }
 
         const targetPath = breadcrumb.dataset.path;
         breadcrumb.classList.remove('drop-target');
 
         // Get dragged paths
         let draggedPaths = [];
-        
+
         if (state.dragState && state.dragState.draggedPaths) {
             draggedPaths = state.dragState.draggedPaths;
         } else {

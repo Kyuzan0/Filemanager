@@ -79,8 +79,7 @@ async function renameItem(oldPath, newName) {
     const finalPath = parentPath ? `${parentPath}/${newName}` : newName;
 
     const url = `${API_BASE}?action=rename&path=${encodeURIComponent(oldPath)}`;
-    console.log('[renameItem] URL:', url);
-    console.log('[renameItem] Body:', { newName, newPath: finalPath });
+
 
     const response = await fetch(url, {
       method: 'POST',
@@ -91,9 +90,7 @@ async function renameItem(oldPath, newName) {
       })
     });
 
-    console.log('[renameItem] Response status:', response.status);
     const data = await response.json();
-    console.log('[renameItem] Response data:', data);
 
     if (!data.success) throw new Error(data.error || 'Rename failed');
 
@@ -362,7 +359,6 @@ function injectArchiveContextMenuItems() {
   contextMenu.insertBefore(compressBtn, lastDivider);
   contextMenu.insertBefore(extractBtn, lastDivider);
 
-  console.log('[enhanced-ui] Context menu items injected successfully');
 }
 
 // ============= UI Utilities =============
@@ -387,7 +383,7 @@ function showSuccess(msg) {
   if (typeof window.showToast === 'function') {
     window.showToast('success', msg);
   } else {
-    console.log(msg);
+
   }
 }
 
@@ -748,7 +744,7 @@ function renderPageNumbers(currentPage, totalPages) {
   if (totalPages <= 1) {
     // Single page - show "1" button
     const btn = document.createElement('button');
-    btn.className = 'page-num-btn px-2.5 py-1.5 rounded-md text-sm font-medium bg-blue-600 text-white';
+    btn.className = 'page-num-btn page-num-btn--active';
     btn.textContent = '1';
     btn.disabled = true;
     container.appendChild(btn);
@@ -760,15 +756,15 @@ function renderPageNumbers(currentPage, totalPages) {
   pageRange.forEach(p => {
     if (p === '...') {
       const dots = document.createElement('span');
-      dots.className = 'px-1.5 text-gray-400 dark:text-gray-500';
+      dots.className = 'page-dots';
       dots.textContent = '...';
       container.appendChild(dots);
     } else {
       const btn = document.createElement('button');
       const isActive = p === currentPage;
       btn.className = isActive
-        ? 'page-num-btn px-2.5 py-1.5 rounded-md text-sm font-medium bg-blue-600 text-white'
-        : 'page-num-btn px-2.5 py-1.5 rounded-md text-sm font-medium border border-slate-200 dark:border-white/10 dark:bg-slate-800 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors';
+        ? 'page-num-btn page-num-btn--active'
+        : 'page-num-btn page-num-btn--inactive';
       btn.textContent = p;
       btn.disabled = isActive;
 
@@ -815,17 +811,17 @@ function render() {
     upRow.dataset.path = parentPath;
     upRow.dataset.itemType = 'parent-shortcut';
     upRow.innerHTML = `
-      <td class="px-3 py-3"></td>
-      <td class="px-3 py-3">
-        <span class="file-name flex items-center gap-2 text-sm font-medium">
-          <span class="up-icon small" aria-hidden="true">←</span>
+      <td class="table-cell"></td>
+      <td class="table-cell">
+        <span class="file-name">
+          <span class="up-icon" aria-hidden="true">←</span>
           <span class="text-dark">Back</span>
         </span>
       </td>
-      <td class="px-3 py-3 text-sm text-slate-400 italic">Parent folder</td>
-      <td class="px-3 py-3 text-sm">-</td>
-      <td class="px-3 py-3 text-right text-sm">-</td>
-      <td class="px-3 py-3 text-sm"></td>
+      <td class="table-cell table-cell--small table-cell--italic">Parent folder</td>
+      <td class="table-cell table-cell--small">-</td>
+      <td class="table-cell table-cell--right table-cell--small">-</td>
+      <td class="table-cell table-cell--small"></td>
     `;
 
     const goUp = () => loadFiles(parentPath);
@@ -881,8 +877,6 @@ function render() {
     }
   }
 
-  console.log(`[render] Rendering ${pageItems.length} items (total: ${total})`);
-
   // Track last selected index for Shift+Click range selection
   let lastSelectedIndex = -1;
 
@@ -905,36 +899,36 @@ function render() {
       : getFileIcon(f.name, f.type);
 
     tr.innerHTML = `
-      <td class="px-3 py-3"><input type="checkbox" class="sel" data-path="${f.path}" ${checked ? 'checked' : ''}></td>
-      <td class="px-3 py-3"><span class="file-name file-icon-cell" title="${f.name}"><span class="file-icon ${iconData.type}" style="background-color: ${iconData.bg}; padding: 6px; border-radius: 6px;">${iconData.html}</span><span class="text-dark">${truncateFileName(f.name)}</span></span></td>
-      <td class="px-3 py-3 text-sm">${f.type}</td>
-      <td class="px-3 py-3 text-sm">${f.date}</td>
-      <td class="px-3 py-3 text-right text-sm">${f.size}</td>
-      <td class="px-3 py-3 text-sm">
-        <div class="row-actions inline-flex items-center gap-1 justify-end">
+      <td class="table-cell"><input type="checkbox" class="sel" data-path="${f.path}" ${checked ? 'checked' : ''}></td>
+      <td class="table-cell"><span class="file-name file-icon-cell" title="${f.name}"><span class="file-icon ${iconData.type}" style="background-color: ${iconData.bg}; padding: 6px; border-radius: 6px;">${iconData.html}</span><span class="text-dark">${truncateFileName(f.name)}</span></span></td>
+      <td class="table-cell table-cell--small">${f.type}</td>
+      <td class="table-cell table-cell--small">${f.date}</td>
+      <td class="table-cell table-cell--right table-cell--small">${f.size}</td>
+      <td class="table-cell table-cell--small">
+        <div class="row-actions">
           <!-- Desktop: Show all action buttons -->
-          <div class="hidden sm:flex items-center gap-1">
-            <button class="action-icon-btn p-1.5 rounded transition-colors hover:bg-gray-100 dark:hover:bg-white/10 text-blue-600 dark:text-blue-400" data-action="preview" data-path="${f.path}" title="Buka">
-              <i class="ri-folder-open-line text-base"></i>
+          <div class="hidden-mobile">
+            <button class="action-icon-btn action-icon-btn--blue" data-action="preview" data-path="${f.path}" title="Buka">
+              <i class="ri-folder-open-line"></i>
             </button>
             ${f.type === 'file' ? `
-            <button class="action-icon-btn p-1.5 rounded transition-colors hover:bg-gray-100 dark:hover:bg-white/10 text-green-600 dark:text-green-400" data-action="download" data-path="${f.path}" title="Unduh">
-              <i class="ri-download-line text-base"></i>
+            <button class="action-icon-btn action-icon-btn--green" data-action="download" data-path="${f.path}" title="Unduh">
+              <i class="ri-download-line"></i>
             </button>
             ` : ''}
-            <button class="action-icon-btn p-1.5 rounded transition-colors hover:bg-gray-100 dark:hover:bg-white/10 text-amber-600 dark:text-amber-400" data-action="rename" data-path="${f.path}" title="Ganti Nama">
-              <i class="ri-edit-line text-base"></i>
+            <button class="action-icon-btn action-icon-btn--amber" data-action="rename" data-path="${f.path}" title="Ganti Nama">
+              <i class="ri-edit-line"></i>
             </button>
-            <button class="action-icon-btn p-1.5 rounded transition-colors hover:bg-gray-100 dark:hover:bg-white/10 text-purple-600 dark:text-purple-400" data-action="move" data-path="${f.path}" title="Pindahkan">
-              <i class="ri-folder-transfer-line text-base"></i>
+            <button class="action-icon-btn action-icon-btn--purple" data-action="move" data-path="${f.path}" title="Pindahkan">
+              <i class="ri-folder-transfer-line"></i>
             </button>
-            <button class="action-icon-btn p-1.5 rounded transition-colors hover:bg-gray-100 dark:hover:bg-white/10 text-red-500 dark:text-red-400" data-action="delete" data-path="${f.path}" title="Hapus">
-              <i class="ri-delete-bin-line text-base"></i>
+            <button class="action-icon-btn action-icon-btn--red" data-action="delete" data-path="${f.path}" title="Hapus">
+              <i class="ri-delete-bin-line"></i>
             </button>
           </div>
           <!-- Mobile: Show more button -->
-          <button class="mobile-more-btn sm:hidden p-1.5 rounded transition-colors hover:bg-gray-100 dark:hover:bg-white/10 text-gray-600 dark:text-gray-400" data-path="${f.path}" data-type="${f.type}" data-name="${f.name}" title="Menu">
-            <i class="ri-more-2-fill text-lg"></i>
+          <button class="mobile-more-btn hidden-desktop" data-path="${f.path}" data-type="${f.type}" data-name="${f.name}" title="Menu">
+            <i class="ri-more-2-fill"></i>
           </button>
         </div>
       </td>
@@ -1171,7 +1165,7 @@ function showMobileContextMenu(event, fileData) {
 
   const menu = document.createElement('div');
   menu.id = 'mobile-context-menu';
-  menu.className = 'mobile-context-menu fixed z-50 bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 py-1 min-w-[160px]';
+  menu.className = 'mobile-context-menu';
 
   // Check if file is archive
   const isArchive = fileData.name && isArchiveFile(fileData.name);
@@ -1180,28 +1174,28 @@ function showMobileContextMenu(event, fileData) {
   const isFavorited = window.FavoritesManager && window.FavoritesManager.isFavorite(fileData.path);
 
   const menuItems = [
-    { action: 'preview', icon: 'ri-folder-open-line', label: 'Buka', color: 'text-blue-600 dark:text-blue-400' },
-    ...(fileData.type === 'file' ? [{ action: 'download', icon: 'ri-download-line', label: 'Unduh', color: 'text-green-600 dark:text-green-400' }] : []),
-    { action: 'rename', icon: 'ri-edit-line', label: 'Ganti Nama', color: 'text-amber-600 dark:text-amber-400' },
-    { action: 'move', icon: 'ri-folder-transfer-line', label: 'Pindahkan', color: 'text-purple-600 dark:text-purple-400' },
+    { action: 'preview', icon: 'ri-folder-open-line', label: 'Buka', color: 'icon--blue' },
+    ...(fileData.type === 'file' ? [{ action: 'download', icon: 'ri-download-line', label: 'Unduh', color: 'icon--green' }] : []),
+    { action: 'rename', icon: 'ri-edit-line', label: 'Ganti Nama', color: 'icon--amber' },
+    { action: 'move', icon: 'ri-folder-transfer-line', label: 'Pindahkan', color: 'icon--purple' },
     { divider: true },
-    { action: 'favorite', icon: isFavorited ? 'ri-star-fill' : 'ri-star-line', label: isFavorited ? 'Hapus dari Favorit' : 'Tambah ke Favorit', color: 'text-yellow-500 dark:text-yellow-400' },
-    { action: 'compress', icon: 'ri-file-zip-line', label: 'Kompres ke ZIP', color: 'text-indigo-600 dark:text-indigo-400' },
-    ...(isArchive ? [{ action: 'extract', icon: 'ri-folder-zip-line', label: 'Ekstrak di Sini', color: 'text-teal-600 dark:text-teal-400' }] : []),
+    { action: 'favorite', icon: isFavorited ? 'ri-star-fill' : 'ri-star-line', label: isFavorited ? 'Hapus dari Favorit' : 'Tambah ke Favorit', color: 'icon--yellow' },
+    { action: 'compress', icon: 'ri-file-zip-line', label: 'Kompres ke ZIP', color: 'icon--indigo' },
+    ...(isArchive ? [{ action: 'extract', icon: 'ri-folder-zip-line', label: 'Ekstrak di Sini', color: 'icon--teal' }] : []),
     { divider: true },
-    { action: 'details', icon: 'ri-information-line', label: 'Detail', color: 'text-blue-500 dark:text-blue-400' },
+    { action: 'details', icon: 'ri-information-line', label: 'Detail', color: 'icon--blue' },
     { divider: true },
-    { action: 'delete', icon: 'ri-delete-bin-line', label: 'Hapus', color: 'text-red-500 dark:text-red-400' }
+    { action: 'delete', icon: 'ri-delete-bin-line', label: 'Hapus', color: 'icon--red' }
   ];
 
   menu.innerHTML = menuItems.map(item => {
     if (item.divider) {
-      return '<div class="border-t border-gray-200 dark:border-gray-700 my-1"></div>';
+      return '<div class="mobile-context-divider"></div>';
     }
     return `
-      <button class="mobile-context-item w-full flex items-center gap-3 px-4 py-2.5 text-left hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors" data-action="${item.action}">
-        <i class="${item.icon} ${item.color} text-lg"></i>
-        <span class="text-sm text-gray-700 dark:text-gray-200">${item.label}</span>
+      <button class="mobile-context-item" data-action="${item.action}">
+        <i class="${item.icon} ${item.color}"></i>
+        <span>${item.label}</span>
       </button>
     `;
   }).join('');
@@ -1505,12 +1499,10 @@ let eventHandlersInitialized = false;
 function initializeEventHandlers() {
   // Prevent duplicate initialization
   if (eventHandlersInitialized) {
-    console.log('[enhanced-ui] Event handlers already initialized, skipping');
+
     return;
   }
   eventHandlersInitialized = true;
-
-  console.log('[enhanced-ui] Initializing event handlers');
 
   // Close context menus
   document.addEventListener('click', (e) => {
@@ -1623,8 +1615,8 @@ function initializeEventHandlers() {
       }
     } else if (action === 'details') {
       // Open details overlay
-      console.log('[enhanced-ui] details action triggered, fileData:', fileData);
-      console.log('[enhanced-ui] window.openDetailsOverlay:', typeof window.openDetailsOverlay);
+
+
       if (window.openDetailsOverlay) {
         window.openDetailsOverlay({ ...fileData, path });
       } else {
@@ -1764,10 +1756,10 @@ function initializeEventHandlers() {
     const totalMB = (total / 1024 / 1024).toFixed(2);
 
     fileList.innerHTML = `
-      <div class="bg-blue-50 dark:bg-blue-900/20 p-3 rounded-lg">
-        <p class="font-medium text-blue-900 dark:text-blue-100">${files.length} file dipilih</p>
-        <p class="text-sm text-blue-700 dark:text-blue-300">Total: ${totalMB} MB</p>
-        <ul class="text-xs text-blue-700 dark:text-blue-300 mt-2 space-y-1">
+      <div class="upload-file-list">
+        <p class="upload-file-list__title">${files.length} file dipilih</p>
+        <p class="upload-file-list__subtitle">Total: ${totalMB} MB</p>
+        <ul class="upload-file-list__items">
           ${files.slice(0, 3).map(f => `<li>• ${f.name}</li>`).join('')}
           ${files.length > 3 ? `<li>• ... dan ${files.length - 3} file lainnya</li>` : ''}
         </ul>
@@ -1884,16 +1876,16 @@ function initializeEventHandlers() {
   // Drag and drop support
   fileDropZone?.addEventListener('dragover', (e) => {
     e.preventDefault();
-    fileDropZone.classList.add('border-blue-400', 'bg-blue-50', 'dark:bg-blue-900/20', 'dark:border-blue-500');
+    fileDropZone.classList.add('drop-zone--active');
   });
 
   fileDropZone?.addEventListener('dragleave', () => {
-    fileDropZone.classList.remove('border-blue-400', 'bg-blue-50', 'dark:bg-blue-900/20', 'dark:border-blue-500');
+    fileDropZone.classList.remove('drop-zone--active');
   });
 
   fileDropZone?.addEventListener('drop', (e) => {
     e.preventDefault();
-    fileDropZone.classList.remove('border-blue-400', 'bg-blue-50', 'dark:bg-blue-900/20', 'dark:border-blue-500');
+    fileDropZone.classList.remove('drop-zone--active');
     if (e.dataTransfer.files.length > 0) {
       fileInput.files = e.dataTransfer.files;
       const event = new Event('change', { bubbles: true });
@@ -1990,7 +1982,7 @@ function initializeEventHandlers() {
         <div class="card-upload-modal__footer">
           <button id="cardUploadCancel" class="btn">Batal</button>
           <button id="cardUploadStart" class="btn btn-primary">
-            <span class="flex items-center gap-1.5">
+            <span class="flex items-center gap-1\.5">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" class="text-white"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path><path d="M17 8l-5-5-5 5M12 3v12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg>
               Upload
             </span>
@@ -2029,7 +2021,7 @@ function initializeEventHandlers() {
       const cancelBtn = document.getElementById('cardUploadCancel');
       if (uploadBtn) {
         uploadBtn.disabled = true;
-        uploadBtn.innerHTML = '<span class="flex items-center gap-1.5">Mengupload...</span>';
+        uploadBtn.innerHTML = '<span class="flex items-center gap-1\.5">Mengupload...</span>';
       }
       if (cancelBtn) cancelBtn.disabled = true;
 
@@ -2070,11 +2062,11 @@ function initializeEventHandlers() {
 
           if (progressEl) {
             progressEl.style.width = '100%';
-            progressEl.classList.add(isUploaded ? 'bg-green-500' : 'bg-red-500');
+            progressEl.classList.add('progress-success');
           }
           if (statusEl) {
             statusEl.textContent = isUploaded ? 'Selesai ✓' : 'Gagal ✗';
-            statusEl.classList.add(isUploaded ? 'text-green-600' : 'text-red-600');
+            statusEl.classList.add(isUploaded ? 'status-success' : 'status-error');
           }
         });
 
@@ -2101,11 +2093,11 @@ function initializeEventHandlers() {
           const statusEl = row?.querySelector('.card-upload-status');
           if (progressEl) {
             progressEl.style.width = '100%';
-            progressEl.classList.add('bg-red-500');
+            progressEl.classList.add('progress-error');
           }
           if (statusEl) {
             statusEl.textContent = 'Gagal ✗';
-            statusEl.classList.add('text-red-600');
+            statusEl.classList.add('status-error');
           }
         });
 
@@ -2202,31 +2194,31 @@ function initializeEventHandlers() {
   function getFileIconColor(ext) {
     const colorMap = {
       // Images
-      'jpg': { bgClass: 'bg-red-100 dark:bg-red-900/30', strokeClass: 'text-red-500' },
-      'jpeg': { bgClass: 'bg-red-100 dark:bg-red-900/30', strokeClass: 'text-red-500' },
-      'png': { bgClass: 'bg-red-100 dark:bg-red-900/30', strokeClass: 'text-red-500' },
-      'gif': { bgClass: 'bg-red-100 dark:bg-red-900/30', strokeClass: 'text-red-500' },
-      'svg': { bgClass: 'bg-red-100 dark:bg-red-900/30', strokeClass: 'text-red-500' },
-      'webp': { bgClass: 'bg-red-100 dark:bg-red-900/30', strokeClass: 'text-red-500' },
+      'jpg': { bgClass: 'icon-bg--red', strokeClass: 'icon-stroke--red' },
+      'jpeg': { bgClass: 'icon-bg--red', strokeClass: 'icon-stroke--red' },
+      'png': { bgClass: 'icon-bg--red', strokeClass: 'icon-stroke--red' },
+      'gif': { bgClass: 'icon-bg--red', strokeClass: 'icon-stroke--red' },
+      'svg': { bgClass: 'icon-bg--red', strokeClass: 'icon-stroke--red' },
+      'webp': { bgClass: 'icon-bg--red', strokeClass: 'icon-stroke--red' },
       // Code
-      'js': { bgClass: 'bg-yellow-100 dark:bg-yellow-900/30', strokeClass: 'text-yellow-500' },
-      'ts': { bgClass: 'bg-blue-100 dark:bg-blue-900/30', strokeClass: 'text-blue-500' },
-      'php': { bgClass: 'bg-purple-100 dark:bg-purple-900/30', strokeClass: 'text-purple-500' },
-      'html': { bgClass: 'bg-orange-100 dark:bg-orange-900/30', strokeClass: 'text-orange-500' },
-      'css': { bgClass: 'bg-sky-100 dark:bg-sky-900/30', strokeClass: 'text-sky-500' },
-      'json': { bgClass: 'bg-yellow-100 dark:bg-yellow-900/30', strokeClass: 'text-yellow-500' },
+      'js': { bgClass: 'icon-bg--yellow', strokeClass: 'icon-stroke--yellow' },
+      'ts': { bgClass: 'icon-bg--blue', strokeClass: 'icon-stroke--blue' },
+      'php': { bgClass: 'icon-bg--purple', strokeClass: 'icon-stroke--purple' },
+      'html': { bgClass: 'icon-bg--orange', strokeClass: 'icon-stroke--orange' },
+      'css': { bgClass: 'icon-bg--sky', strokeClass: 'icon-stroke--sky' },
+      'json': { bgClass: 'icon-bg--yellow', strokeClass: 'icon-stroke--yellow' },
       // Documents
-      'pdf': { bgClass: 'bg-red-100 dark:bg-red-900/30', strokeClass: 'text-red-600' },
-      'doc': { bgClass: 'bg-blue-100 dark:bg-blue-900/30', strokeClass: 'text-blue-600' },
-      'docx': { bgClass: 'bg-blue-100 dark:bg-blue-900/30', strokeClass: 'text-blue-600' },
-      'xls': { bgClass: 'bg-green-100 dark:bg-green-900/30', strokeClass: 'text-green-600' },
-      'xlsx': { bgClass: 'bg-green-100 dark:bg-green-900/30', strokeClass: 'text-green-600' },
+      'pdf': { bgClass: 'icon-bg--red', strokeClass: 'icon-stroke--red' },
+      'doc': { bgClass: 'icon-bg--blue', strokeClass: 'icon-stroke--blue' },
+      'docx': { bgClass: 'icon-bg--blue', strokeClass: 'icon-stroke--blue' },
+      'xls': { bgClass: 'icon-bg--green', strokeClass: 'icon-stroke--green' },
+      'xlsx': { bgClass: 'icon-bg--green', strokeClass: 'icon-stroke--green' },
       // Archives
-      'zip': { bgClass: 'bg-amber-100 dark:bg-amber-900/30', strokeClass: 'text-amber-600' },
-      'rar': { bgClass: 'bg-amber-100 dark:bg-amber-900/30', strokeClass: 'text-amber-600' },
-      '7z': { bgClass: 'bg-amber-100 dark:bg-amber-900/30', strokeClass: 'text-amber-600' },
+      'zip': { bgClass: 'icon-bg--amber', strokeClass: 'icon-stroke--amber' },
+      'rar': { bgClass: 'icon-bg--amber', strokeClass: 'icon-stroke--amber' },
+      '7z': { bgClass: 'icon-bg--amber', strokeClass: 'icon-stroke--amber' },
     };
-    return colorMap[ext] || { bgClass: 'bg-gray-100 dark:bg-gray-700', strokeClass: 'text-gray-500' };
+    return colorMap[ext] || { bgClass: 'icon-bg--gray', strokeClass: 'icon-stroke--gray' };
   }
 
   // Helper: format file size
@@ -2257,32 +2249,32 @@ function initializeEventHandlers() {
           if (data.success) {
             if (progressEl) {
               progressEl.style.width = '100%';
-              progressEl.classList.add('bg-green-500');
+              progressEl.classList.add('progress-success');
             }
             if (statusEl) {
               statusEl.textContent = 'Selesai ✓';
-              statusEl.classList.add('text-green-600');
+              statusEl.classList.add('status-success');
             }
             resolve({ success: true, data });
           } else {
             if (progressEl) {
               progressEl.style.width = '100%';
-              progressEl.classList.add('bg-red-500');
+              progressEl.classList.add('progress-error');
             }
             if (statusEl) {
               statusEl.textContent = `Gagal: ${data.error || 'error'}`;
-              statusEl.classList.add('text-red-600');
+              statusEl.classList.add('status-error');
             }
             resolve({ success: false, error: data.error || 'Server error' });
           }
         } catch (err) {
           if (progressEl) {
             progressEl.style.width = '100%';
-            progressEl.classList.add('bg-red-500');
+            progressEl.classList.add('progress-error');
           }
           if (statusEl) {
             statusEl.textContent = 'Gagal: Invalid response';
-            statusEl.classList.add('text-red-600');
+            statusEl.classList.add('status-error');
           }
           resolve({ success: false, error: 'Invalid response' });
         }
@@ -2291,11 +2283,11 @@ function initializeEventHandlers() {
       xhr.onerror = function () {
         if (progressEl) {
           progressEl.style.width = '100%';
-          progressEl.classList.add('bg-red-500');
+          progressEl.classList.add('progress-error');
         }
         if (statusEl) {
           statusEl.textContent = 'Gagal: Network error';
-          statusEl.classList.add('text-red-600');
+          statusEl.classList.add('status-error');
         }
         resolve({ success: false, error: 'Network error' });
       };
@@ -2419,7 +2411,7 @@ function initializeEventHandlers() {
       if (window.openPreviewModal) {
         window.openPreviewModal(path, file.name);
       } else {
-        console.log('Preview modal not available, file:', file.name);
+
       }
     }
   });
@@ -2432,12 +2424,10 @@ let appInitialized = false;
 document.addEventListener('DOMContentLoaded', async () => {
   // Prevent duplicate initialization
   if (appInitialized) {
-    console.log('[enhanced-ui] App already initialized, skipping');
+
     return;
   }
   appInitialized = true;
-
-  console.log('[enhanced-ui] Starting app initialization');
 
   // Initialize DOM references
   tbody = document.getElementById('tbody');
@@ -2458,8 +2448,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
     return;
   }
-
-  console.log('[enhanced-ui] DOM elements initialized successfully');
 
   // Export functions and state to window for use by modals-handler
   window.loadFiles = loadFiles;
@@ -2490,3 +2478,5 @@ document.addEventListener('DOMContentLoaded', async () => {
   // Load files
   await loadFiles('');
 });
+
+

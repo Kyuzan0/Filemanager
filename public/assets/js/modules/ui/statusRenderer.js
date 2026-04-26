@@ -93,8 +93,10 @@ export function updateSelectionUI(btnDeleteSelected, btnMoveSelected, selectAllC
  * @param {Object} state - Application state
  */
 export function syncRowSelection(tableBody, state) {
-    if (!tableBody) return;
-    
+    if (!tableBody) {
+        return;
+    }
+
     tableBody.querySelectorAll('tr').forEach((row) => {
         const path = row.dataset.itemPath;
         const isSelected = state.selected.has(path);
@@ -112,8 +114,10 @@ export function syncRowSelection(tableBody, state) {
  * @param {Object} state - Application state
  */
 export function syncMobileSelection(mobileList, state) {
-    if (!mobileList) return;
-    
+    if (!mobileList) {
+        return;
+    }
+
     // Mobile items are divs with data-item-path attribute and contain checkboxes
     mobileList.querySelectorAll('[data-item-path]').forEach((item) => {
         const checkbox = item.querySelector('input[type="checkbox"]');
@@ -194,22 +198,18 @@ export function updateStatus(statusInfo, statusTime, statusFilter, totalCount, f
  * @param {boolean} isLoading - Whether loading is active
  */
 export function setLoading(loaderOverlay, btnRefresh, isLoading) {
-    const startTime = performance.now();
-    console.log('[PAGINATION DEBUG] setLoading called at:', startTime, 'with isLoading:', isLoading);
-    
     // Handle loader overlay
-    const overlayTime = performance.now();
     if (loaderOverlay && loaderOverlay.classList) {
         loaderOverlay.classList.toggle('visible', !!isLoading);
     } else {
         // Fallback: try common selectors if passed element is null
         const overlay = document.getElementById('loader-overlay') || document.querySelector('.loader-overlay');
-        if (overlay && overlay.classList) overlay.classList.toggle('visible', !!isLoading);
+        if (overlay && overlay.classList) {
+            overlay.classList.toggle('visible', !!isLoading);
+        }
     }
-    console.log('[PAGINATION DEBUG] Loader overlay updated at:', overlayTime, 'delta:', overlayTime - startTime);
-    
+
     // Handle refresh button
-    const buttonTime = performance.now();
     if (btnRefresh) {
         try {
             btnRefresh.disabled = !!isLoading;
@@ -217,10 +217,6 @@ export function setLoading(loaderOverlay, btnRefresh, isLoading) {
             // Element exists but cannot be disabled — ignore safely
         }
     }
-    console.log('[PAGINATION DEBUG] Refresh button updated at:', buttonTime, 'delta:', buttonTime - overlayTime);
-    
-    const endTime = performance.now();
-    console.log('[PAGINATION DEBUG] setLoading completed at:', endTime, 'total delta:', endTime - startTime);
 }
 
 /**
@@ -229,8 +225,10 @@ export function setLoading(loaderOverlay, btnRefresh, isLoading) {
  * @param {string} message - Error message (null to clear)
  */
 export function setError(errorBanner, message) {
-    if (!errorBanner) return;
-    
+    if (!errorBanner) {
+        return;
+    }
+
     if (message) {
         errorBanner.textContent = message;
         errorBanner.classList.add('visible', 'error');
@@ -248,30 +246,32 @@ export function setError(errorBanner, message) {
  * @param {number} duration - Duration in milliseconds
  */
 export function flashStatus(statusElement, message, type = 'info', duration = 3000) {
-    if (!statusElement) return;
-    
+    if (!statusElement) {
+        return;
+    }
+
     const originalText = statusElement.textContent;
     const originalClasses = [...statusElement.classList];
-    
+
     // Set flash message
     statusElement.textContent = message;
-    statusElement.classList.remove('text-gray-600', 'text-green-600', 'text-red-600');
-    
+    statusElement.classList.remove('status-default', 'status-success', 'status-error');
+
     switch (type) {
         case 'success':
-            statusElement.classList.add('text-green-600');
+            statusElement.classList.add('status-success');
             break;
         case 'error':
-            statusElement.classList.add('text-red-600');
+            statusElement.classList.add('status-error');
             break;
         default:
-            statusElement.classList.add('text-gray-600');
+            statusElement.classList.add('status-default');
     }
-    
+
     // Restore original after duration
     setTimeout(() => {
         statusElement.textContent = originalText;
-        statusElement.classList.remove('text-gray-600', 'text-green-600', 'text-red-600');
+        statusElement.classList.remove('status-default', 'status-success', 'status-error');
         originalClasses.forEach(cls => {
             if (!statusElement.classList.contains(cls)) {
                 statusElement.classList.add(cls);
@@ -286,8 +286,10 @@ export function flashStatus(statusElement, message, type = 'info', duration = 30
  * @param {number} count - Number of selected items
  */
 export function updateSelectionCount(countElement, count) {
-    if (!countElement) return;
-    
+    if (!countElement) {
+        return;
+    }
+
     if (count > 0) {
         countElement.textContent = `${count.toLocaleString('id-ID')} dipilih`;
         countElement.classList.remove('hidden');
@@ -304,27 +306,29 @@ export function updateSelectionCount(countElement, count) {
  * @returns {HTMLElement} - Spinner element for removal
  */
 export function showSpinner(container, message = 'Memuat...') {
-    if (!container) return null;
-    
+    if (!container) {
+        return null;
+    }
+
     const spinner = document.createElement('div');
-    spinner.classList.add('spinner-overlay', 'fixed', 'inset-0', 'flex', 'items-center', 'justify-center', 'bg-black/30', 'z-50');
-    
+    spinner.classList.add('spinner-overlay');
+
     const content = document.createElement('div');
-    content.classList.add('spinner-content', 'bg-white', 'dark:bg-gray-800', 'rounded-lg', 'p-6', 'shadow-xl', 'flex', 'flex-col', 'items-center', 'gap-4');
-    
+    content.classList.add('spinner-content');
+
     const icon = document.createElement('div');
-    icon.classList.add('spinner-icon', 'w-8', 'h-8', 'border-4', 'border-primary', 'border-t-transparent', 'rounded-full', 'animate-spin');
-    
+    icon.classList.add('spinner-icon');
+
     const text = document.createElement('p');
-    text.classList.add('text-sm', 'text-gray-600', 'dark:text-gray-300');
+    text.classList.add('spinner-text');
     text.textContent = message;
-    
+
     content.appendChild(icon);
     content.appendChild(text);
     spinner.appendChild(content);
-    
+
     container.appendChild(spinner);
-    
+
     return spinner;
 }
 
@@ -346,20 +350,22 @@ export function hideSpinner(spinner) {
  * @param {string} label - Optional label
  */
 export function updateProgress(progressElement, current, total, label = '') {
-    if (!progressElement) return;
-    
+    if (!progressElement) {
+        return;
+    }
+
     const percentage = total > 0 ? Math.round((current / total) * 100) : 0;
-    
+
     const progressBar = progressElement.querySelector('.progress-bar');
     if (progressBar) {
         progressBar.style.width = `${percentage}%`;
     }
-    
+
     const progressText = progressElement.querySelector('.progress-text');
     if (progressText) {
         progressText.textContent = label || `${current} / ${total} (${percentage}%)`;
     }
-    
+
     progressElement.setAttribute('aria-valuenow', current);
     progressElement.setAttribute('aria-valuemax', total);
 }

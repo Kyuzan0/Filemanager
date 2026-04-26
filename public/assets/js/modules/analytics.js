@@ -2,7 +2,7 @@
  * Analytics Module
  * Privacy-respecting analytics for file operations tracking.
  * All data is stored locally - no external services.
- * 
+ *
  * @module analytics
  */
 
@@ -39,28 +39,28 @@ export const EventType = {
     FILE_DOWNLOAD: 'file_download',
     FILE_SAVE: 'file_save',
     FILE_PREVIEW: 'file_preview',
-    
+
     // Folder operations
     FOLDER_CREATE: 'folder_create',
     FOLDER_DELETE: 'folder_delete',
     FOLDER_RENAME: 'folder_rename',
     FOLDER_MOVE: 'folder_move',
-    
+
     // Navigation
     DIRECTORY_CHANGE: 'directory_change',
     SEARCH_QUERY: 'search_query',
     BREADCRUMB_CLICK: 'breadcrumb_click',
-    
+
     // Errors
     API_ERROR: 'api_error',
     UPLOAD_ERROR: 'upload_error',
     VALIDATION_ERROR: 'validation_error',
-    
+
     // Performance
     PAGE_LOAD: 'page_load',
     API_RESPONSE: 'api_response',
     RENDER_TIME: 'render_time',
-    
+
     // UI
     THEME_CHANGE: 'theme_change',
     VIEW_MODE_CHANGE: 'view_mode_change',
@@ -98,7 +98,7 @@ const initSession = () => {
         if (stored) {
             const session = JSON.parse(stored);
             const elapsed = Date.now() - session.lastActivity;
-            
+
             if (elapsed < SESSION_TIMEOUT) {
                 sessionId = session.id;
                 sessionStart = session.start;
@@ -109,23 +109,23 @@ const initSession = () => {
     } catch (e) {
         console.warn('Failed to restore session:', e);
     }
-    
+
     // Create new session
     sessionId = generateSessionId();
     sessionStart = Date.now();
-    
+
     const session = {
         id: sessionId,
         start: sessionStart,
         lastActivity: Date.now()
     };
-    
+
     try {
         sessionStorage.setItem(SESSION_KEY, JSON.stringify(session));
     } catch (e) {
         console.warn('Failed to save session:', e);
     }
-    
+
     return session;
 };
 
@@ -150,7 +150,9 @@ const updateSessionActivity = () => {
  * @returns {number} Duration in seconds
  */
 export const getSessionDuration = () => {
-    if (!sessionStart) return 0;
+    if (!sessionStart) {
+        return 0;
+    }
     return Math.round((Date.now() - sessionStart) / 1000);
 };
 
@@ -171,7 +173,7 @@ const loadAnalyticsData = () => {
     } catch (e) {
         console.warn('Failed to load analytics data:', e);
     }
-    
+
     return {
         events: [],
         stats: {
@@ -193,11 +195,11 @@ const saveAnalyticsData = (data) => {
         if (data.events.length > MAX_EVENTS) {
             data.events = data.events.slice(-MAX_EVENTS);
         }
-        
+
         localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
     } catch (e) {
-        console.warn('Failed to save analytics data:', e);
-        
+        // Error handled silently
+
         // Try to clear old events and retry
         try {
             data.events = data.events.slice(-100);
@@ -219,10 +221,12 @@ const saveAnalyticsData = (data) => {
  * @param {Object} data - Additional event data
  */
 export const trackEvent = (type, category, data = {}) => {
-    if (!analyticsEnabled) return;
-    
+    if (!analyticsEnabled) {
+        return;
+    }
+
     updateSessionActivity();
-    
+
     const event = {
         id: Date.now().toString(36) + Math.random().toString(36).substr(2, 5),
         type,
@@ -231,14 +235,14 @@ export const trackEvent = (type, category, data = {}) => {
         sessionId,
         data: sanitizeEventData(data)
     };
-    
+
     const analytics = loadAnalyticsData();
     analytics.events.push(event);
     analytics.stats.totalEvents++;
     analytics.stats.lastSeen = Date.now();
-    
+
     saveAnalyticsData(analytics);
-    
+
     // Debug logging in development
     if (window.DEBUG_ANALYTICS) {
         console.log('[Analytics]', type, category, data);
@@ -252,19 +256,19 @@ export const trackEvent = (type, category, data = {}) => {
  */
 const sanitizeEventData = (data) => {
     const sanitized = { ...data };
-    
+
     // Remove potentially sensitive fields
     delete sanitized.content;
     delete sanitized.password;
     delete sanitized.token;
-    
+
     // Truncate long strings
     Object.keys(sanitized).forEach(key => {
         if (typeof sanitized[key] === 'string' && sanitized[key].length > 200) {
             sanitized[key] = sanitized[key].substring(0, 200) + '...';
         }
     });
-    
+
     return sanitized;
 };
 
@@ -497,16 +501,18 @@ export const trackValidationError = (field, reason) => {
  * Track page load performance
  */
 export const trackPageLoad = () => {
-    if (pageLoadTime) return; // Already tracked
-    
+    if (pageLoadTime) {
+        return;
+    } // Already tracked
+
     pageLoadTime = Date.now();
-    
+
     // Use Performance API if available
     if (window.performance && window.performance.timing) {
         const timing = window.performance.timing;
         const loadTime = timing.loadEventEnd - timing.navigationStart;
         const domReady = timing.domContentLoadedEventEnd - timing.navigationStart;
-        
+
         if (loadTime > 0) {
             trackEvent(EventType.PAGE_LOAD, EventCategory.PERFORMANCE, {
                 loadTime,
@@ -604,24 +610,24 @@ export const trackKeyboardShortcut = (shortcut, action) => {
 export const getStatistics = () => {
     const analytics = loadAnalyticsData();
     const events = analytics.events;
-    
+
     // Count events by type
     const eventCounts = {};
     events.forEach(event => {
         eventCounts[event.type] = (eventCounts[event.type] || 0) + 1;
     });
-    
+
     // Count events by category
     const categoryCounts = {};
     events.forEach(event => {
         categoryCounts[event.category] = (categoryCounts[event.category] || 0) + 1;
     });
-    
+
     // Get recent errors
     const recentErrors = events
         .filter(e => e.category === EventCategory.ERROR)
         .slice(-10);
-    
+
     // Calculate average API response time
     const apiResponses = events
         .filter(e => e.type === EventType.API_RESPONSE && e.data.duration)
@@ -629,7 +635,7 @@ export const getStatistics = () => {
     const avgApiTime = apiResponses.length > 0
         ? Math.round(apiResponses.reduce((a, b) => a + b, 0) / apiResponses.length)
         : 0;
-    
+
     // Get file type distribution
     const fileTypes = {};
     events
@@ -638,12 +644,12 @@ export const getStatistics = () => {
             const ext = e.data.extension.toLowerCase();
             fileTypes[ext] = (fileTypes[ext] || 0) + 1;
         });
-    
+
     // Calculate date range
     const timestamps = events.map(e => e.timestamp);
     const firstEvent = timestamps.length > 0 ? Math.min(...timestamps) : null;
     const lastEvent = timestamps.length > 0 ? Math.max(...timestamps) : null;
-    
+
     return {
         totalEvents: events.length,
         eventCounts,
@@ -671,27 +677,27 @@ export const getStatistics = () => {
 export const getEvents = (filters = {}) => {
     const analytics = loadAnalyticsData();
     let events = analytics.events;
-    
+
     if (filters.type) {
         events = events.filter(e => e.type === filters.type);
     }
-    
+
     if (filters.category) {
         events = events.filter(e => e.category === filters.category);
     }
-    
+
     if (filters.since) {
         events = events.filter(e => e.timestamp >= filters.since);
     }
-    
+
     if (filters.until) {
         events = events.filter(e => e.timestamp <= filters.until);
     }
-    
+
     if (filters.limit) {
         events = events.slice(-filters.limit);
     }
-    
+
     return events;
 };
 
@@ -722,7 +728,7 @@ export const clearData = () => {
     } catch (e) {
         console.warn('Failed to clear analytics data:', e);
     }
-    
+
     // Reinitialize session
     initSession();
 };
@@ -757,7 +763,9 @@ export const isEnabled = () => analyticsEnabled;
  * @returns {string|null} File extension or null
  */
 const getExtension = (filename) => {
-    if (!filename) return null;
+    if (!filename) {
+        return null;
+    }
     const parts = filename.split('.');
     return parts.length > 1 ? parts.pop().toLowerCase() : null;
 };
@@ -771,7 +779,7 @@ const getExtension = (filename) => {
  */
 export const init = () => {
     initSession();
-    
+
     // Track page load after window loads
     if (document.readyState === 'complete') {
         setTimeout(trackPageLoad, 0);
@@ -780,7 +788,7 @@ export const init = () => {
             setTimeout(trackPageLoad, 100);
         });
     }
-    
+
     // Increment session count on first load
     const analytics = loadAnalyticsData();
     if (!sessionStorage.getItem('session_counted')) {
@@ -809,40 +817,40 @@ export default {
     trackFileDownload,
     trackFileSave,
     trackFilePreview,
-    
+
     // Navigation
     trackDirectoryChange,
     trackSearch,
     trackBreadcrumbClick,
-    
+
     // Errors
     trackApiError,
     trackUploadError,
     trackValidationError,
-    
+
     // Performance
     trackPageLoad,
     trackApiResponse,
     trackRenderTime,
     startTimer,
-    
+
     // UI
     trackThemeChange,
     trackViewModeChange,
     trackKeyboardShortcut,
-    
+
     // Statistics
     getStatistics,
     getEvents,
     getSessionDuration,
-    
+
     // Management
     exportData,
     clearData,
     enable,
     disable,
     isEnabled,
-    
+
     // Constants
     EventCategory,
     EventType

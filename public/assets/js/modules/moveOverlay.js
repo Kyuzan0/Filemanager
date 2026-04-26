@@ -67,7 +67,7 @@ export function openMoveOverlay(paths) {
             elements.movePath.focus();
         }
     } else {
-        console.error('[MOVE_OVERLAY] Cannot open overlay: moveOverlay element not found');
+        // Error handled silently
         return;
     }
 
@@ -121,17 +121,17 @@ async function loadMoveDirectory(path) {
         }
 
         const data = await response.json();
-        
+
         if (!data.success) {
             throw new Error(data.message || 'Gagal memuat direktori');
         }
 
         // Filter hanya folder
         const folders = data.items.filter(item => item.type === 'folder');
-        
+
         // Store all folders for search functionality
         allFolders = folders;
-        
+
         // Render folder list (with current search query if any)
         if (currentSearchQuery) {
             const filteredFolders = filterFolders(folders, currentSearchQuery);
@@ -139,12 +139,12 @@ async function loadMoveDirectory(path) {
         } else {
             renderMoveFolderList(folders, path);
         }
-        
+
         // Update current path display
         if (elements.movePath) {
             elements.movePath.value = path;
         }
-        
+
         updateState({
             move: {
                 ...state.move,
@@ -152,24 +152,24 @@ async function loadMoveDirectory(path) {
                 targetPath: path
             }
         });
-        
+
         if (elements.moveSubmit) {
             elements.moveSubmit.disabled = false;
         }
         if (elements.movePath) {
             elements.movePath.disabled = false;
         }
-        
+
     } catch (error) {
         modalLogger.error('Failed to load move directory', error);
-        updateState({ 
-            move: { 
-                ...state.move, 
-                isLoading: false, 
-                error: error.message 
-            } 
+        updateState({
+            move: {
+                ...state.move,
+                isLoading: false,
+                error: error.message
+            }
         });
-        
+
         if (elements.moveHint) {
             elements.moveHint.textContent = `Error: ${error.message}`;
             elements.moveHint.classList.add('error');
@@ -194,16 +194,16 @@ function renderMoveFolderList(folders, currentPath) {
         console.error('[MOVE_OVERLAY] Cannot render folder list: moveFolderList element not found');
         return;
     }
-    
+
     elements.moveFolderList.innerHTML = '';
-    
+
     // Add parent directory option (if not at root)
     if (currentPath !== '') {
         const parentPath = currentPath.split('/').slice(0, -1).join('/');
         const parentItem = createMoveFolderItem('..', parentPath, 'folder-parent');
         elements.moveFolderList.appendChild(parentItem);
     }
-    
+
     // Add folders
     folders.forEach(folder => {
         const folderPath = currentPath === '' ? folder.name : `${currentPath}/${folder.name}`;
@@ -220,35 +220,37 @@ function renderMoveFolderList(folders, currentPath) {
  * @returns {HTMLElement} Elemen folder item
  */
 function createMoveFolderItem(name, path, className) {
-const item = document.createElement('div');
-item.classList.add('move-folder-item');
-if (className && className.trim()) {
-    className.trim().split(/\s+/).forEach(c => {
-        if (c) item.classList.add(c);
-    });
-}
-item.dataset.path = path;
+    const item = document.createElement('div');
+    item.classList.add('move-folder-item');
+    if (className && className.trim()) {
+        className.trim().split(/\s+/).forEach(c => {
+            if (c) {
+                item.classList.add(c);
+            }
+        });
+    }
+    item.dataset.path = path;
 
-const icon = document.createElement('div');
-icon.classList.add('move-folder-icon');
-icon.innerHTML = `
+    const icon = document.createElement('div');
+    icon.classList.add('move-folder-icon');
+    icon.innerHTML = `
     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
         <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
     </svg>
 `;
 
-const label = document.createElement('div');
-label.classList.add('move-folder-label');
-label.textContent = name;
-    
+    const label = document.createElement('div');
+    label.classList.add('move-folder-label');
+    label.textContent = name;
+
     item.appendChild(icon);
     item.appendChild(label);
-    
+
     // Add click handler
     item.addEventListener('click', () => {
         loadMoveDirectory(path);
     });
-    
+
     // Add keyboard navigation
     item.tabIndex = 0;
     item.addEventListener('keydown', (event) => {
@@ -257,7 +259,7 @@ label.textContent = name;
             loadMoveDirectory(path);
         }
     });
-    
+
     return item;
 }
 
@@ -270,7 +272,7 @@ export async function moveItems() {
     }
 
     const targetPath = elements.movePath ? encodePathSegments(elements.movePath.value) : state.move.targetPath || state.currentPath;
-    
+
     // Validate target path
     if (!targetPath) {
         if (elements.moveHint) {
@@ -316,7 +318,7 @@ export async function moveItems() {
         const formData = new FormData();
         formData.append('action', 'move');
         formData.append('target', targetPath);
-        
+
         state.move.paths.forEach((path, index) => {
             formData.append(`paths[${index}]`, path);
         });
@@ -334,27 +336,27 @@ export async function moveItems() {
 
         // Success - add to recent destinations
         addRecentDestination(targetPath);
-        
+
         modalLogger.info('Items moved successfully', {
             paths: state.move.paths,
             targetPath
         });
-        
+
         closeMoveOverlay();
-        
+
         // Refresh current directory
         await fetchDirectory(state.currentPath);
-        
+
     } catch (error) {
         modalLogger.error('Failed to move items', error);
-        updateState({ 
-            move: { 
-                ...state.move, 
-                isLoading: false, 
-                error: error.message 
-            } 
+        updateState({
+            move: {
+                ...state.move,
+                isLoading: false,
+                error: error.message
+            }
         });
-        
+
         if (elements.moveHint) {
             elements.moveHint.textContent = `Error: ${error.message}`;
             elements.moveHint.classList.add('error');
@@ -449,14 +451,14 @@ export function setupMoveOverlayHandlers() {
     } else {
         console.warn('[MOVE_OVERLAY] moveFolderList element not found');
     }
-    
+
     // Search input handler - only if search input exists
     const moveSearchInput = document.getElementById('move-search');
     if (moveSearchInput) {
         moveSearchInput.addEventListener('input', (event) => {
             handleMoveSearch(event.target.value);
         });
-        
+
         // Clear search on escape
         moveSearchInput.addEventListener('keydown', (event) => {
             if (event.key === 'Escape') {
@@ -467,7 +469,7 @@ export function setupMoveOverlayHandlers() {
     } else {
         console.warn('[MOVE_OVERLAY] move-search element not found');
     }
-    
+
     // Root shortcut handler - navigate to root directory
     if (elements.moveRootShortcut) {
         elements.moveRootShortcut.addEventListener('click', (event) => {
@@ -480,7 +482,7 @@ export function setupMoveOverlayHandlers() {
     } else {
         console.warn('[MOVE_OVERLAY] moveRootShortcut element not found');
     }
-    
+
     // Current shortcut handler - navigate to current directory
     if (elements.moveCurrentShortcut) {
         elements.moveCurrentShortcut.addEventListener('click', (event) => {
@@ -501,16 +503,16 @@ export function setupMoveOverlayHandlers() {
  */
 function handleMoveSearch(query) {
     currentSearchQuery = query.toLowerCase().trim();
-    
+
     // Get current path from state
     const currentPath = state.move.targetPath || state.currentPath;
-    
+
     // Filter folders based on search query
     const filteredFolders = filterFolders(allFolders, currentSearchQuery);
-    
+
     // Re-render folder list with filtered results
     renderMoveFolderList(filteredFolders, currentPath);
-    
+
     // Show/hide "no results" message
     const folderList = elements.moveFolderList;
     if (folderList && currentSearchQuery && filteredFolders.length === 0) {
@@ -537,7 +539,7 @@ function filterFolders(folders, query) {
     if (!query) {
         return folders;
     }
-    
+
     return folders.filter(folder => {
         return folder.name.toLowerCase().includes(query);
     });
@@ -597,16 +599,16 @@ function addRecentDestination(path) {
 
     try {
         let recents = [...(state.move.recents || [])];
-        
+
         // Remove path if already exists (to move it to front)
         recents = recents.filter(r => r !== path);
-        
+
         // Add to front
         recents.unshift(path);
-        
+
         // Keep only MAX_RECENTS items
         recents = recents.slice(0, MAX_RECENTS);
-        
+
         // Update state
         updateState({
             move: {
@@ -614,10 +616,10 @@ function addRecentDestination(path) {
                 recents: recents
             }
         });
-        
+
         // Save to localStorage
         saveMoveRecentsToStorage();
-        
+
         modalLogger.info('Added recent destination', { path, totalRecents: recents.length });
     } catch (error) {
         modalLogger.error('Failed to add recent destination', error);
@@ -629,23 +631,23 @@ function addRecentDestination(path) {
  */
 function updateMoveRecentsUI() {
     const recentsContainer = document.getElementById('move-recents');
-    
+
     if (!recentsContainer) {
         console.warn('[MOVE_OVERLAY] move-recents element not found, skipping UI update');
         return;
     }
-    
+
     const recents = state.move.recents || [];
-    
+
     if (recents.length === 0) {
         recentsContainer.hidden = true;
         recentsContainer.innerHTML = '';
         return;
     }
-    
+
     recentsContainer.hidden = false;
     recentsContainer.innerHTML = '';
-    
+
     // Create title
     const title = document.createElement('div');
     title.classList.add('move-recents-title');
@@ -659,7 +661,7 @@ function updateMoveRecentsUI() {
         letter-spacing: 0.5px;
     `;
     recentsContainer.appendChild(title);
-    
+
     // Create list container
     const listContainer = document.createElement('div');
     listContainer.classList.add('move-recents-list');
@@ -668,7 +670,7 @@ function updateMoveRecentsUI() {
         flex-direction: column;
         gap: 4px;
     `;
-    
+
     // Add each recent destination
     recents.forEach((path, index) => {
         const item = document.createElement('button');
@@ -689,7 +691,7 @@ function updateMoveRecentsUI() {
             text-align: left;
             width: 100%;
         `;
-        
+
         // Icon
         const icon = document.createElement('span');
         icon.classList.add('move-recent-icon');
@@ -704,7 +706,7 @@ function updateMoveRecentsUI() {
             display: flex;
             align-items: center;
         `;
-        
+
         // Label
         const label = document.createElement('span');
         label.classList.add('move-recent-label');
@@ -717,26 +719,26 @@ function updateMoveRecentsUI() {
             text-overflow: ellipsis;
             white-space: nowrap;
         `;
-        
+
         item.appendChild(icon);
         item.appendChild(label);
-        
+
         // Click handler
         item.addEventListener('click', () => {
             loadMoveDirectory(path);
         });
-        
+
         // Hover effect
         item.addEventListener('mouseenter', () => {
             item.style.background = 'var(--hover, #f5f5f5)';
             item.style.borderColor = 'var(--primary, #2196F3)';
         });
-        
+
         item.addEventListener('mouseleave', () => {
             item.style.background = 'var(--surface, #fff)';
             item.style.borderColor = 'var(--border, #e0e0e0)';
         });
-        
+
         // Keyboard navigation
         item.tabIndex = 0;
         item.addEventListener('keydown', (event) => {
@@ -745,13 +747,12 @@ function updateMoveRecentsUI() {
                 loadMoveDirectory(path);
             }
         });
-        
+
         listContainer.appendChild(item);
     });
-    
+
     recentsContainer.appendChild(listContainer);
-    
-    modalLogger.info('Updated recent destinations UI', { count: recents.length });
+
 }
 
 /**

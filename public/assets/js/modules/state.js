@@ -103,10 +103,10 @@ export function optimisticUpdate(updateFn, rollbackFn) {
         itemMap: new Map(state.itemMap),
         selected: new Set(state.selected)
     };
-    
+
     // Perform the optimistic update
     updateFn();
-    
+
     // Return rollback function
     return () => {
         if (optimisticSnapshot && rollbackFn) {
@@ -115,10 +115,10 @@ export function optimisticUpdate(updateFn, rollbackFn) {
             state.visibleItems = optimisticSnapshot.visibleItems;
             state.itemMap = optimisticSnapshot.itemMap;
             state.selected = optimisticSnapshot.selected;
-            
+
             // Call custom rollback function
             rollbackFn();
-            
+
             // Clear snapshot
             optimisticSnapshot = null;
         }
@@ -137,19 +137,15 @@ export function commitOptimisticUpdate() {
  * @param {Object} updates - Objek berisi properti yang akan diupdate
  */
 export function updateState(updates) {
-    const startTime = performance.now();
-    console.log('[PAGINATION DEBUG] updateState called at:', startTime, 'with keys:', Object.keys(updates));
-    
     // Deep merge untuk nested objects
-    const mergeTime = performance.now();
     Object.keys(updates).forEach(key => {
         const value = updates[key];
         // Check if value is a plain object (not null, not array, not Set, not Map)
         // We must treat Set and Map as atomic values, otherwise { ...set } becomes {}
-        const isPlainObject = typeof value === 'object' && 
-                              value !== null && 
-                              !Array.isArray(value) && 
-                              !(value instanceof Set) && 
+        const isPlainObject = typeof value === 'object' &&
+                              value !== null &&
+                              !Array.isArray(value) &&
+                              !(value instanceof Set) &&
                               !(value instanceof Map);
 
         if (isPlainObject) {
@@ -162,10 +158,6 @@ export function updateState(updates) {
             state[key] = value;
         }
     });
-    console.log('[PAGINATION DEBUG] State merged at:', mergeTime, 'delta:', mergeTime - startTime);
-    
-    const endTime = performance.now();
-    console.log('[PAGINATION DEBUG] updateState completed at:', endTime, 'total delta:', endTime - startTime);
 }
 
 /**
@@ -173,17 +165,27 @@ export function updateState(updates) {
  */
 let stateUpdateLock = false;
 
+/** Maximum retry attempts before forcing the update */
+const MAX_LOCK_RETRIES = 50; // 50 * 10ms = 500ms max wait
+
 /**
- * Mengupdate state dengan locking untuk mencegah race conditions
+ * Mengupdate state dengan locking untuk mencegah race conditions.
+ * Will retry up to MAX_LOCK_RETRIES times (10ms intervals) before
+ * forcing the update to prevent infinite retry loops.
  * @param {Object} updates - Objek berisi properti yang akan diupdate
+ * @param {number} [_retryCount=0] - Internal retry counter
  */
-export function updateStateLocked(updates) {
+export function updateStateLocked(updates, _retryCount = 0) {
     if (stateUpdateLock) {
-        console.warn('[STATE] State update in progress, queuing update:', updates);
-        setTimeout(() => updateStateLocked(updates), 10);
-        return;
+        if (_retryCount >= MAX_LOCK_RETRIES) {
+            // Force unlock after max retries to prevent stuck state
+            stateUpdateLock = false;
+        } else {
+            setTimeout(() => updateStateLocked(updates, _retryCount + 1), 10);
+            return;
+        }
     }
-    
+
     stateUpdateLock = true;
     try {
         updateState(updates);
@@ -210,7 +212,7 @@ export function setStateValue(path, value) {
     const keys = path.split('.');
     const lastKey = keys.pop();
     const target = keys.reduce((obj, key) => obj && obj[key], state);
-    
+
     if (target && lastKey) {
         target[lastKey] = value;
     }
@@ -235,7 +237,7 @@ export function resetState() {
     state.selected.clear();
     state.visibleItems = [];
     state.itemMap.clear();
-    
+
     // Reset preview state
     state.preview.isOpen = false;
     state.preview.lastFocusedElement = null;
@@ -244,7 +246,7 @@ export function resetState() {
     state.preview.dirty = false;
     state.preview.isSaving = false;
     state.preview.mode = 'text';
-    
+
     // Reset other states
     state.confirm.isOpen = false;
     state.confirm.paths = [];

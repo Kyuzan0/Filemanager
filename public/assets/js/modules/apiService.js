@@ -21,8 +21,9 @@ import {
 // Create context-specific error handler
 const apiErrorHandler = createErrorHandler('API');
 
-// Global AbortController for request cancellation
-let currentAbortController = null;
+// AbortController for directory fetch cancellation
+// Only used by fetchDirectory() to cancel previous navigation requests
+let directoryAbortController = null;
 
 // Default configuration
 const DEFAULT_TIMEOUT = 30000; // 30 seconds
@@ -33,13 +34,13 @@ const DEFAULT_RETRY_OPTIONS = {
 };
 
 /**
- * Cancel any pending API request
+ * Cancel any pending directory fetch request.
+ * Only affects fetchDirectory() — other API calls use independent controllers.
  */
 export function cancelPendingRequests() {
-    if (currentAbortController) {
-        currentAbortController.abort();
-        currentAbortController = null;
-        console.log('[API] Previous request cancelled');
+    if (directoryAbortController) {
+        directoryAbortController.abort();
+        directoryAbortController = null;
     }
 }
 
@@ -53,7 +54,7 @@ export function cancelPendingRequests() {
 async function fetchWithTimeout(url, options = {}, timeout = DEFAULT_TIMEOUT) {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), timeout);
-    
+
     try {
         const response = await fetch(url, {
             ...options,
@@ -73,7 +74,7 @@ async function fetchWithTimeout(url, options = {}, timeout = DEFAULT_TIMEOUT) {
  */
 async function parseResponse(response, context = '') {
     let data = null;
-    
+
     try {
         data = await response.json();
     } catch (parseError) {
@@ -88,7 +89,7 @@ async function parseResponse(response, context = '') {
             }
         );
     }
-    
+
     return data;
 }
 
@@ -103,16 +104,16 @@ function validateResponse(response, data, defaultErrorMessage, context = '') {
     if (!response.ok) {
         const errorMessage = data?.error || `${defaultErrorMessage} (HTTP ${response.status})`;
         const category = response.status >= 500 ? ErrorCategory.SERVER :
-                        response.status === 404 ? ErrorCategory.NOT_FOUND :
-                        response.status === 403 || response.status === 401 ? ErrorCategory.PERMISSION :
-                        ErrorCategory.FILE_OPERATION;
-        
+            response.status === 404 ? ErrorCategory.NOT_FOUND :
+                response.status === 403 || response.status === 401 ? ErrorCategory.PERMISSION :
+                    ErrorCategory.FILE_OPERATION;
+
         throw new FileManagerError(errorMessage, category, {
             context,
             details: { status: response.status, data }
         });
     }
-    
+
     if (!data || typeof data !== 'object') {
         throw new FileManagerError(
             'Respons tidak valid',
@@ -120,7 +121,7 @@ function validateResponse(response, data, defaultErrorMessage, context = '') {
             { context, details: { data } }
         );
     }
-    
+
     if (!data.success && data.error) {
         throw new FileManagerError(
             data.error,
@@ -145,14 +146,14 @@ export async function fetchDirectory(path = '', options = {}) {
         timeout = DEFAULT_TIMEOUT,
         retry = true
     } = options;
-    
-    // Cancel any pending request before starting a new one
+
+    // Cancel any pending directory fetch before starting a new one
     cancelPendingRequests();
-    
-    // Create new AbortController for this request
-    currentAbortController = new AbortController();
-    const signal = currentAbortController.signal;
-    
+
+    // Create new AbortController for this directory fetch
+    directoryAbortController = new AbortController();
+    const signal = directoryAbortController.signal;
+
     const fetchOperation = async () => {
         const encodedPath = encodePathSegments(path);
         // Add timestamp to prevent caching on mobile devices
@@ -161,13 +162,13 @@ export async function fetchDirectory(path = '', options = {}) {
             { signal },
             timeout
         );
-        
+
         const data = await parseResponse(response, 'fetchDirectory');
         validateResponse(response, data, errorMessages.fetchFailed, 'fetchDirectory');
 
         return data;
     };
-    
+
     try {
         // Apply retry logic if enabled
         const operation = retry
@@ -176,20 +177,21 @@ export async function fetchDirectory(path = '', options = {}) {
                 context: 'fetchDirectory',
                 shouldRetry: (error) => {
                     // Don't retry if aborted
-                    if (error.name === 'AbortError') return false;
+                    if (error.name === 'AbortError') {
+                        return false;
+                    }
                     return isRetryableError(error);
                 }
             })
             : fetchOperation;
-        
+
         return await operation();
     } catch (error) {
         // Don't log or throw if request was cancelled
         if (error.name === 'AbortError') {
-            console.log('[API] Request aborted for path:', path);
             return null;
         }
-        
+
         // Handle error with optional notification
         if (!silent) {
             apiErrorHandler(error, { silent });
@@ -199,8 +201,8 @@ export async function fetchDirectory(path = '', options = {}) {
         throw error;
     } finally {
         // Clear controller if this was the current one
-        if (currentAbortController && currentAbortController.signal === signal) {
-            currentAbortController = null;
+        if (directoryAbortController && directoryAbortController.signal === signal) {
+            directoryAbortController = null;
         }
     }
 }
@@ -215,7 +217,7 @@ export async function fetchDirectory(path = '', options = {}) {
  */
 export async function deleteItems(paths, options = {}) {
     const { silent = false, timeout = DEFAULT_TIMEOUT } = options;
-    
+
     try {
         const response = await fetchWithTimeout(
             'api.php?action=delete',
@@ -252,12 +254,7 @@ export async function deleteItems(paths, options = {}) {
  */
 export async function moveItem(sourcePath, targetPath, options = {}) {
     const { silent = false, timeout = DEFAULT_TIMEOUT } = options;
-    
-    console.log('[API] moveItem called with:', {
-        sourcePath,
-        targetPath
-    });
-    
+
     try {
         const response = await fetchWithTimeout(
             'api.php?action=move',
@@ -273,10 +270,10 @@ export async function moveItem(sourcePath, targetPath, options = {}) {
             },
             timeout
         );
-        
+
         const data = await parseResponse(response, 'moveItem');
         validateResponse(response, data, errorMessages.moveFailed, 'moveItem');
-        
+
         return data;
     } catch (error) {
         if (!silent) {
@@ -298,7 +295,7 @@ export async function moveItem(sourcePath, targetPath, options = {}) {
  */
 export async function renameItem(oldPath, newName, newPath, options = {}) {
     const { silent = false, timeout = DEFAULT_TIMEOUT } = options;
-    
+
     try {
         const response = await fetchWithTimeout(
             `api.php?action=rename&path=${encodePathSegments(oldPath)}`,
@@ -314,10 +311,10 @@ export async function renameItem(oldPath, newName, newPath, options = {}) {
             },
             timeout
         );
-        
+
         const data = await parseResponse(response, 'renameItem');
         validateResponse(response, data, errorMessages.renameFailed, 'renameItem');
-        
+
         return data;
     } catch (error) {
         if (!silent) {
@@ -339,7 +336,7 @@ export async function renameItem(oldPath, newName, newPath, options = {}) {
  */
 export async function createItem(path, type, name, options = {}) {
     const { silent = false, timeout = DEFAULT_TIMEOUT } = options;
-    
+
     try {
         const response = await fetchWithTimeout(
             `api.php?action=create&path=${encodePathSegments(path)}`,
@@ -355,10 +352,10 @@ export async function createItem(path, type, name, options = {}) {
             },
             timeout
         );
-        
+
         const data = await parseResponse(response, 'createItem');
         validateResponse(response, data, errorMessages.createFailed, 'createItem');
-        
+
         return data;
     } catch (error) {
         if (!silent) {
@@ -383,7 +380,7 @@ export async function uploadFiles(formData, options = {}) {
         timeout = 300000, // 5 minutes for uploads
         onProgress = null
     } = options;
-    
+
     try {
         // For upload, we use regular fetch but with timeout
         const response = await fetchWithTimeout(
@@ -422,20 +419,20 @@ export async function fetchFileContent(path, options = {}) {
         timeout = DEFAULT_TIMEOUT,
         retry = true
     } = options;
-    
+
     const fetchOperation = async () => {
         const response = await fetchWithTimeout(
             `api.php?action=content&path=${encodePathSegments(path)}&_=${Date.now()}`,
             {},
             timeout
         );
-        
+
         const data = await parseResponse(response, 'fetchFileContent');
         validateResponse(response, data, 'Gagal memuat file', 'fetchFileContent');
 
         return data;
     };
-    
+
     try {
         // Apply retry logic if enabled
         const operation = retry
@@ -445,7 +442,7 @@ export async function fetchFileContent(path, options = {}) {
                 context: 'fetchFileContent'
             })
             : fetchOperation;
-        
+
         return await operation();
     } catch (error) {
         if (!silent) {
@@ -466,7 +463,7 @@ export async function fetchFileContent(path, options = {}) {
  */
 export async function saveFileContent(path, content, options = {}) {
     const { silent = false, timeout = DEFAULT_TIMEOUT } = options;
-    
+
     try {
         const response = await fetchWithTimeout(
             `api.php?action=save&path=${encodePathSegments(path)}`,

@@ -22,7 +22,7 @@
 }
 
 .move-overlay.hidden {
-  display: none !important;
+  display: none;
 }
 
 .move-overlay[aria-hidden="false"],
@@ -344,7 +344,7 @@
 .move-button.outline {
   background: #ffffff;
   border: 1px solid #e5e7eb;
-  outline: none !important;
+  outline: none;
   color: #475569;
   padding: 0.625rem 1rem;
 }
@@ -522,7 +522,7 @@
 [data-theme="dark"] .move-button.outline {
   background: rgba(255, 255, 255, 0.05);
   border: 1px solid rgba(229, 231, 235, 0.4);
-  outline: none !important;
+  outline: none;
   color: #cbd5e1;
 }
 
@@ -552,14 +552,24 @@
    EMPTY STATE
    ============================================================================ */
 
-.move-list-empty {
+.move-list-empty,
+.move-list-loading,
+.move-list-error {
   display: flex;
-  flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 2rem 1rem;
+  padding: 0.75rem;
   text-align: center;
-  color: #94a3b8;
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+}
+
+.move-list-loading {
+  color: var(--muted);
+}
+
+.move-list-error {
+  color: var(--danger);
 }
 
 .move-list-empty-icon {
@@ -572,6 +582,18 @@
 .move-list-empty-text {
   font-size: 0.875rem;
   font-weight: 500;
+}
+
+/* Breadcrumb link styling */
+.move-breadcrumb-link {
+  color: var(--accent);
+  cursor: pointer;
+  transition: color 0.15s ease;
+}
+
+.move-breadcrumb-link:hover {
+  color: var(--accent-hover);
+  text-decoration: underline;
 }
 
 [data-theme="dark"] .move-list-empty {

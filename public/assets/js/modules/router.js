@@ -3,7 +3,7 @@
  * Handles sidebar navigation by opening modals/overlays instead of page navigation
  */
 
-(function () {
+(function() {
     'use strict';
 
     const SmoothNav = {
@@ -67,7 +67,7 @@
                         break;
 
                     default:
-                        console.warn('Unknown nav target:', page);
+                        // Unknown nav target
                 }
 
                 // Update active menu item

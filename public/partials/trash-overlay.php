@@ -1,53 +1,53 @@
 <!-- Trash Overlay Modal -->
-<div class="trash-overlay fixed inset-0 items-center justify-center bg-black/45 p-2 md:p-4 z-50 hidden"
+<div class="trash-overlay hidden"
     id="trash-overlay" aria-hidden="true">
-    <div class="trash-dialog bg-white dark:bg-[#1a2332] rounded-lg shadow-lg w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col"
+    <div class="trash-dialog d-flex flex-col"
         role="dialog" aria-modal="true" aria-labelledby="trash-title">
         <header
-            class="trash-header bg-gradient-to-r from-red-50 to-red-50 dark:from-red-900/30 dark:to-red-900/20 border-b border-gray-100 dark:border-white/10 px-6 py-4 flex items-center gap-4 flex-shrink-0">
-            <div class="trash-icon w-12 h-12 rounded-full bg-red-100 dark:bg-red-500/20 text-red-600 dark:text-red-400 flex items-center justify-center flex-shrink-0"
+            class="trash-header flex-shrink-0">
+            <div class="trash-icon"
                 aria-hidden="true">
                 <svg viewBox="0 0 24 24" fill="currentColor" class="w-6 h-6">
                     <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z" />
                 </svg>
             </div>
             <div class="trash-title-group">
-                <h2 class="trash-title text-base font-semibold text-gray-900 dark:text-slate-200" id="trash-title">Trash
+                <h2 class="trash-title" id="trash-title">Trash
                     Bin</h2>
-                <p class="trash-subtitle text-xs text-gray-600 dark:text-slate-400 mt-0.5" id="trash-subtitle">Item yang
+                <p class="trash-subtitle" id="trash-subtitle">Item yang
                     dihapus dapat dipulihkan</p>
             </div>
             <button type="button" id="trash-close-top" aria-label="Tutup"
-                class="ml-auto inline-flex items-center justify-center w-8 h-8 rounded-full text-gray-500 dark:text-slate-400 hover:text-gray-700 dark:hover:text-slate-200 hover:bg-gray-100 dark:hover:bg-white/10">
+                class="trash-close-btn">
                 <svg viewBox="0 0 24 24" fill="currentColor" class="w-5 h-5">
                     <path
                         d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z" />
                 </svg>
             </button>
         </header>
-        <div class="trash-body flex-1 overflow-hidden flex flex-col px-6 py-4">
+        <div class="trash-body flex-1 overflow-hidden d-flex flex-col px-6 py-4">
             <div
-                class="trash-table-wrapper flex-1 overflow-auto border border-gray-200 dark:border-white/10 rounded-md">
+                class="trash-table-wrapper flex-1 overflow-auto border rounded-md">
                 <table class="trash-table w-full text-xs">
-                    <thead class="bg-gray-50 dark:bg-black/30 sticky top-0">
+                    <thead class="trash-table-head">
                         <tr>
-                            <th class="px-3 py-2 text-left font-medium text-gray-700 dark:text-slate-400 text-xs">Item
+                            <th class="px-3 py-2 text-left font-medium text-xs">Item
                             </th>
-                            <th class="px-3 py-2 text-left font-medium text-gray-700 dark:text-slate-400 text-xs">Type
+                            <th class="px-3 py-2 text-left font-medium text-xs">Type
                             </th>
-                            <th class="px-3 py-2 text-left font-medium text-gray-700 dark:text-slate-400 text-xs">
+                            <th class="px-3 py-2 text-left font-medium text-xs">
                                 Deleted</th>
                             <th
-                                class="px-3 py-2 text-left font-medium text-gray-700 dark:text-slate-400 text-xs hidden sm:table-cell">
+                                class="px-3 py-2 text-left font-medium text-xs md\:table-cell">
                                 Original Path</th>
-                            <th class="px-3 py-2 text-center font-medium text-gray-700 dark:text-slate-400 text-xs"
+                            <th class="px-3 py-2 text-center font-medium text-xs"
                                 style="width: 140px;">Actions</th>
                         </tr>
                     </thead>
-                    <tbody id="trash-table-body" class="dark:text-slate-200">
+                    <tbody id="trash-table-body">
                         <tr>
                             <td colspan="5"
-                                class="trash-loading px-3 py-4 text-center text-gray-500 dark:text-slate-400">
+                                class="trash-loading px-3 py-4 text-center text-muted">
                                 Memuat data trash...</td>
                         </tr>
                     </tbody>
@@ -55,20 +55,20 @@
             </div>
             <div class="trash-empty-state text-center py-8" id="trash-empty-state" style="display: none;">
                 <svg viewBox="0 0 24 24" fill="currentColor"
-                    class="w-16 h-16 mx-auto text-gray-300 dark:text-slate-600 mb-4">
+                    class="trash-empty-icon">
                     <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z" />
                 </svg>
-                <p class="text-gray-500 dark:text-slate-400 text-sm">Trash kosong</p>
-                <p class="text-gray-400 dark:text-slate-500 text-xs mt-1">Item yang dihapus akan muncul di sini</p>
+                <p class="text-muted text-sm">Trash kosong</p>
+                <p class="text-muted text-xs mt-1">Item yang dihapus akan muncul di sini</p>
             </div>
-            <div class="trash-error text-xs text-red-600 dark:text-red-400 mt-2" id="trash-error" role="alert" hidden>
+            <div class="trash-error text-xs mt-2" id="trash-error" role="alert" hidden>
             </div>
         </div>
         <footer
-            class="trash-actions flex flex-col sm:flex-row justify-between gap-3 border-t border-gray-100 dark:border-white/10 bg-gray-50 dark:bg-black/20 px-6 py-3 rounded-b-lg flex-shrink-0">
-            <div class="trash-actions-left flex flex-col sm:flex-row gap-2">
+            class="trash-actions flex-shrink-0">
+            <div class="trash-actions-left d-flex flex-col gap-2">
                 <button type="button"
-                    class="trash-button danger px-3 py-2 rounded-md text-xs font-medium bg-red-600 text-white inline-flex items-center justify-center gap-2 hover:bg-red-700 focus:outline-none transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    class="trash-button danger"
                     id="trash-empty-btn">
                     <svg viewBox="0 0 24 24" aria-hidden="true" class="w-4 h-4">
                         <path fill="currentColor"
@@ -77,7 +77,7 @@
                     <span>Empty Trash</span>
                 </button>
                 <button type="button"
-                    class="trash-button warning px-3 py-2 rounded-md text-xs font-medium bg-yellow-500 text-white inline-flex items-center justify-center gap-2 hover:bg-yellow-600 focus:outline-none transition-colors"
+                    class="trash-button warning"
                     id="trash-cleanup-btn">
                     <svg viewBox="0 0 24 24" aria-hidden="true" class="w-4 h-4">
                         <path fill="currentColor"
@@ -86,9 +86,9 @@
                     <span>Cleanup Old</span>
                 </button>
             </div>
-            <div class="trash-actions-right flex flex-col sm:flex-row gap-2">
+            <div class="trash-actions-right d-flex flex-col gap-2">
                 <button type="button"
-                    class="trash-button outline px-3 py-2 rounded-md text-xs font-medium bg-white dark:bg-white/5 hover:bg-gray-50 dark:hover:bg-white/10 text-gray-700 dark:text-gray-200 border border-gray-200 dark:border-white/10 inline-flex items-center justify-center gap-2 focus:outline-none transition-colors"
+                    class="trash-button outline"
                     id="trash-refresh">
                     <svg viewBox="0 0 24 24" aria-hidden="true" class="w-4 h-4">
                         <path fill="currentColor"
@@ -97,7 +97,7 @@
                     <span>Refresh</span>
                 </button>
                 <button type="button"
-                    class="trash-button primary px-3 py-2 rounded-md text-xs font-medium bg-blue-600 text-white inline-flex items-center justify-center gap-2 hover:bg-blue-700 focus:outline-none transition-colors"
+                    class="trash-button primary"
                     id="trash-close">Tutup</button>
             </div>
         </footer>
@@ -173,7 +173,7 @@
         async function loadTrashItems() {
             if (!trashTableBody) return;
 
-            trashTableBody.innerHTML = '<tr><td colspan="5" class="px-3 py-4 text-center text-gray-500 dark:text-slate-400">Memuat data...</td></tr>';
+            trashTableBody.innerHTML = '<tr><td colspan="5" class="px-3 py-4 text-center text-muted">Memuat data...</td></tr>';
             if (trashEmptyState) trashEmptyState.style.display = 'none';
             if (trashError) trashError.hidden = true;
 
@@ -194,27 +194,27 @@
                 }
 
                 trashTableBody.innerHTML = items.map(item => `
-                <tr class="border-b border-gray-100 dark:border-white/5 hover:bg-gray-50 dark:hover:bg-white/5">
+                <tr class="trash-table-row">
                     <td class="px-3 py-2">
-                        <div class="flex items-center gap-2">
-                            <i class="${item.type === 'folder' ? 'ri-folder-line text-yellow-500' : 'ri-file-line text-blue-500'}"></i>
-                            <span class="truncate max-w-[150px]" title="${escapeHtml(item.originalName)}">${escapeHtml(item.originalName)}</span>
+                        <div class="d-flex items-center gap-2">
+                            <i class="${item.type === 'folder' ? 'ri-folder-line' : 'ri-file-line'}"></i>
+                            <span class="text-truncate" style="max-width: 150px;" title="${escapeHtml(item.originalName)}">${escapeHtml(item.originalName)}</span>
                         </div>
                     </td>
                     <td class="px-3 py-2">${item.type}</td>
                     <td class="px-3 py-2">${formatDate(item.deletedAt)}</td>
-                    <td class="px-3 py-2 hidden sm:table-cell">
-                        <span class="truncate max-w-[150px] block" title="${escapeHtml(item.originalPath)}">${escapeHtml(item.originalPath)}</span>
+                    <td class="px-3 py-2 md\:table-cell">
+                        <span class="text-truncate d-block" style="max-width: 150px;" title="${escapeHtml(item.originalPath)}">${escapeHtml(item.originalPath)}</span>
                     </td>
                     <td class="px-3 py-2 text-center">
-                        <div class="flex items-center justify-center gap-1">
-                            <button type="button" class="p-1.5 rounded hover:bg-green-100 dark:hover:bg-green-500/20 text-green-600 dark:text-green-400" 
+                        <div class="d-flex items-center justify-center gap-1">
+                            <button type="button" class="trash-action-btn trash-action-restore" 
                                     onclick="restoreTrashItem('${item.id}')" title="Restore">
                                 <svg viewBox="0 0 24 24" class="w-4 h-4" fill="currentColor">
                                     <path d="M12 6V3L8 7l4 4V8c2.76 0 5 2.24 5 5a5 5 0 0 1-5 5 5 5 0 0 1-4.33-2.5h-2.3A7 7 0 0 0 12 20a7 7 0 0 0 7-7c0-3.87-3.13-7-7-7z"/>
                                 </svg>
                             </button>
-                            <button type="button" class="p-1.5 rounded hover:bg-red-100 dark:hover:bg-red-500/20 text-red-600 dark:text-red-400" 
+                            <button type="button" class="trash-action-btn trash-action-delete" 
                                     onclick="deleteTrashItem('${item.id}')" title="Delete Permanently">
                                 <svg viewBox="0 0 24 24" class="w-4 h-4" fill="currentColor">
                                     <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/>
@@ -231,7 +231,7 @@
                     trashError.textContent = err.message;
                     trashError.hidden = false;
                 }
-                trashTableBody.innerHTML = '<tr><td colspan="5" class="px-3 py-4 text-center text-red-500">Error loading trash items</td></tr>';
+                trashTableBody.innerHTML = '<tr><td colspan="5" class="px-3 py-4 text-center">Error loading trash items</td></tr>';
             }
         }
 

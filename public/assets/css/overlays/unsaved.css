@@ -17,7 +17,7 @@
 }
 
 .unsaved-overlay.hidden {
-  display: none !important;
+  display: none;
 }
 
 .unsaved-overlay[aria-hidden="false"] {

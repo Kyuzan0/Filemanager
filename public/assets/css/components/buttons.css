@@ -126,7 +126,8 @@
 }
 
 /* Special case for mobile menu toggle to keep it compact */
-#mobile-menu-toggle.btn-icon {
+#mobile-menu-toggle.btn-icon,
+.toolbar-menu-toggle.btn-icon {
   padding: 0;
   width: 34px;
   height: 34px;

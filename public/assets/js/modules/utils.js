@@ -186,19 +186,18 @@ function getItemCache(item) {
  */
 export function compareItems(a, b, sortKey, sortDirection) {
     const startTime = performance.now();
-    
+
     // Create cache key for this comparison
     const cacheKey = `${b.path}-${sortKey}-${sortDirection}`;
-    
+
     // Check cache first
     const cacheTime = performance.now();
     const cache = getItemCache(a);
     if (cache.has(cacheKey)) {
-        console.log('[PAGINATION DEBUG] compareItems cache HIT for:', a.name, 'vs', b.name, 'at:', cacheTime, 'delta:', cacheTime - startTime);
+
         return cache.get(cacheKey);
     }
-    console.log('[PAGINATION DEBUG] compareItems cache MISS for:', a.name, 'vs', b.name, 'at:', cacheTime, 'delta:', cacheTime - startTime);
-    
+
     // Perform comparison
     const comparisonTime = performance.now();
     const direction = sortDirection === 'asc' ? 1 : -1;
@@ -236,16 +235,13 @@ export function compareItems(a, b, sortKey, sortDirection) {
             break;
         }
     }
-    console.log('[PAGINATION DEBUG] compareItems comparison completed at:', comparisonTime, 'delta:', comparisonTime - cacheTime);
-    
+
     // Cache the result
     const cacheSetTime = performance.now();
     cache.set(cacheKey, result);
-    console.log('[PAGINATION DEBUG] compareItems cached at:', cacheSetTime, 'delta:', cacheSetTime - comparisonTime);
-    
+
     const endTime = performance.now();
-    console.log('[PAGINATION DEBUG] compareItems completed at:', endTime, 'total delta:', endTime - startTime, 'result:', result);
-    
+
     return result;
 }
 
@@ -255,7 +251,7 @@ export function compareItems(a, b, sortKey, sortDirection) {
 export function clearSortCache() {
     // WeakMap doesn't have a clear method, but we can create a new one
     // The old one will be garbage collected when items are no longer referenced
-    console.log('[Sort Cache] Cache cleared (WeakMap will be garbage collected)');
+
 }
 
 /**
@@ -296,12 +292,10 @@ export function getSortDescription(key, direction) {
  */
 export function synchronizeSelection(items, selected) {
     const startTime = performance.now();
-    console.log('[PAGINATION DEBUG] synchronizeSelection called at:', startTime, 'with items:', items.length, 'selected:', selected.size);
-    
+
     const validPathsTime = performance.now();
     const validPaths = new Set(items.map((item) => item.path));
-    console.log('[PAGINATION DEBUG] Valid paths created at:', validPathsTime, 'delta:', validPathsTime - startTime);
-    
+
     const nextSelectedTime = performance.now();
     const nextSelected = new Set();
     selected.forEach((path) => {
@@ -309,11 +303,9 @@ export function synchronizeSelection(items, selected) {
             nextSelected.add(path);
         }
     });
-    console.log('[PAGINATION DEBUG] Selection synchronized at:', nextSelectedTime, 'delta:', nextSelectedTime - validPathsTime, 'result:', nextSelected.size);
-    
+
     const endTime = performance.now();
-    console.log('[PAGINATION DEBUG] synchronizeSelection completed at:', endTime, 'total delta:', endTime - startTime);
-    
+
     return nextSelected;
 }
 
@@ -323,7 +315,9 @@ export function synchronizeSelection(items, selected) {
  * @returns {string} Path parent
  */
 export function getParentPath(path) {
-    if (!path) return '';
+    if (!path) {
+        return '';
+    }
     const idx = path.lastIndexOf('/');
     return idx === -1 ? '' : path.substring(0, idx);
 }
@@ -335,7 +329,9 @@ export function getParentPath(path) {
  * @returns {boolean} True jika child adalah subpath dari parent
  */
 export function isSubPath(parent, child) {
-    if (!parent) return false;
+    if (!parent) {
+        return false;
+    }
     return child === parent || child.startsWith(parent + '/');
 }
 
@@ -358,7 +354,9 @@ export function createRowActionButton(icon, label, handler, variant = '') {
     // Preserve any variant tokens passed (e.g. 'primary', 'outline', 'danger')
     if (variant && variant.trim()) {
         variant.trim().split(/\s+/).forEach(v => {
-            if (v) btn.classList.add(v);
+            if (v) {
+                btn.classList.add(v);
+            }
         });
     }
 
@@ -540,15 +538,15 @@ export const ErrorCodes = {
  */
 export function handleError(error, context = '') {
     console.error(`[${context}]`, error);
-    
+
     // Log to external service if available
     if (window.errorLogger) {
         window.errorLogger.log(error, context);
     }
-    
+
     // User-friendly message
     let userMessage = 'Terjadi kesalahan. Silakan coba lagi.';
-    
+
     if (error instanceof FileManagerError) {
         userMessage = error.message;
     } else if (error.name === 'NetworkError' || error.message.includes('network')) {
@@ -560,7 +558,7 @@ export function handleError(error, context = '') {
     } else if (error.message.includes('timeout')) {
         userMessage = 'Operasi memakan waktu terlalu lama. Silakan coba lagi.';
     }
-    
+
     return userMessage;
 }
 
@@ -569,7 +567,7 @@ export function handleError(error, context = '') {
  */
 export const performanceTracker = {
     metrics: [],
-    
+
     /**
      * Start performance measurement
      * @param {string} name - Nama measurement
@@ -577,7 +575,7 @@ export const performanceTracker = {
     startMeasure(name) {
         performance.mark(`${name}-start`);
     },
-    
+
     /**
      * End performance measurement
      * @param {string} name - Nama measurement
@@ -586,22 +584,22 @@ export const performanceTracker = {
     endMeasure(name) {
         performance.mark(`${name}-end`);
         performance.measure(name, `${name}-start`, `${name}-end`);
-        
+
         const measure = performance.getEntriesByName(name)[0];
         this.metrics.push({
             name,
             duration: measure.duration,
             timestamp: Date.now()
         });
-        
+
         // Cleanup
         performance.clearMarks(`${name}-start`);
         performance.clearMarks(`${name}-end`);
         performance.clearMeasures(name);
-        
+
         return measure.duration;
     },
-    
+
     /**
      * Get all metrics
      * @returns {Array} Array of metrics
@@ -609,7 +607,7 @@ export const performanceTracker = {
     getMetrics() {
         return this.metrics;
     },
-    
+
     /**
      * Get metrics by name
      * @param {string} name - Nama metric
@@ -618,7 +616,7 @@ export const performanceTracker = {
     getMetricsByName(name) {
         return this.metrics.filter(m => m.name === name);
     },
-    
+
     /**
      * Get average duration for a metric
      * @param {string} name - Nama metric
@@ -626,19 +624,21 @@ export const performanceTracker = {
      */
     getAverageDuration(name) {
         const filtered = this.getMetricsByName(name);
-        if (filtered.length === 0) return 0;
-        
+        if (filtered.length === 0) {
+            return 0;
+        }
+
         const sum = filtered.reduce((acc, m) => acc + m.duration, 0);
         return sum / filtered.length;
     },
-    
+
     /**
      * Clear all metrics
      */
     clearMetrics() {
         this.metrics = [];
     },
-    
+
     /**
      * Export metrics as JSON
      * @returns {string} JSON string of metrics
@@ -654,3 +654,4 @@ export const performanceTracker = {
         }, null, 2);
     }
 };
+

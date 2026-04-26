@@ -1,7 +1,7 @@
 /**
  * Batch Operations UI Module
  * Provides enhanced multi-select and batch operations for the File Manager
- * 
+ *
  * Features:
  * - Shift+Click for range selection
  * - Ctrl+Click for individual toggle
@@ -25,7 +25,7 @@ let operationProgress = { current: 0, total: 0, action: '' };
 let hasBeenActivated = false; // Track if indicator has been shown before
 
 // Callback holders for external integration
-let callbacks = {
+const callbacks = {
     onSelectionChange: null,
     onBatchDelete: null,
     onBatchMove: null,
@@ -43,7 +43,7 @@ let callbacks = {
  */
 function getOrCreateSelectionIndicator() {
     let indicator = document.getElementById('batch-selection-indicator');
-    
+
     if (!indicator) {
         indicator = document.createElement('div');
         indicator.id = 'batch-selection-indicator';
@@ -56,13 +56,13 @@ function getOrCreateSelectionIndicator() {
             </div>
             <div class="selection-actions">
                 <button type="button" class="batch-btn batch-btn-select-all" aria-label="Pilih semua">
-                    <svg viewBox="0 0 24 24" class="w-4 h-4" fill="currentColor">
+                    <svg viewBox="0 0 24 24" class="icon-sm" fill="currentColor">
                         <path d="M18 7l-1.41-1.41-6.34 6.34 1.41 1.41L18 7zm4.24-1.41L11.66 16.17 7.48 12l-1.41 1.41L11.66 19l12-12-1.42-1.41zM.41 13.41L6 19l1.41-1.41L1.83 12 .41 13.41z"/>
                     </svg>
                     <span>Pilih Semua</span>
                 </button>
                 <button type="button" class="batch-btn batch-btn-deselect" aria-label="Batalkan pilihan">
-                    <svg viewBox="0 0 24 24" class="w-4 h-4" fill="currentColor">
+                    <svg viewBox="0 0 24 24" class="icon-sm" fill="currentColor">
                         <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
                     </svg>
                     <span>Batalkan</span>
@@ -116,17 +116,17 @@ export function updateSelectionIndicator(isCheckboxTrigger = false) {
         const wasHidden = !indicator.classList.contains('visible');
         indicator.classList.add('visible');
         indicator.classList.remove('hidden');
-        
+
         // Add first-activation class when showing for the first time via checkbox
         if (wasHidden && isCheckboxTrigger && !hasBeenActivated) {
             hasBeenActivated = true;
             indicator.classList.add('first-activation');
-            
+
             // Remove the class after animation completes
             setTimeout(() => {
                 indicator.classList.remove('first-activation');
             }, 600); // Match animation duration
-            
+
             debugLog('[BatchOperations] First activation triggered');
         }
     } else {
@@ -169,7 +169,7 @@ function updateBatchActionsVisibility(count) {
  */
 export function handleItemClick(event, itemPath, itemIndex) {
     const items = callbacks.getItems();
-    
+
     if (event.shiftKey && lastSelectedIndex >= 0) {
         // Range selection: Shift+Click
         handleRangeSelection(itemIndex, items);
@@ -238,7 +238,7 @@ function handleToggleSelection(itemPath, itemIndex) {
  */
 export function selectAllItems() {
     const items = callbacks.getItems();
-    
+
     items.forEach(item => {
         state.selected.add(item.path);
     });
@@ -333,19 +333,19 @@ function updateSelectionUI(isCheckboxTrigger = false) {
 
     // Update row visual state
     const rows = document.querySelectorAll('tr[data-item-path], div[data-item-path]');
-    
+
     // Get the first item from the Set (insertion order)
     const iterator = state.selected.values();
     const firstResult = iterator.next();
     const currentFirstSelected = firstResult.done ? null : firstResult.value;
-    
+
     rows.forEach(row => {
         const path = row.dataset.itemPath;
         if (path) {
             if (state.selected.has(path)) {
                 row.classList.add('selected');
                 row.setAttribute('aria-selected', 'true');
-                
+
                 // Maintain first-selected class for the first selected item
                 if (path === currentFirstSelected) {
                     row.classList.add('first-selected');
@@ -365,7 +365,7 @@ function updateSelectionUI(isCheckboxTrigger = false) {
         const items = callbacks.getItems();
         const allSelected = items.length > 0 && items.every(item => state.selected.has(item.path));
         const someSelected = items.some(item => state.selected.has(item.path));
-        
+
         selectAllCheckbox.checked = allSelected;
         selectAllCheckbox.indeterminate = someSelected && !allSelected;
     }
@@ -388,7 +388,7 @@ function announceSelectionChange() {
  */
 function getOrCreateProgressIndicator() {
     let progress = document.getElementById('batch-progress-indicator');
-    
+
     if (!progress) {
         progress = document.createElement('div');
         progress.id = 'batch-progress-indicator';
@@ -520,7 +520,7 @@ export async function batchDownload() {
  */
 function getOrCreateBatchActionsBar() {
     let bar = document.getElementById('batch-actions-bar');
-    
+
     if (!bar) {
         bar = document.createElement('div');
         bar.id = 'batch-actions-bar';
@@ -534,26 +534,26 @@ function getOrCreateBatchActionsBar() {
                 </span>
                 <div class="batch-actions-buttons">
                     <button type="button" class="batch-action-btn" data-batch-action="move" title="Pindahkan item terpilih">
-                        <svg viewBox="0 0 24 24" class="w-4 h-4" fill="currentColor">
+                        <svg viewBox="0 0 24 24" class="icon-sm" fill="currentColor">
                             <path d="M20 6h-8l-2-2H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm-6 12l-4-4h3V10h2v4h3l-4 4z"/>
                         </svg>
                         <span>Pindahkan</span>
                     </button>
                     <button type="button" class="batch-action-btn" data-batch-action="download" title="Unduh item terpilih">
-                        <svg viewBox="0 0 24 24" class="w-4 h-4" fill="currentColor">
+                        <svg viewBox="0 0 24 24" class="icon-sm" fill="currentColor">
                             <path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/>
                         </svg>
                         <span>Unduh</span>
                     </button>
                     <button type="button" class="batch-action-btn batch-action-btn-danger" data-batch-action="delete" title="Hapus item terpilih">
-                        <svg viewBox="0 0 24 24" class="w-4 h-4" fill="currentColor">
+                        <svg viewBox="0 0 24 24" class="icon-sm" fill="currentColor">
                             <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/>
                         </svg>
                         <span>Hapus</span>
                     </button>
                 </div>
                 <button type="button" class="batch-close-btn" aria-label="Batalkan pilihan">
-                    <svg viewBox="0 0 24 24" class="w-5 h-5" fill="currentColor">
+                    <svg viewBox="0 0 24 24" class="icon-md" fill="currentColor">
                         <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
                     </svg>
                 </button>
@@ -621,11 +621,15 @@ function hideBatchActionsBar() {
  * @param {HTMLElement} container - The container element
  */
 export function setupSelectionHandlers(container) {
-    if (!container) return;
+    if (!container) {
+        return;
+    }
 
     container.addEventListener('click', (event) => {
         const row = event.target.closest('tr[data-item-path], div[data-item-path]');
-        if (!row) return;
+        if (!row) {
+            return;
+        }
 
         const checkbox = event.target.closest('input[type="checkbox"]');
         const itemPath = row.dataset.itemPath;
@@ -643,11 +647,13 @@ export function setupSelectionHandlers(container) {
 
     // Handle checkbox changes
     container.addEventListener('change', (event) => {
-        if (event.target.type !== 'checkbox') return;
-        
+        if (event.target.type !== 'checkbox') {
+            return;
+        }
+
         const checkbox = event.target;
         const path = checkbox.dataset.path;
-        
+
         if (path) {
             toggleItemSelection(path, checkbox.checked);
         }
@@ -661,7 +667,9 @@ export function setupSelectionHandlers(container) {
  * @param {HTMLElement} selectAllCheckbox - The select all checkbox
  */
 export function setupSelectAllHandler(selectAllCheckbox) {
-    if (!selectAllCheckbox) return;
+    if (!selectAllCheckbox) {
+        return;
+    }
 
     selectAllCheckbox.addEventListener('change', (event) => {
         if (event.target.checked) {
@@ -732,13 +740,19 @@ export function initBatchOperations(options = {}) {
 export function cleanupBatchOperations() {
     // Remove UI elements
     const indicator = document.getElementById('batch-selection-indicator');
-    if (indicator) indicator.remove();
+    if (indicator) {
+        indicator.remove();
+    }
 
     const progress = document.getElementById('batch-progress-indicator');
-    if (progress) progress.remove();
+    if (progress) {
+        progress.remove();
+    }
 
     const bar = document.getElementById('batch-actions-bar');
-    if (bar) bar.remove();
+    if (bar) {
+        bar.remove();
+    }
 
     // Reset state
     lastSelectedIndex = -1;

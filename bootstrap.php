@@ -112,7 +112,7 @@ function check_origin(): bool
         return $refererHost === $host;
     }
 
-    return true; // Allow if no origin/referer (for API clients)
+    return false; // Reject requests with no origin/referer for CSRF safety
 }
 
 /**

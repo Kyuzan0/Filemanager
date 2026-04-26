@@ -18,7 +18,7 @@
 }
 
 .delete-overlay.hidden {
-  display: none !important;
+  display: none;
 }
 
 .delete-overlay[aria-hidden="false"],
@@ -110,7 +110,7 @@
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  padding: 0.375rem 0.5rem;
+  padding: 0.25rem 0.5rem;
   font-size: 0.75rem;
   color: #374151;
   border-radius: 0.25rem;
@@ -133,6 +133,12 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.delete-item-more {
+  padding: 0.25rem 0.5rem;
+  font-size: 0.75rem;
+  color: var(--text-secondary);
 }
 
 .delete-warning {
@@ -169,7 +175,7 @@
 
 .delete-button.outline {
   background: #ffffff;
-  border: 1px solid #e5e7eb !important;
+  border: 1px solid #e5e7eb;
   color: #374151;
   padding: 0.375rem 0.75rem;
   outline: none;
@@ -177,13 +183,13 @@
 
 .delete-button.outline:hover {
   background: #f9fafb;
-  border-color: #e5e7eb !important;
+  border-color: #e5e7eb;
 }
 
 .delete-button.outline:focus,
 .delete-button.outline:focus-visible {
   outline: none;
-  border-color: #e5e7eb !important;
+  border-color: #e5e7eb;
   box-shadow: none;
 }
 

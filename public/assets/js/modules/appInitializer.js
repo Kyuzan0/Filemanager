@@ -115,29 +115,29 @@ function renderSimplePagination(container, onPageChange) {
     const showNavigation = totalPages > 1;
 
     container.innerHTML = '';
-    
+
     // Don't hide the container, let the wrapper handle visibility
     if (!hasItems) {
         container.classList.add('hidden');
         return;
     }
-    
+
     container.classList.remove('hidden');
 
     const wrapper = document.createElement('div');
-    wrapper.className = 'pagination-controls flex flex-col gap-3 border-t border-gray-200 dark:border-white/10 bg-white dark:bg-slate-900 px-4 py-3 md:flex-row md:items-center md:justify-between rounded-b-lg';
+    wrapper.className = 'pagination-controls';
 
     const info = document.createElement('div');
-    info.className = 'text-sm text-gray-700 dark:text-gray-300';
+    info.className = 'pagination-info text-sm text-muted';
     const startItem = (currentPage - 1) * itemsPerPage + 1;
     const endItem = Math.min(currentPage * itemsPerPage, totalItems);
     info.textContent = `Menampilkan ${startItem}-${endItem} dari ${totalItems.toLocaleString('id-ID')} items`;
 
     const controlsWrapper = document.createElement('div');
-    controlsWrapper.className = 'flex flex-col gap-3 md:flex-row md:items-center md:justify-end md:gap-4';
+    controlsWrapper.className = 'pagination-nav';
 
     const navigationWrapper = document.createElement('div');
-    navigationWrapper.className = 'pagination-buttons flex items-center gap-2';
+    navigationWrapper.className = 'pagination-buttons';
     if (!showNavigation) {
         navigationWrapper.classList.add('hidden');
     }
@@ -152,7 +152,7 @@ function renderSimplePagination(container, onPageChange) {
         pageRange.forEach(page => {
             if (page === '...') {
                 const dots = document.createElement('span');
-                dots.className = 'px-2 text-gray-400';
+                dots.className = 'pagination-ellipsis';
                 dots.textContent = '...';
                 navigationWrapper.appendChild(dots);
             } else {
@@ -173,14 +173,14 @@ function renderSimplePagination(container, onPageChange) {
     }
 
     const perPageWrapper = document.createElement('div');
-    perPageWrapper.className = 'pagination-page-size flex items-center gap-2 text-sm text-gray-600';
+    perPageWrapper.className = 'pagination-page-size';
 
     const perPageLabel = document.createElement('span');
-    perPageLabel.className = 'hidden sm:inline text-gray-500';
+    perPageLabel.className = 'pagination-page-size-label';
     perPageLabel.textContent = 'Item per halaman';
 
     const perPageSelect = document.createElement('select');
-    perPageSelect.className = 'pagination-page-size-select px-3 py-1.5 text-sm rounded border border-gray-200 dark:border-white/10 bg-white dark:bg-white/5 dark:text-gray-200 focus:outline-none focus:border-blue-500 dark:focus:border-blue-400 transition-colors';
+    perPageSelect.className = 'pagination-page-size-select';
     perPageSelect.setAttribute('aria-label', 'Item per halaman');
 
     PAGE_SIZE_OPTIONS.forEach((size) => {
@@ -223,32 +223,32 @@ function renderMobilePagination(container, onPageChange) {
     const hasItems = totalItems > 0;
 
     container.innerHTML = '';
-    
+
     if (!hasItems) {
         container.classList.add('hidden');
         return;
     }
-    
+
     container.classList.remove('hidden');
 
     // Top row: Info text with dropdown
     const topRow = document.createElement('div');
     topRow.className = 'pagination-mobile-top-row-new';
-    
+
     const startItem = (currentPage - 1) * itemsPerPage + 1;
     const endItem = Math.min(currentPage * itemsPerPage, totalItems);
-    
+
     // Info text
     const info = document.createElement('span');
     info.className = 'pagination-mobile-info-new';
     info.textContent = `Menampilkan ${startItem}-${endItem} dari ${totalItems} items`;
     topRow.appendChild(info);
-    
+
     // Dropdown selector
     const select = document.createElement('select');
     select.className = 'pagination-mobile-select-new';
     select.setAttribute('aria-label', 'Items per page');
-    
+
     const itemsOptions = [10, 25, 50, 100];
     itemsOptions.forEach(option => {
         const opt = document.createElement('option');
@@ -259,7 +259,7 @@ function renderMobilePagination(container, onPageChange) {
         }
         select.appendChild(opt);
     });
-    
+
     select.addEventListener('change', (e) => {
         const newValue = parseInt(e.target.value, 10);
         paginationConfig.itemsPerPage = newValue;
@@ -268,14 +268,14 @@ function renderMobilePagination(container, onPageChange) {
         renderItems(state.items, state.lastUpdated, false);
         updatePaginationState();
     });
-    
+
     topRow.appendChild(select);
     container.appendChild(topRow);
 
     // Bottom row: Navigation with page numbers
     const bottomRow = document.createElement('div');
     bottomRow.className = 'pagination-mobile-bottom-row-new';
-    
+
     // Left arrow button
     const prevBtn = document.createElement('button');
     prevBtn.className = 'pagination-mobile-arrow-btn';
@@ -287,25 +287,25 @@ function renderMobilePagination(container, onPageChange) {
         }
     });
     bottomRow.appendChild(prevBtn);
-    
+
     // Page numbers in center
     const pageNumbersContainer = document.createElement('div');
-    pageNumbersContainer.className = 'pagination-mobile-page-numbers flex items-center gap-1';
-    
+    pageNumbersContainer.className = 'pagination-mobile-page-numbers';
+
     if (totalPages > 1) {
         const pageRange = getPageRange(currentPage, totalPages);
         pageRange.forEach(page => {
             if (page === '...') {
                 const dots = document.createElement('span');
-                dots.className = 'px-1 text-gray-400 text-sm';
+                dots.className = 'pagination-ellipsis';
                 dots.textContent = '...';
                 pageNumbersContainer.appendChild(dots);
             } else {
                 const pageBtn = document.createElement('button');
                 const isActive = page === currentPage;
                 pageBtn.className = isActive
-                    ? 'pagination-mobile-page-btn min-w-[28px] px-2 py-1 text-xs rounded bg-blue-600 text-white font-medium'
-                    : 'pagination-mobile-page-btn min-w-[28px] px-2 py-1 text-xs rounded border border-gray-300 bg-white hover:bg-gray-50 text-gray-700 transition-colors';
+                    ? 'pagination-mobile-page-btn active'
+                    : 'pagination-mobile-page-btn';
                 pageBtn.textContent = page;
                 pageBtn.disabled = isActive;
                 if (!isActive) {
@@ -319,14 +319,14 @@ function renderMobilePagination(container, onPageChange) {
     } else {
         // Single page - show "1" button
         const pageBtn = document.createElement('button');
-        pageBtn.className = 'pagination-mobile-page-btn min-w-[28px] px-2 py-1 text-xs rounded bg-blue-600 text-white font-medium';
+        pageBtn.className = 'pagination-mobile-page-btn active';
         pageBtn.textContent = '1';
         pageBtn.disabled = true;
         pageNumbersContainer.appendChild(pageBtn);
     }
-    
+
     bottomRow.appendChild(pageNumbersContainer);
-    
+
     // Right arrow button
     const nextBtn = document.createElement('button');
     nextBtn.className = 'pagination-mobile-arrow-btn';
@@ -338,15 +338,15 @@ function renderMobilePagination(container, onPageChange) {
         }
     });
     bottomRow.appendChild(nextBtn);
-    
+
     container.appendChild(bottomRow);
 }
 
 function createPaginationButton(text, enabled, onClick, isActive = false) {
     const btn = document.createElement('button');
     btn.className = isActive
-        ? 'px-3 py-1.5 text-sm rounded bg-blue-600 text-white font-medium'
-        : 'px-3 py-1.5 text-sm rounded border border-gray-300 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors';
+        ? 'pagination-page-btn active'
+        : 'pagination-page-btn';
     btn.innerHTML = text;
     btn.disabled = !enabled || isActive;
 
@@ -439,17 +439,18 @@ let logManagerLoading = null;
  * @returns {Promise<Object>} The MoveOverlay module
  */
 async function loadMoveOverlay() {
-    if (moveOverlayModule) return moveOverlayModule;
-    if (moveOverlayLoading) return moveOverlayLoading;
-    
-    console.log('[Code Splitting] Loading MoveOverlay module...');
+    if (moveOverlayModule) {
+        return moveOverlayModule;
+    }
+    if (moveOverlayLoading) {
+        return moveOverlayLoading;
+    }
+
     const startTime = performance.now();
-    
+
     moveOverlayLoading = import('./moveOverlay.js')
         .then(module => {
             moveOverlayModule = module;
-            const loadTime = performance.now() - startTime;
-            console.log(`[Code Splitting] MoveOverlay loaded in ${loadTime.toFixed(2)}ms`);
             return module;
         })
         .catch(error => {
@@ -457,7 +458,7 @@ async function loadMoveOverlay() {
             moveOverlayLoading = null;
             throw error;
         });
-    
+
     return moveOverlayLoading;
 }
 
@@ -480,13 +481,13 @@ import {
     ensurePreviewViewer,
     openMediaPreview as openMediaPreviewModal
 } from './modals.js';
-import { 
-    deleteItems, 
-    moveItem, 
-    renameItem, 
-    createItem, 
+import {
+    deleteItems,
+    moveItem,
+    renameItem,
+    createItem,
     uploadFiles,
-    uploadFolder 
+    uploadFolder
 } from './fileOperations.js';
 import {
     hasUnsavedChanges,
@@ -504,7 +505,7 @@ import {
 // LogManager will be lazy-loaded when needed
 // Create a basic logger that will be replaced when logManager loads
 const logger = {
-    info: (msg, data) => console.log(`[INITIALIZER] ${msg}`, data || ''),
+    info: () => {},
     error: (msg, error) => console.error(`[INITIALIZER] ${msg}`, error || ''),
     warn: (msg, data) => console.warn(`[INITIALIZER] ${msg}`, data || '')
 };
@@ -579,7 +580,7 @@ function clearAllLoadingStates(source = 'unknown') {
     const timestamp = new Date().toISOString();
     console.warn(`[EMERGENCY_CLEAR ${timestamp}] Forcing all loading states to clear. Called from:`, source);
     console.trace('[EMERGENCY_CLEAR] Stack trace:');
-    
+
     // Find and clear ALL possible loading indicators
     const selectors = [
         '.loader-overlay',
@@ -590,7 +591,7 @@ function clearAllLoadingStates(source = 'unknown') {
         '[id*="loading"]',
         '[id*="loader"]'
     ];
-    
+
     let clearedCount = 0;
     selectors.forEach(selector => {
         const elements = document.querySelectorAll(selector);
@@ -598,21 +599,17 @@ function clearAllLoadingStates(source = 'unknown') {
             if (el.classList.contains('visible') ||
                 el.style.display === 'flex' ||
                 el.style.display === 'block') {
-                
+
                 el.classList.remove('visible', 'active', 'loading');
                 if (el.classList.contains('loader-overlay') || el.classList.contains('loader')) {
                     el.style.display = 'none';
                 }
                 clearedCount++;
-                console.log(`[EMERGENCY_CLEAR] Cleared element:`, {
-                    selector: selector,
-                    element: el.className || el.id,
-                    was: el.style.display
-                });
+
             }
         });
     });
-    
+
     // Force state updates
     updateState({ isLoading: false });
     if (state.logs) {
@@ -623,7 +620,7 @@ function clearAllLoadingStates(source = 'unknown') {
             }
         });
     }
-    
+
     // Re-enable buttons
     const buttons = document.querySelectorAll('button[disabled]');
     buttons.forEach(btn => {
@@ -631,9 +628,9 @@ function clearAllLoadingStates(source = 'unknown') {
             btn.disabled = false;
         }
     });
-    
+
     console.warn(`[EMERGENCY_CLEAR] ✓ Cleared ${clearedCount} loading elements and reset all states`);
-    
+
     return clearedCount;
 }
 
@@ -733,13 +730,10 @@ function updateCompactPaginationLayout(pageItemsLength) {
 
 // Wrapper for renderItems that calls the complex renderer from uiRenderer.js
 function renderItems(items, lastUpdated, highlightNew) {
-    console.log('[DEBUG] renderItems wrapper called');
-    
+
     // Get items for current page using pagination-simple
     const pageItems = getCurrentPageItems(items);
-    
-    console.log('[DEBUG] Total items:', items.length, 'Page items:', pageItems.length);
-    
+
     // Sync pagination.js state to prevent double-pagination in uiRenderer
     // We tell uiRenderer that we are on page 1 of 1, with all items shown
     // This ensures uiRenderer renders the slice as-is without trying to paginate it again
@@ -750,7 +744,7 @@ function renderItems(items, lastUpdated, highlightNew) {
         elements.tableBody,
         elements.emptyState,
         state,
-        pageItems,  // Use paginated items instead of all items
+        pageItems, // Use paginated items instead of all items
         lastUpdated,
         highlightNew,
         openTextPreview,
@@ -774,10 +768,10 @@ function renderItems(items, lastUpdated, highlightNew) {
         handleDragOver,
         handleDrop,
         handleDragLeave,
-        flashStatus,  // Add flashStatus helper
-        setError      // Add setError helper
+        flashStatus, // Add flashStatus helper
+        setError // Add setError helper
     );
-    
+
     // Render pagination UI
     renderPaginationUI();
 
@@ -790,15 +784,15 @@ function renderItems(items, lastUpdated, highlightNew) {
 function renderPaginationUI() {
     const container = elements.paginationContainer || document.getElementById('pagination-container');
     const mobileContainer = document.getElementById('pagination-mobile');
-    
+
     if (!container) {
         console.warn('[Pagination] Container not found');
         return;
     }
-    
+
     // Render desktop pagination with callback
     renderSimplePagination(container, handlePageChange);
-    
+
     // Render mobile pagination
     if (mobileContainer) {
         renderMobilePagination(mobileContainer, handlePageChange);
@@ -810,13 +804,11 @@ function renderPaginationUI() {
  * @param {number} newPage - New page number
  */
 function handlePageChange(newPage) {
-    console.log('[Pagination] Page changed to:', newPage);
-    console.log('[Pagination] Current path:', state.currentPath);
-    console.log('[Pagination] Total items:', state.items.length);
-    
+
+
     // Re-render items for new page (synchronous)
     renderItems(state.items, state.lastUpdated, false);
-    
+
     // Optional: Scroll to top
     const tableWrapper = document.querySelector('.table-wrapper');
     if (tableWrapper) {
@@ -835,7 +827,7 @@ function toggleSelection(path, isSelected) {
 }
 
 function openContextMenu(x, y, item) {
-    console.log('[DEBUG] openContextMenu called for:', item.name);
+
     // Context menu implementation would go here
 }
 
@@ -845,31 +837,29 @@ function changeSort(key) {
         sortKey: key,
         sortDirection: newDirection
     });
-    
+
     // Save sort preferences to localStorage
     saveSortPreferences(key, newDirection);
-    
+
     // Reset pagination to page 1 when sorting changes
     resetPagination();
-    
+
     renderItems(state.items, state.lastUpdated, false);
     updateSortUI(elements.sortHeaders, elements.statusSort, state);
 }
 
 function navigateTo(path) {
-    console.log('[DEBUG] navigateTo called with path:', path);
-    console.log('[DEBUG] Path type:', typeof path);
-    console.log('[DEBUG] Current state path before navigation:', state.currentPath);
-    
+
+
     // Validate path is string
     if (typeof path !== 'string') {
         console.error('[ERROR] Invalid path type:', typeof path, path);
         return;
     }
-    
+
     // Save last visited path to localStorage
     saveLastPath(path);
-    
+
     fetchDirectoryWrapper(path);
 }
 
@@ -880,23 +870,20 @@ function navigateTo(path) {
  */
 async function fetchDirectoryWrapper(path = '', options = {}) {
     try {
-        console.log('[DEBUG] fetchDirectoryWrapper called with path:', path);
-        console.log('[DEBUG] Path length:', path ? path.length : 0);
-        console.log('[DEBUG] Path characters:', path ? Array.from(path).map(c => c.charCodeAt(0)) : []);
-        
+
+
         // Update loading state
         updateState({ isLoading: true });
-        
+
         // Call the API
         const data = await fetchDirectory(path, options);
-        console.log('[DEBUG] API response for path "' + path + '":', data);
-        
+
         if (data && data.success) {
             // Ensure state.selected is a Set before updating
             if (!(state.selected instanceof Set)) {
                 state.selected = new Set();
             }
-            
+
             // Update state with the fetched data
             updateState({
                 currentPath: data.path || path,
@@ -905,7 +892,7 @@ async function fetchDirectoryWrapper(path = '', options = {}) {
                 lastUpdated: data.lastUpdated || new Date().toISOString(),
                 isLoading: false
             });
-            
+
             // Create itemMap for quick lookup
             const itemMap = new Map();
             if (data.items && Array.isArray(data.items)) {
@@ -914,29 +901,30 @@ async function fetchDirectoryWrapper(path = '', options = {}) {
                 });
             }
             updateState({ itemMap });
-            
+
             // Synchronize selection (remove selected items that no longer exist)
             // This was previously done in uiRenderer, but we moved it here to avoid state corruption
             const newSelected = synchronizeSelection(data.items || [], state.selected);
             updateState({ selected: newSelected });
-            
+
             // Update visibleItems based on filter
             const visibleItems = state.items.filter(item => {
-                if (!state.filter) return true;
+                if (!state.filter) {
+                    return true;
+                }
                 return item.name.toLowerCase().includes(state.filter.toLowerCase());
             });
             updateState({ visibleItems });
-            
+
             // Update pagination info with total items
             updatePaginationInfo(state.items.length);
-            
+
             // Render the items (will use pagination)
             renderItems(state.items, state.lastUpdated, false);
-            
+
             // Update UI elements
             updateSelectionUI();
-            
-            console.log('[DEBUG] State updated successfully:', state);
+
         } else {
             console.error('[DEBUG] API returned unsuccessful response:', data);
             updateState({ isLoading: false });
@@ -966,10 +954,12 @@ function startPolling() {
 
 function handleContextMenuAction(action) {
     const { targetItem } = state.contextMenu;
-    if (!targetItem) return;
-    
+    if (!targetItem) {
+        return;
+    }
+
     closeContextMenu();
-    
+
     switch (action) {
         case 'open':
             if (targetItem.type === 'folder') {
@@ -1040,14 +1030,13 @@ function updateLineNumbers() {
 
     const value = previewEditor.value;
     const sanitized = value.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
-    
+
     // Count actual lines - If empty = 1 line, otherwise split by newline
     let totalLines = sanitized.length === 0 ? 1 : sanitized.split('\n').length;
 
     // Performance optimization untuk file sangat besar
     if (totalLines > 10000) {
         previewLineNumbersInner.innerHTML = '<span>1</span>';
-        console.log('[LINE_NUMBERS] Large file detected (>10000 lines), showing minimal line numbers');
         return;
     }
 
@@ -1056,7 +1045,7 @@ function updateLineNumbers() {
     const lineHeight = editorStyle.lineHeight;
     const fontSize = editorStyle.fontSize;
     const fontFamily = editorStyle.fontFamily;
-    
+
     // Convert to numeric values for precise calculation
     const lineHeightNum = parseFloat(lineHeight);
     const fontSizeNum = parseFloat(fontSize);
@@ -1080,22 +1069,15 @@ function updateLineNumbers() {
     // Clear and append new content
     previewLineNumbersInner.innerHTML = '';
     previewLineNumbersInner.appendChild(fragment);
-    
+
     // Apply container styling
     previewLineNumbersInner.style.fontSize = fontSize;
     previewLineNumbersInner.style.lineHeight = lineHeight;
     previewLineNumbersInner.style.fontFamily = fontFamily;
-    
-    console.log('[LINE_NUMBERS] Updated line numbers:', {
-        totalLines,
-        contentLength: value.length,
-        endsWithNewline: sanitized.endsWith('\n'),
-        actualLineHeight
-    });
-    
+
     // Pastikan styling konsisten setelah update
     ensureConsistentStyling();
-    
+
     // Sinkron scroll position
     syncLineNumbersScroll();
 }
@@ -1106,7 +1088,7 @@ function ensureConsistentStyling() {
     if (!previewLineNumbersInner || !previewEditor || !previewLineNumbers) {
         return;
     }
-    
+
     // Get computed styles dari editor
     const editorStyle = window.getComputedStyle(previewEditor);
     const lineHeight = editorStyle.lineHeight;
@@ -1114,25 +1096,25 @@ function ensureConsistentStyling() {
     const fontFamily = editorStyle.fontFamily;
     const paddingTop = editorStyle.paddingTop;
     const paddingBottom = editorStyle.paddingBottom;
-    
+
     // Convert to numeric values for precise calculation
     const lineHeightNum = parseFloat(lineHeight);
     const fontSizeNum = parseFloat(fontSize);
     const paddingTopNum = parseFloat(paddingTop);
     const paddingBottomNum = parseFloat(paddingBottom);
-    
+
     // Calculate exact line height in pixels
     const actualLineHeight = isNaN(lineHeightNum) ? fontSizeNum * 1.5 : lineHeightNum;
-    
+
     // Apply consistent styling to line numbers
     previewLineNumbersInner.style.fontSize = fontSize;
     previewLineNumbersInner.style.lineHeight = lineHeight;
     previewLineNumbersInner.style.fontFamily = fontFamily;
-    
+
     // Apply matching padding to ensure perfect alignment
     previewLineNumbersInner.style.paddingTop = paddingTop;
     previewLineNumbersInner.style.paddingBottom = paddingBottom;
-    
+
     // Ensure each line number span has exact same height
     const lineSpans = previewLineNumbersInner.querySelectorAll('span');
     lineSpans.forEach(span => {
@@ -1142,16 +1124,7 @@ function ensureConsistentStyling() {
         span.style.margin = '0';
         span.style.padding = '0';
     });
-    
-    console.log('[LINE_NUMBERS] Consistent styling ensured:', {
-        fontSize,
-        lineHeight,
-        fontFamily,
-        paddingTop,
-        paddingBottom,
-        actualLineHeight,
-        lineCount: lineSpans.length
-    });
+
 }
 
 // `syncLineNumbersScroll` implemented later (enhanced 2-way sync)
@@ -1162,37 +1135,21 @@ function ensureConsistentStyling() {
 function debugElementStyles() {
     const { previewEditor, previewLineNumbersInner } = elements;
     if (!previewLineNumbersInner || !previewEditor) {
-        console.log('[LINE_NUMBERS] Debug: Elements not found');
+
         return;
     }
-    
+
     const editorStyle = window.getComputedStyle(previewEditor);
     const lineNumbersStyle = window.getComputedStyle(previewLineNumbersInner);
-    
-    console.log('[LINE_NUMBERS] Debug element styles:', {
-        editor: {
-            fontSize: editorStyle.fontSize,
-            lineHeight: editorStyle.lineHeight,
-            fontFamily: editorStyle.fontFamily,
-            paddingTop: editorStyle.paddingTop,
-            paddingBottom: editorStyle.paddingBottom
-        },
-        lineNumbers: {
-            fontSize: lineNumbersStyle.fontSize,
-            lineHeight: lineNumbersStyle.lineHeight,
-            fontFamily: lineNumbersStyle.fontFamily,
-            paddingTop: lineNumbersStyle.paddingTop,
-            paddingBottom: lineNumbersStyle.paddingBottom
-        }
-    });
+
 }
 
 
 async function savePreviewContent() {
-    if (state.preview.isSaving) return;
-    
-    console.log('[PREVIEW] Saving file:', state.preview.path);
-    
+    if (state.preview.isSaving) {
+        return;
+    }
+
     // Update state to saving
     updateState({
         preview: {
@@ -1201,17 +1158,17 @@ async function savePreviewContent() {
         }
     });
     updatePreviewStatus();
-    
+
     // Update save button UI
     if (elements.previewSave) {
         elements.previewSave.disabled = true;
         elements.previewSave.textContent = 'Menyimpan...';
         elements.previewSave.classList.add('saving');
     }
-    
+
     try {
         const content = elements.previewEditor.value;
-        
+
         // Call API to save file
         const response = await fetch(`api.php?action=save&path=${encodeURIComponent(state.preview.path)}`, {
             method: 'POST',
@@ -1220,15 +1177,13 @@ async function savePreviewContent() {
             },
             body: JSON.stringify({ content })
         });
-        
+
         const data = await response.json();
-        
+
         if (!response.ok || !data.success) {
             throw new Error(data.error || 'Failed to save file');
         }
-        
-        console.log('[PREVIEW] File saved successfully:', data);
-        
+
         // Update state - no longer dirty, save successful
         updateState({
             preview: {
@@ -1238,32 +1193,32 @@ async function savePreviewContent() {
                 originalContent: content
             }
         });
-        
+
         // Update status
         if (elements.previewStatus) {
             const charCount = content.length.toLocaleString('id-ID');
             elements.previewStatus.textContent = `Disimpan • ${charCount} karakter`;
         }
-        
+
         // Update save button
         if (elements.previewSave) {
             elements.previewSave.disabled = true;
             elements.previewSave.textContent = 'Simpan';
             elements.previewSave.classList.remove('saving', 'dirty');
         }
-        
+
         // Update window title (remove asterisk)
         const originalTitle = document.title.replace(/^\* /, '');
         document.title = originalTitle;
-        
+
         // Show success notification
         flashStatus('File berhasil disimpan');
-        
+
         return Promise.resolve(data);
-        
+
     } catch (error) {
         console.error('[PREVIEW] Error saving file:', error);
-        
+
         // Update state - save failed
         updateState({
             preview: {
@@ -1271,12 +1226,12 @@ async function savePreviewContent() {
                 isSaving: false
             }
         });
-        
+
         // Update status with error
         if (elements.previewStatus) {
             elements.previewStatus.textContent = 'Gagal menyimpan: ' + error.message;
         }
-        
+
         // Update save button
         if (elements.previewSave) {
             elements.previewSave.disabled = false;
@@ -1284,10 +1239,10 @@ async function savePreviewContent() {
             elements.previewSave.classList.add('dirty');
             elements.previewSave.classList.remove('saving');
         }
-        
+
         // Show error notification
         setError('Gagal menyimpan file: ' + error.message);
-        
+
         return Promise.reject(error);
     }
 }
@@ -1299,7 +1254,7 @@ function updateSelectionUI() {
     if (btnDeleteSelected) {
         btnDeleteSelected.disabled = selectedCount === 0 || state.isLoading;
     }
-    
+
     // Update desktop delete button as well
     if (btnDeleteSelectedDesktop) {
         btnDeleteSelectedDesktop.disabled = selectedCount === 0 || state.isLoading;
@@ -1310,18 +1265,18 @@ function updateSelectionUI() {
                 : 'Hapus Terpilih';
         }
     }
-    
+
     if (btnMoveSelected) {
         btnMoveSelected.disabled = selectedCount === 0 || state.isLoading;
     }
-    
+
     if (selectAllCheckbox) {
         const totalVisible = state.visibleItems.length;
         const selectedVisible = state.visibleItems.filter(item => state.selected.has(item.path)).length;
         selectAllCheckbox.checked = totalVisible > 0 && selectedVisible === totalVisible;
         selectAllCheckbox.indeterminate = selectedVisible > 0 && selectedVisible < totalVisible;
     }
-    
+
     // Sync mobile select-all checkbox
     if (selectAllCheckboxMobile) {
         const totalVisible = state.visibleItems.length;
@@ -1329,23 +1284,23 @@ function updateSelectionUI() {
         selectAllCheckboxMobile.checked = totalVisible > 0 && selectedVisible === totalVisible;
         selectAllCheckboxMobile.indeterminate = selectedVisible > 0 && selectedVisible < totalVisible;
     }
-    
+
     // Update floating selected count badge for mobile
     if (mobileSelectedCount) {
         const countText = mobileSelectedCount.querySelector('.selected-count-text');
         if (countText) {
             countText.textContent = selectedCount > 0 ? `${selectedCount} dipilih` : '0 dipilih';
         }
-        
+
         // Show/hide floating badge based on selection
         mobileSelectedCount.classList.toggle('hidden', selectedCount === 0);
     }
-    
+
     // Sync checkbox visual state in desktop table
     if (tableBody) {
         syncRowSelection(tableBody, state);
     }
-    
+
     // Sync checkbox visual state in mobile list
     if (mobileFileList) {
         syncMobileSelection(mobileFileList, state);
@@ -1444,8 +1399,7 @@ function closeConfirmOverlayWrapper() {
  * @param {FileList} files - Daftar file yang akan diunggah
  */
 async function uploadFilesWrapper(files) {
-    console.log('[DEBUG] uploadFilesWrapper called with files:', files);
-    
+
     await uploadFiles(
         files,
         state,
@@ -1462,8 +1416,7 @@ async function uploadFilesWrapper(files) {
  * @param {FileList} files - Daftar file dari folder yang akan diunggah
  */
 async function uploadFolderWrapper(files) {
-    console.log('[DEBUG] uploadFolderWrapper called with files:', files);
-    
+
     await uploadFolder(
         files,
         state,
@@ -1481,8 +1434,7 @@ async function uploadFolderWrapper(files) {
  * @param {string} name - Nama item
  */
 async function createItemWrapper(kind, name) {
-    console.log('[DEBUG] createItemWrapper called with kind:', kind, 'name:', name);
-    
+
     await createItem(
         kind,
         name,
@@ -1504,8 +1456,7 @@ async function createItemWrapper(kind, name) {
  * @param {Array} paths - Array path item yang akan dihapus
  */
 async function deleteItemsWrapper(paths) {
-    console.log('[DEBUG] deleteItemsWrapper called with paths:', paths);
-    
+
     await deleteItems(
         paths,
         state,
@@ -1523,20 +1474,19 @@ async function deleteItemsWrapper(paths) {
  * Wrapper function untuk rename item dengan parameter lengkap
  */
 async function renameItemWrapper() {
-    console.log('[DEBUG] renameItemWrapper called');
-    
+
     if (!state.rename.targetItem) {
         console.error('[DEBUG] No target item for rename');
         return;
     }
-    
+
     const newName = elements.renameName.value.trim();
     if (!newName) {
         elements.renameHint.textContent = 'Nama tidak boleh kosong.';
         elements.renameHint.classList.add('error');
         return;
     }
-    
+
     await renameItem(
         state.rename.targetItem,
         newName,
@@ -1582,8 +1532,7 @@ function closePreviewOverlayWrapper(force = false) {
  * @param {Object} item - Item yang akan di-preview
  */
 async function openTextPreview(item) {
-    console.log('[PREVIEW] Opening text preview for:', item.name, item);
-    
+
     if (hasUnsavedChanges(state.preview)) {
         const confirmed = await confirmDiscardChanges('Perubahan belum disimpan. Buka file lain tanpa menyimpan?');
         if (!confirmed) {
@@ -1612,16 +1561,16 @@ async function openTextPreview(item) {
     elements.previewEditor.classList.add('is-loading');
     elements.previewEditor.readOnly = true;
     elements.previewEditor.value = '';
-    
+
     // CRITICAL: Reset line numbers completely
     elements.previewLineNumbersInner.innerHTML = '<span>1</span>';
     elements.previewLineNumbersInner.style.transform = 'translateY(0px)';
-    
+
     updateLineNumbers();
 
     // Open overlay
     openPreviewOverlay(state, elements.previewOverlay, elements.previewClose);
-    
+
     // Ensure text mode
     if (elements.previewEditorWrapper) {
         elements.previewEditorWrapper.style.display = '';
@@ -1635,31 +1584,12 @@ async function openTextPreview(item) {
         // Fetch file content - using 'content' action
         const encodedPath = encodeURIComponent(item.path);
         const apiUrl = `api.php?action=content&path=${encodedPath}`;
-        console.log('[PREVIEW] Fetching from:', apiUrl);
-        console.log('[PREVIEW] Item details:', { name: item.name, path: item.path, size: item.size });
-        
+
+
         const response = await fetch(apiUrl);
-        console.log('[PREVIEW] Response received:', { 
-            status: response.status, 
-            statusText: response.statusText,
-            ok: response.ok,
-            headers: {
-                contentType: response.headers.get('content-type')
-            }
-        });
-        
+
         const responseText = await response.text();
-        console.log('[PREVIEW] Response text (first 500 chars):', responseText.substring(0, 500));
-        
         const data = JSON.parse(responseText);
-        console.log('[PREVIEW] Parsed JSON:', {
-            success: data.success,
-            error: data.error,
-            hasContent: typeof data.content !== 'undefined',
-            contentType: typeof data.content,
-            contentLength: data.content ? String(data.content).length : 0,
-            contentPreview: data.content ? String(data.content).substring(0, 100) : null
-        });
 
         if (!response.ok || !data.success) {
             throw new Error(data.error || `Failed to load file (Status: ${response.status})`);
@@ -1667,16 +1597,10 @@ async function openTextPreview(item) {
 
         // Ensure content is a string
         const content = typeof data.content === 'string' ? data.content : String(data.content || '');
-        console.log('[PREVIEW] Final content:', {
-            type: typeof content,
-            length: content.length,
-            preview: content.substring(0, 150)
-        });
-        
+
         state.preview.originalContent = content;
         elements.previewEditor.value = content;
-        console.log('[PREVIEW] Editor value set. Current value length:', elements.previewEditor.value.length);
-        
+
         elements.previewEditor.readOnly = false;
         updateLineNumbers();
         ensureConsistentStyling();
@@ -1684,9 +1608,7 @@ async function openTextPreview(item) {
         if (elements.previewStatus) {
             elements.previewStatus.textContent = `Karakter: ${content.length.toLocaleString('id-ID')}`;
         }
-        
-        console.log('[PREVIEW] Content loaded successfully');
-        
+
         // Debug element styles after loading
         setTimeout(() => {
             debugElementStyles();
@@ -1709,11 +1631,10 @@ async function openTextPreview(item) {
  * @param {Object} item - Item yang akan di-preview
  */
 async function openMediaPreview(item) {
-    console.log('[PREVIEW] Opening media preview for:', item.name);
-    
+
     // Open overlay first
     openPreviewOverlay(state, elements.previewOverlay, elements.previewClose);
-    
+
     // Call the modal function
     await openMediaPreviewModal(
         item,
@@ -1744,19 +1665,19 @@ async function openMediaPreview(item) {
  */
 export async function initializeApp() {
     try {
-        console.log('[initializeApp] start');
+
         logger.info('Initializing application...');
-        
+
         // Load saved preferences from localStorage
         const savedSort = loadSortPreferences();
         const savedPath = loadLastPath();
-        
+
         logger.info('Loaded preferences:', {
             sort: savedSort,
             lastPath: savedPath,
             storageAvailable: isLocalStorageAvailable()
         });
-        
+
         // Set initial state with saved preferences
         updateState({
             currentPath: savedPath || elements.currentPath,
@@ -1829,22 +1750,22 @@ export async function initializeApp() {
 
         // Setup event handlers
         setupEventHandlers();
-        
+
         // Setup drag and drop - fileCard drop zone
         setupFileCardDropZone();
-        
+
         // Setup move overlay handlers (lazy-loaded on first move operation)
         // Will be loaded when user clicks move button
         logger.info('Move overlay will be loaded on demand');
-        
+
         // Load initial directory
         await loadInitialDirectory();
-        
+
         // Start polling for updates
         startPolling();
-        
+
         logger.info('Application initialized successfully');
-        
+
     } catch (error) {
         logger.error('Failed to initialize application', error);
         showError('Failed to initialize application. Please refresh the page.');
@@ -1868,7 +1789,7 @@ function setupEventHandlers() {
 
     // Setup filter handler
     if (!warnIfMissing('filter', elements.filterInput) && !warnIfMissing('clearSearch', elements.clearSearch)) {
-    setupFilterHandler(elements.filterInput, elements.clearSearch, state, renderItems, resetPagination);
+        setupFilterHandler(elements.filterInput, elements.clearSearch, state, renderItems, resetPagination);
     }
 
     // Setup mobile search modal handler
@@ -2167,7 +2088,9 @@ function setupEventHandlers() {
     try {
         const addButtons = Array.from(document.querySelectorAll('[data-action="add-modal"]'));
         addButtons.forEach((btn) => {
-            if (btn.closest && btn.closest('.split-action')) return; // skip split-action items
+            if (btn.closest && btn.closest('.split-action')) {
+                return;
+            } // skip split-action items
             btn.addEventListener('click', (ev) => {
                 ev.preventDefault();
                 // If button has a kind (file/folder), set the radio inside the modal before opening
@@ -2181,13 +2104,21 @@ function setupEventHandlers() {
                     }
                 } catch (err) { /* ignore */ }
                 // Use wrapper to keep API consistent
-                try { openCreateOverlayWrapper(); } catch (err) { console.error('openCreateOverlayWrapper failed', err); }
+                try {
+                    openCreateOverlayWrapper();
+                } catch (err) {
+                    console.error('openCreateOverlayWrapper failed', err);
+                }
             });
             // Keyboard support: Enter / Space
             btn.addEventListener('keydown', (ev) => {
                 if (ev.key === 'Enter' || ev.key === ' ') {
                     ev.preventDefault();
-                    try { openCreateOverlayWrapper(); } catch (err) { console.error('openCreateOverlayWrapper failed', err); }
+                    try {
+                        openCreateOverlayWrapper();
+                    } catch (err) {
+                        console.error('openCreateOverlayWrapper failed', err);
+                    }
                 }
             });
         });
@@ -2198,11 +2129,15 @@ function setupEventHandlers() {
     // Setup move selected button handler (lazy-load moveOverlay module)
     if (elements.btnMoveSelected) {
         elements.btnMoveSelected.addEventListener('click', async () => {
-            if (state.selected.size === 0) return;
+            if (state.selected.size === 0) {
+                return;
+            }
 
             try {
                 const module = await loadMoveOverlay();
-                if (module.setupMoveOverlayHandlers) module.setupMoveOverlayHandlers();
+                if (module.setupMoveOverlayHandlers) {
+                    module.setupMoveOverlayHandlers();
+                }
                 if (module.openMoveOverlay) {
                     const selectedPaths = Array.from(state.selected);
                     module.openMoveOverlay(selectedPaths, state, fetchDirectoryWrapper);
@@ -2231,16 +2166,16 @@ function setupEventHandlers() {
 async function loadInitialDirectory() {
     try {
         logger.info('Loading initial directory...');
-        
+
         // Use saved path from state (already loaded in initializeApp)
         const path = state.currentPath || '';
         await fetchDirectoryWrapper(path);
-        
+
         // Update sort UI
         updateSortUI(elements.sortHeaders, elements.statusSort, state);
-        
+
         logger.info('Initial directory loaded successfully');
-        
+
     } catch (error) {
         logger.error('Failed to load initial directory', error);
         showError('Failed to load directory. Please refresh the page.');
@@ -2268,9 +2203,9 @@ function showError(message) {
         z-index: 10000;
         max-width: 300px;
     `;
-    
+
     document.body.appendChild(errorDiv);
-    
+
     // Auto remove after 5 seconds
     setTimeout(() => {
         if (errorDiv.parentNode) {
@@ -2300,15 +2235,15 @@ function setupServiceWorker() {
 function setupPWA() {
     // Register for install prompt
     let deferredPrompt;
-    
+
     window.addEventListener('beforeinstallprompt', (e) => {
         e.preventDefault();
         deferredPrompt = e;
-        
+
         // Show install button or banner
         showInstallButton();
     });
-    
+
     function showInstallButton() {
         const installButton = document.createElement('button');
         installButton.textContent = 'Install App';
@@ -2327,21 +2262,21 @@ function setupPWA() {
             box-shadow: 0 2px 5px rgba(0,0,0,0.2);
             z-index: 10000;
         `;
-        
+
         installButton.addEventListener('click', async () => {
             if (deferredPrompt) {
                 deferredPrompt.prompt();
                 const { outcome } = await deferredPrompt.userChoice;
                 deferredPrompt = null;
-                
+
                 if (outcome === 'accepted') {
                     logger.info('App installed successfully');
                 }
-                
+
                 document.body.removeChild(installButton);
             }
         });
-        
+
         document.body.appendChild(installButton);
     }
 }
@@ -2365,7 +2300,7 @@ function setupTheme() {
     // Check for saved theme preference or default to light
     const savedTheme = localStorage.getItem('theme') || 'dark';
     document.documentElement.setAttribute('data-theme', savedTheme);
-    
+
     // Add theme toggle button if needed
     const themeToggle = document.createElement('button');
     themeToggle.innerHTML = savedTheme === 'dark' ? '🌙' : '☀️';
@@ -2381,16 +2316,16 @@ function setupTheme() {
         cursor: pointer;
         z-index: 10000;
     `;
-    
+
     themeToggle.addEventListener('click', () => {
         const currentTheme = document.documentElement.getAttribute('data-theme');
         const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
-        
+
         document.documentElement.setAttribute('data-theme', newTheme);
         localStorage.setItem('theme', newTheme);
         themeToggle.innerHTML = newTheme === 'dark' ? '🌙' : '☀️';
     });
-    
+
     document.body.appendChild(themeToggle);
 }
 
@@ -2418,19 +2353,19 @@ function setupKeyboardShortcuts() {
             event.preventDefault();
             elements.filterInput.focus();
         }
-        
+
         // Ctrl/Cmd + N for new file
         if ((event.ctrlKey || event.metaKey) && event.key === 'n') {
             event.preventDefault();
             openCreateOverlayWrapper('file');
         }
-        
+
         // Ctrl/Cmd + Shift + N for new folder
         if ((event.ctrlKey || event.metaKey) && event.shiftKey && event.key === 'N') {
             event.preventDefault();
             openCreateOverlayWrapper('folder');
         }
-        
+
         // Ctrl/Cmd + R for refresh (prevent browser refresh)
         if ((event.ctrlKey || event.metaKey) && event.key === 'r') {
             event.preventDefault();
@@ -2474,7 +2409,7 @@ function syncLineNumbersScroll(fromEditor = true) {
 
     // Simply sync line numbers to editor scroll position using transform
     const scrollTop = previewEditor.scrollTop;
-    
+
     // Apply transform for smooth sync without transition (immediate)
     previewLineNumbersInner.style.transform = `translateY(${-scrollTop}px)`;
 }
@@ -2484,7 +2419,9 @@ function syncLineNumbersScroll(fromEditor = true) {
  */
 function validateScrollHeights() {
     const { previewEditor, previewLineNumbersInner } = elements;
-    if (!previewLineNumbersInner || !previewEditor) return;
+    if (!previewLineNumbersInner || !previewEditor) {
+        return;
+    }
 
     const editorScrollHeight = previewEditor.scrollHeight;
     const lineNumbersHeight = previewLineNumbersInner.scrollHeight;
@@ -2492,12 +2429,7 @@ function validateScrollHeights() {
 
     // Update line numbers if height difference is significant
     if (heightDiff > 10) {
-        console.log('[LINE_NUMBERS] Height mismatch detected:', {
-            editorScrollHeight,
-            lineNumbersHeight,
-            difference: heightDiff
-        });
-        
+
         // Debounced update to prevent excessive re-renders
         clearTimeout(scrollSyncState.heightCheckTimeout);
         scrollSyncState.heightCheckTimeout = setTimeout(() => {
@@ -2512,7 +2444,7 @@ function validateScrollHeights() {
 function logScrollSync(direction, data) {
     const now = Date.now();
     if (now - scrollSyncState.lastScrollTime > 200) { // Log every 200ms max
-        console.log(`[LINE_NUMBERS] Scroll sync ${direction}:`, data);
+
         scrollSyncState.lastScrollTime = now;
     }
 }
@@ -2525,8 +2457,6 @@ function initializeScrollSync() {
     if (!previewLineNumbersInner || !previewEditor || scrollSyncState.isInitialized) {
         return;
     }
-
-    console.log('[LINE_NUMBERS] Initializing enhanced scroll synchronization...');
 
     // Throttled scroll handler for editor (60fps = ~16ms)
     const throttledEditorScroll = throttle(() => {
@@ -2542,7 +2472,7 @@ function initializeScrollSync() {
 
     // Add event listeners with passive option for better performance
     previewEditor.addEventListener('scroll', throttledEditorScroll, { passive: true });
-    
+
     // Handle wheel events on editor to normalize delta values
     const onEditorWheel = (e) => {
         // No-op handler kept for potential future normalization or intercepting
@@ -2554,7 +2484,9 @@ function initializeScrollSync() {
     let smoothAnimId = null;
     let smoothTarget = null;
     function animateEditorScrollTo(target) {
-        if (!previewEditor) return;
+        if (!previewEditor) {
+            return;
+        }
         smoothTarget = Math.max(0, Math.min(target, previewEditor.scrollHeight - previewEditor.clientHeight));
         if ('scrollBehavior' in document.documentElement.style) {
             // Browser supports smooth scroll via property
@@ -2562,7 +2494,9 @@ function initializeScrollSync() {
             return;
         }
         // Fallback manual animation
-        if (smoothAnimId) cancelAnimationFrame(smoothAnimId);
+        if (smoothAnimId) {
+            cancelAnimationFrame(smoothAnimId);
+        }
         const start = previewEditor.scrollTop;
         const diff = smoothTarget - start;
         const duration = 180; // ms
@@ -2606,7 +2540,7 @@ function initializeScrollSync() {
     // Handle content changes
     const mutationObserver = new MutationObserver((mutations) => {
         let shouldResync = false;
-        
+
         mutations.forEach((mutation) => {
             if (mutation.type === 'characterData' ||
                 mutation.type === 'childList' ||
@@ -2636,7 +2570,6 @@ function initializeScrollSync() {
 
     // Mark as initialized
     scrollSyncState.isInitialized = true;
-    console.log('[LINE_NUMBERS] Enhanced scroll synchronization initialized successfully');
 
     // Two-way: Allow mouse wheel / touch on line numbers to control editor scroll
     const { previewLineNumbers } = elements;
@@ -2644,7 +2577,9 @@ function initializeScrollSync() {
         // Wheel handler - convert wheel on line numbers to editor.scrollTop
         const onLineNumbersWheel = throttle((e) => {
             // Prevent default so only editor scroll changes (this helps mobile and trackpad)
-            if (e.cancelable) e.preventDefault();
+            if (e.cancelable) {
+                e.preventDefault();
+            }
 
             // Normalize deltaY based on deltaMode
             let deltaY = e.deltaY;
@@ -2674,7 +2609,9 @@ function initializeScrollSync() {
         }
 
         function onPointerMove(e) {
-            if (!isDragging) return;
+            if (!isDragging) {
+                return;
+            }
             const y = e.clientY || (e.touches && e.touches[0].clientY) || 0;
             const delta = dragStartY - y;
             const target = dragStartTop + delta;
@@ -2694,9 +2631,17 @@ function initializeScrollSync() {
         window.addEventListener('pointermove', onPointerMove);
         window.addEventListener('pointerup', onPointerUp);
         // touch fallback
-        const onTouchStart = (e) => { isDragging = true; dragStartY = e.touches[0].clientY; dragStartTop = previewEditor.scrollTop; };
-        const onTouchMove = throttle((e) => { if (!isDragging) return; const cur = e.touches[0].clientY; const delta = dragStartY - cur; animateEditorScrollTo(dragStartTop + delta); syncLineNumbersScroll(false); }, 16);
-        const onTouchEnd = () => { isDragging = false; };
+        const onTouchStart = (e) => {
+            isDragging = true; dragStartY = e.touches[0].clientY; dragStartTop = previewEditor.scrollTop;
+        };
+        const onTouchMove = throttle((e) => {
+            if (!isDragging) {
+                return;
+            } const cur = e.touches[0].clientY; const delta = dragStartY - cur; animateEditorScrollTo(dragStartTop + delta); syncLineNumbersScroll(false);
+        }, 16);
+        const onTouchEnd = () => {
+            isDragging = false;
+        };
         previewLineNumbers.addEventListener('touchstart', onTouchStart, { passive: true });
         previewLineNumbers.addEventListener('touchmove', onTouchMove, { passive: false });
         previewLineNumbers.addEventListener('touchend', onTouchEnd, { passive: true });
@@ -2725,7 +2670,11 @@ function initializeScrollSync() {
     scrollSyncState.previewLineNumbers = elements.previewLineNumbers;
     // attach cancel function for smooth animation
     scrollSyncState.cancelSmoothAnim = () => {
-        try { if (smoothAnimId) cancelAnimationFrame(smoothAnimId); } catch (e) {}
+        try {
+            if (smoothAnimId) {
+                cancelAnimationFrame(smoothAnimId);
+            }
+        } catch (e) {}
         smoothAnimId = null;
     };
 }
@@ -2739,7 +2688,9 @@ function cleanupScrollSync() {
     }
     // Cancel any autoraf for smooth scroll
     if (scrollSyncState.cancelSmoothAnim) {
-        try { scrollSyncState.cancelSmoothAnim(); } catch (e) {}
+        try {
+            scrollSyncState.cancelSmoothAnim();
+        } catch (e) {}
     }
     clearTimeout(scrollSyncState.heightCheckTimeout);
     clearTimeout(scrollSyncState.contentChangeTimeout);
@@ -2761,11 +2712,23 @@ function cleanupScrollSync() {
     } catch (e) { /* swallow */ }
 
     // Disconnect observers
-    try { if (scrollSyncState.resizeObserver) scrollSyncState.resizeObserver.disconnect(); } catch (e) {}
-    try { if (scrollSyncState.mutationObserver) scrollSyncState.mutationObserver.disconnect(); } catch (e) {}
+    try {
+        if (scrollSyncState.resizeObserver) {
+            scrollSyncState.resizeObserver.disconnect();
+        }
+    } catch (e) {}
+    try {
+        if (scrollSyncState.mutationObserver) {
+            scrollSyncState.mutationObserver.disconnect();
+        }
+    } catch (e) {}
 
     // Remove window resize listener
-    try { if (scrollSyncState.windowResizeHandler) window.removeEventListener('resize', scrollSyncState.windowResizeHandler); } catch (e) {}
+    try {
+        if (scrollSyncState.windowResizeHandler) {
+            window.removeEventListener('resize', scrollSyncState.windowResizeHandler);
+        }
+    } catch (e) {}
 
     scrollSyncState.isInitialized = false;
     // unset saved references
@@ -2779,7 +2742,7 @@ function cleanupScrollSync() {
     scrollSyncState.previewLineNumbers = null;
     scrollSyncState.cleanupListeners = null;
     scrollSyncState.cancelSmoothAnim = null;
-    console.log('[LINE_NUMBERS] Scroll synchronization cleaned up');
+
 }
 
 // Export fungsi utama

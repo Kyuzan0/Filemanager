@@ -20,11 +20,13 @@ export function setupCreateFormHandler(
     createItem,
     showToast
 ) {
-    if (!createForm) return;
+    if (!createForm) {
+        return;
+    }
 
     createForm.addEventListener('submit', async (event) => {
         event.preventDefault();
-        
+
         const type = createTypeInput?.value || 'file';
         const name = createNameInput?.value?.trim();
 
@@ -67,11 +69,13 @@ export function setupRenameFormHandler(
     renameItem,
     showToast
 ) {
-    if (!renameForm) return;
+    if (!renameForm) {
+        return;
+    }
 
     renameForm.addEventListener('submit', async (event) => {
         event.preventDefault();
-        
+
         const path = renamePathInput?.value;
         const newName = renameInput?.value?.trim();
 
@@ -119,11 +123,13 @@ export function setupUploadFormHandler(
     showToast,
     updateUploadProgress
 ) {
-    if (!uploadForm) return;
+    if (!uploadForm) {
+        return;
+    }
 
     uploadForm.addEventListener('submit', async (event) => {
         event.preventDefault();
-        
+
         const files = uploadInput?.files;
 
         if (!files || files.length === 0) {
@@ -136,7 +142,6 @@ export function setupUploadFormHandler(
             closeUploadOverlay?.();
             uploadForm.reset();
         } catch (error) {
-            console.error('[FormHandlers] Upload error:', error);
             showToast?.(error.message || 'Gagal mengunggah file', 'error');
         }
     });
@@ -157,7 +162,7 @@ export function setupUploadFormHandler(
  */
 function updateFileList(form, files) {
     let fileListContainer = form.querySelector('.file-list');
-    
+
     if (!fileListContainer) {
         fileListContainer = document.createElement('div');
         fileListContainer.className = 'file-list';
@@ -187,7 +192,9 @@ export function setupSearchFormHandler(
     doSearch,
     clearSearch
 ) {
-    if (!searchForm && !searchInput) return;
+    if (!searchForm && !searchInput) {
+        return;
+    }
 
     // Form submit handler
     searchForm?.addEventListener('submit', (event) => {
@@ -201,7 +208,7 @@ export function setupSearchFormHandler(
         if (searchTimeout) {
             clearTimeout(searchTimeout);
         }
-        
+
         searchTimeout = setTimeout(() => {
             doSearch?.();
         }, 300);
@@ -226,11 +233,13 @@ export function setupSettingsFormHandler(
     saveSettings,
     showToast
 ) {
-    if (!settingsForm) return;
+    if (!settingsForm) {
+        return;
+    }
 
     settingsForm.addEventListener('submit', async (event) => {
         event.preventDefault();
-        
+
         const formData = new FormData(settingsForm);
         const settings = Object.fromEntries(formData.entries());
 
@@ -276,11 +285,13 @@ export function setupMoveFormHandler(
     moveItems,
     showToast
 ) {
-    if (!moveForm) return;
+    if (!moveForm) {
+        return;
+    }
 
     moveForm.addEventListener('submit', async (event) => {
         event.preventDefault();
-        
+
         const destination = moveDestinationInput?.value;
         const sourcePaths = moveSourceInput?.value;
 
@@ -318,11 +329,15 @@ export function setupMoveFormHandler(
  * @param {Object} validationRules - Validation rules
  */
 export function setupFormValidation(form, validationRules) {
-    if (!form) return;
+    if (!form) {
+        return;
+    }
 
     form.querySelectorAll('input, textarea, select').forEach(input => {
         const rules = validationRules[input.name];
-        if (!rules) return;
+        if (!rules) {
+            return;
+        }
 
         input.addEventListener('blur', () => {
             validateInput(input, rules);
@@ -413,14 +428,14 @@ function validateInput(input, rules) {
  */
 function showInputError(input, message) {
     input.classList.add('input-error');
-    
+
     let errorElement = input.parentElement.querySelector('.error-message');
     if (!errorElement) {
         errorElement = document.createElement('span');
         errorElement.className = 'error-message';
         input.parentElement.appendChild(errorElement);
     }
-    
+
     errorElement.textContent = message;
 }
 
@@ -430,7 +445,7 @@ function showInputError(input, message) {
  */
 function clearInputError(input) {
     input.classList.remove('input-error');
-    
+
     const errorElement = input.parentElement.querySelector('.error-message');
     if (errorElement) {
         errorElement.remove();
@@ -485,12 +500,14 @@ function escapeHtml(text) {
  * @returns {string} Formatted size
  */
 function formatFileSize(bytes) {
-    if (bytes === 0) return '0 B';
-    
+    if (bytes === 0) {
+        return '0 B';
+    }
+
     const k = 1024;
     const sizes = ['B', 'KB', 'MB', 'GB', 'TB'];
     const i = Math.floor(Math.log(bytes) / Math.log(k));
-    
+
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
 }
 
@@ -530,7 +547,9 @@ export function setupOverlayCloseHandlers(closeButtons, closeHandlers) {
  */
 export function setupBackdropClickHandlers(overlays, closeOverlay) {
     overlays.forEach(overlay => {
-        if (!overlay) return;
+        if (!overlay) {
+            return;
+        }
 
         overlay.addEventListener('click', (event) => {
             // Only close if clicking on backdrop, not on content

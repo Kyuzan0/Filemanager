@@ -1,7 +1,7 @@
 /**
  * Render Optimizer Module
  * Provides performance optimizations for rendering operations
- * 
+ *
  * Features:
  * - Render batching: Queue multiple render calls and execute as single batch
  * - RequestAnimationFrame wrapper: Ensure renders happen at optimal times
@@ -41,7 +41,7 @@ let isBatching = false;
 /**
  * Queue a render task for batched execution
  * If a task with the same ID is already queued, it will be replaced
- * 
+ *
  * @param {string} id - Unique identifier for the render task
  * @param {Function} renderFn - The render function to execute
  * @param {number} [priority=5] - Priority (1-10, lower = higher priority)
@@ -53,9 +53,9 @@ export function queueRender(id, renderFn, priority = 5) {
         priority: Math.min(10, Math.max(1, priority)),
         timestamp: performance.now()
     };
-    
+
     renderQueue.set(id, task);
-    
+
     if (!batchFrameId) {
         batchFrameId = requestAnimationFrame(executeBatch);
     }
@@ -69,41 +69,40 @@ function executeBatch() {
         batchFrameId = null;
         return;
     }
-    
+
     isBatching = true;
     const startTime = performance.now();
-    
+
     // Sort tasks by priority (lower number = higher priority)
     const sortedTasks = Array.from(renderQueue.values())
         .sort((a, b) => a.priority - b.priority);
-    
+
     // Clear queue before executing to allow new tasks to be queued during execution
     renderQueue.clear();
-    
+
     // Execute tasks
     let executedCount = 0;
     const errors = [];
-    
+
     for (const task of sortedTasks) {
         try {
             task.render();
             executedCount++;
         } catch (error) {
             errors.push({ id: task.id, error });
-            console.error(`[RenderOptimizer] Error executing task "${task.id}":`, error);
         }
     }
-    
+
     isBatching = false;
     batchFrameId = null;
-    
+
     const duration = performance.now() - startTime;
-    
+
     // Log performance if it takes too long
     if (duration > 16) { // More than one frame (60fps = ~16ms per frame)
         console.warn(`[RenderOptimizer] Batch took ${duration.toFixed(2)}ms for ${executedCount} tasks`);
     }
-    
+
     // Check if new tasks were queued during execution
     if (renderQueue.size > 0) {
         batchFrameId = requestAnimationFrame(executeBatch);
@@ -160,7 +159,7 @@ const rafHandles = new Map();
 /**
  * Schedule a callback to run on the next animation frame
  * Automatically cancels any previous pending callback with the same key
- * 
+ *
  * @param {string} key - Unique key for this animation frame callback
  * @param {Function} callback - The callback to execute
  * @returns {number} The RAF handle
@@ -171,12 +170,12 @@ export function scheduleFrame(key, callback) {
     if (existingHandle) {
         cancelAnimationFrame(existingHandle);
     }
-    
+
     const handle = requestAnimationFrame((timestamp) => {
         rafHandles.delete(key);
         callback(timestamp);
     });
-    
+
     rafHandles.set(key, handle);
     return handle;
 }
@@ -260,7 +259,7 @@ export function clearAllDirty() {
 /**
  * Update component state and check if it changed
  * Returns true if the component should re-render
- * 
+ *
  * @param {string} componentId - The component identifier
  * @param {*} newState - The new state value
  * @param {Function} [compareFn] - Custom comparison function
@@ -268,17 +267,17 @@ export function clearAllDirty() {
  */
 export function updateComponentState(componentId, newState, compareFn = null) {
     const oldState = componentStates.get(componentId);
-    
-    const hasChanged = compareFn 
+
+    const hasChanged = compareFn
         ? !compareFn(oldState, newState)
         : !shallowEqual(oldState, newState);
-    
+
     if (hasChanged) {
         componentStates.set(componentId, newState);
         markDirty(componentId);
         return true;
     }
-    
+
     return false;
 }
 
@@ -307,19 +306,29 @@ export function clearComponentState(componentId) {
  * @returns {boolean}
  */
 function shallowEqual(a, b) {
-    if (a === b) return true;
-    if (a == null || b == null) return false;
-    if (typeof a !== 'object' || typeof b !== 'object') return a === b;
-    
+    if (a === b) {
+        return true;
+    }
+    if (a === null || a === undefined || b === null || b === undefined) {
+        return false;
+    }
+    if (typeof a !== 'object' || typeof b !== 'object') {
+        return a === b;
+    }
+
     const keysA = Object.keys(a);
     const keysB = Object.keys(b);
-    
-    if (keysA.length !== keysB.length) return false;
-    
-    for (const key of keysA) {
-        if (a[key] !== b[key]) return false;
+
+    if (keysA.length !== keysB.length) {
+        return false;
     }
-    
+
+    for (const key of keysA) {
+        if (a[key] !== b[key]) {
+            return false;
+        }
+    }
+
     return true;
 }
 
@@ -340,7 +349,7 @@ const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
 /**
  * Memoize a function result based on dependencies
  * Returns cached value if dependencies haven't changed
- * 
+ *
  * @param {string} key - Cache key
  * @param {Function} computeFn - Function to compute the value
  * @param {Array} deps - Dependencies array
@@ -349,35 +358,35 @@ const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
 export function memoize(key, computeFn, deps) {
     const cached = memoCache.get(key);
     const now = Date.now();
-    
+
     if (cached) {
         // Check if cache is still valid
-        const depsMatch = deps.length === cached.deps.length && 
+        const depsMatch = deps.length === cached.deps.length &&
             deps.every((dep, i) => dep === cached.deps[i]);
-        
+
         const notExpired = (now - cached.timestamp) < CACHE_TTL;
-        
+
         if (depsMatch && notExpired) {
             cached.hits++;
             return cached.value;
         }
     }
-    
+
     // Compute new value
     const value = computeFn();
-    
+
     // Check cache size limit
     if (memoCache.size >= MAX_CACHE_SIZE) {
         evictOldestEntries(Math.floor(MAX_CACHE_SIZE * 0.2)); // Evict 20%
     }
-    
+
     memoCache.set(key, {
         value,
         deps: [...deps],
         timestamp: now,
         hits: 0
     });
-    
+
     return value;
 }
 
@@ -398,14 +407,14 @@ export function invalidateMemo(key) {
 export function invalidateMemoPattern(pattern) {
     const regex = typeof pattern === 'string' ? new RegExp(pattern) : pattern;
     let count = 0;
-    
+
     for (const key of memoCache.keys()) {
         if (regex.test(key)) {
             memoCache.delete(key);
             count++;
         }
     }
-    
+
     return count;
 }
 
@@ -424,13 +433,17 @@ export function getMemoStats() {
     let totalHits = 0;
     let oldestTimestamp = Date.now();
     let newestTimestamp = 0;
-    
+
     for (const entry of memoCache.values()) {
         totalHits += entry.hits;
-        if (entry.timestamp < oldestTimestamp) oldestTimestamp = entry.timestamp;
-        if (entry.timestamp > newestTimestamp) newestTimestamp = entry.timestamp;
+        if (entry.timestamp < oldestTimestamp) {
+            oldestTimestamp = entry.timestamp;
+        }
+        if (entry.timestamp > newestTimestamp) {
+            newestTimestamp = entry.timestamp;
+        }
     }
-    
+
     return {
         size: memoCache.size,
         maxSize: MAX_CACHE_SIZE,
@@ -448,7 +461,7 @@ export function getMemoStats() {
 function evictOldestEntries(count) {
     const entries = Array.from(memoCache.entries())
         .sort((a, b) => a[1].timestamp - b[1].timestamp);
-    
+
     for (let i = 0; i < Math.min(count, entries.length); i++) {
         memoCache.delete(entries[i][0]);
     }
@@ -462,7 +475,7 @@ function evictOldestEntries(count) {
 /**
  * Create a minimal diff between two arrays of items
  * Returns operations needed to transform oldItems into newItems
- * 
+ *
  * @param {Array} oldItems - Original array
  * @param {Array} newItems - New array
  * @param {Function} getKey - Function to get unique key from item
@@ -471,23 +484,23 @@ function evictOldestEntries(count) {
 export function diffArrays(oldItems, newItems, getKey) {
     const oldMap = new Map(oldItems.map((item, i) => [getKey(item), { item, index: i }]));
     const newMap = new Map(newItems.map((item, i) => [getKey(item), { item, index: i }]));
-    
+
     const added = [];
     const removed = [];
     const moved = [];
     const unchanged = [];
-    
+
     // Find removed and unchanged items
     for (const [key, { item, index }] of oldMap) {
         if (!newMap.has(key)) {
             removed.push({ key, item, oldIndex: index });
         }
     }
-    
+
     // Find added, moved, and unchanged items
     for (const [key, { item, index }] of newMap) {
         const oldEntry = oldMap.get(key);
-        
+
         if (!oldEntry) {
             added.push({ key, item, newIndex: index });
         } else if (oldEntry.index !== index) {
@@ -496,13 +509,13 @@ export function diffArrays(oldItems, newItems, getKey) {
             unchanged.push({ key, item, index });
         }
     }
-    
+
     return { added, removed, moved, unchanged };
 }
 
 /**
  * Apply minimal DOM updates based on diff
- * 
+ *
  * @param {HTMLElement} container - Parent container
  * @param {Object} diff - Diff from diffArrays
  * @param {Function} createNode - Function to create a new DOM node
@@ -511,7 +524,7 @@ export function diffArrays(oldItems, newItems, getKey) {
  */
 export function applyDiff(container, diff, createNode, updateNode, getNodeByKey) {
     const { added, removed, moved, unchanged } = diff;
-    
+
     // Remove nodes
     for (const { key } of removed) {
         const node = getNodeByKey(key);
@@ -519,7 +532,7 @@ export function applyDiff(container, diff, createNode, updateNode, getNodeByKey)
             node.remove();
         }
     }
-    
+
     // Move nodes
     for (const { key, item, newIndex } of moved) {
         const node = getNodeByKey(key);
@@ -528,19 +541,19 @@ export function applyDiff(container, diff, createNode, updateNode, getNodeByKey)
             // Will be repositioned below
         }
     }
-    
+
     // Add new nodes
     for (const { key, item, newIndex } of added) {
         const node = createNode(item);
         node.dataset.key = key;
         // Will be positioned below
     }
-    
+
     // Reposition all nodes in correct order
     const allChildren = Array.from(container.children);
     const sortedChildren = [...unchanged, ...moved, ...added]
         .sort((a, b) => (a.newIndex ?? a.index) - (b.newIndex ?? b.index));
-    
+
     // Use DocumentFragment for efficient reordering
     const fragment = document.createDocumentFragment();
     for (const { key } of sortedChildren) {
@@ -566,7 +579,7 @@ const throttleTimestamps = new Map();
 /**
  * Debounce a function by key
  * Only the last call within the delay period will execute
- * 
+ *
  * @param {string} key - Unique key for this debounce
  * @param {Function} fn - Function to debounce
  * @param {number} delay - Delay in milliseconds
@@ -576,12 +589,12 @@ export function debounceByKey(key, fn, delay) {
     if (existingTimer) {
         clearTimeout(existingTimer);
     }
-    
+
     const timer = setTimeout(() => {
         debounceTimers.delete(key);
         fn();
     }, delay);
-    
+
     debounceTimers.set(key, timer);
 }
 
@@ -600,7 +613,7 @@ export function cancelDebounce(key) {
 /**
  * Throttle a function by key
  * Only one call per interval will execute
- * 
+ *
  * @param {string} key - Unique key for this throttle
  * @param {Function} fn - Function to throttle
  * @param {number} interval - Minimum interval in milliseconds
@@ -609,13 +622,13 @@ export function cancelDebounce(key) {
 export function throttleByKey(key, fn, interval) {
     const lastTimestamp = throttleTimestamps.get(key) || 0;
     const now = Date.now();
-    
+
     if (now - lastTimestamp >= interval) {
         throttleTimestamps.set(key, now);
         fn();
         return true;
     }
-    
+
     return false;
 }
 
@@ -632,7 +645,7 @@ const MAX_METRICS_HISTORY = 100;
 
 /**
  * Record a performance metric
- * 
+ *
  * @param {string} name - Metric name
  * @param {number} duration - Duration in milliseconds
  */
@@ -640,10 +653,10 @@ export function recordMetric(name, duration) {
     if (!performanceMetrics.has(name)) {
         performanceMetrics.set(name, []);
     }
-    
+
     const metrics = performanceMetrics.get(name);
     metrics.push(duration);
-    
+
     // Keep only recent metrics
     if (metrics.length > MAX_METRICS_HISTORY) {
         metrics.shift();
@@ -652,17 +665,19 @@ export function recordMetric(name, duration) {
 
 /**
  * Get performance metrics for a name
- * 
+ *
  * @param {string} name - Metric name
  * @returns {Object|null}
  */
 export function getMetrics(name) {
     const metrics = performanceMetrics.get(name);
-    if (!metrics || metrics.length === 0) return null;
-    
+    if (!metrics || metrics.length === 0) {
+        return null;
+    }
+
     const sorted = [...metrics].sort((a, b) => a - b);
     const sum = metrics.reduce((a, b) => a + b, 0);
-    
+
     return {
         count: metrics.length,
         min: sorted[0],
@@ -695,7 +710,7 @@ export function clearMetrics() {
 
 /**
  * Measure the execution time of a function
- * 
+ *
  * @param {string} name - Metric name
  * @param {Function} fn - Function to measure
  * @returns {*} The function's return value
@@ -712,7 +727,7 @@ export function measure(name, fn) {
 
 /**
  * Async version of measure
- * 
+ *
  * @param {string} name - Metric name
  * @param {Function} asyncFn - Async function to measure
  * @returns {Promise<*>} The function's return value

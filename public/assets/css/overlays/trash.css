@@ -1,0 +1,309 @@
+/**
+ * Trash Overlay Styles
+ * ====================
+ * Styles for the trash bin modal overlay
+ */
+
+.trash-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 0.5rem;
+  z-index: 50;
+}
+
+.trash-overlay.hidden {
+  display: none;
+}
+
+.trash-overlay[aria-hidden="false"] {
+  display: flex;
+}
+
+@media (min-width: 768px) {
+  .trash-overlay {
+    padding: 1rem;
+  }
+}
+
+.trash-dialog {
+  background: var(--card);
+  border-radius: 0.5rem;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+  width: 100%;
+  max-width: 56rem;
+  max-height: 90vh;
+  overflow: hidden;
+  animation: trashSlideIn 0.2s ease-out;
+}
+
+@keyframes trashSlideIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.trash-header {
+  background: linear-gradient(to right, #fef2f2, #fef2f2);
+  border-bottom: 1px solid var(--card-border);
+  padding: 1rem 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+[data-theme="dark"] .trash-header {
+  background: linear-gradient(to right, rgba(220, 38, 38, 0.15), rgba(220, 38, 38, 0.1));
+}
+
+.trash-icon {
+  width: 3rem;
+  height: 3rem;
+  border-radius: 9999px;
+  background: #fee2e2;
+  color: #dc2626;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+[data-theme="dark"] .trash-icon {
+  background: rgba(220, 38, 38, 0.2);
+  color: #f87171;
+}
+
+.trash-title-group {
+  flex: 1;
+}
+
+.trash-title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.trash-subtitle {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  margin-top: 0.125rem;
+}
+
+.trash-close-btn {
+  margin-left: auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 9999px;
+  color: var(--text-secondary);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.trash-close-btn:hover {
+  color: var(--text);
+  background: var(--surface-hover);
+}
+
+.trash-body {
+  flex: 1;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  padding: 1.5rem;
+}
+
+.trash-table-wrapper {
+  flex: 1;
+  overflow: auto;
+  border: 1px solid var(--card-border);
+  border-radius: 0.375rem;
+}
+
+.trash-table {
+  width: 100%;
+  font-size: 0.75rem;
+}
+
+.trash-table-head {
+  background: var(--bg-secondary);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.trash-table-row {
+  border-bottom: 1px solid var(--card-border);
+  transition: background-color 0.2s ease;
+}
+
+.trash-table-row:hover {
+  background: var(--surface-hover);
+}
+
+.trash-loading {
+  padding: 0.75rem 1rem;
+  text-align: center;
+  color: var(--text-secondary);
+}
+
+.trash-empty-state {
+  text-align: center;
+  padding: 2rem;
+}
+
+.trash-empty-icon {
+  width: 4rem;
+  height: 4rem;
+  margin: 0 auto 1rem;
+  color: var(--text-secondary);
+  opacity: 0.3;
+}
+
+.trash-error {
+  font-size: 0.75rem;
+  color: var(--danger);
+  margin-top: 0.5rem;
+}
+
+.trash-actions {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 0.75rem;
+  border-top: 1px solid var(--card-border);
+  background: var(--bg-secondary);
+  padding: 0.75rem 1.5rem;
+  border-radius: 0 0 0.5rem 0.5rem;
+}
+
+@media (min-width: 640px) {
+  .trash-actions {
+    flex-direction: row;
+  }
+
+  .trash-actions-left,
+  .trash-actions-right {
+    flex-direction: row;
+  }
+}
+
+.trash-button {
+  padding: 0.5rem 0.75rem;
+  border-radius: 0.375rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.trash-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.trash-button.danger {
+  background: var(--danger);
+  color: white;
+}
+
+.trash-button.danger:hover:not(:disabled) {
+  opacity: 0.9;
+}
+
+.trash-button.warning {
+  background: var(--warning);
+  color: white;
+}
+
+.trash-button.warning:hover:not(:disabled) {
+  opacity: 0.9;
+}
+
+.trash-button.outline {
+  background: var(--card);
+  color: var(--text-secondary);
+  border: 1px solid var(--card-border);
+}
+
+.trash-button.outline:hover {
+  background: var(--surface-hover);
+  color: var(--text);
+}
+
+.trash-button.primary {
+  background: var(--accent);
+  color: white;
+}
+
+.trash-button.primary:hover {
+  background: var(--accent-hover);
+}
+
+.trash-action-btn {
+  padding: 0.375rem;
+  border-radius: 0.25rem;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.trash-action-restore {
+  color: var(--success);
+}
+
+.trash-action-restore:hover {
+  background: var(--success-bg);
+}
+
+.trash-action-delete {
+  color: var(--danger);
+}
+
+.trash-action-delete:hover {
+  background: var(--danger-bg);
+}
+
+/* Responsive adjustments */
+@media (max-width: 640px) {
+  .trash-dialog {
+    max-width: 100%;
+    max-height: 100vh;
+    border-radius: 0;
+  }
+
+  .trash-header {
+    padding: 1rem;
+  }
+
+  .trash-icon {
+    width: 2.5rem;
+    height: 2.5rem;
+  }
+
+  .trash-body {
+    padding: 1rem;
+  }
+
+  .trash-actions {
+    padding: 0.75rem 1rem;
+  }
+}

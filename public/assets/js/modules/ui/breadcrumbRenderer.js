@@ -10,13 +10,15 @@
  * @param {Function} navigateTo - Navigation function
  */
 export function renderBreadcrumbs(breadcrumbsEl, breadcrumbs, navigateTo) {
-    if (!breadcrumbsEl) return;
-    
+    if (!breadcrumbsEl) {
+        return;
+    }
+
     // Clear children safely to avoid HTML parsing side-effects
     while (breadcrumbsEl.firstChild) {
         breadcrumbsEl.removeChild(breadcrumbsEl.firstChild);
     }
-    
+
     breadcrumbs.forEach((crumb, index) => {
         const isLast = index === breadcrumbs.length - 1;
         const element = document.createElement(isLast ? 'span' : 'a');
@@ -24,7 +26,7 @@ export function renderBreadcrumbs(breadcrumbsEl, breadcrumbs, navigateTo) {
 
         if (!isLast) {
             element.href = '#';
-            element.classList.add('breadcrumb-link', 'text-primary', 'hover:underline', 'cursor-pointer');
+            element.classList.add('breadcrumb-link');
             element.addEventListener('click', (event) => {
                 event.preventDefault();
                 navigateTo(crumb.path);
@@ -55,12 +57,14 @@ export function createBreadcrumbTrail(path, rootLabel = 'Root') {
     const breadcrumbs = [
         { label: rootLabel, path: '' }
     ];
-    
-    if (!path) return breadcrumbs;
-    
+
+    if (!path) {
+        return breadcrumbs;
+    }
+
     const parts = path.split('/').filter(Boolean);
     let currentPath = '';
-    
+
     parts.forEach((part) => {
         currentPath += (currentPath ? '/' : '') + part;
         breadcrumbs.push({
@@ -68,7 +72,7 @@ export function createBreadcrumbTrail(path, rootLabel = 'Root') {
             path: currentPath
         });
     });
-    
+
     return breadcrumbs;
 }
 
@@ -82,25 +86,25 @@ export function createBreadcrumbTrail(path, rootLabel = 'Root') {
  */
 export function createCompactBreadcrumbTrail(path, rootLabel = 'Root', maxVisible = 3) {
     const fullTrail = createBreadcrumbTrail(path, rootLabel);
-    
+
     if (fullTrail.length <= maxVisible) {
         return fullTrail;
     }
-    
+
     // Show first, ellipsis indicator, and last (maxVisible - 1) items
     const result = [fullTrail[0]];
-    
+
     // Add ellipsis placeholder
     result.push({
         label: '...',
         path: null, // null indicates this is not clickable
         isEllipsis: true
     });
-    
+
     // Add last items
     const lastItems = fullTrail.slice(-(maxVisible - 1));
     result.push(...lastItems);
-    
+
     return result;
 }
 
@@ -112,54 +116,56 @@ export function createCompactBreadcrumbTrail(path, rootLabel = 'Root', maxVisibl
  * @param {number} maxVisible - Maximum visible breadcrumbs before collapsing
  */
 export function renderCompactBreadcrumbs(breadcrumbsEl, breadcrumbs, navigateTo, maxVisible = 3) {
-    if (!breadcrumbsEl) return;
-    
+    if (!breadcrumbsEl) {
+        return;
+    }
+
     // Clear existing content
     while (breadcrumbsEl.firstChild) {
         breadcrumbsEl.removeChild(breadcrumbsEl.firstChild);
     }
-    
+
     if (breadcrumbs.length <= maxVisible) {
         // Use standard rendering for short paths
         renderBreadcrumbs(breadcrumbsEl, breadcrumbs, navigateTo);
         return;
     }
-    
+
     // Render first item
     const firstItem = breadcrumbs[0];
     const firstLink = document.createElement('a');
     firstLink.href = '#';
     firstLink.textContent = firstItem.label;
-    firstLink.classList.add('breadcrumb-link', 'text-primary', 'hover:underline', 'cursor-pointer');
+    firstLink.classList.add('breadcrumb-link');
     firstLink.addEventListener('click', (event) => {
         event.preventDefault();
         navigateTo(firstItem.path);
     });
     breadcrumbsEl.appendChild(firstLink);
-    
+
     // Add separator
     const sep1 = document.createElement('span');
     sep1.classList.add('breadcrumb-separator', 'mx-2', 'text-gray-400');
     sep1.textContent = '\u203A';
     sep1.setAttribute('aria-hidden', 'true');
     breadcrumbsEl.appendChild(sep1);
-    
+
     // Render dropdown for hidden items
     const hiddenItems = breadcrumbs.slice(1, -(maxVisible - 1));
     if (hiddenItems.length > 0) {
         const dropdownContainer = document.createElement('div');
         dropdownContainer.classList.add('breadcrumb-dropdown', 'relative', 'inline-block');
-        
+
         const dropdownBtn = document.createElement('button');
         dropdownBtn.type = 'button';
-        dropdownBtn.classList.add('breadcrumb-dropdown-btn', 'text-gray-500', 'hover:text-gray-700', 'dark:hover:text-gray-300', 'px-1');
+        dropdownBtn.classList.add('breadcrumb-dropdown-btn');
         dropdownBtn.textContent = '...';
         dropdownBtn.setAttribute('aria-expanded', 'false');
         dropdownBtn.setAttribute('aria-haspopup', 'true');
-        
+
         const dropdownMenu = document.createElement('div');
         dropdownMenu.classList.add('breadcrumb-dropdown-menu', 'absolute', 'left-0', 'mt-1', 'bg-white', 'dark:bg-gray-800', 'rounded-md', 'shadow-lg', 'border', 'border-gray-200', 'dark:border-gray-700', 'py-1', 'z-50', 'hidden', 'min-w-[150px]');
-        
+
         hiddenItems.forEach((item) => {
             const menuItem = document.createElement('a');
             menuItem.href = '#';
@@ -173,7 +179,7 @@ export function renderCompactBreadcrumbs(breadcrumbsEl, breadcrumbs, navigateTo,
             });
             dropdownMenu.appendChild(menuItem);
         });
-        
+
         // Toggle dropdown
         dropdownBtn.addEventListener('click', (event) => {
             event.stopPropagation();
@@ -181,33 +187,33 @@ export function renderCompactBreadcrumbs(breadcrumbsEl, breadcrumbs, navigateTo,
             dropdownMenu.classList.toggle('hidden', !isHidden);
             dropdownBtn.setAttribute('aria-expanded', isHidden ? 'true' : 'false');
         });
-        
+
         // Close dropdown when clicking outside
         document.addEventListener('click', () => {
             dropdownMenu.classList.add('hidden');
             dropdownBtn.setAttribute('aria-expanded', 'false');
         });
-        
+
         dropdownContainer.appendChild(dropdownBtn);
         dropdownContainer.appendChild(dropdownMenu);
         breadcrumbsEl.appendChild(dropdownContainer);
-        
+
         // Add separator after dropdown
         const sep2 = document.createElement('span');
-        sep2.classList.add('breadcrumb-separator', 'mx-2', 'text-gray-400');
+        sep2.classList.add('breadcrumb-separator');
         sep2.textContent = '\u203A';
         sep2.setAttribute('aria-hidden', 'true');
         breadcrumbsEl.appendChild(sep2);
     }
-    
+
     // Render last items
     const lastItems = breadcrumbs.slice(-(maxVisible - 1));
     lastItems.forEach((item, index) => {
         const isLast = index === lastItems.length - 1;
-        
+
         if (isLast) {
             const span = document.createElement('span');
-            span.classList.add('breadcrumb-current', 'text-gray-600', 'dark:text-gray-300');
+            span.classList.add('breadcrumb-current');
             span.textContent = item.label;
             breadcrumbsEl.appendChild(span);
         } else {
@@ -220,7 +226,7 @@ export function renderCompactBreadcrumbs(breadcrumbsEl, breadcrumbs, navigateTo,
                 navigateTo(item.path);
             });
             breadcrumbsEl.appendChild(link);
-            
+
             const sep = document.createElement('span');
             sep.classList.add('breadcrumb-separator', 'mx-2', 'text-gray-400');
             sep.textContent = '\u203A';
@@ -240,7 +246,7 @@ export function updatePageTitle(breadcrumbs, baseTitle = 'File Manager') {
         document.title = baseTitle;
         return;
     }
-    
+
     const currentFolder = breadcrumbs[breadcrumbs.length - 1].label;
     document.title = `${currentFolder} - ${baseTitle}`;
 }
@@ -254,6 +260,6 @@ export function getParentPath(breadcrumbs) {
     if (!breadcrumbs || breadcrumbs.length <= 1) {
         return '';
     }
-    
+
     return breadcrumbs[breadcrumbs.length - 2].path;
 }

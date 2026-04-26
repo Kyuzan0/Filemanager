@@ -1,7 +1,7 @@
 /**
  * Keyboard Shortcuts Module
  * Provides comprehensive keyboard shortcut support for the File Manager
- * 
+ *
  * Features:
  * - File operations (copy, cut, paste, delete, rename)
  * - Navigation shortcuts (up, back, refresh)
@@ -32,22 +32,22 @@ const DEFAULT_SHORTCUTS = [
     { key: 'a', ctrl: true, shift: false, alt: false, action: 'selectAll', description: 'Pilih semua file', category: 'File Operations' },
     { key: 'Escape', ctrl: false, shift: false, alt: false, action: 'deselect', description: 'Batalkan pilihan / Tutup overlay', category: 'File Operations' },
     { key: 'd', ctrl: true, shift: false, alt: false, action: 'download', description: 'Unduh file terpilih', category: 'File Operations' },
-    
+
     // Navigation
     { key: 'Backspace', ctrl: false, shift: false, alt: false, action: 'goUp', description: 'Ke folder induk', category: 'Navigation' },
     { key: 'Enter', ctrl: false, shift: false, alt: false, action: 'open', description: 'Buka file/folder', category: 'Navigation' },
     { key: 'ArrowLeft', ctrl: false, shift: false, alt: true, action: 'goBack', description: 'Kembali ke folder sebelumnya', category: 'Navigation' },
-    
+
     // Create New
     { key: 'n', ctrl: true, shift: false, alt: false, action: 'newFile', description: 'Buat file baru', category: 'Create' },
     { key: 'N', ctrl: true, shift: true, alt: false, action: 'newFolder', description: 'Buat folder baru', category: 'Create' },
-    
+
     // Search & Refresh
     { key: 'f', ctrl: true, shift: false, alt: false, action: 'search', description: 'Fokus ke pencarian', category: 'Search' },
     { key: '/', ctrl: false, shift: false, alt: false, action: 'search', description: 'Fokus ke pencarian', category: 'Search' },
     { key: 'r', ctrl: true, shift: false, alt: false, action: 'refresh', description: 'Refresh daftar file', category: 'Refresh' },
     { key: 'F5', ctrl: false, shift: false, alt: false, action: 'refresh', description: 'Refresh daftar file', category: 'Refresh' },
-    
+
     // Help
     { key: '/', ctrl: true, shift: false, alt: false, action: 'showHelp', description: 'Tampilkan bantuan pintasan', category: 'Help' },
     { key: '?', ctrl: false, shift: true, alt: false, action: 'showHelp', description: 'Tampilkan bantuan pintasan', category: 'Help' },
@@ -111,7 +111,7 @@ function matchesShortcut(event, shortcut) {
     const ctrlMatch = shortcut.ctrl === (event.ctrlKey || event.metaKey);
     const shiftMatch = shortcut.shift === event.shiftKey;
     const altMatch = shortcut.alt === event.altKey;
-    
+
     // Handle special keys
     let keyMatch = false;
     if (shortcut.key.length === 1) {
@@ -121,7 +121,7 @@ function matchesShortcut(event, shortcut) {
         // Special keys (Enter, Escape, F2, etc.)
         keyMatch = event.key === shortcut.key;
     }
-    
+
     return keyMatch && ctrlMatch && shiftMatch && altMatch;
 }
 
@@ -179,7 +179,9 @@ function executeAction(action, event) {
  */
 function handleKeyDown(event) {
     // Skip if shortcuts are disabled
-    if (!isEnabled) return;
+    if (!isEnabled) {
+        return;
+    }
 
     // Skip if focus is in an input field (unless it's Escape)
     const activeElement = document.activeElement;
@@ -196,7 +198,7 @@ function handleKeyDown(event) {
         }
 
         // Check for open overlays
-        if (state.unsaved?.isOpen || state.confirm?.isOpen || state.create?.isOpen || 
+        if (state.unsaved?.isOpen || state.confirm?.isOpen || state.create?.isOpen ||
             state.rename?.isOpen || state.preview?.isOpen || state.move?.isOpen) {
             // Let the overlay handlers handle it
             return;
@@ -228,7 +230,9 @@ function handleKeyDown(event) {
 
     // Find matching shortcut
     const shortcut = findMatchingShortcut(event);
-    if (!shortcut) return;
+    if (!shortcut) {
+        return;
+    }
 
     // Prevent default browser behavior
     event.preventDefault();
@@ -236,7 +240,7 @@ function handleKeyDown(event) {
 
     // Execute the action
     const handled = executeAction(shortcut.action, event);
-    
+
     if (handled) {
         // Announce action for screen readers
         announce(`Pintasan ${shortcut.description} dijalankan`);
@@ -253,7 +257,7 @@ function handleKeyDown(event) {
 export function showHelpModal() {
     // Check if modal already exists
     let modal = document.getElementById('shortcuts-help-modal');
-    
+
     if (!modal) {
         modal = createHelpModal();
         document.body.appendChild(modal);
@@ -266,7 +270,9 @@ export function showHelpModal() {
 
     // Focus the close button
     const closeBtn = modal.querySelector('.shortcuts-help-close');
-    if (closeBtn) closeBtn.focus();
+    if (closeBtn) {
+        closeBtn.focus();
+    }
 
     announce('Modal bantuan pintasan keyboard dibuka');
     debugLog('[KeyboardShortcuts] Help modal shown');
@@ -293,7 +299,7 @@ export function hideHelpModal() {
 function createHelpModal() {
     const modal = document.createElement('div');
     modal.id = 'shortcuts-help-modal';
-    modal.className = 'shortcuts-help-overlay fixed inset-0 flex items-center justify-center bg-black/45 p-4 z-50 hidden';
+    modal.className = 'shortcuts-help-overlay hidden';
     modal.setAttribute('role', 'dialog');
     modal.setAttribute('aria-modal', 'true');
     modal.setAttribute('aria-labelledby', 'shortcuts-help-title');
@@ -327,24 +333,24 @@ function createHelpModal() {
     }
 
     modal.innerHTML = `
-        <div class="shortcuts-help-dialog bg-white dark:bg-[#1a2332] rounded-lg shadow-xl w-full max-w-2xl max-h-[80vh] overflow-hidden flex flex-col">
-            <header class="shortcuts-help-header px-6 py-4 border-b border-gray-200 dark:border-white/10 flex items-center justify-between">
-                <h2 id="shortcuts-help-title" class="text-lg font-semibold text-gray-900 dark:text-slate-200">
+        <div class="shortcuts-help-dialog">
+            <header class="shortcuts-help-header">
+                <h2 id="shortcuts-help-title" class="shortcuts-help-title">
                     Pintasan Keyboard
                 </h2>
-                <button type="button" class="shortcuts-help-close p-2 rounded-full hover:bg-gray-100 dark:hover:bg-white/10 transition-colors" aria-label="Tutup">
-                    <svg viewBox="0 0 24 24" class="w-5 h-5" fill="currentColor">
+                <button type="button" class="shortcuts-help-close" aria-label="Tutup">
+                    <svg viewBox="0 0 24 24" class="icon-sm" fill="currentColor">
                         <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
                     </svg>
                 </button>
             </header>
-            <div class="shortcuts-help-body flex-1 overflow-y-auto px-6 py-4">
-                <div class="shortcuts-categories grid gap-6 md:grid-cols-2">
+            <div class="shortcuts-help-body">
+                <div class="shortcuts-categories">
                     ${categoriesHtml}
                 </div>
             </div>
-            <footer class="shortcuts-help-footer px-6 py-3 border-t border-gray-200 dark:border-white/10 text-center">
-                <p class="text-sm text-gray-500 dark:text-slate-400">
+            <footer class="shortcuts-help-footer">
+                <p class="shortcuts-help-hint">
                     Tekan <kbd class="kbd">Ctrl</kbd> + <kbd class="kbd">/</kbd> atau <kbd class="kbd">?</kbd> untuk membuka bantuan ini
                 </p>
             </footer>
@@ -378,7 +384,7 @@ function createHelpModal() {
  */
 function formatShortcutKeys(shortcut) {
     const parts = [];
-    
+
     if (shortcut.ctrl) {
         parts.push('<kbd class="kbd">Ctrl</kbd>');
     }
@@ -388,7 +394,7 @@ function formatShortcutKeys(shortcut) {
     if (shortcut.alt) {
         parts.push('<kbd class="kbd">Alt</kbd>');
     }
-    
+
     // Format the main key
     let keyDisplay = shortcut.key;
     switch (shortcut.key) {
@@ -402,9 +408,9 @@ function formatShortcutKeys(shortcut) {
         case 'ArrowRight': keyDisplay = '→'; break;
         case ' ': keyDisplay = 'Space'; break;
     }
-    
+
     parts.push(`<kbd class="kbd">${keyDisplay}</kbd>`);
-    
+
     return parts.join(' + ');
 }
 
@@ -436,7 +442,7 @@ export function copySelectedItems() {
 
     announce(`${selectedPaths.length} item disalin ke clipboard`);
     debugLog('[KeyboardShortcuts] Copied to clipboard:', selectedPaths);
-    
+
     return selectedPaths;
 }
 
@@ -466,7 +472,7 @@ export function cutSelectedItems() {
 
     announce(`${selectedPaths.length} item dipotong ke clipboard`);
     debugLog('[KeyboardShortcuts] Cut to clipboard:', selectedPaths);
-    
+
     return selectedPaths;
 }
 
@@ -494,7 +500,7 @@ export function clearClipboard() {
         items: [],
         operation: null,
     };
-    
+
     debugLog('[KeyboardShortcuts] Clipboard cleared');
 }
 
@@ -600,7 +606,7 @@ export function resetShortcuts() {
  */
 export function cleanupKeyboardShortcuts() {
     document.removeEventListener('keydown', handleKeyDown);
-    
+
     // Remove help modal if exists
     const modal = document.getElementById('shortcuts-help-modal');
     if (modal) {

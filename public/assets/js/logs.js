@@ -276,7 +276,7 @@ const LogsHandler = (function() {
 
             if (itemsArray && itemsArray.length > 0) {
                 const itemsList = itemsArray.join(', ');
-                fileDisplay = `${log.count} items (${details.join(', ')})<br><div style="max-height: 200px; overflow-y: auto; padding: 8px; background: rgba(0,0,0,0.05); border-radius: 4px; margin-top: 4px; line-height: 1.5;"><small class="text-gray-500">${itemsList}</small></div>`;
+                fileDisplay = `${log.count} items (${details.join(', ')})<br><div style="max-height: 200px; overflow-y: auto; padding: 8px; background: rgba(0,0,0,0.05); border-radius: 4px; margin-top: 4px; line-height: 1.5;"><small class="text-muted">${itemsList}</small></div>`;
             }
         } else if (log.action === 'bulk_upload') {
             fileDisplay = log.filename || `${log.count || 0} file`;
@@ -298,7 +298,7 @@ const LogsHandler = (function() {
 
             if (itemsArray && itemsArray.length > 0) {
                 const itemsList = itemsArray.join(', ');
-                fileDisplay = `${log.count} files (${details.join(', ')})<br><div style="max-height: 200px; overflow-y: auto; padding: 8px; background: rgba(0,0,0,0.05); border-radius: 4px; margin-top: 4px; line-height: 1.5;"><small class="text-gray-500">${itemsList}</small></div>`;
+                fileDisplay = `${log.count} files (${details.join(', ')})<br><div style="max-height: 200px; overflow-y: auto; padding: 8px; background: rgba(0,0,0,0.05); border-radius: 4px; margin-top: 4px; line-height: 1.5;"><small class="text-muted">${itemsList}</small></div>`;
             }
         }
 
@@ -390,7 +390,7 @@ const LogsHandler = (function() {
             e && e.preventDefault && e.preventDefault();
 
             if (window.openSidebar && typeof window.openSidebar === 'function') {
-                try { window.openSidebar(); } catch (err) { console.debug('openSidebar error', err); }
+                try { window.openSidebar(); } catch (err) { }
                 return;
             }
 
@@ -399,13 +399,12 @@ const LogsHandler = (function() {
             const id = setInterval(() => {
                 attempts++;
                 if (window.openSidebar && typeof window.openSidebar === 'function') {
-                    try { window.openSidebar(); } catch (err) { console.debug('openSidebar error', err); }
+                    try { window.openSidebar(); } catch (err) { }
                     clearInterval(id);
                     return;
                 }
                 if (attempts >= max) {
                     clearInterval(id);
-                    console.debug('Mobile sidebar fallback: openSidebar not available');
                 }
             }, 100);
         });

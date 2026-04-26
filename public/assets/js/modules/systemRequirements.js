@@ -71,7 +71,9 @@ const SystemRequirements = {
      * Load system requirements from API
      */
     async loadRequirements() {
-        if (this.isLoading) return;
+        if (this.isLoading) {
+            return;
+        }
 
         this.isLoading = true;
         this.showLoading(true);
@@ -87,7 +89,6 @@ const SystemRequirements = {
                 this.showError('Gagal memuat data: ' + (data.error || 'Unknown error'));
             }
         } catch (error) {
-            console.error('Error loading system requirements:', error);
             this.showError('Gagal terhubung ke server');
         } finally {
             this.isLoading = false;
@@ -117,13 +118,13 @@ const SystemRequirements = {
         const content = document.getElementById('system-req-content');
         if (content) {
             content.innerHTML = `
-                <div class="text-center py-8">
-                    <svg class="w-12 h-12 mx-auto text-red-400" viewBox="0 0 24 24" fill="currentColor">
+                <div class="sysreq-error">
+                    <svg class="sysreq-error-icon" viewBox="0 0 24 24" fill="currentColor">
                         <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/>
                     </svg>
-                    <p class="text-sm text-red-600 mt-2">${message}</p>
+                    <p class="sysreq-error-text">${message}</p>
                     <button type="button" onclick="SystemRequirements.loadRequirements()" 
-                        class="mt-3 px-3 py-1.5 text-xs bg-red-50 text-red-600 rounded-md hover:bg-red-100">
+                        class="sysreq-retry-btn">
                         Coba Lagi
                     </button>
                 </div>
@@ -159,7 +160,9 @@ const SystemRequirements = {
         const detailEl = document.getElementById(`req-${id}-detail`);
         const iconEl = document.getElementById(`req-${id}-icon`);
 
-        if (!data) return;
+        if (!data) {
+            return;
+        }
 
         // Update status badge
         if (statusEl) {
@@ -167,13 +170,13 @@ const SystemRequirements = {
 
             if (data.ok) {
                 statusEl.textContent = '✓ OK';
-                statusEl.className = 'req-status text-xs px-2 py-0.5 rounded-full bg-green-100 dark:bg-green-500/20 text-green-600 dark:text-green-400';
+                statusEl.className = 'req-status req-status--ok';
             } else if (isOptional) {
                 statusEl.textContent = 'Opsional';
-                statusEl.className = 'req-status text-xs px-2 py-0.5 rounded-full bg-yellow-100 dark:bg-yellow-500/20 text-yellow-600 dark:text-yellow-400';
+                statusEl.className = 'req-status req-status--warning';
             } else {
                 statusEl.textContent = '✕ Error';
-                statusEl.className = 'req-status text-xs px-2 py-0.5 rounded-full bg-red-100 dark:bg-red-500/20 text-red-600 dark:text-red-400';
+                statusEl.className = 'req-status req-status--error';
             }
         }
 
@@ -189,9 +192,15 @@ const SystemRequirements = {
             // Add extra info for server
             if (id === 'server') {
                 const info = [];
-                if (data.maxUpload) info.push(`Upload: ${data.maxUpload}`);
-                if (data.maxPost) info.push(`POST: ${data.maxPost}`);
-                if (data.memoryLimit) info.push(`Memory: ${data.memoryLimit}`);
+                if (data.maxUpload) {
+                    info.push(`Upload: ${data.maxUpload}`);
+                }
+                if (data.maxPost) {
+                    info.push(`POST: ${data.maxPost}`);
+                }
+                if (data.memoryLimit) {
+                    info.push(`Memory: ${data.memoryLimit}`);
+                }
                 detailEl.textContent = info.join(' | ') || data.detail;
             }
         }
@@ -201,14 +210,11 @@ const SystemRequirements = {
             const isOptional = data.optional === true;
 
             if (data.ok) {
-                iconEl.className = 'req-icon w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 bg-green-100 dark:bg-green-500/20';
-                iconEl.querySelector('svg')?.classList.replace('text-gray-500', 'text-green-600');
+                iconEl.className = 'req-icon req-icon--ok';
             } else if (isOptional) {
-                iconEl.className = 'req-icon w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 bg-yellow-100 dark:bg-yellow-500/20';
-                iconEl.querySelector('svg')?.classList.replace('text-gray-500', 'text-yellow-600');
+                iconEl.className = 'req-icon req-icon--warning';
             } else {
-                iconEl.className = 'req-icon w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 bg-red-100 dark:bg-red-500/20';
-                iconEl.querySelector('svg')?.classList.replace('text-gray-500', 'text-red-600');
+                iconEl.className = 'req-icon req-icon--error';
             }
         }
     },

@@ -1,4 +1,4 @@
-﻿/**
+/**
  * File Manager Application - Main Entry Point
  * 
  * Ini adalah file utama aplikasi File Manager yang telah direfaktor
@@ -29,7 +29,7 @@ import './modules/toast.js'; // Toast notification system
 /**
  * Inisialisasi aplikasi saat DOM dimuat
  */
-console.log('[index.js] loaded');
+
 document.addEventListener('DOMContentLoaded', () => {
     // Inisialisasi aplikasi
     initializeApp().then(() => {
@@ -182,7 +182,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const isUserGesture = !!(evt && evt.isTrusted);
             const fromSettingsBtn = isUserGesture && evt.currentTarget && evt.currentTarget.id === 'btn-settings';
             if (__suppressInitialSettingsOpen && !fromSettingsBtn) {
-                try { console.debug('[settings] openSettings ignored (suppressed initial auto-open)'); } catch(_) {}
+                // Error handled silently
                 return;
             }
 
@@ -215,7 +215,7 @@ document.addEventListener('DOMContentLoaded', () => {
             // Focus first interactive element
             (toggleLabel || settingsClose)?.focus();
             document.body.classList.add('modal-open');
-            try { console.debug('[settings] openSettings executed; other overlays closed'); } catch(_) {}
+            try { ; } catch(_) {}
         };
 
         const closeSettings = () => {
@@ -265,7 +265,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         console.clear();
                     }
                 } else {
-                    console.log('Debug logging enabled');
+
                 }
 
                 closeSettings();
@@ -293,7 +293,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const isUserGesture = !!(evt && evt.isTrusted);
         if (__suppressInitialSettingsOpen && !isUserGesture) {
-            try { console.debug('[settings] safeOpenSettings ignored (suppressed initial auto-open)'); } catch(_) {}
+            // Error handled silently
             return;
         }
 
@@ -342,7 +342,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // Focus first interactive control for accessibility
         (toggleLabel || document.getElementById('settings-close'))?.focus();
         document.body.classList.add('modal-open');
-        try { console.debug('[settings] safeOpenSettings executed; other overlays closed'); } catch(_) {}
+        try { ; } catch(_) {}
     }
 
     // Click anywhere inside the settings button (including SVG/span) will open the overlay
@@ -416,9 +416,7 @@ if (typeof window !== 'undefined' && (window.location.hostname === 'localhost' |
         getStorage: () => import('./modules/storage.js'),
         getRenderOptimizer: () => import('./modules/renderOptimizer.js')
     };
-    
-    console.log('Debug modules available at window.debugModules');
-    console.log('Storage module included for testing');
+
 
     // Custom test helper hook (non-invasive)
     // window.__testOpenOverlayCustom lets automation call module-level open helpers or import modules
@@ -613,7 +611,7 @@ function __testOpenOverlayCustomEnhanced(id, params = {}) {
             const getEl = (elId) => document.getElementById(elId) || null;
             const sleep = (ms = 150) => new Promise(r => setTimeout(r, ms));
 
-            try { console.debug(`[__testOpenOverlayCustomEnhanced] start id=${id}`, params); } catch (_) {}
+            try { ; } catch (_) {}
 
             // Ensure an element exists; create a minimal fallback for automation when necessary
             const ensureEl = (elId, tag = 'div', opts = {}) => {
@@ -649,7 +647,7 @@ function __testOpenOverlayCustomEnhanced(id, params = {}) {
             const modImport = await (typeof window.debugModules.getModals === 'function' ? window.debugModules.getModals().catch(() => null) : null);
             const stateImport = await (typeof window.debugModules.getState === 'function' ? window.debugModules.getState().catch(() => null) : null);
             const mod = modImport || {};
-            try { console.debug('[__testOpenOverlayCustomEnhanced] modImport=', !!modImport, 'stateImport=', !!stateImport); } catch(_) {}
+            try { ; } catch(_) {}
 
             // Resolve app state from common shapes
             let appState = null;
@@ -657,7 +655,7 @@ function __testOpenOverlayCustomEnhanced(id, params = {}) {
                 appState = stateImport.state || stateImport.default?.state || (typeof stateImport.getState === 'function' ? await stateImport.getState() : null) || stateImport.default || null;
             }
             appState = appState || window.state || window.__appState || null;
-            try { console.debug('[__testOpenOverlayCustomEnhanced] appState resolved=', !!appState); } catch(_) {}
+            try { ; } catch(_) {}
 
             // Helper to safely call modal functions
             const tryCall = async (fn, ...args) => {
@@ -668,7 +666,7 @@ function __testOpenOverlayCustomEnhanced(id, params = {}) {
                     const ov = document.getElementById(id);
                     return !!ov && ov.hidden !== true;
                 } catch (e) {
-                    try { console.debug(`[__testOpenOverlayCustomEnhanced] call failed for ${fn.name || 'fn'}`, e); } catch(_) {}
+                    try { ; } catch(_) {}
                     return false;
                 }
             };
@@ -684,7 +682,7 @@ function __testOpenOverlayCustomEnhanced(id, params = {}) {
                 const createSubmit = ensureEl('create-submit', 'button'); try { createSubmit.type = 'button'; } catch(_) {}
                 const kind = params.kind || 'file';
                 const ok = await tryCall(mod.openCreateOverlay, appState, createOverlay, createTitle, createSubtitle, createLabel, createName, createHint, createSubmit, kind);
-                if (ok) { try { console.debug('[__testOpenOverlayCustomEnhanced] openCreateOverlay succeeded'); } catch(_) {} return true; }
+                if (ok) { try { ; } catch(_) {} return true; }
             }
 
             if (id === 'rename-overlay' && typeof mod.openRenameOverlay === 'function') {
@@ -697,7 +695,7 @@ function __testOpenOverlayCustomEnhanced(id, params = {}) {
                 const renameSubmit = ensureEl('rename-submit', 'button'); try { renameSubmit.type = 'button'; } catch(_) {}
                 const item = params.item || { name: 'example.txt', path: '/example.txt' };
                 const ok = await tryCall(mod.openRenameOverlay, appState, renameOverlay, renameTitle, renameSubtitle, renameLabel, renameName, renameHint, renameSubmit, item);
-                if (ok) { try { console.debug('[__testOpenOverlayCustomEnhanced] openRenameOverlay succeeded'); } catch(_) {} return true; }
+                if (ok) { try { ; } catch(_) {} return true; }
             }
 
             if (id === 'confirm-overlay' && typeof mod.openConfirmOverlay === 'function') {
@@ -708,7 +706,7 @@ function __testOpenOverlayCustomEnhanced(id, params = {}) {
                 const confirmConfirm = ensureEl('confirm-confirm', 'button'); try { confirmConfirm.type = 'button'; } catch(_) {}
                 const options = params.options || params || { message: 'Confirm action', paths: ['/example.txt'], confirmLabel: 'OK' };
                 const ok = await tryCall(mod.openConfirmOverlay, appState, confirmOverlay, confirmMessage, confirmDescription, confirmList, confirmConfirm, options);
-                if (ok) { try { console.debug('[__testOpenOverlayCustomEnhanced] openConfirmOverlay succeeded'); } catch(_) {} return true; }
+                if (ok) { try { ; } catch(_) {} return true; }
             }
 
             if (id === 'preview-overlay' && typeof mod.openPreviewOverlay === 'function') {
@@ -716,7 +714,7 @@ function __testOpenOverlayCustomEnhanced(id, params = {}) {
                 const previewClose = ensureEl('preview-close', 'button'); try { previewClose.type = 'button'; } catch(_) {}
                 const item = params.item || params || { name: 'example.txt', path: '/example.txt' };
                 const ok = await tryCall(mod.openPreviewOverlay, appState, previewOverlay, previewClose, item);
-                if (ok) { try { console.debug('[__testOpenOverlayCustomEnhanced] openPreviewOverlay succeeded'); } catch(_) {} return true; }
+                if (ok) { try { ; } catch(_) {} return true; }
             }
 
             if (id === 'log-overlay') {
@@ -724,7 +722,7 @@ function __testOpenOverlayCustomEnhanced(id, params = {}) {
                 for (const name of tryNames) {
                     if (typeof mod[name] === 'function') {
                         const ok = await tryCall(mod[name], appState, ensureEl('log-overlay'));
-                        if (ok) { try { console.debug('[__testOpenOverlayCustomEnhanced] log fn succeeded', name); } catch(_) {} return true; }
+                        if (ok) { try { ; } catch(_) {} return true; }
                     }
                 }
             }
@@ -733,19 +731,19 @@ function __testOpenOverlayCustomEnhanced(id, params = {}) {
                 const unsavedOverlay = ensureEl('unsaved-overlay');
                 const options = params.options || params || { message: 'You have unsaved changes' };
                 const ok = await tryCall(mod.openUnsavedOverlay, appState, unsavedOverlay, options);
-                if (ok) { try { console.debug('[__testOpenOverlayCustomEnhanced] openUnsavedOverlay succeeded'); } catch(_) {} return true; }
+                if (ok) { try { ; } catch(_) {} return true; }
             }
 
             if (id === 'settings-overlay') {
                 if (typeof window.safeOpenSettings === 'function') {
-                    try { window.safeOpenSettings(); await sleep(120); const ov = getEl('settings-overlay'); if (ov && ov.hidden !== true) { try { console.debug('[__testOpenOverlayCustomEnhanced] safeOpenSettings succeeded'); } catch(_) {} return true; } } catch(_) {}
+                    try { window.safeOpenSettings(); await sleep(120); const ov = getEl('settings-overlay'); if (ov && ov.hidden !== true) { try { ; } catch(_) {} return true; } } catch(_) {}
                 }
                 if (typeof window.openSettings === 'function') {
-                    try { await window.openSettings(); await sleep(120); const ov = getEl('settings-overlay'); if (ov && ov.hidden !== true) { try { console.debug('[__testOpenOverlayCustomEnhanced] openSettings succeeded'); } catch(_) {} return true; } } catch(_) {}
+                    try { await window.openSettings(); await sleep(120); const ov = getEl('settings-overlay'); if (ov && ov.hidden !== true) { try { ; } catch(_) {} return true; } } catch(_) {}
                 }
                 if (typeof mod.openSettings === 'function') {
                     const ok = await tryCall(mod.openSettings, appState);
-                    if (ok) { try { console.debug('[__testOpenOverlayCustomEnhanced] openSettings succeeded'); } catch(_) {} return true; }
+                    if (ok) { try { ; } catch(_) {} return true; }
                 }
             }
 
@@ -781,7 +779,7 @@ function __testOpenOverlayCustomEnhanced(id, params = {}) {
                     document.body.classList.add('modal-open');
                     const focusable = ov.querySelector('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])');
                     if (focusable) focusable.focus();
-                    try { console.debug('[__testOpenOverlayCustomEnhanced] visual reveal succeeded for', id); } catch(_) {}
+                    try { ; } catch(_) {}
                     return true;
                 } catch (e) {
                     try { ov.style.display = 'block'; return true; } catch(_) {}
@@ -840,10 +838,10 @@ function __testOpenOverlayCustomEnhanced(id, params = {}) {
 // Replace existing helper (non-invasive) so manual tests and automation will use the enhanced logic
 try {
     window.__testOpenOverlayCustom = __testOpenOverlayCustomEnhanced;
-    try { console.debug('[__testOpenOverlayCustomEnhanced] installed override for window.__testOpenOverlayCustom'); } catch(_) {}
+    try { ; } catch(_) {}
 } catch (_) {}
 
-// Wait helper for automated tests — ensures app is ready before attempting overlays
+// Wait helper for automated tests � ensures app is ready before attempting overlays
 const _waitForAppInit = async (timeout = 2000) => {
     try {
         const start = Date.now();
@@ -863,7 +861,7 @@ const _waitForAppInit = async (timeout = 2000) => {
             // Ensure app is initialized before attempting to open overlays
             try { await _waitForAppInit(2000); } catch (e) { /* ignore */ }
 
-            try { console.debug('[__testOpenOverlay] start id=', id, 'params=', params); } catch (_) {}
+            try { ; } catch (_) {}
 
             const fnMap = {
                 'preview-overlay': 'openPreviewOverlay',
@@ -880,7 +878,7 @@ const _waitForAppInit = async (timeout = 2000) => {
                 try {
                     const ok = await window.__testOpenOverlayCustom(id, params);
                     if (ok) {
-                        try { console.debug('[__testOpenOverlay] __testOpenOverlayCustom succeeded for', id); } catch (_) {}
+                        try { ; } catch (_) {}
                         return true;
                     }
                 } catch (e) { /* ignore */ }
@@ -898,7 +896,7 @@ const _waitForAppInit = async (timeout = 2000) => {
                             if (res && typeof res.then === 'function') await res;
                             await new Promise((r) => setTimeout(r, 250));
                             if (document.getElementById(id)) {
-                                try { console.debug('[__testOpenOverlay] global fn', name, 'opened', id); } catch (_) {}
+                                try { ; } catch (_) {}
                                 return true;
                             }
                         } catch (e) { /* ignore */ }
@@ -914,7 +912,7 @@ const _waitForAppInit = async (timeout = 2000) => {
                         if (res && typeof res.then === 'function') await res;
                         await new Promise((r) => setTimeout(r, 200));
                         if (document.getElementById(id)) {
-                            try { console.debug('[__testOpenOverlay] openRenameOverlay succeeded'); } catch (_) {}
+                            try { ; } catch (_) {}
                             return true;
                         }
                     } catch (e) { /* ignore */ }
@@ -929,7 +927,7 @@ const _waitForAppInit = async (timeout = 2000) => {
                         if (res && typeof res.then === 'function') await res;
                         await new Promise((r) => setTimeout(r, 200));
                         if (document.getElementById(id)) {
-                            try { console.debug('[__testOpenOverlay] openCreateOverlay succeeded'); } catch (_) {}
+                            try { ; } catch (_) {}
                             return true;
                         }
                     } catch (e) { /* ignore */ }
@@ -945,7 +943,7 @@ const _waitForAppInit = async (timeout = 2000) => {
                         if (res && typeof res.then === 'function') await res;
                         await new Promise((r) => setTimeout(r, 200));
                         if (document.getElementById(id)) {
-                            try { console.debug('[__testOpenOverlay] openConfirmOverlay succeeded'); } catch (_) {}
+                            try { ; } catch (_) {}
                             return true;
                         }
                     } catch (e) { /* ignore */ }
@@ -961,7 +959,7 @@ const _waitForAppInit = async (timeout = 2000) => {
                             if (res && typeof res.then === 'function') await res;
                             await new Promise((r) => setTimeout(r, 200));
                             if (document.getElementById(id)) {
-                                try { console.debug('[__testOpenOverlay] global log fn', name, 'succeeded'); } catch (_) {}
+                                try { ; } catch (_) {}
                                 return true;
                             }
                         } catch (e) { /* ignore */ }
@@ -977,7 +975,7 @@ const _waitForAppInit = async (timeout = 2000) => {
                         if (res && typeof res.then === 'function') await res;
                         await new Promise((r) => setTimeout(r, 200));
                         if (document.getElementById(id)) {
-                            try { console.debug('[__testOpenOverlay] openUnsavedOverlay succeeded'); } catch (_) {}
+                            try { ; } catch (_) {}
                             return true;
                         }
                     } catch (e) { /* ignore */ }
@@ -992,7 +990,7 @@ const _waitForAppInit = async (timeout = 2000) => {
                         if (res && typeof res.then === 'function') await res;
                         await new Promise((r) => setTimeout(r, 150));
                         if (document.getElementById(id)) {
-                            try { console.debug('[__testOpenOverlay] openSettings succeeded'); } catch (_) {}
+                            try { ; } catch (_) {}
                             return true;
                         }
                     } catch (e) { /* ignore */ }
@@ -1002,7 +1000,7 @@ const _waitForAppInit = async (timeout = 2000) => {
                         window.safeOpenSettings();
                         await new Promise((r) => setTimeout(r, 150));
                         if (document.getElementById(id)) {
-                            try { console.debug('[__testOpenOverlay] safeOpenSettings succeeded'); } catch (_) {}
+                            try { ; } catch (_) {}
                             return true;
                         }
                     } catch (e) { /* ignore */ }
@@ -1017,7 +1015,7 @@ const _waitForAppInit = async (timeout = 2000) => {
                     if (res && typeof res.then === 'function') await res;
                     await new Promise((r) => setTimeout(r, 200));
                     if (document.getElementById(id)) {
-                        try { console.debug('[__testOpenOverlay] global fnName', fnName, 'opened', id); } catch (_) {}
+                        try { ; } catch (_) {}
                         return true;
                     }
                 } catch (e) { /* ignore */ }
@@ -1033,10 +1031,10 @@ const _waitForAppInit = async (timeout = 2000) => {
                     document.body.classList.add('modal-open');
                     const focusable = ov.querySelector('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])');
                     if (focusable) focusable.focus();
-                    try { console.debug('[__testOpenOverlay] visual reveal succeeded for', id); } catch (_) {}
+                    try { ; } catch (_) {}
                     return true;
                 } catch (e) {
-                    try { ov.style.display = 'block'; try { console.debug('[__testOpenOverlay] visual reveal fallback display block for', id); } catch (_) {} return true; } catch (_) { /* ignore */ }
+                    try { ov.style.display = 'block'; try { ; } catch (_) {} return true; } catch (_) { /* ignore */ }
                 }
             }
 
@@ -1099,3 +1097,6 @@ const _waitForAppInit = async (timeout = 2000) => {
         }
     };
  }
+
+
+

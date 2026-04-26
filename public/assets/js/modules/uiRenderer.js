@@ -1,13 +1,13 @@
 /**
  * UI Renderer Module (Facade)
- * 
+ *
  * This is the main orchestrator that imports and re-exports from sub-modules.
  * Split into focused modules for better maintainability:
  * - tableRenderer.js: Table/list rendering logic
  * - overlayRenderer.js: Overlay/modal rendering
  * - breadcrumbRenderer.js: Breadcrumb navigation rendering
  * - statusRenderer.js: Status bar and indicators
- * 
+ *
  * All exports are re-exported here for backward compatibility.
  */
 
@@ -98,8 +98,8 @@ import { fetchDirectory } from './apiService.js';
 import { shouldUseVirtualScroll } from './virtualScroll.js';
 import { invalidateDOMCache } from './dragDrop.js';
 import { debugLog } from './debug.js';
-import { 
-    calculatePagination, 
+import {
+    calculatePagination,
     updatePaginationState,
     getItemsForPage
 } from './pagination.js';
@@ -123,7 +123,7 @@ let renderCache = {
 /**
  * Main render function for file items
  * This is the primary entry point for rendering the file table.
- * 
+ *
  * @param {HTMLElement} tableBody - Table body element
  * @param {HTMLElement} emptyState - Empty state element
  * @param {Object} state - Application state
@@ -187,22 +187,21 @@ export function renderItems(
     setErrorFn
 ) {
     const renderStartTime = performance.now();
-    console.log('[PAGINATION DEBUG] renderItems called at:', renderStartTime);
-    
+
     // Prevent concurrent renders
     if (isRendering) {
-        console.log('[PAGINATION DEBUG] Skipping render - already rendering');
+
         return { items, filtered: state.visibleItems || [], meta: {} };
     }
-    
+
     isRendering = true;
     lastRenderTime = performance.now();
-    
+
     try {
         // Clear render cache when items change significantly
         const cacheClearTime = performance.now();
         if (renderCache.items !== items || renderCache.items.length !== items.length) {
-            console.log('[RENDER DEBUG] Clearing render cache due to items change');
+
             renderCache = {
                 items: null,
                 sortKey: null,
@@ -213,43 +212,37 @@ export function renderItems(
                 lastCacheTime: 0
             };
         }
-        console.log('[RENDER DEBUG] Cache check completed at:', cacheClearTime, 'delta:', cacheClearTime - renderStartTime);
-        
+
         const stateUpdateTime = performance.now();
-        console.log('[RENDER DEBUG] State updated at:', stateUpdateTime, 'delta:', stateUpdateTime - cacheClearTime);
-        
+
         const sortingTime = performance.now();
         const query = state.filter.toLowerCase();
-        
+
         // Check cache validity
         const canUseCache = renderCache.items === items &&
                             renderCache.sortKey === state.sortKey &&
                             renderCache.sortDirection === state.sortDirection &&
                             renderCache.filter === query;
-        
+
         let sortedItems, filtered;
-        
+
         if (canUseCache) {
-            console.log('[PAGINATION DEBUG] Using cached sorted/filtered items');
+
             sortedItems = renderCache.sortedItems;
             filtered = renderCache.filteredItems;
         } else {
-            console.log('[PAGINATION DEBUG] Cache miss - processing items');
-            
+
             const arrayCreationTime = performance.now();
             const itemsCopy = [...items];
-            console.log('[PAGINATION DEBUG] Array copy created at:', arrayCreationTime, 'delta:', arrayCreationTime - sortingTime);
-            
+
             const sortStartTime = performance.now();
             sortedItems = itemsCopy.sort((a, b) => compareItems(a, b, state.sortKey, state.sortDirection));
-            console.log('[PAGINATION DEBUG] Sorting completed at:', sortStartTime, 'items:', sortedItems.length);
-            
+
             const filterStartTime = performance.now();
             filtered = query
                 ? sortedItems.filter((item) => item.name.toLowerCase().includes(query))
                 : sortedItems;
-            console.log('[PAGINATION DEBUG] Filtering completed at:', filterStartTime, 'query:', query, 'filtered:', filtered.length);
-            
+
             // Update cache
             renderCache = {
                 items,
@@ -261,9 +254,8 @@ export function renderItems(
                 lastCacheTime: performance.now()
             };
         }
-        
+
         state.visibleItems = filtered;
-        console.log('[RENDER DEBUG] Sorting/filtering completed items:', items.length, 'filtered:', filtered.length);
 
         const totalFolders = items.filter((item) => item.type === 'folder').length;
         const filteredFolders = filtered.filter((item) => item.type === 'folder').length;
@@ -277,8 +269,7 @@ export function renderItems(
         // Clear table body
         const clearStartTime = performance.now();
         tableBody.innerHTML = '';
-        console.log('[RENDER DEBUG] Table cleared at:', clearStartTime);
-        
+
         // Clear mobile list
         const mobileList = document.getElementById('mobile-file-list');
         if (mobileList) {
@@ -289,23 +280,27 @@ export function renderItems(
         const upRow = document.createElement('tr');
         upRow.classList.add('up-row','cursor-pointer','transition-colors');
         upRow.tabIndex = 0;
-        try { upRow.setAttribute('role', 'row'); } catch (e) {}
-        try { upRow.setAttribute('aria-label', 'Kembali ke folder sebelumnya'); } catch (e) {}
+        try {
+            upRow.setAttribute('role', 'row');
+        } catch (e) {}
+        try {
+            upRow.setAttribute('aria-label', 'Kembali ke folder sebelumnya');
+        } catch (e) {}
 
         // Empty selection cell
         const upSel = document.createElement('td');
-        upSel.classList.add('selection-cell','w-12','px-3','text-center','align-middle');
+        upSel.classList.add('selection-cell');
         upRow.appendChild(upSel);
 
         // Name cell with icon + "Back" label
         const upName = document.createElement('td');
         upName.classList.add('name-cell','item-name','flex','items-center','gap-4','min-w-0','flex-1','px-3','text-sm');
-        
+
         const backIcon = document.createElement('span');
         backIcon.classList.add('up-icon', 'small', 'inline-flex', 'items-center', 'justify-center', 'flex-shrink-0');
         backIcon.textContent = '...';
         upName.appendChild(backIcon);
-        
+
         const upLink = document.createElement('a');
         upLink.classList.add('item-link');
         upLink.href = '#';
@@ -332,7 +327,7 @@ export function renderItems(
 
         // Empty actions cell
         const upActions = document.createElement('td');
-        upActions.classList.add('actions-cell','w-36','pr-2','px-3','text-right');
+        upActions.classList.add('actions-cell');
         upRow.appendChild(upActions);
 
         // Event handlers
@@ -346,7 +341,9 @@ export function renderItems(
 
         // Drag and drop for up-row
         upRow.addEventListener('dragover', (event) => {
-            if (!state.drag.isDragging) return;
+            if (!state.drag.isDragging) {
+                return;
+            }
             event.preventDefault();
             event.dataTransfer.dropEffect = 'move';
             upRow.classList.add('drop-target');
@@ -359,7 +356,9 @@ export function renderItems(
         });
 
         upRow.addEventListener('drop', (event) => {
-            if (!state.drag.isDragging || !state.drag.draggedItem) return;
+            if (!state.drag.isDragging || !state.drag.draggedItem) {
+                return;
+            }
             event.preventDefault();
             event.stopPropagation();
             if (typeof event.stopImmediatePropagation === 'function') {
@@ -377,9 +376,13 @@ export function renderItems(
                     setLoading(document.querySelector('.loader-overlay'), null, isLoading);
                     debugLog('[DEBUG] Loading:', isLoading);
                 },
-                (error) => { debugLog('[DEBUG] Move error:', error); },
+                (error) => {
+                    debugLog('[DEBUG] Move error:', error);
+                },
                 () => fetchDirectory(state.currentPath, { silent: true }),
-                (message) => { debugLog('[DEBUG] Status:', message); },
+                (message) => {
+                    debugLog('[DEBUG] Status:', message);
+                },
                 null,
                 null,
                 null,
@@ -398,10 +401,10 @@ export function renderItems(
             mobileUpItem.classList.add('flex', 'items-center', 'justify-between', 'p-3', 'cursor-pointer', 'up-mobile-row', 'transition-colors', 'border-b');
             mobileUpItem.dataset.itemPath = state.parentPath || '';
             mobileUpItem.dataset.itemType = 'parent';
-            
+
             const leftSide = document.createElement('div');
             leftSide.classList.add('flex', 'items-center', 'gap-3');
-            
+
             const iconContainer = document.createElement('div');
             iconContainer.classList.add('flex', 'items-center', 'justify-center');
             const icon = document.createElement('span');
@@ -409,19 +412,19 @@ export function renderItems(
             icon.textContent = '...';
             iconContainer.appendChild(icon);
             leftSide.appendChild(iconContainer);
-            
+
             const nameSpan = document.createElement('span');
             nameSpan.classList.add('font-medium');
             nameSpan.style.color = 'var(--muted)';
             nameSpan.textContent = '...';
             leftSide.appendChild(nameSpan);
-            
+
             mobileUpItem.appendChild(leftSide);
-            
+
             mobileUpItem.addEventListener('click', () => {
                 navigateTo(state.parentPath || '');
             });
-            
+
             mobileList.appendChild(mobileUpItem);
         }
 
@@ -472,7 +475,7 @@ export function renderItems(
             itemHeight: 40,
             overscan: 5
         };
-        
+
         const useVirtual = shouldUseVirtualScroll(
             filtered.length,
             vsConfig.threshold,
@@ -486,23 +489,19 @@ export function renderItems(
             debugLog(`[Normal Render] Rendering ${filtered.length} items normally`);
             renderNormalItems(tableBody, filtered, state, renderParams);
         }
-        
+
         // Mobile render (only on mobile devices)
         const mobileRenderTime = performance.now();
         if (window.innerWidth < 768) {
             renderMobileItems(mobileList, filtered, state, renderParams);
-            console.log('[RENDER DEBUG] Mobile items rendered at:', mobileRenderTime);
-        } else {
-            console.log('[RENDER DEBUG] Skipped mobile render on desktop');
         }
-        
+
         // Invalidate DOM cache
         invalidateDOMCache();
 
         // Update pagination state
         const pagination = calculatePagination(filtered.length);
         updatePaginationState(pagination.currentPage, pagination.totalPages, filtered.length);
-        console.log('[PAGINATION DEBUG] Final pagination state:', pagination);
 
         // Update known items
         const newMap = new Map();
@@ -512,7 +511,6 @@ export function renderItems(
         state.knownItems = newMap;
 
         const renderEndTime = performance.now();
-        console.log('[RENDER DEBUG] renderItems completed at:', renderEndTime, 'total delta:', renderEndTime - renderStartTime);
 
         return { items, filtered, meta };
     } finally {

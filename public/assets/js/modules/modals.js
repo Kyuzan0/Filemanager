@@ -6,6 +6,7 @@
 
 import { config } from './constants.js';
 import { hasUnsavedChanges } from './utils.js';
+import { cleanupPreviewEditor } from './eventHandlers.js';
 
 /**
  * Overlay open-count guard to avoid removing body.modal-open while other overlays remain open.
@@ -21,7 +22,9 @@ export function markOverlayOpen() {
         }
     } catch (e) {
         // defensive: if DOM not available, fallback to direct add
-        try { document.body.classList.add('modal-open'); } catch (_) {}
+        try {
+            document.body.classList.add('modal-open');
+        } catch (_) {}
     }
 }
 export function markOverlayClosed() {
@@ -32,7 +35,9 @@ export function markOverlayClosed() {
         }
     } catch (e) {
         // defensive fallback
-        try { document.body.classList.remove('modal-open'); } catch (_) {}
+        try {
+            document.body.classList.remove('modal-open');
+        } catch (_) {}
     }
 }
 
@@ -53,54 +58,33 @@ export function openPreviewOverlay(state, previewOverlay, previewClose) {
         : null;
 
     previewOverlay.hidden = false;
-    // PENTING: Hapus class 'hidden' dari Tailwind
     previewOverlay.classList.remove('hidden');
-    
-    // ADD VISIBLE CLASS IMMEDIATELY
     previewOverlay.classList.add('visible');
-    
-    // Add Tailwind utilities for overlay + dialog (non-destructive, keeps existing classes)
-    previewOverlay.classList.add(
-        'tw-overlay',
-        'fixed',
-        'inset-0',
-        'flex',
-        'items-center',
-        'justify-center',
-        'bg-black/50',
-        'z-50'
-    );
+
     requestAnimationFrame(() => {
-        // Enhance inner dialog (if present) with Tailwind utilities; keep try/catch defensive
         try {
             const dialog = previewOverlay.querySelector('.modal') || previewOverlay.querySelector('.dialog') || previewOverlay.querySelector('.overlay-dialog');
             if (dialog) {
-                dialog.classList.add('bg-white', 'rounded-lg', 'shadow-lg', 'p-4', 'max-w-3xl', 'w-full');
-                // Accessibility: mark dialog semantics and make it programmatically focusable
                 try {
                     dialog.setAttribute('role', 'dialog');
                     dialog.setAttribute('aria-modal', 'true');
                     dialog.tabIndex = -1;
                 } catch (e) {}
             }
-        } catch (e) {
-            // intentionally silent to avoid breaking if DOM shape differs
-        }
+        } catch (e) {}
     });
     previewOverlay.setAttribute('aria-hidden', 'false');
     try {
         const dialogEl = previewOverlay.querySelector('.modal, .dialog, .overlay-dialog');
-        console.log('[modals] openPreviewOverlay ->', {
-            overlayId: previewOverlay.id || null,
-            overlayClasses: previewOverlay.className,
-            dialogClasses: dialogEl ? dialogEl.className : null
-        });
+
     } catch (e) { /* ignore */ }
     markOverlayOpen();
     // Attach accessibility hooks (focus trap + Escape) using close via provided close button
     try {
         attachOverlayA11y(previewOverlay, () => {
-            if (previewClose && typeof previewClose.click === 'function') previewClose.click();
+            if (previewClose && typeof previewClose.click === 'function') {
+                previewClose.click();
+            }
         });
     } catch (e) {}
     previewClose.focus();
@@ -122,14 +106,14 @@ export function openPreviewOverlay(state, previewOverlay, previewClose) {
  * @returns {Promise<boolean>} Promise yang resolve dengan true jika berhasil ditutup
  */
 export async function closePreviewOverlay(
-    state, 
-    previewOverlay, 
-    previewEditor, 
-    previewLineNumbers, 
-    previewMeta, 
-    previewStatus, 
-    previewLoader, 
-    previewSave, 
+    state,
+    previewOverlay,
+    previewEditor,
+    previewLineNumbers,
+    previewMeta,
+    previewStatus,
+    previewLoader,
+    previewSave,
     previewOpenRaw,
     confirmDiscardChanges,
     updateLineNumbers
@@ -144,28 +128,28 @@ export async function closePreviewOverlay(
             return false;
         }
         return doClosePreviewOverlay(
-            state, 
-            previewOverlay, 
-            previewEditor, 
-            previewLineNumbers, 
-            previewMeta, 
-            previewStatus, 
-            previewLoader, 
-            previewSave, 
+            state,
+            previewOverlay,
+            previewEditor,
+            previewLineNumbers,
+            previewMeta,
+            previewStatus,
+            previewLoader,
+            previewSave,
             previewOpenRaw,
             updateLineNumbers
         );
     }
 
     return doClosePreviewOverlay(
-        state, 
-        previewOverlay, 
-        previewEditor, 
-        previewLineNumbers, 
-        previewMeta, 
-        previewStatus, 
-        previewLoader, 
-        previewSave, 
+        state,
+        previewOverlay,
+        previewEditor,
+        previewLineNumbers,
+        previewMeta,
+        previewStatus,
+        previewLoader,
+        previewSave,
         previewOpenRaw,
         updateLineNumbers
     );
@@ -186,14 +170,14 @@ export async function closePreviewOverlay(
  * @returns {boolean} True jika berhasil ditutup
  */
 function doClosePreviewOverlay(
-    state, 
-    previewOverlay, 
-    previewEditor, 
-    previewLineNumbers, 
-    previewMeta, 
-    previewStatus, 
-    previewLoader, 
-    previewSave, 
+    state,
+    previewOverlay,
+    previewEditor,
+    previewLineNumbers,
+    previewMeta,
+    previewStatus,
+    previewLoader,
+    previewSave,
     previewOpenRaw,
     updateLineNumbers
 ) {
@@ -226,6 +210,9 @@ function doClosePreviewOverlay(
     }
     state.preview.mode = 'text';
 
+    // Cleanup preview editor resources (ResizeObserver, etc.)
+    cleanupPreviewEditor();
+
     setTimeout(() => {
         if (!state.preview.isOpen) {
             previewOverlay.hidden = true;
@@ -251,11 +238,11 @@ function doClosePreviewOverlay(
  * @param {Object} options - Opsi konfirmasi
  */
 export function openConfirmOverlay(
-    state, 
-    confirmOverlay, 
-    confirmMessage, 
-    confirmDescription, 
-    confirmList, 
+    state,
+    confirmOverlay,
+    confirmMessage,
+    confirmDescription,
+    confirmList,
     confirmConfirm,
     options
 ) {
@@ -297,29 +284,13 @@ export function openConfirmOverlay(
     confirmConfirm.textContent = confirmLabel;
 
     confirmOverlay.hidden = false;
-    // PENTING: Hapus class 'hidden' dari Tailwind
     confirmOverlay.classList.remove('hidden');
-    
-    // ADD VISIBLE CLASS IMMEDIATELY
     confirmOverlay.classList.add('visible');
-    
-    // Add Tailwind utilities for confirm overlay/dialog (additive)
-    confirmOverlay.classList.add(
-        'tw-overlay',
-        'fixed',
-        'inset-0',
-        'flex',
-        'items-center',
-        'justify-center',
-        'bg-black/50',
-        'z-50'
-    );
+
     requestAnimationFrame(() => {
         try {
             const dialog = confirmOverlay.querySelector('.modal') || confirmOverlay.querySelector('.dialog') || confirmOverlay.querySelector('.confirm-dialog');
             if (dialog) {
-                dialog.classList.add('bg-white', 'rounded-lg', 'shadow-lg', 'p-4', 'max-w-lg', 'w-full');
-                // Accessibility semantics
                 try {
                     dialog.setAttribute('role', 'dialog');
                     dialog.setAttribute('aria-modal', 'true');
@@ -331,12 +302,7 @@ export function openConfirmOverlay(
     confirmOverlay.setAttribute('aria-hidden', 'false');
     try {
         const dialogEl = confirmOverlay.querySelector('.modal, .dialog, .confirm-dialog');
-        console.log('[modals] openConfirmOverlay ->', {
-            overlayId: confirmOverlay.id || null,
-            overlayClasses: confirmOverlay.className,
-            dialogClasses: dialogEl ? dialogEl.className : null,
-            pathsSample: (Array.isArray(paths) ? paths.slice(0,3) : null)
-        });
+
     } catch (e) { /* ignore */ }
     markOverlayOpen();
     // Attach accessibility hooks: use closeConfirmOverlay (bind state+overlay)
@@ -379,37 +345,20 @@ export function closeConfirmOverlay(state, confirmOverlay) {
  */
 export function openUnsavedOverlay(state, unsavedOverlay, unsavedMessage, unsavedCancel, options) {
     const { message, onSave, onDiscard, onCancel } = options;
-    
+
     state.unsaved.isOpen = true;
     state.unsaved.callback = { onSave, onDiscard, onCancel };
 
     unsavedMessage.textContent = message || 'Anda memiliki perubahan yang belum disimpan. Apa yang ingin Anda lakukan?';
 
     unsavedOverlay.hidden = false;
-    // PENTING: Hapus class 'hidden' dari Tailwind
     unsavedOverlay.classList.remove('hidden');
-    
-    // ADD VISIBLE CLASS IMMEDIATELY
     unsavedOverlay.classList.add('visible');
-    
-    // Tailwind utilities for unsaved overlay
-    unsavedOverlay.classList.add(
-        'tw-overlay',
-        'fixed',
-        'inset-0',
-        'flex',
-        'items-center',
-        'justify-center',
-        'bg-black/50',
-        'z-50'
-    );
+
     requestAnimationFrame(() => {
-        // Enhance inner dialog if available
         try {
             const dialog = unsavedOverlay.querySelector('.modal') || unsavedOverlay.querySelector('.dialog') || unsavedOverlay.querySelector('.unsaved-dialog');
             if (dialog) {
-                dialog.classList.add('bg-white', 'rounded-lg', 'shadow-lg', 'p-4', 'max-w-md', 'w-full');
-                // Accessibility semantics
                 try {
                     dialog.setAttribute('role', 'dialog');
                     dialog.setAttribute('aria-modal', 'true');
@@ -417,18 +366,12 @@ export function openUnsavedOverlay(state, unsavedOverlay, unsavedMessage, unsave
                 } catch (e) {}
             }
         } catch (e) {}
-        // Focus after the modal is visible to avoid aria-hidden warning
         unsavedCancel.focus();
     });
     unsavedOverlay.setAttribute('aria-hidden', 'false');
     try {
         const dialogEl = unsavedOverlay.querySelector('.modal, .dialog, .unsaved-dialog');
-        console.log('[modals] openUnsavedOverlay ->', {
-            overlayId: unsavedOverlay.id || null,
-            overlayClasses: unsavedOverlay.className,
-            dialogClasses: dialogEl ? dialogEl.className : null,
-            messagePreview: (message || '').slice(0,140)
-        });
+
     } catch (e) { /* ignore */ }
     markOverlayOpen();
     // Attach accessibility hooks using unsaved close handler
@@ -473,13 +416,13 @@ export function closeUnsavedOverlay(state, unsavedOverlay) {
  * @param {string} kind - Jenis item ('file' atau 'folder')
  */
 export function openCreateOverlay(
-    state, 
-    createOverlay, 
-    createTitle, 
-    createSubtitle, 
-    createLabel, 
-    createName, 
-    createHint, 
+    state,
+    createOverlay,
+    createTitle,
+    createSubtitle,
+    createLabel,
+    createName,
+    createHint,
     createSubmit,
     kind
 ) {
@@ -489,7 +432,7 @@ export function openCreateOverlay(
     // Reset radio buttons - unchecked semua
     const radioButtons = createOverlay.querySelectorAll('input[name="create-type"]');
     radioButtons.forEach(radio => radio.checked = false);
-    
+
     // Hide input name group secara default
     const createNameGroup = createOverlay.querySelector('#create-name-group');
     if (createNameGroup) {
@@ -522,27 +465,12 @@ export function openCreateOverlay(
 
     createOverlay.hidden = false;
     createOverlay.classList.remove('hidden');
-    
-    // ADD VISIBLE CLASS IMMEDIATELY
     createOverlay.classList.add('visible');
-    
-    // Tailwind utilities for create overlay + dialog
-    createOverlay.classList.add(
-        'tw-overlay',
-        'fixed',
-        'inset-0',
-        'flex',
-        'items-center',
-        'justify-center',
-        'bg-black/50',
-        'z-50'
-    );
+
     requestAnimationFrame(() => {
         try {
             const dialog = createOverlay.querySelector('.modal') || createOverlay.querySelector('.dialog') || createOverlay.querySelector('.create-dialog');
             if (dialog) {
-                dialog.classList.add('bg-white', 'rounded-lg', 'shadow-lg', 'p-4', 'max-w-md', 'w-full');
-                // Accessibility semantics
                 try {
                     dialog.setAttribute('role', 'dialog');
                     dialog.setAttribute('aria-modal', 'true');
@@ -552,19 +480,10 @@ export function openCreateOverlay(
         } catch (e) {}
     });
     createOverlay.setAttribute('aria-hidden', 'false');
-    try {
-        const dialogEl = createOverlay.querySelector('.modal, .dialog, .create-dialog');
-        console.log('[modals] openCreateOverlay ->', {
-            overlayId: createOverlay.id || null,
-            overlayClasses: createOverlay.className,
-            dialogClasses: dialogEl ? dialogEl.className : null,
-            kind
-        });
-    } catch (e) { /* ignore */ }
     markOverlayOpen();
-    
+
     createName.value = '';
-    
+
     // Add event listeners untuk perubahan pilihan file/folder
     radioButtons.forEach(radio => {
         radio.addEventListener('change', () => {
@@ -590,11 +509,11 @@ export function openCreateOverlay(
  * @param {HTMLElement} createName - Elemen input nama
  */
 export function closeCreateOverlay(
-    state, 
-    createOverlay, 
-    createForm, 
-    createHint, 
-    createSubmit, 
+    state,
+    createOverlay,
+    createForm,
+    createHint,
+    createSubmit,
     createName
 ) {
     if (!state.create.isOpen) {
@@ -608,7 +527,7 @@ export function closeCreateOverlay(
     createHint.textContent = '';
     createSubmit.disabled = false;
     createName.disabled = false;
-    
+
     // Sembunyikan input name group dan reset radio buttons
     const createNameGroup = createOverlay.querySelector('#create-name-group');
     if (createNameGroup) {
@@ -616,7 +535,7 @@ export function closeCreateOverlay(
     }
     const radioButtons = createOverlay.querySelectorAll('input[name="create-type"]');
     radioButtons.forEach(radio => radio.checked = false);
-    
+
     markOverlayClosed();
     setTimeout(() => {
         if (!state.create.isOpen) {
@@ -639,13 +558,13 @@ export function closeCreateOverlay(
  * @param {Object} item - Item yang akan di-rename
  */
 export function openRenameOverlay(
-    state, 
-    renameOverlay, 
-    renameTitle, 
-    renameSubtitle, 
-    renameLabel, 
-    renameName, 
-    renameHint, 
+    state,
+    renameOverlay,
+    renameTitle,
+    renameSubtitle,
+    renameLabel,
+    renameName,
+    renameHint,
     renameSubmit,
     item
 ) {
@@ -666,27 +585,12 @@ export function openRenameOverlay(
 
     renameOverlay.hidden = false;
     renameOverlay.classList.remove('hidden');
-    
-    // ADD VISIBLE CLASS IMMEDIATELY
     renameOverlay.classList.add('visible');
-    
-    // Tailwind utilities for rename overlay/dialog
-    renameOverlay.classList.add(
-        'tw-overlay',
-        'fixed',
-        'inset-0',
-        'flex',
-        'items-center',
-        'justify-center',
-        'bg-black/50',
-        'z-50'
-    );
+
     requestAnimationFrame(() => {
         try {
             const dialog = renameOverlay.querySelector('.modal') || renameOverlay.querySelector('.dialog') || renameOverlay.querySelector('.rename-dialog');
             if (dialog) {
-                dialog.classList.add('bg-white', 'rounded-lg', 'shadow-lg', 'p-4', 'max-w-md', 'w-full');
-                // Accessibility semantics
                 try {
                     dialog.setAttribute('role', 'dialog');
                     dialog.setAttribute('aria-modal', 'true');
@@ -698,15 +602,10 @@ export function openRenameOverlay(
     renameOverlay.setAttribute('aria-hidden', 'false');
     try {
         const dialogEl = renameOverlay.querySelector('.modal, .dialog, .rename-dialog');
-        console.log('[modals] openRenameOverlay ->', {
-            overlayId: renameOverlay.id || null,
-            overlayClasses: renameOverlay.className,
-            dialogClasses: dialogEl ? dialogEl.className : null,
-            targetName: item && item.name ? item.name : null
-        });
+
     } catch (e) { /* ignore */ }
     markOverlayOpen();
-    
+
     // Select filename without extension for files
     if (!isFolder) {
         const dotIndex = item.name.lastIndexOf('.');
@@ -769,11 +668,11 @@ export function closeRenameOverlay(
  * @param {boolean} isLoading - Status loading
  */
 export function setPreviewLoading(
-    state, 
-    previewLoader, 
-    previewEditor, 
-    previewSave, 
-    updateLineNumbers, 
+    state,
+    previewLoader,
+    previewEditor,
+    previewSave,
+    updateLineNumbers,
     isLoading
 ) {
     previewLoader.hidden = !isLoading;
@@ -933,16 +832,16 @@ export async function openMediaPreview(
             loadingMsg.appendChild(pdfSpinner);
             loadingMsg.appendChild(pdfMsg);
             viewer.appendChild(loadingMsg);
-            
+
             el = document.createElement('iframe');
             el.src = url;
             el.title = item.name;
             el.setAttribute('aria-label', `Pratinjau PDF ${item.name}`);
             el.style.display = 'none'; // Hide until loaded
-            
+
             // Show iframe when loaded
             el.addEventListener('load', () => {
-                console.log('[MEDIA] PDF loaded successfully:', item.name);
+
                 loadingMsg.remove();
                 el.style.display = 'block';
             });
@@ -960,23 +859,23 @@ export async function openMediaPreview(
             loadingMsg.appendChild(imgSpinner);
             loadingMsg.appendChild(imgMsg);
             viewer.appendChild(loadingMsg);
-            
+
             el = document.createElement('img');
             el.src = url;
             el.alt = item.name;
             el.loading = 'lazy'; // Native lazy loading
             el.decoding = 'async'; // Async decode for better performance
             el.style.display = 'none'; // Hide until loaded
-            
+
             // Add loading and error handlers
             el.addEventListener('load', () => {
-                console.log('[MEDIA] Image loaded successfully:', item.name);
+
                 loadingMsg.remove();
                 el.style.display = 'block';
-                
+
                 // Optimization 8: Log performance metrics
                 if (item.size && item.size > 1048576) { // > 1MB
-                    console.log(`[MEDIA PERFORMANCE] Large image (${(item.size / 1048576).toFixed(2)}MB) loaded`);
+
                 }
             });
             el.addEventListener('error', () => {
@@ -1012,67 +911,34 @@ export async function openMediaPreview(
  * @param {HTMLElement} logClose - Elemen tombol close
  */
 export function openLogModal(state, logOverlay, logClose) {
-    console.log('[openLogModal] ========== START ==========');
-    console.log('[openLogModal] logOverlay element:', logOverlay);
-    console.log('[openLogModal] logOverlay ID:', logOverlay ? logOverlay.id : 'NULL');
-    
+
+
     if (!logOverlay) {
         console.error('[openLogModal] ERROR: logOverlay is NULL or undefined!');
         alert('Error: Log overlay element not found!');
         return;
     }
-    
+
     if (state.logs.isOpen) {
-        console.log('[openLogModal] Modal already open, returning');
+
         return;
     }
 
-    console.log('[openLogModal] Step 1: Setting state');
     state.logs.isOpen = true;
     state.logs.currentPage = 1;
     state.logs.activeFilters = {};
-    
-    console.log('[openLogModal] Step 2: Setting hidden=false');
+
     logOverlay.hidden = false;
-    
-    console.log('[openLogModal] Step 3: Removing Tailwind hidden class');
     logOverlay.classList.remove('hidden');
-    
-    console.log('[openLogModal] Step 4: Setting aria-hidden=false (CRITICAL for CSS)');
     logOverlay.setAttribute('aria-hidden', 'false');
-    
-    console.log('[openLogModal] Step 5: Adding visible class (CRITICAL for CSS)');
     logOverlay.classList.add('visible');
-    
-    console.log('[openLogModal] Step 6: Adding Tailwind display classes');
-    logOverlay.classList.add(
-        'tw-overlay',
-        'fixed',
-        'inset-0',
-        'flex',
-        'items-center',
-        'justify-center',
-        'bg-black/50',
-        'z-50'
-    );
-    
-    console.log('[openLogModal] Step 7: Classes applied:', logOverlay.className);
-    console.log('[openLogModal] Step 8: aria-hidden value:', logOverlay.getAttribute('aria-hidden'));
-    
-    // Check computed styles
+
     const computedStyle = window.getComputedStyle(logOverlay);
-    console.log('[openLogModal] Step 9: Computed display:', computedStyle.display);
-    console.log('[openLogModal] Step 9: Computed visibility:', computedStyle.visibility);
-    console.log('[openLogModal] Step 9: Computed opacity:', computedStyle.opacity);
-    console.log('[openLogModal] Step 9: Computed z-index:', computedStyle.zIndex);
-    
+
     requestAnimationFrame(() => {
-        console.log('[openLogModal] RAF: Applying styles to dialog');
         try {
             const dialog = logOverlay.querySelector('.modal') || logOverlay.querySelector('.dialog') || logOverlay.querySelector('.log-dialog');
             if (dialog) {
-                console.log('[openLogModal] RAF: Found dialog element');
-                dialog.classList.add('bg-white', 'rounded-lg', 'shadow-lg', 'p-4', 'max-w-4xl', 'w-full', 'overflow-hidden');
                 dialog.setAttribute('role', 'dialog');
                 dialog.setAttribute('aria-modal', 'true');
                 dialog.tabIndex = -1;
@@ -1083,15 +949,13 @@ export function openLogModal(state, logOverlay, logClose) {
             console.error('[openLogModal] RAF: Error:', e);
         }
     });
-    
-    console.log('[openLogModal] Step 10: Calling markOverlayOpen');
+
     markOverlayOpen();
-    
+
     if (logClose) {
         logClose.focus();
     }
-    
-    console.log('[openLogModal] ========== COMPLETE ==========');
+
 }
 
 /**
@@ -1108,7 +972,7 @@ export function closeLogModal(state, logOverlay) {
     logOverlay.classList.remove('visible');
     logOverlay.setAttribute('aria-hidden', 'true');
     markOverlayClosed();
-    
+
     setTimeout(() => {
         if (!state.logs.isOpen) {
             logOverlay.hidden = true;
@@ -1136,19 +1000,13 @@ export function closeLogModal(state, logOverlay) {
  */
 export function setLogLoading(state, logTableBody, isLoading) {
     const timestamp = new Date().toISOString();
-    console.log(`[LOG_LOADING ${timestamp}] Setting loading state:`, {
-        isLoading,
-        hasTableBody: !!logTableBody,
-        currentState: state.logs.isLoading,
-        stackTrace: new Error().stack
-    });
-    
+
     // Update state
     state.logs.isLoading = isLoading;
-    
+
     // Get global loader overlay
     const loaderOverlay = document.querySelector('.loader-overlay');
-    
+
     if (isLoading) {
         // SHOW loading - both table and global overlay
         if (logTableBody) {
@@ -1170,36 +1028,34 @@ export function setLogLoading(state, logTableBody, isLoading) {
         } else {
             console.warn('[LOG_LOADING] logTableBody element not found');
         }
-        
+
         // Show global loader
         if (loaderOverlay) {
             loaderOverlay.classList.add('visible');
-            console.log('[LOG_LOADING] Global loader shown');
+
         } else {
             console.warn('[LOG_LOADING] Global loader-overlay element not found');
         }
-        
-        console.log('[LOG_LOADING] ✓ Loading state activated');
+
     } else {
         // HIDE loading - clear EVERYTHING
-        
+
         // Clear table loading (renderLogTable will populate it)
         if (logTableBody && logTableBody.innerHTML.includes('Loading logs')) {
             // Only clear if it's still showing loading message
-            console.log('[LOG_LOADING] Table still has loading message, will be cleared by renderLogTable');
+
         }
-        
+
         // CRITICAL: Hide global loader
         if (loaderOverlay) {
             loaderOverlay.classList.remove('visible');
-            console.log('[LOG_LOADING] Global loader hidden');
+
         } else {
             console.warn('[LOG_LOADING] Global loader-overlay element not found for hiding');
         }
-        
-        console.log('[LOG_LOADING] ✓ Loading state deactivated');
+
     }
-    
+
     // Defensive check: Ensure global loader is actually hidden
     if (!isLoading) {
         setTimeout(() => {
@@ -1242,12 +1098,18 @@ export function updateLogPagination(state, logPrev, logNext, logPageInfo) {
 const overlayA11yMap = new WeakMap();
 
 export function attachOverlayA11y(overlay, closeCallback) {
-    if (!overlay || overlayA11yMap.has(overlay)) return;
+    if (!overlay || overlayA11yMap.has(overlay)) {
+        return;
+    }
     const keydownHandler = (e) => {
         // Close on Escape
         if (e.key === 'Escape') {
             e.preventDefault();
-            try { if (closeCallback) closeCallback(); } catch (err) {}
+            try {
+                if (closeCallback) {
+                    closeCallback();
+                }
+            } catch (err) {}
             return;
         }
 
@@ -1260,7 +1122,9 @@ export function attachOverlayA11y(overlay, closeCallback) {
                     )
                 ).filter((el) => el.offsetParent !== null); // visible only
 
-                if (focusable.length === 0) return;
+                if (focusable.length === 0) {
+                    return;
+                }
 
                 const first = focusable[0];
                 const last = focusable[focusable.length - 1];
@@ -1304,7 +1168,9 @@ export function attachOverlayA11y(overlay, closeCallback) {
             document.removeEventListener('keydown', keydownHandler);
         } catch (e) {}
         overlayA11yMap.delete(overlay);
-        try { delete overlay._a11yDetach; } catch (e) {}
+        try {
+            delete overlay._a11yDetach;
+        } catch (e) {}
     };
 
     overlay._a11yDetach = detach;
@@ -1315,13 +1181,19 @@ export function attachOverlayA11y(overlay, closeCallback) {
 }
 
 export function detachOverlayA11y(overlay) {
-    if (!overlay) return;
+    if (!overlay) {
+        return;
+    }
     const entry = overlayA11yMap.get(overlay);
     if (entry && typeof entry.detach === 'function') {
-        try { entry.detach(); } catch (e) {}
+        try {
+            entry.detach();
+        } catch (e) {}
     }
     if (overlay && overlay._a11yDetach) {
-        try { overlay._a11yDetach(); } catch (e) {}
+        try {
+            overlay._a11yDetach();
+        } catch (e) {}
     }
 }
 
@@ -1341,63 +1213,63 @@ export function openDeleteOverlay(items, onConfirm, onCancel = null) {
         console.warn('[modals] delete-overlay not found');
         return;
     }
-    
+
     const itemsArray = Array.isArray(items) ? items : [items];
     const itemCount = itemsArray.length;
-    
+
     // Update title and subtitle
     const title = overlay.querySelector('#delete-title');
     const subtitle = overlay.querySelector('#delete-subtitle');
     const message = overlay.querySelector('#delete-message');
     const itemsList = overlay.querySelector('#delete-items-list');
-    
+
     if (title) {
         title.textContent = itemCount > 1 ? `Hapus ${itemCount} Item` : 'Hapus Item';
     }
-    
+
     if (subtitle) {
-        subtitle.textContent = itemCount > 1 
-            ? `Konfirmasi penghapusan ${itemCount} item` 
+        subtitle.textContent = itemCount > 1
+            ? `Konfirmasi penghapusan ${itemCount} item`
             : 'Konfirmasi penghapusan';
     }
-    
+
     if (message) {
-        message.textContent = itemCount > 1 
-            ? `Apakah Anda yakin ingin menghapus ${itemCount} item berikut?` 
-            : `Apakah Anda yakin ingin menghapus item ini?`;
+        message.textContent = itemCount > 1
+            ? `Apakah Anda yakin ingin menghapus ${itemCount} item berikut?`
+            : 'Apakah Anda yakin ingin menghapus item ini?';
     }
-    
+
     // Populate items list
     if (itemsList) {
         itemsList.innerHTML = itemsArray.slice(0, 10).map(item => {
             const name = typeof item === 'string' ? item.split('/').pop() : (item.name || item.path?.split('/').pop() || 'Unknown');
             const isFolder = typeof item === 'object' && item.type === 'folder';
-            const icon = isFolder 
+            const icon = isFolder
                 ? '<svg viewBox="0 0 24 24" fill="currentColor" class="delete-item-icon"><path d="M10 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2h-8l-2-2z"/></svg>'
                 : '<svg viewBox="0 0 24 24" fill="currentColor" class="delete-item-icon"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6z"/><path d="M14 2v6h6"/></svg>';
             return `<div class="delete-item">${icon}<span class="delete-item-name">${escapeHtml(name)}</span></div>`;
         }).join('');
-        
+
         if (itemCount > 10) {
-            itemsList.innerHTML += `<div class="delete-item text-gray-500">... dan ${itemCount - 10} item lainnya</div>`;
+            itemsList.innerHTML += `<div class="delete-item text-muted">... dan ${itemCount - 10} item lainnya</div>`;
         }
     }
-    
+
     // Store callbacks
     overlay._deleteConfirmCallback = onConfirm;
     overlay._deleteCancelCallback = onCancel;
     overlay._deleteItems = itemsArray;
-    
+
     // Show overlay
     overlay.hidden = false;
     overlay.classList.remove('hidden');
     overlay.classList.add('visible');
     overlay.setAttribute('aria-hidden', 'false');
-    
+
     // Setup event listeners
     const confirmBtn = overlay.querySelector('#delete-confirm');
     const cancelBtn = overlay.querySelector('#delete-cancel');
-    
+
     const handleConfirm = async () => {
         if (typeof overlay._deleteConfirmCallback === 'function') {
             try {
@@ -1408,36 +1280,37 @@ export function openDeleteOverlay(items, onConfirm, onCancel = null) {
         }
         closeDeleteOverlay();
     };
-    
+
     const handleCancel = () => {
         if (typeof overlay._deleteCancelCallback === 'function') {
             overlay._deleteCancelCallback();
         }
         closeDeleteOverlay();
     };
-    
+
     // Remove old listeners
     confirmBtn?.replaceWith(confirmBtn.cloneNode(true));
     cancelBtn?.replaceWith(cancelBtn.cloneNode(true));
-    
+
     // Add new listeners
     overlay.querySelector('#delete-confirm')?.addEventListener('click', handleConfirm);
     overlay.querySelector('#delete-cancel')?.addEventListener('click', handleCancel);
-    
+
     // Close on backdrop click
     overlay.addEventListener('click', (e) => {
-        if (e.target === overlay) handleCancel();
+        if (e.target === overlay) {
+            handleCancel();
+        }
     }, { once: true });
-    
+
     // Focus cancel button
     setTimeout(() => {
         overlay.querySelector('#delete-cancel')?.focus();
     }, 100);
-    
+
     markOverlayOpen();
     attachOverlayA11y(overlay, handleCancel);
-    
-    console.log('[modals] openDeleteOverlay ->', { itemCount, items: itemsArray });
+
 }
 
 /**
@@ -1445,22 +1318,26 @@ export function openDeleteOverlay(items, onConfirm, onCancel = null) {
  */
 export function closeDeleteOverlay() {
     const overlay = document.getElementById('delete-overlay');
-    if (!overlay) return;
-    
+    if (!overlay) {
+        return;
+    }
+
     overlay.classList.remove('visible');
     overlay.classList.add('hidden');
     overlay.setAttribute('aria-hidden', 'true');
     overlay.hidden = true;
-    
+
     // Clear callbacks
     delete overlay._deleteConfirmCallback;
     delete overlay._deleteCancelCallback;
     delete overlay._deleteItems;
-    
+
     // Clear items list
     const itemsList = overlay.querySelector('#delete-items-list');
-    if (itemsList) itemsList.innerHTML = '';
-    
+    if (itemsList) {
+        itemsList.innerHTML = '';
+    }
+
     markOverlayClosed();
     detachOverlayA11y(overlay);
 }
@@ -1481,31 +1358,31 @@ export function openDownloadOverlay(fileData, onConfirm, onCancel = null) {
         console.warn('[modals] download-overlay not found');
         return;
     }
-    
+
     // Update file info
     const fileName = overlay.querySelector('#download-file-name');
     const fileSize = overlay.querySelector('#download-file-size');
     const fileIcon = overlay.querySelector('#download-file-icon');
     const subtitle = overlay.querySelector('#download-subtitle');
-    
+
     if (fileName) {
         fileName.textContent = fileData.name || 'Unknown file';
     }
-    
+
     if (fileSize) {
         const size = fileData.size || 0;
         fileSize.textContent = formatFileSize(size);
     }
-    
+
     if (subtitle) {
         subtitle.textContent = `Unduh ${fileData.name || 'file'}`;
     }
-    
+
     // Set appropriate icon based on file type
     if (fileIcon) {
-        fileIcon.className = 'download-file-icon w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0';
+        fileIcon.className = 'download-file-icon';
         const ext = (fileData.name || '').split('.').pop()?.toLowerCase() || '';
-        
+
         if (['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg', 'bmp'].includes(ext)) {
             fileIcon.classList.add('image');
         } else if (['js', 'ts', 'jsx', 'tsx', 'php', 'py', 'html', 'css', 'json', 'xml'].includes(ext)) {
@@ -1516,22 +1393,22 @@ export function openDownloadOverlay(fileData, onConfirm, onCancel = null) {
             fileIcon.classList.add('folder');
         }
     }
-    
+
     // Store callbacks
     overlay._downloadConfirmCallback = onConfirm;
     overlay._downloadCancelCallback = onCancel;
     overlay._downloadFileData = fileData;
-    
+
     // Show overlay
     overlay.hidden = false;
     overlay.classList.remove('hidden');
     overlay.classList.add('visible');
     overlay.setAttribute('aria-hidden', 'false');
-    
+
     // Setup event listeners
     const confirmBtn = overlay.querySelector('#download-confirm');
     const cancelBtn = overlay.querySelector('#download-cancel');
-    
+
     const handleConfirm = async () => {
         if (typeof overlay._downloadConfirmCallback === 'function') {
             try {
@@ -1542,36 +1419,37 @@ export function openDownloadOverlay(fileData, onConfirm, onCancel = null) {
         }
         closeDownloadOverlay();
     };
-    
+
     const handleCancel = () => {
         if (typeof overlay._downloadCancelCallback === 'function') {
             overlay._downloadCancelCallback();
         }
         closeDownloadOverlay();
     };
-    
+
     // Remove old listeners
     confirmBtn?.replaceWith(confirmBtn.cloneNode(true));
     cancelBtn?.replaceWith(cancelBtn.cloneNode(true));
-    
+
     // Add new listeners
     overlay.querySelector('#download-confirm')?.addEventListener('click', handleConfirm);
     overlay.querySelector('#download-cancel')?.addEventListener('click', handleCancel);
-    
+
     // Close on backdrop click
     overlay.addEventListener('click', (e) => {
-        if (e.target === overlay) handleCancel();
+        if (e.target === overlay) {
+            handleCancel();
+        }
     }, { once: true });
-    
+
     // Focus download button
     setTimeout(() => {
         overlay.querySelector('#download-confirm')?.focus();
     }, 100);
-    
+
     markOverlayOpen();
     attachOverlayA11y(overlay, handleCancel);
-    
-    console.log('[modals] openDownloadOverlay ->', { fileData });
+
 }
 
 /**
@@ -1579,18 +1457,20 @@ export function openDownloadOverlay(fileData, onConfirm, onCancel = null) {
  */
 export function closeDownloadOverlay() {
     const overlay = document.getElementById('download-overlay');
-    if (!overlay) return;
-    
+    if (!overlay) {
+        return;
+    }
+
     overlay.classList.remove('visible');
     overlay.classList.add('hidden');
     overlay.setAttribute('aria-hidden', 'true');
     overlay.hidden = true;
-    
+
     // Clear callbacks
     delete overlay._downloadConfirmCallback;
     delete overlay._downloadCancelCallback;
     delete overlay._downloadFileData;
-    
+
     markOverlayClosed();
     detachOverlayA11y(overlay);
 }
@@ -1601,7 +1481,9 @@ export function closeDownloadOverlay() {
  * @returns {string} Formatted file size
  */
 function formatFileSize(bytes) {
-    if (bytes === 0) return '0 Bytes';
+    if (bytes === 0) {
+        return '0 Bytes';
+    }
     const k = 1024;
     const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
     const i = Math.floor(Math.log(bytes) / Math.log(k));
@@ -1618,3 +1500,4 @@ function escapeHtml(text) {
     div.textContent = text;
     return div.innerHTML;
 }
+

@@ -5,13 +5,12 @@
 ?>
 
 <!-- Keyboard shortcuts help modal -->
-<div class="shortcuts-help-overlay fixed inset-0 items-center justify-center bg-black/45 p-2 md:p-4 z-50 hidden"
+<div class="shortcuts-help-overlay hidden"
     id="shortcuts-help-overlay" aria-hidden="true">
-    <div class="shortcuts-help-dialog bg-white dark:bg-[#1a2332] rounded-lg shadow-lg w-full max-w-2xl max-h-[80vh] overflow-hidden"
+    <div class="shortcuts-help-dialog"
         role="dialog" aria-modal="true" aria-labelledby="shortcuts-help-title">
-        <header
-            class="shortcuts-help-header px-6 py-4 border-b border-gray-100 dark:border-white/10 flex items-center justify-between">
-            <h2 class="shortcuts-help-title text-lg font-semibold dark:text-slate-200" id="shortcuts-help-title">
+        <header class="shortcuts-help-header">
+            <h2 class="shortcuts-help-title" id="shortcuts-help-title">
                 Keyboard Shortcuts
             </h2>
             <button type="button" id="shortcuts-help-close" class="shortcuts-help-close-btn"
@@ -22,35 +21,35 @@
                 </svg>
             </button>
         </header>
-        <div class="shortcuts-help-body px-6 py-4 overflow-y-auto" id="shortcuts-help-content">
+        <div class="shortcuts-help-body" id="shortcuts-help-content">
             <!-- Content will be dynamically inserted by keyboardShortcuts.js -->
         </div>
-        <footer class="shortcuts-help-footer px-6 py-3 border-t border-gray-100 dark:border-white/10 text-center">
-            <p class="text-xs text-gray-500 dark:text-slate-400">
+        <footer class="shortcuts-help-footer">
+            <p class="text-xs text-muted">
                 Press <kbd class="shortcut-key">Ctrl</kbd> + <kbd class="shortcut-key">/</kbd> to toggle this help
             </p>
         </footer>
     </div>
 </div>
 
-<div class="preview-overlay fixed inset-0 items-center justify-center bg-black/45 p-2 md:p-4 z-50 hidden"
+<div class="preview-overlay hidden"
     id="preview-overlay" aria-hidden="true" data-action="preview" data-open="preview">
     <div class="preview-dialog" role="dialog" aria-modal="true" aria-labelledby="preview-title"
         aria-describedby="preview-meta">
         <header class="preview-header mb-4 flex-shrink-0">
             <div class="preview-title-group">
-                <span class="preview-label text-sm text-gray-600 dark:text-slate-400" id="preview-label">Editor</span>
-                <h2 class="preview-title text-lg md:text-xl font-semibold dark:text-slate-200" id="preview-title">
+                <span class="preview-label text-sm text-muted" id="preview-label">Editor</span>
+                <h2 class="preview-title text-lg font-semibold" id="preview-title">
                     Pratinjau</h2>
             </div>
-            <div class="preview-controls flex items-center gap-2">
+            <div class="preview-controls d-flex items-center gap-2">
                 <button class="btn-word-wrap" id="previewWordWrapToggle" title="Toggle Word Wrap"
                     aria-label="Toggle word wrap in editor" aria-pressed="false">
                     <i class="ri-text-wrap" aria-hidden="true"></i>
-                    <span class="hidden sm:inline text-xs">Wrap</span>
+                    <span class="d-none sm\:d-inline text-xs">Wrap</span>
                 </button>
             </div>
-            <p class="preview-meta text-sm text-gray-500 dark:text-slate-400" id="preview-meta"></p>
+            <p class="preview-meta text-sm text-muted" id="preview-meta"></p>
         </header>
         <div class="preview-body">
             <!-- Text Editor View (CodeMirror 6) -->
@@ -121,11 +120,11 @@
                 </svg>
             </button>
         </div>
-        <footer class="preview-footer flex-shrink-0">
-            <div class="preview-footer-status mb-2 sm:mb-3">
-                <span class="preview-status text-xs sm:text-sm text-gray-600 dark:text-slate-400"
+        <footer class="preview-footer">
+            <div class="preview-footer-status">
+                <span class="preview-status"
                     id="preview-status"></span>
-                <span class="preview-loader text-xs sm:text-sm text-blue-600" id="preview-loader" hidden>Memuat
+                <span class="preview-loader" id="preview-loader" hidden>Memuat
                     konten...</span>
             </div>
             <div class="preview-footer-actions" role="group" aria-label="File actions">
@@ -184,13 +183,12 @@
     </div>
 </div>
 
-<div class="confirm-overlay fixed inset-0 items-center justify-center bg-black/45 p-2 md:p-4 z-50 hidden"
+<div class="confirm-overlay hidden"
     id="confirm-overlay" aria-hidden="true" data-action="confirm" data-open="confirm">
-    <div class="confirm-dialog bg-white rounded-lg shadow-lg w-full max-w-md" role="alertdialog" aria-modal="true"
+    <div class="confirm-dialog" role="alertdialog" aria-modal="true"
         aria-labelledby="confirm-title" aria-describedby="confirm-message">
-        <header
-            class="confirm-header bg-gradient-to-r from-blue-50 to-blue-50 border-b border-gray-100 px-6 py-4 text-center">
-            <div class="confirm-icon mx-auto mb-3 w-12 h-12 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center"
+        <header class="confirm-header">
+            <div class="confirm-icon mx-auto"
                 aria-hidden="true">
                 <svg viewBox="0 0 24 24" focusable="false" fill="currentColor" class="w-6 h-6">
                     <path
@@ -198,21 +196,21 @@
                 </svg>
             </div>
             <div class="confirm-title-group">
-                <h2 class="confirm-title text-base font-semibold text-gray-900" id="confirm-title">Konfirmasi</h2>
-                <p class="confirm-message text-sm text-gray-600 mt-1" id="confirm-message"></p>
+                <h2 class="confirm-title" id="confirm-title">Konfirmasi</h2>
+                <p class="confirm-message" id="confirm-message"></p>
             </div>
         </header>
-        <div class="confirm-body px-6 py-4">
-            <p class="confirm-description text-sm text-gray-700" id="confirm-description"></p>
-            <ul class="confirm-list text-sm text-gray-700 mt-2" id="confirm-list" hidden></ul>
+        <div class="confirm-body">
+            <p class="confirm-description" id="confirm-description"></p>
+            <ul class="confirm-list" id="confirm-list" hidden></ul>
         </div>
-        <div class="confirm-actions flex gap-2 border-t border-gray-100 bg-gray-50 px-6 py-3 rounded-b-lg" role="group"
+        <div class="confirm-actions" role="group"
             aria-label="Confirmation actions">
             <button type="button"
-                class="confirm-button outline flex-1 inline-flex items-center justify-center gap-2 px-3 py-2 rounded-md text-sm btn"
+                class="confirm-button outline"
                 id="confirm-cancel" data-action="confirm-cancel" aria-label="Cancel action">Batal</button>
             <button type="button"
-                class="confirm-button danger flex-1 inline-flex items-center justify-center gap-2 px-3 py-2 rounded-md text-sm bg-red-600 text-white hover:bg-red-700 focus:outline-none font-medium transition-colors"
+                class="confirm-button danger"
                 id="confirm-confirm" data-action="confirm-confirm" aria-label="Confirm deletion">Hapus</button>
         </div>
     </div>
@@ -270,12 +268,12 @@
 </div>
 
 
-<div class="rename-overlay fixed inset-0 items-center justify-center bg-black/45 p-2 md:p-4 z-50 hidden"
+<div class="rename-overlay hidden"
     id="rename-overlay" aria-hidden="true" data-action="rename" data-open="rename">
-    <div class="rename-dialog rounded-lg shadow-lg w-full max-w-md" role="dialog" aria-modal="true"
+    <div class="rename-dialog" role="dialog" aria-modal="true"
         aria-labelledby="rename-title">
-        <header class="rename-header px-6 py-4 flex items-center gap-4">
-            <div class="rename-icon w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0"
+        <header class="rename-header">
+            <div class="rename-icon"
                 aria-hidden="true">
                 <svg viewBox="0 0 24 24" fill="currentColor" class="w-6 h-6">
                     <path
@@ -283,85 +281,85 @@
                 </svg>
             </div>
             <div class="rename-title-group">
-                <h2 class="rename-title text-base font-semibold" id="rename-title">Rename Item</h2>
-                <p class="rename-subtitle text-xs mt-0.5" id="rename-subtitle"></p>
+                <h2 class="rename-title" id="rename-title">Rename Item</h2>
+                <p class="rename-subtitle" id="rename-subtitle"></p>
             </div>
         </header>
-        <form class="rename-form px-6 py-4" id="rename-form">
-            <div class="form-field mb-4">
-                <label for="rename-name" id="rename-label" class="text-sm font-medium block mb-2">Nama Baru</label>
+        <form class="rename-form" id="rename-form">
+            <div class="form-field">
+                <label for="rename-name" id="rename-label">Nama Baru</label>
                 <input type="text" id="rename-name" name="rename-name" autocomplete="off" required
-                    class="rename-input rounded-md px-3 py-2 w-full border border-gray-200 dark:border-white/10 dark:bg-black/30 dark:text-gray-200 focus:outline-none focus:border-blue-500 dark:focus:border-blue-400 text-sm transition-colors" />
-                <p class="form-hint text-xs mt-1" id="rename-hint">Gunakan huruf, angka, titik, atau garis bawah.</p>
+                    class="rename-input" />
+                <p class="form-hint" id="rename-hint">Gunakan huruf, angka, titik, atau garis bawah.</p>
             </div>
         </form>
-        <footer class="rename-actions flex gap-2 px-6 py-3 rounded-b-lg" role="group" aria-label="Rename actions">
+        <footer class="rename-actions" role="group" aria-label="Rename actions">
             <button type="button"
-                class="rename-button outline flex-1 inline-flex items-center justify-center gap-2 px-3 py-2 rounded-md text-sm"
+                class="rename-button outline"
                 id="rename-cancel" data-action="rename-cancel" aria-label="Cancel rename">Batal</button>
             <button type="submit" form="rename-form"
-                class="rename-button primary flex-1 inline-flex items-center justify-center gap-2 px-3 py-2 rounded-md text-sm font-medium"
+                class="rename-button primary"
                 id="rename-submit" data-action="rename-submit" aria-label="Confirm rename">Rename</button>
         </footer>
     </div>
 </div>
 
-<div class="unsaved-overlay fixed inset-0 items-center justify-center bg-black/45 p-2 md:p-4 z-50 hidden"
+<div class="unsaved-overlay hidden"
     id="unsaved-overlay" aria-hidden="true" data-action="unsaved" data-open="unsaved">
-    <div class="unsaved-dialog bg-white rounded-lg p-4 md:p-6 w-full max-w-md shadow-lg" role="dialog" aria-modal="true"
+    <div class="unsaved-dialog" role="dialog" aria-modal="true"
         aria-labelledby="unsaved-title">
-        <div class="unsaved-header mb-4">
-            <div class="unsaved-icon mx-auto mb-3 w-12 h-12 text-yellow-600" aria-hidden="true">
+        <div class="unsaved-header">
+            <div class="unsaved-icon mx-auto" aria-hidden="true">
                 <svg viewBox="0 0 24 24" focusable="false" fill="currentColor">
                     <path
                         d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z" />
                 </svg>
             </div>
             <div class="unsaved-title-group text-center">
-                <h2 class="unsaved-title text-lg md:text-xl font-semibold" id="unsaved-title">Perubahan Belum Disimpan
+                <h2 class="unsaved-title" id="unsaved-title">Perubahan Belum Disimpan
                 </h2>
-                <p class="unsaved-message text-sm text-gray-600 mt-1" id="unsaved-message">Anda memiliki perubahan yang
+                <p class="unsaved-message" id="unsaved-message">Anda memiliki perubahan yang
                     belum disimpan. Apa yang ingin Anda lakukan?</p>
             </div>
         </div>
-        <div class="unsaved-actions flex flex-col sm:flex-row items-stretch sm:items-end gap-2" role="group"
+        <div class="unsaved-actions" role="group"
             aria-label="Unsaved changes actions">
             <button type="button"
-                class="unsaved-button outline inline-flex items-center justify-center gap-2 px-3 py-2 rounded-md text-sm bg-white dark:bg-white/5 hover:bg-gray-50 dark:hover:bg-white/10 text-gray-700 dark:text-gray-200 border border-gray-200 dark:border-white/10 focus:outline-none transition-colors"
+                class="unsaved-button outline"
                 id="unsaved-save" data-action="unsaved-save" aria-label="Save changes before closing">Simpan
                 Perubahan</button>
             <button type="button"
-                class="unsaved-button outline inline-flex items-center justify-center gap-2 px-3 py-2 rounded-md text-sm bg-white border border-gray-200 text-slate-700 hover:bg-gray-50 focus:outline-none"
+                class="unsaved-button outline"
                 id="unsaved-discard" data-action="unsaved-discard" aria-label="Discard changes and close">Tutup Tanpa
                 Simpan</button>
             <button type="button"
-                class="unsaved-button primary inline-flex items-center justify-center gap-2 px-3 py-2 rounded-md text-sm bg-blue-600 text-white hover:bg-blue-700 focus:outline-none transition-colors"
+                class="unsaved-button primary"
                 id="unsaved-cancel" data-action="unsaved-cancel" aria-label="Cancel and return to editor">Batal</button>
         </div>
     </div>
 </div>
 
 <!-- Delete confirmation overlay modal -->
-<div class="delete-overlay fixed inset-0 items-center justify-center bg-black/45 p-2 md:p-4 z-50 hidden"
+<div class="delete-overlay hidden"
     id="delete-overlay" aria-hidden="true">
-    <div class="delete-dialog rounded-lg shadow-lg w-full max-w-md" role="dialog" aria-modal="true"
+    <div class="delete-dialog" role="dialog" aria-modal="true"
         aria-labelledby="delete-title">
-        <header class="delete-header px-6 py-4 flex items-center gap-4">
-            <div class="delete-icon w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0"
+        <header class="delete-header">
+            <div class="delete-icon"
                 aria-hidden="true">
                 <svg viewBox="0 0 24 24" fill="currentColor" class="w-6 h-6">
                     <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z" />
                 </svg>
             </div>
             <div class="delete-title-group">
-                <h2 class="delete-title text-base font-semibold" id="delete-title">Hapus Item</h2>
-                <p class="delete-subtitle text-xs mt-0.5" id="delete-subtitle">Konfirmasi penghapusan</p>
+                <h2 class="delete-title" id="delete-title">Hapus Item</h2>
+                <p class="delete-subtitle" id="delete-subtitle">Konfirmasi penghapusan</p>
             </div>
         </header>
-        <div class="delete-body px-6 py-4">
-            <p class="delete-message text-sm" id="delete-message">Apakah Anda yakin ingin menghapus item ini?</p>
-            <div class="delete-items-list mt-3 max-h-32 overflow-y-auto" id="delete-items-list"></div>
-            <p class="delete-warning text-xs mt-3 flex items-center gap-2" id="delete-warning">
+        <div class="delete-body">
+            <p class="delete-message" id="delete-message">Apakah Anda yakin ingin menghapus item ini?</p>
+            <div class="delete-items-list" id="delete-items-list"></div>
+            <p class="delete-warning" id="delete-warning">
                 <svg viewBox="0 0 24 24" fill="currentColor" class="w-4 h-4 flex-shrink-0">
                     <path
                         d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z" />
@@ -369,13 +367,13 @@
                 <span>Tindakan ini tidak dapat dibatalkan.</span>
             </p>
         </div>
-        <footer class="delete-actions flex gap-2 px-6 py-3 rounded-b-lg" role="group"
+        <footer class="delete-actions" role="group"
             aria-label="Delete confirmation actions">
             <button type="button"
-                class="delete-button outline flex-1 inline-flex items-center justify-center gap-2 px-3 py-2 rounded-md text-sm"
+                class="delete-button outline"
                 id="delete-cancel" data-action="delete-cancel" aria-label="Cancel deletion">Batal</button>
             <button type="button"
-                class="delete-button danger flex-1 inline-flex items-center justify-center gap-2 px-3 py-2 rounded-md text-sm font-medium"
+                class="delete-button danger"
                 id="delete-confirm" data-action="delete-confirm" aria-label="Confirm deletion">
                 <svg viewBox="0 0 24 24" fill="currentColor" class="w-4 h-4" aria-hidden="true">
                     <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z" />
@@ -387,46 +385,46 @@
 </div>
 
 <!-- Download confirmation overlay modal -->
-<div class="download-overlay fixed inset-0 items-center justify-center bg-black/45 p-2 md:p-4 z-50 hidden"
+<div class="download-overlay hidden"
     id="download-overlay" aria-hidden="true">
-    <div class="download-dialog rounded-lg shadow-lg w-full max-w-md" role="dialog" aria-modal="true"
+    <div class="download-dialog" role="dialog" aria-modal="true"
         aria-labelledby="download-title">
-        <header class="download-header px-6 py-4 flex items-center gap-4">
-            <div class="download-icon w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0"
+        <header class="download-header">
+            <div class="download-icon"
                 aria-hidden="true">
                 <svg viewBox="0 0 24 24" fill="currentColor" class="w-6 h-6">
                     <path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z" />
                 </svg>
             </div>
             <div class="download-title-group">
-                <h2 class="download-title text-base font-semibold" id="download-title">Unduh File</h2>
-                <p class="download-subtitle text-xs mt-0.5" id="download-subtitle">Konfirmasi unduhan</p>
+                <h2 class="download-title" id="download-title">Unduh File</h2>
+                <p class="download-subtitle" id="download-subtitle">Konfirmasi unduhan</p>
             </div>
         </header>
-        <div class="download-body px-6 py-4">
-            <div class="download-file-info flex items-center gap-3 p-3 rounded-lg mb-4" id="download-file-info">
-                <div class="download-file-icon w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0"
+        <div class="download-body">
+            <div class="download-file-info" id="download-file-info">
+                <div class="download-file-icon"
                     id="download-file-icon">
                     <svg viewBox="0 0 24 24" fill="currentColor" class="w-5 h-5">
                         <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6z" />
                         <path d="M14 2v6h6M16 13H8M16 17H8M10 9H8" />
                     </svg>
                 </div>
-                <div class="download-file-details flex-1 min-w-0">
-                    <p class="download-file-name text-sm font-medium truncate" id="download-file-name">filename.txt</p>
-                    <p class="download-file-size text-xs" id="download-file-size">0 KB</p>
+                <div class="download-file-details">
+                    <p class="download-file-name" id="download-file-name">filename.txt</p>
+                    <p class="download-file-size" id="download-file-size">0 KB</p>
                 </div>
             </div>
-            <p class="download-message text-sm" id="download-message">File akan diunduh ke folder unduhan default Anda.
+            <p class="download-message" id="download-message">File akan diunduh ke folder unduhan default Anda.
             </p>
         </div>
-        <footer class="download-actions flex gap-2 px-6 py-3 rounded-b-lg" role="group"
+        <footer class="download-actions" role="group"
             aria-label="Download confirmation actions">
             <button type="button"
-                class="download-button outline flex-1 inline-flex items-center justify-center gap-2 px-3 py-2 rounded-md text-sm"
+                class="download-button outline"
                 id="download-cancel" data-action="download-cancel" aria-label="Cancel download">Batal</button>
             <button type="button"
-                class="download-button primary flex-1 inline-flex items-center justify-center gap-2 px-3 py-2 rounded-md text-sm font-medium"
+                class="download-button primary"
                 id="download-confirm" data-action="download-confirm" aria-label="Confirm download">
                 <svg viewBox="0 0 24 24" fill="currentColor" class="w-4 h-4" aria-hidden="true">
                     <path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z" />
@@ -438,53 +436,52 @@
 </div>
 
 <!-- Move overlay modal -->
-<div class="move-overlay fixed inset-0 items-center justify-center bg-black/45 p-2 md:p-4 z-50 hidden" id="move-overlay"
+<div class="move-overlay hidden" id="move-overlay"
     aria-hidden="true">
-    <div class="move-dialog rounded-lg p-4 md:p-6 w-full max-w-2xl shadow-lg max-h-[90vh] md:max-h-[85vh] overflow-hidden flex flex-col"
+    <div class="move-dialog"
         role="dialog" aria-modal="true" aria-labelledby="move-title">
-        <header class="move-header mb-4 flex-shrink-0">
-            <div class="move-icon mx-auto mb-3 w-12 h-12" aria-hidden="true">
+        <header class="move-header">
+            <div class="move-icon mx-auto" aria-hidden="true">
                 <svg viewBox="0 0 24 24" fill="currentColor">
                     <path d="M5 9h2v6H5zm12-4h2v14h-2zm-6 8h2v6h-2z" />
                 </svg>
             </div>
             <div class="move-title-group text-center">
-                <h2 class="move-title text-lg md:text-xl font-semibold" id="move-title">Pindah Item</h2>
-                <p class="move-subtitle text-sm mt-1" id="move-subtitle">Pilih folder tujuan untuk memindahkan item.</p>
+                <h2 class="move-title" id="move-title">Pindah Item</h2>
+                <p class="move-subtitle" id="move-subtitle">Pilih folder tujuan untuk memindahkan item.</p>
             </div>
         </header>
-        <div class="move-body flex-1 overflow-hidden flex flex-col">
-            <nav class="move-breadcrumbs mb-3 text-sm" id="move-breadcrumbs" aria-label="Lokasi tujuan"></nav>
-            <div class="move-tools mb-3 flex flex-col md:flex-row gap-2">
-                <div class="move-search flex-1">
-                    <input type="search" id="move-search" class="move-search-input w-full rounded-md px-3 py-2 text-sm"
+        <div class="move-body">
+            <nav class="move-breadcrumbs" id="move-breadcrumbs" aria-label="Lokasi tujuan"></nav>
+            <div class="move-tools">
+                <div class="move-search">
+                    <input type="search" id="move-search" class="move-search-input"
                         placeholder="Cari folder di lokasi ini" autocomplete="off" />
                 </div>
             </div>
-            <div class="move-recents mb-3" id="move-recents" aria-label="Tujuan terakhir"></div>
-            <ul class="move-list flex-1 overflow-y-auto" id="move-list" aria-label="Daftar folder tujuan"></ul>
-            <p class="move-error text-sm mt-2" id="move-error" role="alert"></p>
+            <div class="move-recents" id="move-recents" aria-label="Tujuan terakhir"></div>
+            <ul class="move-list" id="move-list" aria-label="Daftar folder tujuan"></ul>
+            <p class="move-error" id="move-error" role="alert"></p>
         </div>
-        <footer class="move-actions flex flex-col sm:flex-row items-stretch sm:items-end gap-2 mt-4 flex-shrink-0"
+        <footer class="move-actions"
             role="group" aria-label="Move actions">
-            <div class="move-actions-spacer flex-1"></div>
+            <div class="move-actions-spacer"></div>
             <button type="button"
-                class="move-button outline inline-flex items-center justify-center gap-2 px-3 py-2 rounded-md text-sm"
+                class="move-button outline"
                 id="move-cancel" aria-label="Cancel move operation">Batal</button>
             <button type="button"
-                class="move-button primary inline-flex items-center justify-center gap-2 px-3 py-2 rounded-md text-sm"
+                class="move-button primary"
                 id="move-confirm" aria-label="Confirm move to selected folder">Pindahkan</button>
         </footer>
     </div>
 </div>
 
-<div class="log-overlay fixed inset-0 items-center justify-center bg-black/45 p-2 md:p-4 z-50 hidden" id="log-overlay"
+<div class="log-overlay hidden" id="log-overlay"
     aria-hidden="true">
-    <div class="log-dialog bg-white dark:bg-[#1a2332] rounded-lg shadow-lg max-h-[90vh] overflow-hidden flex flex-col"
+    <div class="log-dialog"
         role="dialog" aria-modal="true" aria-labelledby="log-title">
-        <header
-            class="log-header bg-gradient-to-r from-blue-50 to-blue-50 dark:from-blue-900/30 dark:to-blue-900/20 border-b border-gray-100 dark:border-white/10 px-6 py-4 flex items-center gap-4 flex-shrink-0">
-            <div class="log-icon w-12 h-12 rounded-full bg-blue-100 dark:bg-blue-500/20 text-blue-600 dark:text-blue-400 flex items-center justify-center flex-shrink-0"
+        <header class="log-header">
+            <div class="log-icon"
                 aria-hidden="true">
                 <svg viewBox="0 0 24 24" fill="currentColor" class="w-6 h-6">
                     <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6z" />
@@ -492,36 +489,36 @@
                 </svg>
             </div>
             <div class="log-title-group">
-                <h2 class="log-title text-base font-semibold text-gray-900 dark:text-slate-200" id="log-title">Log
+                <h2 class="log-title" id="log-title">Log
                     Aktivitas</h2>
-                <p class="log-subtitle text-xs text-gray-600 dark:text-slate-400 mt-0.5" id="log-subtitle">Riwayat
+                <p class="log-subtitle" id="log-subtitle">Riwayat
                     aktivitas file manager</p>
             </div>
             <button type="button" id="log-close-top" aria-label="Tutup"
-                class="ml-auto inline-flex items-center justify-center w-8 h-8 rounded-full text-gray-500 dark:text-slate-400 hover:text-gray-700 dark:hover:text-slate-200 hover:bg-gray-100 dark:hover:bg-white/10">
+                class="log-close-btn">
                 <svg viewBox="0 0 24 24" fill="currentColor" class="w-5 h-5">
                     <path
                         d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z" />
                 </svg>
             </button>
         </header>
-        <div class="log-body flex-1 overflow-hidden flex flex-col px-6 py-4">
-            <div class="log-filter-bar mb-4 flex-shrink-0">
-                <div class="filter-primary flex flex-col lg:flex-row gap-3">
-                    <div class="filter-search-main relative flex-1">
+        <div class="log-body">
+            <div class="log-filter-bar">
+                <div class="filter-primary">
+                    <div class="filter-search-main pos-relative">
                         <svg viewBox="0 0 24 24" aria-hidden="true"
-                            class="search-icon absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 dark:text-slate-500">
+                            class="search-icon">
                             <path fill="currentColor"
                                 d="M15.5 14h-.79l-.28-.27a6 6 0 1 0-.71.71l.27.28v.79l4.5 4.5a1 1 0 0 0 1.41-1.41L15.5 14zm-6 0a4 4 0 1 1 0-8 4 4 0 0 1 0 8z" />
                         </svg>
                         <input type="text" id="log-path-search"
-                            class="filter-search-input pl-10 pr-3 py-2 border border-gray-200 dark:border-white/10 dark:bg-black/30 dark:text-slate-200 dark:placeholder-slate-500 rounded-md w-full text-sm focus:outline-none focus:border-blue-500 dark:focus:border-blue-400 transition-colors"
+                            class="filter-search-input"
                             placeholder="Cari aktivitas...">
                     </div>
 
-                    <div class="filter-quick-actions flex flex-col sm:flex-row gap-2">
+                    <div class="filter-quick-actions">
                         <select id="log-filter"
-                            class="filter-select-compact border border-gray-200 dark:border-white/10 dark:bg-black/30 dark:text-slate-200 rounded-md px-3 py-2 text-sm focus:outline-none focus:border-blue-500 dark:focus:border-blue-400 transition-colors">
+                            class="filter-select-compact">
                             <option value="">Semua Aktivitas</option>
                             <option value="create">Buat</option>
                             <option value="delete">Hapus</option>
@@ -532,7 +529,7 @@
                         </select>
 
                         <select id="log-target-type"
-                            class="filter-select-compact border border-gray-200 dark:border-white/10 dark:bg-black/30 dark:text-slate-200 rounded-md px-3 py-2 text-sm focus:outline-none focus:border-blue-500 dark:focus:border-blue-400 transition-colors">
+                            class="filter-select-compact">
                             <option value="">Semua Tipe</option>
                             <option value="file">File</option>
                             <option value="folder">Folder</option>
@@ -540,34 +537,34 @@
                     </div>
                 </div>
 
-                <div id="active-filters-display" class="active-filters-minimal mt-2" style="display: none;">
+                <div id="active-filters-display" class="active-filters-minimal" style="display: none;">
                     <span
-                        class="active-filters-label text-xs text-gray-600 dark:text-slate-400 font-medium">Aktif:</span>
-                    <div class="active-filters-tags flex flex-wrap gap-2 mt-1" id="active-filters-tags"></div>
+                        class="active-filters-label">Aktif:</span>
+                    <div class="active-filters-tags" id="active-filters-tags"></div>
                 </div>
             </div>
 
-            <div class="log-table-wrapper flex-1 overflow-auto border border-gray-200 dark:border-white/10 rounded-md">
-                <table class="log-table w-full text-xs">
-                    <thead class="bg-gray-50 dark:bg-black/30 sticky top-0">
+            <div class="log-table-wrapper">
+                <table class="log-table">
+                    <thead class="sticky-top">
                         <tr>
-                            <th class="px-3 py-2 text-left font-medium text-gray-700 dark:text-slate-400 text-xs">Waktu
+                            <th class="log-table-th">Waktu
                             </th>
-                            <th class="px-3 py-2 text-left font-medium text-gray-700 dark:text-slate-400 text-xs">Nama
+                            <th class="log-table-th">Nama
                                 File</th>
-                            <th class="px-3 py-2 text-left font-medium text-gray-700 dark:text-slate-400 text-xs">Aksi
+                            <th class="log-table-th">Aksi
                             </th>
                             <th
-                                class="px-3 py-2 text-left font-medium text-gray-700 dark:text-slate-400 text-xs hidden sm:table-cell">
+                                class="log-table-th d-none sm\:table-cell">
                                 IP Address</th>
                             <th
-                                class="px-3 py-2 text-left font-medium text-gray-700 dark:text-slate-400 text-xs hidden md:table-cell">
+                                class="log-table-th d-none md\:table-cell">
                                 User Agent</th>
                         </tr>
                     </thead>
-                    <tbody id="log-table-body" class="dark:text-slate-200">
+                    <tbody id="log-table-body">
                         <tr>
-                            <td colspan="5" class="log-loading px-3 py-4 text-center text-gray-500 dark:text-slate-400">
+                            <td colspan="5" class="log-loading">
                                 Memuat data log...</td>
                         </tr>
                     </tbody>
@@ -575,42 +572,42 @@
             </div>
 
             <div
-                class="log-controls-bottom flex flex-col sm:flex-row justify-between items-center gap-3 mt-4 flex-shrink-0">
-                <div class="log-pagination flex items-center gap-1" id="log-pagination-container">
+                class="log-controls-bottom">
+                <div class="log-pagination" id="log-pagination-container">
                     <button id="log-prev" type="button"
-                        class="log-pagination-btn p-2 border border-gray-200 dark:border-white/10 dark:bg-white/5 dark:text-slate-400 dark:hover:bg-white/10 dark:hover:text-slate-200 rounded-md text-sm disabled:opacity-50 hover:bg-gray-50 focus:outline-none transition-colors"
+                        class="log-pagination-btn"
                         title="Halaman sebelumnya">
                         <svg viewBox="0 0 24 24" aria-hidden="true" class="w-4 h-4">
                             <path fill="currentColor" d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z" />
                         </svg>
                     </button>
-                    <div id="log-page-numbers" class="flex items-center gap-1">
+                    <div id="log-page-numbers" class="log-page-numbers">
                         <!-- Page numbers will be rendered here by JavaScript -->
                     </div>
                     <button id="log-next" type="button"
-                        class="log-pagination-btn p-2 border border-gray-200 dark:border-white/10 dark:bg-white/5 dark:text-slate-400 dark:hover:bg-white/10 dark:hover:text-slate-200 rounded-md text-sm disabled:opacity-50 hover:bg-gray-50 focus:outline-none transition-colors"
+                        class="log-pagination-btn"
                         title="Halaman berikutnya">
                         <svg viewBox="0 0 24 24" aria-hidden="true" class="w-4 h-4">
                             <path fill="currentColor" d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z" />
                         </svg>
                     </button>
                     <span id="log-page-info"
-                        class="text-xs text-gray-500 dark:text-slate-500 ml-2 hidden sm:inline"></span>
+                        class="log-page-info"></span>
                 </div>
 
-                <div class="log-actions-group flex flex-col sm:flex-row gap-2 items-center">
+                <div class="log-actions-group">
                     <div class="log-auto-refresh">
                         <label for="log-auto-refresh"
-                            class="checkbox-label flex items-center gap-2 text-xs font-medium cursor-pointer dark:text-slate-400">
+                            class="checkbox-label">
                             <input type="checkbox" id="log-auto-refresh"
-                                class="rounded w-4 h-4 dark:bg-black/30 dark:border-white/20">
+                                class="log-checkbox">
                             <span>Auto-refresh (30s)</span>
                         </label>
                     </div>
 
-                    <div class="log-export-dropdown relative">
+                    <div class="log-export-dropdown pos-relative">
                         <button type="button" id="log-export-toggle"
-                            class="log-button outline inline-flex items-center gap-2 px-3 py-2 rounded-md text-xs font-medium bg-white dark:bg-white/5 hover:bg-gray-50 dark:hover:bg-white/10 text-gray-700 dark:text-gray-200 border border-gray-200 dark:border-white/10 focus:outline-none transition-colors"
+                            class="log-button outline"
                             aria-expanded="false" aria-controls="log-export-menu">
                             <svg viewBox="0 0 24 24" aria-hidden="true" class="w-4 h-4">
                                 <path fill="currentColor"
@@ -622,10 +619,10 @@
                                 <path fill="currentColor" d="M7 10l5 5 5-5z" />
                             </svg>
                         </button>
-                        <div class="log-export-menu absolute right-0 mt-1 w-40 bg-white dark:bg-[#1a2332] border border-gray-200 dark:border-white/10 rounded-md shadow-lg dark:shadow-black/50 z-10"
+                        <div class="log-export-menu"
                             id="log-export-menu" aria-hidden="true" hidden>
                             <button type="button" id="log-export-csv"
-                                class="log-export-option px-3 py-2 text-xs w-full text-left hover:bg-gray-50 dark:hover:bg-white/10 dark:text-slate-200 focus:outline-none flex items-center gap-2">
+                                class="log-export-option">
                                 <svg viewBox="0 0 24 24" aria-hidden="true" class="w-4 h-4">
                                     <path fill="currentColor"
                                         d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6z" />
@@ -634,7 +631,7 @@
                                 <span>Export CSV</span>
                             </button>
                             <button type="button" id="log-export-json"
-                                class="log-export-option px-3 py-2 text-xs w-full text-left hover:bg-gray-50 dark:hover:bg-white/10 dark:text-slate-200 focus:outline-none flex items-center gap-2">
+                                class="log-export-option">
                                 <svg viewBox="0 0 24 24" aria-hidden="true" class="w-4 h-4">
                                     <path fill="currentColor"
                                         d="M5 3h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2zm7 4v2h2V7h-2zm0 4v2h2v-2h-2zm0 4v2h2v-2h-2z" />
@@ -646,14 +643,13 @@
                 </div>
             </div>
 
-            <div class="log-error text-xs text-red-600 dark:text-red-400 mt-2" id="log-error" role="alert" hidden></div>
+            <div class="log-error" id="log-error" role="alert" hidden></div>
         </div>
-        <footer
-            class="log-actions flex flex-col sm:flex-row justify-between gap-3 border-t border-gray-100 dark:border-white/10 bg-gray-50 dark:bg-black/20 px-6 py-3 rounded-b-lg flex-shrink-0">
+        <footer class="log-actions">
             <div class="log-actions-left">
-                <div class="log-cleanup-group flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+                <div class="log-cleanup-group">
                     <select id="log-cleanup-days"
-                        class="log-cleanup-select border border-gray-200 dark:border-white/10 dark:bg-black/30 dark:text-slate-200 rounded-md px-3 py-2 text-xs focus:outline-none focus:border-blue-500 dark:focus:border-blue-400 transition-colors">
+                        class="log-cleanup-select">
                         <option value="1">1 hari</option>
                         <option value="7">7 hari</option>
                         <option value="14">14 hari</option>
@@ -663,7 +659,7 @@
                         <option value="0">Hapus semua</option>
                     </select>
                     <button type="button"
-                        class="log-button danger px-3 py-2 rounded-md text-xs font-medium bg-red-600 text-white inline-flex items-center justify-center gap-2 hover:bg-red-700 focus:outline-none transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                        class="log-button danger"
                         id="log-cleanup">
                         <svg viewBox="0 0 24 24" aria-hidden="true" class="w-4 h-4">
                             <path fill="currentColor"
@@ -673,9 +669,9 @@
                     </button>
                 </div>
             </div>
-            <div class="log-actions-right flex flex-col sm:flex-row gap-2">
+            <div class="log-actions-right">
                 <button type="button"
-                    class="log-button outline px-3 py-2 rounded-md text-xs font-medium bg-white dark:bg-white/5 hover:bg-gray-50 dark:hover:bg-white/10 text-gray-700 dark:text-gray-200 border border-gray-200 dark:border-white/10 inline-flex items-center justify-center gap-2 focus:outline-none transition-colors"
+                    class="log-button outline"
                     id="log-refresh">
                     <svg viewBox="0 0 24 24" aria-hidden="true" class="w-4 h-4">
                         <path fill="currentColor"
@@ -684,7 +680,7 @@
                     <span>Refresh</span>
                 </button>
                 <button type="button"
-                    class="log-button primary px-3 py-2 rounded-md text-xs font-medium bg-blue-600 text-white inline-flex items-center justify-center gap-2 hover:bg-blue-700 focus:outline-none transition-colors"
+                    class="log-button primary"
                     id="log-close">Tutup</button>
             </div>
         </footer>
@@ -692,21 +688,21 @@
 </div>
 
 <!-- Details overlay modal -->
-<div class="details-overlay fixed inset-0 items-center justify-center bg-black/45 p-2 md:p-4 z-50 hidden"
+<div class="details-overlay hidden"
     id="details-overlay" aria-hidden="true">
-    <div class="details-dialog rounded-lg shadow-lg w-full max-w-md" role="dialog" aria-modal="true"
+    <div class="details-dialog" role="dialog" aria-modal="true"
         aria-labelledby="details-title">
-        <header class="details-header px-6 py-4 flex items-center gap-4">
-            <div class="details-icon w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0"
+        <header class="details-header">
+            <div class="details-icon"
                 id="details-icon" aria-hidden="true">
                 <svg viewBox="0 0 24 24" fill="currentColor" class="w-6 h-6">
                     <path
                         d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z" />
                 </svg>
             </div>
-            <div class="details-title-group flex-1 min-w-0">
-                <h2 class="details-title text-base font-semibold" id="details-title">Detail Item</h2>
-                <p class="details-subtitle text-xs mt-0.5 truncate" id="details-subtitle">Informasi lengkap</p>
+            <div class="details-title-group">
+                <h2 class="details-title" id="details-title">Detail Item</h2>
+                <p class="details-subtitle" id="details-subtitle">Informasi lengkap</p>
             </div>
             <button type="button" class="details-close-btn" id="details-close-btn" data-action="details-close"
                 aria-label="Tutup">
@@ -716,7 +712,7 @@
                 </svg>
             </button>
         </header>
-        <div class="details-body px-6 py-4">
+        <div class="details-body">
             <div class="details-info-list">
                 <div class="details-info-item">
                     <span class="details-info-label">Nama</span>
@@ -740,7 +736,7 @@
                 </div>
             </div>
         </div>
-        <footer class="details-actions px-6 py-3 rounded-b-lg">
+        <footer class="details-actions">
             <div class="details-actions-grid">
                 <button type="button" class="details-action-btn" id="details-open" data-action="details-open">
                     <svg viewBox="0 0 24 24" fill="currentColor" class="w-4 h-4">
@@ -775,11 +771,10 @@
     </div>
 </div>
 
-<div class="context-menu absolute bg-white rounded-md shadow-lg z-50 hidden min-w-[180px] max-w-[280px]"
-    id="context-menu" aria-hidden="true" role="menu" aria-label="File actions menu">
+<div class="context-menu hidden" id="context-menu" aria-hidden="true" role="menu" aria-label="File actions menu">
     <div class="context-menu-inner">
         <button type="button"
-            class="context-menu-item w-full text-left px-3 py-2 text-sm hover:bg-gray-50 flex items-center gap-2"
+            class="context-menu-item"
             data-action="open" role="menuitem" aria-label="Open file or folder">
             <svg viewBox="0 0 24 24" aria-hidden="true" class="w-4 h-4 flex-shrink-0">
                 <path fill="currentColor"
@@ -788,7 +783,7 @@
             <span>Buka</span>
         </button>
         <button type="button"
-            class="context-menu-item w-full text-left px-3 py-2 text-sm hover:bg-gray-50 flex items-center gap-2"
+            class="context-menu-item"
             data-action="download" role="menuitem" aria-label="Download file">
             <svg viewBox="0 0 24 24" aria-hidden="true" class="w-4 h-4 flex-shrink-0">
                 <path fill="currentColor" d="M5 20h14v-2H5zm7-16l5 5h-3v4h-4v-4H7z" />
@@ -796,7 +791,7 @@
             <span>Download</span>
         </button>
         <button type="button"
-            class="context-menu-item w-full text-left px-3 py-2 text-sm hover:bg-gray-50 flex items-center gap-2"
+            class="context-menu-item"
             data-action="rename" role="menuitem" aria-label="Rename file or folder (F2)">
             <svg viewBox="0 0 24 24" aria-hidden="true" class="w-4 h-4 flex-shrink-0">
                 <path fill="currentColor"
@@ -805,16 +800,16 @@
             <span>Rename</span>
         </button>
         <button type="button"
-            class="context-menu-item w-full text-left px-3 py-2 text-sm hover:bg-gray-50 flex items-center gap-2"
+            class="context-menu-item"
             data-action="move" role="menuitem" aria-label="Move file or folder">
             <svg viewBox="0 0 24 24" aria-hidden="true" class="w-4 h-4 flex-shrink-0">
                 <path fill="currentColor" d="M5 9h2v6H5zm12-4h2v14h-2zm-6 8h2v6h-2z" />
             </svg>
             <span>Pindah</span>
         </button>
-        <div class="context-menu-separator border-t border-gray-200 my-1" role="separator" aria-hidden="true"></div>
+        <div class="context-menu-separator" role="separator" aria-hidden="true"></div>
         <button type="button"
-            class="context-menu-item danger w-full text-left px-3 py-2 text-sm hover:bg-red-50 flex items-center gap-2 text-red-600"
+            class="context-menu-item danger"
             data-action="delete" role="menuitem" aria-label="Delete file or folder (Delete key)">
             <svg viewBox="0 0 24 24" aria-hidden="true" class="w-4 h-4 flex-shrink-0">
                 <path fill="currentColor" d="M6 7h12v11a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2zm3 2v9h2V9H9zm4 0v9h2V9h-2z" />
@@ -826,71 +821,34 @@
 </div>
 
 <!-- Mobile Search Modal -->
-<div class="search-modal fixed inset-0 items-center justify-center bg-black/45 p-2 md:p-4 z-50 hidden" id="search-modal"
+<div class="search-modal hidden" id="search-modal"
     aria-hidden="true">
-    <div class="search-dialog bg-white rounded-lg p-4 md:p-6 w-full max-w-md shadow-lg" role="dialog" aria-modal="true"
+    <div class="search-dialog" role="dialog" aria-modal="true"
         aria-labelledby="search-title">
-        <header class="search-header mb-4 flex items-center justify-between">
-            <h2 id="search-title" class="text-lg md:text-xl font-semibold">Cari File atau Folder</h2>
+        <header class="search-header">
+            <h2 id="search-title" class="search-title">Cari File atau Folder</h2>
             <button type="button" id="search-close" aria-label="Tutup pencarian"
-                class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-gray-100 dark:bg-white/10 hover:bg-gray-200 dark:hover:bg-white/20 text-gray-700 dark:text-gray-200 focus:outline-none transition-colors">✕</button>
+                class="search-close-btn">✕</button>
         </header>
-        <div class="search-body mb-4">
+        <div class="search-body">
             <input id="search-modal-input" type="search" placeholder="Masukkan nama file atau folder" autocomplete="off"
-                class="w-full px-4 py-2 rounded-md border border-gray-200 dark:border-white/10 bg-white dark:bg-black/30 dark:text-gray-200 focus:outline-none focus:border-blue-500 dark:focus:border-blue-400 text-base transition-colors" />
+                class="search-input" />
         </div>
-        <footer class="search-footer flex flex-col sm:flex-row gap-2 justify-end">
+        <footer class="search-footer">
             <button type="button" id="search-clear"
-                class="search-button outline px-4 py-2 rounded-md text-sm bg-white dark:bg-white/5 hover:bg-gray-50 dark:hover:bg-white/10 text-gray-700 dark:text-gray-200 border border-gray-200 dark:border-white/10 focus:outline-none transition-colors">Hapus</button>
+                class="search-button outline">Hapus</button>
             <button type="button" id="search-apply"
-                class="search-button primary px-4 py-2 rounded-md text-sm bg-blue-600 text-white hover:bg-blue-700 focus:outline-none transition-colors">Cari</button>
+                class="search-button primary">Cari</button>
         </footer>
     </div>
 </div>
 
-<!-- Settings overlay - REPLACED by settings-modal.php which includes System Requirements tab -->
-<!-- OLD SETTINGS MODAL COMMENTED OUT:
-<div class="settings-overlay fixed inset-0 items-center justify-center bg-black/45 p-2 md:p-4 z-50 hidden"
-    id="settings-overlay-old" aria-hidden="true" data-action="settings" data-open="settings">
-    <div class="settings-dialog bg-white rounded-lg p-4 md:p-6 w-full max-w-xl shadow-lg" role="dialog"
-        aria-modal="true" aria-labelledby="settings-title">
-        <header class="settings-header mb-4 flex items-center justify-between">
-            <h2 id="settings-title" class="text-lg md:text-xl font-semibold">Pengaturan</h2>
-            <button type="button" id="settings-close" data-action="settings-close" aria-label="Tutup pengaturan"
-                class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-gray-100 dark:bg-white/10 hover:bg-gray-200 dark:hover:bg-white/20 text-gray-700 dark:text-gray-200 focus:outline-none transition-colors">✕</button>
-        </header>
-        <div class="settings-body mb-4">
-            <div class="setting-row">
-                <label for="toggle-debug" class="toggle flex items-center gap-3 cursor-pointer" aria-hidden="false">
-                    <input type="checkbox" id="toggle-debug" class="toggle-input sr-only" role="switch"
-                        aria-checked="false">
-                    <span
-                        class="toggle-switch relative inline-block w-12 h-6 bg-gray-200 rounded-full transition-colors"
-                        aria-hidden="true">
-                        <span
-                            class="toggle-switch-dot absolute left-1 top-1 w-4 h-4 bg-white rounded-full transition-transform"></span>
-                    </span>
-                    <span class="toggle-label text-sm font-medium">Aktifkan debug logging (console)</span>
-                </label>
-                <p class="setting-hint text-sm text-gray-500 mt-2">Matikan untuk menghilangkan pesan debug dari konsol.
-                </p>
-            </div>
-        </div>
-        <footer class="settings-footer flex flex-col sm:flex-row gap-2">
-            <button type="button" id="settings-save" data-action="settings-save"
-                class="settings-button primary px-3 py-2 rounded-md text-sm bg-blue-600 text-white hover:bg-blue-700 focus:outline-none transition-colors">Simpan</button>
-            <button type="button" id="settings-cancel" data-action="settings-cancel"
-                class="settings-button outline px-3 py-2 rounded-md text-sm bg-white dark:bg-white/5 hover:bg-gray-50 dark:hover:bg-white/10 text-gray-700 dark:text-gray-200 border border-gray-200 dark:border-white/10 focus:outline-none transition-colors">Batal</button>
-        </footer>
-    </div>
-</div>
+
 
 <!-- Mobile Actions Floating Context Menu -->
-<div class="mobile-actions-menu fixed hidden z-50" id="mobile-actions-menu" aria-hidden="true"
-    style="background: white; border-radius: 8px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); min-width: 140px;">
+<div class="mobile-actions-menu hidden" id="mobile-actions-menu" aria-hidden="true">
     <button type="button" id="mobile-actions-view"
-        class="mobile-actions-item w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors flex items-center gap-2 border-b border-gray-100"
-        style="border-radius: 8px 8px 0 0;">
+        class="mobile-actions-item">
         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
             stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
@@ -899,7 +857,7 @@
         <span>Lihat</span>
     </button>
     <button type="button" id="mobile-actions-edit"
-        class="mobile-actions-item w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors flex items-center gap-2 border-b border-gray-100">
+        class="mobile-actions-item">
         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
             stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
@@ -908,7 +866,7 @@
         <span>Rename</span>
     </button>
     <button type="button" id="mobile-actions-move"
-        class="mobile-actions-item w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors flex items-center gap-2 border-b border-gray-100">
+        class="mobile-actions-item">
         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
             stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <path d="M5 9h2v6H5zm12-4h2v14h-2zm-6 8h2v6h-2z" />
@@ -916,8 +874,7 @@
         <span>Pindah</span>
     </button>
     <button type="button" id="mobile-actions-delete"
-        class="mobile-actions-item w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors flex items-center gap-2"
-        style="border-radius: 0 0 8px 8px;">
+        class="mobile-actions-item mobile-actions-item-danger">
         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
             stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <polyline points="3 6 5 6 21 6"></polyline>

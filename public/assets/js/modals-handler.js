@@ -160,14 +160,6 @@ function applyImageTransform(img) {
   const translateX = imagePanState.translateX;
   const translateY = imagePanState.translateY;
 
-  console.log('[modals-handler] applyImageTransform:', {
-    baseScale,
-    currentZoom,
-    effectiveScale,
-    translateX,
-    translateY
-  });
-
   img.style.transform = `translate(${translateX}px, ${translateY}px) scale(${effectiveScale})`;
 }
 
@@ -221,7 +213,7 @@ let zoomControlsInitialized = false;
 function initImageZoomControls() {
   // Prevent duplicate initialization
   if (zoomControlsInitialized) {
-    console.log('[modals-handler] Zoom controls already initialized, skipping');
+
     return;
   }
 
@@ -238,7 +230,7 @@ function initImageZoomControls() {
     newZoomInBtn.addEventListener('click', (e) => {
       e.preventDefault();
       e.stopPropagation();
-      console.log('[modals-handler] Zoom IN clicked, current zoom:', currentZoom);
+
       zoomIn();
     });
   }
@@ -249,7 +241,7 @@ function initImageZoomControls() {
     newZoomOutBtn.addEventListener('click', (e) => {
       e.preventDefault();
       e.stopPropagation();
-      console.log('[modals-handler] Zoom OUT clicked, current zoom:', currentZoom);
+
       zoomOut();
     });
   }
@@ -260,7 +252,7 @@ function initImageZoomControls() {
     newZoomResetBtn.addEventListener('click', (e) => {
       e.preventDefault();
       e.stopPropagation();
-      console.log('[modals-handler] Zoom RESET clicked');
+
       resetImageZoom();
     });
   }
@@ -283,7 +275,7 @@ function initImageZoomControls() {
   }
 
   zoomControlsInitialized = true;
-  console.log('[modals-handler] Zoom controls initialized successfully');
+
 }
 
 function sharePreviewLink() {
@@ -736,8 +728,6 @@ function openPreviewModal(filePath, fileName) {
 
       // Calculate base scale to fit image in container
       baseScale = calculateBaseScale(container, this);
-      console.log('[modals-handler] Image loaded, calculated baseScale:', baseScale,
-        'natural:', this.naturalWidth, 'x', this.naturalHeight);
 
       // Apply initial transform
       applyImageTransform(this);
@@ -1167,7 +1157,7 @@ async function loadMoveFolders(path) {
 
     // Update list
     if (folders.length === 0) {
-      list.innerHTML = '<li class="p-3 text-sm text-gray-500">Tidak ada folder di sini</li>';
+      list.innerHTML = '<li class="move-list-empty">Tidak ada folder di sini</li>';
     } else {
       list.innerHTML = folders.map(folder => `
         <li class="move-folder-item p-3 border-b hover:bg-gray-50 cursor-pointer flex items-center gap-2" data-path="${folder.path}">
@@ -1576,9 +1566,9 @@ let detailsState = {
 };
 
 function openDetailsOverlay(item, onAction = null) {
-  console.log('[modals-handler] openDetailsOverlay called with:', item);
+
   const overlay = document.getElementById('details-overlay');
-  console.log('[modals-handler] details-overlay element:', overlay);
+
   if (!overlay) {
     console.error('[modals-handler] details-overlay element not found!');
     return;
@@ -1656,13 +1646,13 @@ function openDetailsOverlay(item, onAction = null) {
   // Update icon based on type
   if (iconEl) {
     if (item.type === 'folder') {
-      iconEl.innerHTML = `<svg viewBox="0 0 24 24" fill="currentColor" class="w-6 h-6">
+      iconEl.innerHTML = `<svg viewBox="0 0 24 24" fill="currentColor" class="details-icon-svg">
         <path d="M10 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2h-8l-2-2z"/>
       </svg>`;
       iconEl.classList.add('details-icon-folder');
       iconEl.classList.remove('details-icon-file');
     } else {
-      iconEl.innerHTML = `<svg viewBox="0 0 24 24" fill="currentColor" class="w-6 h-6">
+      iconEl.innerHTML = `<svg viewBox="0 0 24 24" fill="currentColor" class="details-icon-svg">
         <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6z"/>
         <path d="M14 2v6h6"/>
       </svg>`;
@@ -1808,7 +1798,7 @@ function showSuccess(msg) {
   if (typeof window.showToast === 'function') {
     window.showToast('success', msg);
   } else {
-    console.log(msg);
+
   }
 }
 
@@ -1827,5 +1817,4 @@ window.openDownloadOverlay = openDownloadOverlay;
 window.closeDownloadOverlay = closeDownloadOverlay;
 window.confirmDownload = confirmDownload;
 window.openDetailsOverlay = openDetailsOverlay;
-window.closeDetailsOverlay = closeDetailsOverlay;
-window.handleDetailsAction = handleDetailsAction;
+window.closeDetailsOverlay = c                                                                        

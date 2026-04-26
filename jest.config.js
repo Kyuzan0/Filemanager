@@ -6,7 +6,7 @@
 
 module.exports = {
     // Test environment
-    testEnvironment: 'node',
+    testEnvironment: 'jsdom',
     
     // Root directory for tests
     roots: ['<rootDir>/tests'],
@@ -49,8 +49,10 @@ module.exports = {
     // Module file extensions
     moduleFileExtensions: ['js', 'json'],
     
-    // Transform configuration (for ES modules if needed)
-    transform: {},
+    // Transform configuration (for ES modules)
+    transform: {
+        '^.+\\.js$': 'babel-jest'
+    },
     
     // Clear mocks between tests
     clearMocks: true,
@@ -59,11 +61,5 @@ module.exports = {
     restoreMocks: true,
     
     // Test timeout
-    testTimeout: 10000,
-    
-    // Globals
-    globals: {
-        'window': true,
-        'document': true
-    }
+    testTimeout: 10000
 };

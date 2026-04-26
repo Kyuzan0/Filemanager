@@ -1,0 +1,634 @@
+/**
+ * Enhanced UI Components
+ * ======================
+ * Semantic CSS classes to replace Tailwind utilities in enhanced-ui.js
+ * All classes use CSS variables for theming support
+ */
+
+/* ============= Pagination Components ============= */
+
+.page-num-btn {
+  padding: 6px 10px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.page-num-btn--active {
+  background-color: #2563eb;
+  color: white;
+}
+
+.page-num-btn--inactive {
+  border: 1px solid var(--card-border);
+  background-color: var(--card);
+  color: var(--text);
+}
+
+[data-theme="dark"] .page-num-btn--inactive {
+  border-color: rgba(255, 255, 255, 0.1);
+  background-color: var(--card);
+  color: var(--text-secondary);
+}
+
+.page-num-btn--inactive:hover {
+  background-color: var(--bg-secondary);
+}
+
+[data-theme="dark"] .page-num-btn--inactive:hover {
+  background-color: rgba(255, 255, 255, 0.05);
+}
+
+.page-dots {
+  padding: 0 6px;
+  color: var(--muted);
+}
+
+[data-theme="dark"] .page-dots {
+  color: rgba(255, 255, 255, 0.3);
+}
+
+/* ============= Table Row Components ============= */
+
+.table-cell {
+  padding: 12px;
+}
+
+.table-cell--small {
+  font-size: 13px;
+}
+
+.table-cell--right {
+  text-align: right;
+}
+
+.table-cell--italic {
+  font-style: italic;
+  color: var(--muted);
+}
+
+.file-name {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.file-icon-cell {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.up-icon {
+  font-size: 18px;
+  font-weight: bold;
+}
+
+.text-dark {
+  color: var(--text);
+}
+
+/* ============= Action Buttons ============= */
+
+.row-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  justify-content: flex-end;
+}
+
+.action-icon-btn {
+  padding: 6px;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+  cursor: pointer;
+  background: transparent;
+  border: none;
+}
+
+.action-icon-btn:hover {
+  background-color: var(--bg-secondary);
+}
+
+[data-theme="dark"] .action-icon-btn:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.action-icon-btn--blue {
+  color: #2563eb;
+}
+
+[data-theme="dark"] .action-icon-btn--blue {
+  color: #60a5fa;
+}
+
+.action-icon-btn--green {
+  color: #16a34a;
+}
+
+[data-theme="dark"] .action-icon-btn--green {
+  color: #4ade80;
+}
+
+.action-icon-btn--amber {
+  color: #d97706;
+}
+
+[data-theme="dark"] .action-icon-btn--amber {
+  color: #fbbf24;
+}
+
+.action-icon-btn--purple {
+  color: #9333ea;
+}
+
+[data-theme="dark"] .action-icon-btn--purple {
+  color: #c084fc;
+}
+
+.action-icon-btn--red {
+  color: #dc2626;
+}
+
+[data-theme="dark"] .action-icon-btn--red {
+  color: #f87171;
+}
+
+.action-icon-btn i {
+  font-size: 16px;
+}
+
+.mobile-more-btn {
+  padding: 6px;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+  cursor: pointer;
+  background: transparent;
+  border: none;
+  color: var(--muted);
+}
+
+.mobile-more-btn:hover {
+  background-color: var(--bg-secondary);
+}
+
+[data-theme="dark"] .mobile-more-btn:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.mobile-more-btn i {
+  font-size: 18px;
+}
+
+/* ============= Mobile Context Menu ============= */
+
+.mobile-context-menu {
+  position: fixed;
+  z-index: 50;
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+  border: 1px solid var(--card-border);
+  padding: 4px 0;
+  min-width: 160px;
+}
+
+[data-theme="dark"] .mobile-context-menu {
+  background-color: var(--card);
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+.mobile-context-item {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 16px;
+  text-align: left;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.mobile-context-item:hover {
+  background-color: var(--bg-secondary);
+}
+
+[data-theme="dark"] .mobile-context-item:hover {
+  background-color: rgba(255, 255, 255, 0.05);
+}
+
+.mobile-context-item i {
+  font-size: 18px;
+}
+
+.mobile-context-item span {
+  font-size: 13px;
+  color: var(--text);
+}
+
+[data-theme="dark"] .mobile-context-item span {
+  color: var(--text-secondary);
+}
+
+.mobile-context-divider {
+  border-top: 1px solid var(--card-border);
+  margin: 4px 0;
+}
+
+[data-theme="dark"] .mobile-context-divider {
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+/* Icon color variants for mobile context menu */
+.mobile-context-item .icon--blue { color: #2563eb; }
+.mobile-context-item .icon--green { color: #16a34a; }
+.mobile-context-item .icon--amber { color: #d97706; }
+.mobile-context-item .icon--purple { color: #9333ea; }
+.mobile-context-item .icon--yellow { color: #eab308; }
+.mobile-context-item .icon--indigo { color: #4f46e5; }
+.mobile-context-item .icon--teal { color: #0d9488; }
+.mobile-context-item .icon--red { color: #dc2626; }
+
+[data-theme="dark"] .mobile-context-item .icon--blue { color: #60a5fa; }
+[data-theme="dark"] .mobile-context-item .icon--green { color: #4ade80; }
+[data-theme="dark"] .mobile-context-item .icon--amber { color: #fbbf24; }
+[data-theme="dark"] .mobile-context-item .icon--purple { color: #c084fc; }
+[data-theme="dark"] .mobile-context-item .icon--yellow { color: #fde047; }
+[data-theme="dark"] .mobile-context-item .icon--indigo { color: #818cf8; }
+[data-theme="dark"] .mobile-context-item .icon--teal { color: #2dd4bf; }
+[data-theme="dark"] .mobile-context-item .icon--red { color: #f87171; }
+
+/* ============= Upload Modal Components ============= */
+
+.upload-file-list {
+  background-color: #eff6ff;
+  padding: 12px;
+  border-radius: 8px;
+}
+
+[data-theme="dark"] .upload-file-list {
+  background-color: rgba(59, 130, 246, 0.2);
+}
+
+.upload-file-list__title {
+  font-weight: 500;
+  color: #1e3a8a;
+}
+
+[data-theme="dark"] .upload-file-list__title {
+  color: #dbeafe;
+}
+
+.upload-file-list__subtitle {
+  font-size: 13px;
+  color: #1e40af;
+}
+
+[data-theme="dark"] .upload-file-list__subtitle {
+  color: #93c5fd;
+}
+
+.upload-file-list__items {
+  font-size: 12px;
+  color: #1e40af;
+  margin-top: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+[data-theme="dark"] .upload-file-list__items {
+  color: #93c5fd;
+}
+
+/* ============= Drag & Drop States ============= */
+
+.drop-zone--active {
+  border-color: #60a5fa;
+  background-color: #eff6ff;
+}
+
+[data-theme="dark"] .drop-zone--active {
+  border-color: #3b82f6;
+  background-color: rgba(59, 130, 246, 0.2);
+}
+
+/* ============= Card Upload Modal ============= */
+
+.card-upload-modal-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.card-upload-modal {
+  background-color: white;
+  border-radius: 12px;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);
+  max-width: 600px;
+  width: 90%;
+  max-height: 80vh;
+  display: flex;
+  flex-direction: column;
+}
+
+[data-theme="dark"] .card-upload-modal {
+  background-color: var(--card);
+}
+
+.card-upload-modal__header {
+  padding: 20px;
+  border-bottom: 1px solid var(--card-border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.card-upload-modal__title-group {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.card-upload-modal__icon {
+  flex-shrink: 0;
+}
+
+.card-upload-modal__title {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.card-upload-modal__subtitle {
+  font-size: 13px;
+  color: var(--text-secondary);
+  margin-top: 2px;
+}
+
+.card-upload-modal__close-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  color: var(--muted);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.card-upload-modal__close-btn:hover {
+  background-color: var(--bg-secondary);
+  color: var(--text);
+}
+
+.card-upload-modal__file-list {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.card-upload-modal__summary {
+  padding: 12px 20px;
+  border-top: 1px solid var(--card-border);
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.summary-info {
+  background-color: #eff6ff;
+  color: #1e40af;
+}
+
+[data-theme="dark"] .summary-info {
+  background-color: rgba(59, 130, 246, 0.2);
+  color: #93c5fd;
+}
+
+.summary-success {
+  background-color: #dcfce7;
+  color: #166534;
+}
+
+[data-theme="dark"] .summary-success {
+  background-color: rgba(34, 197, 94, 0.2);
+  color: #86efac;
+}
+
+.summary-warning {
+  background-color: #fef3c7;
+  color: #92400e;
+}
+
+[data-theme="dark"] .summary-warning {
+  background-color: rgba(251, 191, 36, 0.2);
+  color: #fde047;
+}
+
+.summary-danger {
+  background-color: #fee2e2;
+  color: #991b1b;
+}
+
+[data-theme="dark"] .summary-danger {
+  background-color: rgba(239, 68, 68, 0.2);
+  color: #fca5a5;
+}
+
+.card-upload-modal__footer {
+  padding: 16px 20px;
+  border-top: 1px solid var(--card-border);
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+/* ============= Card Upload Row ============= */
+
+.card-upload-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  background-color: var(--bg-secondary);
+  border-radius: 8px;
+  transition: background-color 0.2s ease;
+}
+
+.card-upload-row:hover {
+  background-color: var(--surface-hover);
+}
+
+.card-upload-row__icon-container {
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+/* Icon background colors */
+.icon-bg--red { background-color: #fee2e2; }
+.icon-bg--yellow { background-color: #fef3c7; }
+.icon-bg--blue { background-color: #dbeafe; }
+.icon-bg--purple { background-color: #f3e8ff; }
+.icon-bg--orange { background-color: #ffedd5; }
+.icon-bg--sky { background-color: #e0f2fe; }
+.icon-bg--green { background-color: #dcfce7; }
+.icon-bg--amber { background-color: #fef3c7; }
+.icon-bg--gray { background-color: #f3f4f6; }
+
+[data-theme="dark"] .icon-bg--red { background-color: rgba(239, 68, 68, 0.3); }
+[data-theme="dark"] .icon-bg--yellow { background-color: rgba(251, 191, 36, 0.3); }
+[data-theme="dark"] .icon-bg--blue { background-color: rgba(59, 130, 246, 0.3); }
+[data-theme="dark"] .icon-bg--purple { background-color: rgba(168, 85, 247, 0.3); }
+[data-theme="dark"] .icon-bg--orange { background-color: rgba(249, 115, 22, 0.3); }
+[data-theme="dark"] .icon-bg--sky { background-color: rgba(14, 165, 233, 0.3); }
+[data-theme="dark"] .icon-bg--green { background-color: rgba(34, 197, 94, 0.3); }
+[data-theme="dark"] .icon-bg--amber { background-color: rgba(245, 158, 11, 0.3); }
+[data-theme="dark"] .icon-bg--gray { background-color: rgba(107, 114, 128, 0.3); }
+
+/* Icon stroke colors */
+.icon-stroke--red { color: #dc2626; }
+.icon-stroke--yellow { color: #eab308; }
+.icon-stroke--blue { color: #2563eb; }
+.icon-stroke--purple { color: #9333ea; }
+.icon-stroke--orange { color: #ea580c; }
+.icon-stroke--sky { color: #0ea5e9; }
+.icon-stroke--green { color: #16a34a; }
+.icon-stroke--amber { color: #d97706; }
+.icon-stroke--gray { color: #6b7280; }
+
+.card-upload-row__info {
+  flex: 1;
+  min-width: 0;
+}
+
+.card-upload-row__name {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.card-upload-row__size {
+  font-size: 12px;
+  color: var(--text-secondary);
+  margin-top: 2px;
+}
+
+.card-upload-row__progress-container {
+  flex: 0 0 120px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.card-upload-row__progress-bar {
+  height: 6px;
+  background-color: var(--bg);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.card-upload-progress {
+  height: 100%;
+  background-color: #3b82f6;
+  transition: width 0.3s ease;
+  border-radius: 3px;
+}
+
+.card-upload-progress.bg-green-500 {
+  background-color: #22c55e;
+}
+
+.card-upload-progress.bg-red-500 {
+  background-color: #ef4444;
+}
+
+.card-upload-status {
+  font-size: 11px;
+  color: var(--text-secondary);
+  text-align: right;
+}
+
+.card-upload-status.status-success {
+  color: var(--success);
+}
+
+.card-upload-status.status-error {
+  color: var(--danger);
+}
+
+.card-upload-remove {
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: none;
+  color: var(--muted);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.card-upload-remove:hover {
+  background-color: var(--danger);
+  color: white;
+}
+
+/* ============= Utility Classes ============= */
+
+.flex {
+  display: flex;
+}
+
+.items-center {
+  align-items: center;
+}
+
+.gap-1\.5 {
+  gap: 6px;
+}
+
+/* ============= Responsive Utilities ============= */
+
+@media (max-width: 639px) {
+  .hidden-mobile {
+    display: none;
+  }
+}
+
+@media (min-width: 640px) {
+  .hidden-desktop {
+    display: none;
+  }
+}

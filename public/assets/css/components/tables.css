@@ -567,3 +567,260 @@ div[data-item-path].selected {
     background-color: rgba(59, 130, 246, 0.15);
   }
 }
+
+/* ============================================
+   TableRenderer Custom CSS (Tailwind Replacement)
+   ============================================ */
+
+/* Row styling */
+.tw-row {
+  cursor: default;
+  transition: background-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.tw-row:hover {
+  background-color: rgba(0, 0, 0, 0.02);
+}
+
+[data-theme="dark"] .tw-row:hover {
+  background-color: rgba(255, 255, 255, 0.05);
+}
+
+/* Selection cell */
+.selection-cell {
+  padding: 0 12px;
+  width: 48px;
+  text-align: center;
+  vertical-align: middle;
+}
+
+/* Checkbox styling */
+.item-select {
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+  accent-color: var(--accent);
+}
+
+/* Name cell */
+.name-cell {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  min-width: 0;
+  flex: 1;
+}
+
+/* Item link */
+.item-link {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  display: block;
+  font-size: 14px;
+  color: var(--text);
+  text-decoration: none;
+}
+
+.item-link:hover {
+  color: var(--accent);
+}
+
+[data-theme="dark"] .item-link {
+  color: var(--text);
+}
+
+/* Badge for new items */
+.badge-new {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  font-size: 12px;
+  font-weight: 600;
+  background-color: #dcfce7;
+  color: #16a34a;
+  border-radius: 9999px;
+  margin-left: 8px;
+}
+
+[data-theme="dark"] .badge-new {
+  background-color: rgba(22, 163, 74, 0.2);
+  color: #4ade80;
+}
+
+/* Modified date cell */
+.modified-cell {
+  font-size: 14px;
+  color: var(--muted);
+  width: 144px;
+  text-align: right;
+  white-space: nowrap;
+}
+
+/* Size cell */
+.size-cell {
+  font-size: 14px;
+  color: var(--muted);
+  width: 100px;
+  text-align: right;
+  white-space: nowrap;
+  padding: 12px 8px;
+}
+
+/* Actions cell */
+.actions-cell {
+  width: auto;
+  padding-right: 8px;
+  text-align: right;
+}
+
+/* Row actions group */
+.row-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  justify-content: flex-end;
+}
+
+/* Desktop actions wrapper */
+.desktop-actions {
+  display: none;
+  align-items: center;
+  gap: 4px;
+}
+
+@media (min-width: 640px) {
+  .desktop-actions {
+    display: flex;
+  }
+}
+
+/* Action button base styles (already defined above, adding color variants) */
+.action-icon-btn.action-edit {
+  color: #2563eb;
+}
+
+[data-theme="dark"] .action-icon-btn.action-edit {
+  color: #60a5fa;
+}
+
+.action-icon-btn.action-download {
+  color: #16a34a;
+}
+
+[data-theme="dark"] .action-icon-btn.action-download {
+  color: #4ade80;
+}
+
+.action-icon-btn.action-rename {
+  color: #d97706;
+}
+
+[data-theme="dark"] .action-icon-btn.action-rename {
+  color: #fbbf24;
+}
+
+.action-icon-btn.action-archive {
+  color: #9333ea;
+}
+
+[data-theme="dark"] .action-icon-btn.action-archive {
+  color: #c084fc;
+}
+
+.action-icon-btn.action-delete {
+  color: #dc2626;
+}
+
+[data-theme="dark"] .action-icon-btn.action-delete {
+  color: #f87171;
+}
+
+/* Mobile more button (already defined above, adding responsive hide) */
+.mobile-more-btn {
+  display: inline-flex;
+}
+
+@media (min-width: 640px) {
+  .mobile-more-btn {
+    display: none;
+  }
+}
+
+/* ============================================
+   Mobile Item Styles
+   ============================================ */
+
+.mobile-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.04);
+}
+
+[data-theme="dark"] .mobile-item {
+  border-bottom-color: rgba(255, 255, 255, 0.08);
+}
+
+.mobile-item-checkbox {
+  width: 20px;
+  height: 20px;
+  cursor: pointer;
+  accent-color: var(--accent);
+}
+
+.mobile-item-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.mobile-item-name {
+  font-weight: 500;
+  color: var(--text);
+}
+
+[data-theme="dark"] .mobile-item-name {
+  color: var(--text);
+}
+
+.mobile-item-date {
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.mobile-action-btn {
+  padding: 8px;
+  border-radius: 9999px;
+  color: var(--text-secondary);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.mobile-action-btn:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+[data-theme="dark"] .mobile-action-btn {
+  color: var(--text-secondary);
+}
+
+[data-theme="dark"] .mobile-action-btn:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+/* Mobile item layout */
+.mobile-item-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.mobile-item-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}

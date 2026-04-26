@@ -26,9 +26,9 @@
 }
 
 .modal {
-  width: 100% !important;
-  max-width: 520px !important;
-  background: var(--card) !important;
+  width: 100%;
+  max-width: 520px;
+  background: var(--card);
   border-radius: 12px;
   padding: 20px;
   transition: background-color 0.3s ease, box-shadow 0.3s ease;
@@ -37,7 +37,7 @@
 }
 
 [data-theme="dark"] .modal {
-  background: var(--card) !important;
+  background: var(--card);
   box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
 }
 

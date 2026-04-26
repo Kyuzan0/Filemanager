@@ -18,7 +18,7 @@
 }
 
 .details-overlay.hidden {
-  display: none !important;
+  display: none;
 }
 
 .details-overlay[aria-hidden="false"],
@@ -77,6 +77,11 @@
 .details-icon-file {
   background: #dbeafe;
   color: #2563eb;
+}
+
+.details-icon-svg {
+  width: 1.5rem;
+  height: 1.5rem;
 }
 
 .details-title-group {

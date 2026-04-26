@@ -38,122 +38,122 @@ export function getIconColors(item) {
     if (!item || !item.type) {
         return { backgroundColor: '#e0e7ff', color: '#4f46e5' }; // Indigo for unknown files
     }
-    
+
     if (item.type === 'folder') {
         return { backgroundColor: '#fef3c7', color: '#f59e0b' }; // Amber for folders
     }
-    
+
     // Get file extension for file type detection
     const ext = getFileExtension(item.name);
-    
+
     // Images - Red
     const images = new Set(['png','jpg','jpeg','gif','webp','svg','bmp','ico','tiff','tif','avif']);
     if (images.has(ext)) {
         return { backgroundColor: '#fee2e2', color: '#dc2626' };
     }
-    
+
     // PDF - Red/Orange
     if (ext === 'pdf') {
         return { backgroundColor: '#fecaca', color: '#ea580c' };
     }
-    
+
     // Documents - Blue
     const docs = new Set(['doc','docx','odt','rtf']);
     if (docs.has(ext)) {
         return { backgroundColor: '#dbeafe', color: '#0284c7' };
     }
-    
+
     // Presentations - Orange
     const ppts = new Set(['ppt','pptx','odp']);
     if (ppts.has(ext)) {
         return { backgroundColor: '#fed7aa', color: '#d97706' };
     }
-    
+
     // Spreadsheets - Green
     const sheets = new Set(['xls','xlsx','ods','csv']);
     if (sheets.has(ext)) {
         return { backgroundColor: '#dcfce7', color: '#16a34a' };
     }
-    
+
     // Archives - Purple
     const archives = new Set(['zip','rar','7z','tar','gz','bz2','tgz','xz']);
     if (archives.has(ext)) {
         return { backgroundColor: '#e9d5ff', color: '#a855f7' };
     }
-    
+
     // Audio - Violet
     const audio = new Set(['mp3','wav','flac','ogg','m4a','aac']);
     if (audio.has(ext)) {
         return { backgroundColor: '#ede9fe', color: '#7c3aed' };
     }
-    
+
     // Video - Rose
     const video = new Set(['mp4','webm','mkv','mov','avi','m4v']);
     if (video.has(ext)) {
         return { backgroundColor: '#ffe4e6', color: '#be123c' };
     }
-    
+
     // JavaScript/TypeScript - Yellow
     const javascript = new Set(['js','jsx']);
     if (javascript.has(ext)) {
         return { backgroundColor: '#fef08a', color: '#ca8a04' };
     }
-    
+
     // TypeScript - Blue
     const typescript = new Set(['ts','tsx']);
     if (typescript.has(ext)) {
         return { backgroundColor: '#dbeafe', color: '#0369a1' };
     }
-    
+
     // Python - Blue/Yellow
     if (ext === 'py') {
         return { backgroundColor: '#dbeafe', color: '#1e40af' };
     }
-    
+
     // PHP - Violet
     if (ext === 'php') {
         return { backgroundColor: '#ede9fe', color: '#6d28d9' };
     }
-    
+
     // HTML - Orange/Red
     const html = new Set(['html','htm']);
     if (html.has(ext)) {
         return { backgroundColor: '#fed7aa', color: '#ea580c' };
     }
-    
+
     // CSS - Blue
     if (ext === 'css') {
         return { backgroundColor: '#bfdbfe', color: '#1e40af' };
     }
-    
+
     // SCSS/LESS - Pink
     const scss = new Set(['scss','less']);
     if (scss.has(ext)) {
         return { backgroundColor: '#fbcfe8', color: '#be185d' };
     }
-    
+
     // JSON - Green
     if (ext === 'json') {
         return { backgroundColor: '#dcfce7', color: '#16a34a' };
     }
-    
+
     // XML - Emerald
     if (ext === 'xml') {
         return { backgroundColor: '#d1fae5', color: '#059669' };
     }
-    
+
     // YAML - Cyan
     const yaml = new Set(['yml','yaml']);
     if (yaml.has(ext)) {
         return { backgroundColor: '#cffafe', color: '#0891b2' };
     }
-    
+
     // Text - Gray
     const text = new Set(['txt','md','markdown','log','ini','conf','cfg','env']);
     if (text.has(ext)) {
         return { backgroundColor: '#f3f4f6', color: '#6b7280' };
     }
-    
+
     // Default - Indigo
     return { backgroundColor: '#e0e7ff', color: '#4f46e5' };
 }
@@ -167,7 +167,7 @@ export function getIconColors(item) {
  */
 export function renderItemRow(item, state, params) {
     const rowStartTime = performance.now();
-    
+
     const {
         previewableExtensions,
         mediaPreviewableExtensions,
@@ -203,12 +203,14 @@ export function renderItemRow(item, state, params) {
     row.dataset.itemPath = key;
     row.dataset.itemType = item.type;
     row.tabIndex = 0;
-    try { row.setAttribute('role', 'row'); } catch (e) {}
-    row.classList.add('tw-row','group','hover:bg-gray-50','cursor-default','transition-colors');
+    try {
+        row.setAttribute('role', 'row');
+    } catch (e) {}
+    row.classList.add('tw-row');
     const extension = item.type === 'file' ? getFileExtension(item.name) : '';
     const isPreviewable = item.type === 'file' && previewableExtensions.has(extension);
     const isMediaPreviewable = item.type === 'file' && mediaPreviewableExtensions.has(extension);
-    
+
     if (isPreviewable || isMediaPreviewable) {
         row.dataset.previewable = 'true';
     }
@@ -219,11 +221,13 @@ export function renderItemRow(item, state, params) {
 
     // Selection cell
     const selectionCell = document.createElement('td');
-    selectionCell.classList.add('selection-cell','px-3','w-12','text-center','align-middle');
-    try { selectionCell.setAttribute('role', 'gridcell'); } catch (e) {}
+    selectionCell.classList.add('selection-cell');
+    try {
+        selectionCell.setAttribute('role', 'gridcell');
+    } catch (e) {}
     const checkbox = document.createElement('input');
     checkbox.type = 'checkbox';
-    checkbox.classList.add('item-select','form-checkbox','h-4','w-4','text-primary');
+    checkbox.classList.add('item-select');
     checkbox.dataset.path = key;
     checkbox.checked = state.selected.has(key);
     checkbox.setAttribute('aria-label', `Pilih ${item.name}`);
@@ -248,20 +252,20 @@ export function renderItemRow(item, state, params) {
             target.closest('.action-icon-btn') ||
             target.closest('.mobile-more-btn') ||
             target.closest('.row-actions');
-        
+
         if (isInteractiveElement) {
             return; // Let the element handle its own click
         }
-        
+
         // Get current item index from visible items
         const allRows = Array.from(row.parentElement.querySelectorAll('tr[data-item-path]'));
         const currentIndex = allRows.indexOf(row);
-        
+
         if (event.shiftKey && lastSelectedIndex >= 0) {
             // Shift+Click: Range selection
             const start = Math.min(lastSelectedIndex, currentIndex);
             const end = Math.max(lastSelectedIndex, currentIndex);
-            
+
             for (let i = start; i <= end; i++) {
                 const targetRow = allRows[i];
                 if (targetRow) {
@@ -281,7 +285,7 @@ export function renderItemRow(item, state, params) {
             const newState = !checkbox.checked;
             checkbox.checked = newState;
             toggleSelection(key, newState);
-            
+
             if (newState) {
                 row.classList.add('selected');
                 row.setAttribute('aria-selected', 'true');
@@ -295,9 +299,9 @@ export function renderItemRow(item, state, params) {
             // Normal click: Toggle single item selection
             const newState = !checkbox.checked;
             checkbox.checked = newState;
-            
+
             toggleSelection(key, newState);
-            
+
             // Update row visual state for selection
             if (newState) {
                 row.classList.add('selected');
@@ -342,7 +346,9 @@ export function renderItemRow(item, state, params) {
             } else {
                 const url = buildFileUrl(item.path);
                 const newWindow = window.open(url, '_blank');
-                if (newWindow) newWindow.opener = null;
+                if (newWindow) {
+                    newWindow.opener = null;
+                }
             }
         };
         row.addEventListener('dblclick', openFile);
@@ -364,7 +370,7 @@ export function renderItemRow(item, state, params) {
     row.draggable = true;
     row.addEventListener('dragstart', (event) => handleDragStart(event, item));
     row.addEventListener('dragend', (event) => handleDragEnd(event));
-    
+
     if (item.type === 'folder') {
         row.addEventListener('dragover', (event) => handleDragOver(event, item));
         row.addEventListener('drop', (event) => handleDrop(event, item));
@@ -373,8 +379,10 @@ export function renderItemRow(item, state, params) {
 
     // Name cell with icon
     const cellName = document.createElement('td');
-    cellName.classList.add('name-cell','item-name','flex','items-center','gap-4','min-w-0','flex-1');
-    try { cellName.setAttribute('role', 'gridcell'); } catch (e) {}
+    cellName.classList.add('name-cell','item-name');
+    try {
+        cellName.setAttribute('role', 'gridcell');
+    } catch (e) {}
     const iconInfo = getItemIcon(item);
     const icon = document.createElement('span');
     icon.classList.add('item-icon');
@@ -387,12 +395,12 @@ export function renderItemRow(item, state, params) {
     icon.style.width = '25px';
     icon.style.height = '25px';
     icon.style.borderRadius = '8px';
-    
+
     // Apply colorful icon styles based on file type
     const iconColors = getIconColors(item);
     icon.style.backgroundColor = iconColors.backgroundColor;
     icon.style.color = iconColors.color;
-    
+
     icon.style.flexShrink = '0';
     icon.style.marginTop = '2px';
     if (iconInfo && iconInfo.svg) {
@@ -410,7 +418,7 @@ export function renderItemRow(item, state, params) {
         }
     }
     icon.style.cursor = 'pointer';
-    
+
     // Add click handler to icon
     if (item.type === 'folder') {
         icon.addEventListener('click', (event) => {
@@ -441,15 +449,17 @@ export function renderItemRow(item, state, params) {
                 event.stopPropagation();
                 const url = buildFileUrl(item.path);
                 const newWindow = window.open(url, '_blank');
-                if (newWindow) newWindow.opener = null;
+                if (newWindow) {
+                    newWindow.opener = null;
+                }
             });
         }
     }
-    
+
     cellName.appendChild(icon);
 
     const link = document.createElement('a');
-    link.classList.add('item-link','truncate','block','text-sm','text-gray-800');
+    link.classList.add('item-link');
     link.textContent = item.name;
 
     if (item.type === 'folder') {
@@ -489,22 +499,26 @@ export function renderItemRow(item, state, params) {
     let badge = null;
     if (!previouslySeen && highlightNew) {
         badge = document.createElement('span');
-        badge.classList.add('badge','badge-new','inline-flex','items-center','px-2','py-0.5','text-xs','font-semibold','bg-green-100','text-green-700','rounded-full','ml-2');
+        badge.classList.add('badge','badge-new');
         badge.textContent = 'Baru';
         cellName.appendChild(badge);
     }
 
     // Modified date cell
     const cellModified = document.createElement('td');
-    cellModified.classList.add('modified-cell','text-sm','text-gray-500','w-36','text-right','whitespace-nowrap');
-    try { cellModified.setAttribute('role', 'gridcell'); } catch (e) {}
+    cellModified.classList.add('modified-cell');
+    try {
+        cellModified.setAttribute('role', 'gridcell');
+    } catch (e) {}
     cellModified.textContent = formatDate(item.modified);
     row.appendChild(cellModified);
 
     // Size cell
     const cellSize = document.createElement('td');
-    cellSize.classList.add('size-cell','text-sm','text-gray-500','w-[100px]','text-right','whitespace-nowrap','px-2');
-    try { cellSize.setAttribute('role', 'gridcell'); } catch (e) {}
+    cellSize.classList.add('size-cell');
+    try {
+        cellSize.setAttribute('role', 'gridcell');
+    } catch (e) {}
     if (item.type === 'folder') {
         cellSize.textContent = '-';
     } else {
@@ -515,19 +529,21 @@ export function renderItemRow(item, state, params) {
 
     // Actions cell
     const actionCell = document.createElement('td');
-    actionCell.classList.add('actions-cell','w-auto','pr-2','text-right');
-    try { actionCell.setAttribute('role', 'gridcell'); } catch (e) {}
+    actionCell.classList.add('actions-cell');
+    try {
+        actionCell.setAttribute('role', 'gridcell');
+    } catch (e) {}
     const actionGroup = document.createElement('div');
-    actionGroup.classList.add('row-actions','inline-flex','items-center','gap-1','justify-end');
+    actionGroup.classList.add('row-actions');
 
     // Desktop action buttons wrapper
     const desktopActions = document.createElement('div');
-    desktopActions.classList.add('hidden', 'sm:flex', 'items-center', 'gap-1');
+    desktopActions.classList.add('desktop-actions');
 
     // Helper function to create action button with tooltip
-    const createActionBtn = (iconClass, title, colorClass, onClick) => {
+    const createActionBtn = (iconClass, title, semanticColorClass, onClick) => {
         const btn = document.createElement('button');
-        btn.classList.add('action-icon-btn', 'p-1.5', 'rounded', 'transition-colors', 'hover:bg-gray-100', 'dark:hover:bg-white/10', colorClass);
+        btn.classList.add('action-icon-btn', semanticColorClass);
         btn.innerHTML = `<i class="${iconClass} text-base"></i>`;
         btn.setAttribute('title', title);
         btn.addEventListener('click', (event) => {
@@ -538,7 +554,7 @@ export function renderItemRow(item, state, params) {
     };
 
     // 1. Open/Preview button
-    const openBtn = createActionBtn('ri-folder-open-line', 'Buka', 'text-blue-600 dark:text-blue-400', () => {
+    const openBtn = createActionBtn('ri-folder-open-line', 'Buka', 'action-edit', () => {
         if (item.type === 'folder') {
             navigateTo(item.path);
         } else if (isPreviewable) {
@@ -552,7 +568,9 @@ export function renderItemRow(item, state, params) {
             } else {
                 const url = buildFileUrl(item.path);
                 const newWindow = window.open(url, '_blank');
-                if (newWindow) newWindow.opener = null;
+                if (newWindow) {
+                    newWindow.opener = null;
+                }
             }
         }
     });
@@ -560,7 +578,7 @@ export function renderItemRow(item, state, params) {
 
     // 2. Download button (only for files)
     if (item.type === 'file') {
-        const downloadBtn = createActionBtn('ri-download-line', 'Unduh', 'text-green-600 dark:text-green-400', () => {
+        const downloadBtn = createActionBtn('ri-download-line', 'Unduh', 'action-download', () => {
             const url = buildFileUrl(item.path);
             const a = document.createElement('a');
             a.href = url;
@@ -574,23 +592,25 @@ export function renderItemRow(item, state, params) {
     }
 
     // 3. Rename button
-    const renameBtn = createActionBtn('ri-edit-line', 'Ganti Nama', 'text-amber-600 dark:text-amber-400', () => {
+    const renameBtn = createActionBtn('ri-edit-line', 'Ganti Nama', 'action-rename', () => {
         openRenameOverlay(item);
     });
     desktopActions.appendChild(renameBtn);
 
     // 4. Move button
-    const moveBtn = createActionBtn('ri-folder-transfer-line', 'Pindahkan', 'text-purple-600 dark:text-purple-400', () => {
+    const moveBtn = createActionBtn('ri-folder-transfer-line', 'Pindahkan', 'action-archive', () => {
         openMoveOverlay([item.path]);
     });
     desktopActions.appendChild(moveBtn);
 
     // 5. Delete button
-    const deleteBtn = createActionBtn('ri-delete-bin-line', 'Hapus', 'text-red-500 dark:text-red-400', () => {
+    const deleteBtn = createActionBtn('ri-delete-bin-line', 'Hapus', 'action-delete', () => {
         if (hasUnsavedChanges(state.preview)) {
             confirmDiscardChanges('Perubahan belum disimpan. Tetap hapus item terpilih?')
                 .then((proceed) => {
-                    if (!proceed) return;
+                    if (!proceed) {
+                        return;
+                    }
                     openConfirmOverlay({
                         message: `Hapus "${item.name}"?`,
                         description: 'Item yang dihapus tidak dapat dikembalikan.',
@@ -611,13 +631,13 @@ export function renderItemRow(item, state, params) {
         });
     });
     desktopActions.appendChild(deleteBtn);
-    
+
     // Add desktop actions to action group
     actionGroup.appendChild(desktopActions);
 
     // Mobile more button
     const mobileMoreBtn = document.createElement('button');
-    mobileMoreBtn.classList.add('mobile-more-btn', 'sm:hidden', 'p-1.5', 'rounded', 'transition-colors', 'hover:bg-gray-100', 'dark:hover:bg-white/10', 'text-gray-600', 'dark:text-gray-400');
+    mobileMoreBtn.classList.add('mobile-more-btn');
     mobileMoreBtn.innerHTML = '<i class="ri-more-2-fill text-lg"></i>';
     mobileMoreBtn.setAttribute('title', 'Menu');
     mobileMoreBtn.dataset.path = item.path;
@@ -641,19 +661,16 @@ export function renderItemRow(item, state, params) {
     if (!previouslySeen && highlightNew) {
         setTimeout(() => {
             row.classList.remove('is-new');
-            if (badge) badge.remove();
+            if (badge) {
+                badge.remove();
+            }
         }, 5000);
     }
 
     // Debug log
     try {
         const rowEndTime = performance.now();
-        console.log('[PAGINATION DEBUG] renderItemRow ->', {
-            path: key,
-            classes: row.className,
-            height: (typeof row.getBoundingClientRect === 'function') ? Math.round(row.getBoundingClientRect().height) : null,
-            renderTime: rowEndTime - rowStartTime
-        });
+
     } catch (e) { /* ignore */ }
 
     return row;
@@ -668,19 +685,17 @@ export function renderItemRow(item, state, params) {
  */
 export function renderVirtualItems(tableBody, filtered, state, params) {
     const renderStartTime = performance.now();
-    console.log('[PAGINATION DEBUG] renderVirtualItems called at:', renderStartTime, 'with', filtered.length, 'items');
-    
+
     // Get items for current page FIRST
     const paginatedItems = getItemsForPage(filtered);
-    console.log('[PAGINATION DEBUG] Showing', paginatedItems.length, 'items for current page');
-    
+
     const vsConfig = config.virtualScroll || {
         enabled: true,
         threshold: 100,
         itemHeight: 40,
         overscan: 5
     };
-    
+
     // Initialize virtual scroll manager if not exists
     const managerInitTime = performance.now();
     if (!virtualScrollManager) {
@@ -689,21 +704,19 @@ export function renderVirtualItems(tableBody, filtered, state, params) {
             itemHeight: vsConfig.itemHeight,
             overscan: vsConfig.overscan,
             onRender: (range) => {
-                console.log('[VirtualScroll] Render triggered for range:', range);
+
             }
         });
         virtualScrollManager.setTotalItems(paginatedItems.length);
     } else {
         virtualScrollManager.setTotalItems(paginatedItems.length);
     }
-    console.log('[PAGINATION DEBUG] Virtual scroll manager initialized at:', managerInitTime, 'delta:', managerInitTime - renderStartTime);
 
     // Get visible range
     const rangeTime = performance.now();
     const { start, end } = virtualScrollManager.getVisibleRange();
     debugLog('[VirtualScroll] Rendering range:', start, '-', end);
-    console.log('[PAGINATION DEBUG] Visible range calculated at:', rangeTime, 'delta:', rangeTime - managerInitTime);
-    
+
     // Clear existing rows
     const clearTime = performance.now();
     const upRow = tableBody.querySelector('.up-row');
@@ -713,26 +726,27 @@ export function renderVirtualItems(tableBody, filtered, state, params) {
     if (upRow) {
         tableBody.appendChild(upRow);
     }
-    console.log('[PAGINATION DEBUG] DOM cleared at:', clearTime, 'delta:', clearTime - rangeTime);
 
     // Create top spacer
     const spacerTime = performance.now();
     const topSpaceHeight = start * vsConfig.itemHeight;
     const topSpacer = createSpacer(topSpaceHeight);
-    if (topSpacer) tableBody.appendChild(topSpacer);
-    console.log('[PAGINATION DEBUG] Top spacer created at:', spacerTime, 'delta:', spacerTime - clearTime);
+    if (topSpacer) {
+        tableBody.appendChild(topSpacer);
+    }
 
     // Render visible items FROM CURRENT PAGE
     const itemRenderTime = performance.now();
     const fragment = document.createDocumentFragment();
     for (let i = start; i < end; i++) {
-        if (i >= paginatedItems.length) break;
+        if (i >= paginatedItems.length) {
+            break;
+        }
         const item = paginatedItems[i];
         const row = renderItemRow(item, state, params);
         fragment.appendChild(row);
     }
     tableBody.appendChild(fragment);
-    console.log('[PAGINATION DEBUG] Visible items rendered at:', itemRenderTime, 'delta:', itemRenderTime - spacerTime, 'items:', end - start);
 
     // Reconcile computed row height with virtual scroll configuration
     try {
@@ -750,7 +764,7 @@ export function renderVirtualItems(tableBody, filtered, state, params) {
                 }
             }
         }
-        console.log('[PAGINATION DEBUG] Height reconciled at:', heightReconcileTime, 'delta:', heightReconcileTime - itemRenderTime);
+
     } catch (e) {
         debugLog('[VirtualScroll] Failed to reconcile itemHeight', e);
     }
@@ -760,14 +774,15 @@ export function renderVirtualItems(tableBody, filtered, state, params) {
     const remainingItems = Math.max(0, paginatedItems.length - end);
     const bottomSpaceHeight = remainingItems * vsConfig.itemHeight;
     const bottomSpacer = createSpacer(bottomSpaceHeight);
-    if (bottomSpacer) tableBody.appendChild(bottomSpacer);
-    console.log('[PAGINATION DEBUG] Bottom spacer created at:', bottomSpacerTime, 'delta:', bottomSpacerTime - itemRenderTime);
+    if (bottomSpacer) {
+        tableBody.appendChild(bottomSpacer);
+    }
 
     // Track performance
     if (virtualScrollManager && typeof virtualScrollManager.trackRender === 'function') {
         virtualScrollManager.trackRender(end - start);
     }
-    
+
     // Initialize pagination tracking
     const container = tableBody.parentElement;
     if (container && filtered.length > 0) {
@@ -778,9 +793,9 @@ export function renderVirtualItems(tableBody, filtered, state, params) {
         const pagination = calculatePagination(filtered.length);
         updatePaginationState(pagination.currentPage, pagination.totalPages, filtered.length);
     }
-    
+
     const renderEndTime = performance.now();
-    console.log('[PAGINATION DEBUG] renderVirtualItems completed at:', renderEndTime, 'total delta:', renderEndTime - renderStartTime);
+
 }
 
 /**
@@ -792,26 +807,22 @@ export function renderVirtualItems(tableBody, filtered, state, params) {
  */
 export function renderNormalItems(tableBody, filtered, state, params) {
     const renderStartTime = performance.now();
-    console.log('[PAGINATION DEBUG] renderNormalItems called at:', renderStartTime, 'with', filtered.length, 'items');
-    
+
     // Get items for current page FIRST
     const paginatedItems = getItemsForPage(filtered);
-    console.log('[PAGINATION DEBUG] Showing', paginatedItems.length, 'items for current page');
-    
+
     const fragment = document.createDocumentFragment();
-    
+
     const itemRenderTime = performance.now();
     // Render items for current page only
     paginatedItems.forEach((item, index) => {
         const row = renderItemRow(item, state, params);
         fragment.appendChild(row);
     });
-    console.log('[PAGINATION DEBUG] Items rendered at:', itemRenderTime, 'delta:', itemRenderTime - renderStartTime);
-    
+
     const domAppendTime = performance.now();
     tableBody.appendChild(fragment);
-    console.log('[PAGINATION DEBUG] DOM appended at:', domAppendTime, 'total delta:', domAppendTime - renderStartTime);
-    
+
     // Update pagination state
     const pagination = calculatePagination(filtered.length);
     updatePaginationState(pagination.currentPage, pagination.totalPages, filtered.length);
@@ -826,25 +837,23 @@ export function renderNormalItems(tableBody, filtered, state, params) {
  */
 export function renderMobileItems(mobileList, items, state, params) {
     const renderStartTime = performance.now();
-    console.log('[PAGINATION DEBUG] renderMobileItems called at:', renderStartTime, 'with', items.length, 'items');
-    
+
     if (!mobileList) {
-        console.log('[PAGINATION DEBUG] Mobile list not found, skipping');
+
         return;
     }
-    
+
     const fragment = document.createDocumentFragment();
-    
+
     const itemRenderTime = performance.now();
     items.forEach((item) => {
         const mobileItem = createMobileItem(item, state, params);
         fragment.appendChild(mobileItem);
     });
-    console.log('[PAGINATION DEBUG] Mobile items rendered at:', itemRenderTime, 'delta:', itemRenderTime - renderStartTime);
-    
+
     const domAppendTime = performance.now();
     mobileList.appendChild(fragment);
-    console.log('[PAGINATION DEBUG] Mobile DOM appended at:', domAppendTime, 'total delta:', domAppendTime - renderStartTime);
+
 }
 
 /**
@@ -856,7 +865,7 @@ export function renderMobileItems(mobileList, items, state, params) {
  */
 export function createMobileItem(item, state, params) {
     const itemStartTime = performance.now();
-    
+
     const {
         previewableExtensions,
         mediaPreviewableExtensions,
@@ -879,20 +888,20 @@ export function createMobileItem(item, state, params) {
     const extension = item.type === 'file' ? getFileExtension(item.name) : '';
     const isPreviewable = item.type === 'file' && previewableExtensions.has(extension);
     const isMediaPreviewable = item.type === 'file' && mediaPreviewableExtensions.has(extension);
-    
+
     const mobileItem = document.createElement('div');
-    mobileItem.classList.add('flex', 'items-center', 'justify-between', 'p-3');
+    mobileItem.classList.add('mobile-item');
     mobileItem.dataset.itemPath = key;
     mobileItem.dataset.itemType = item.type;
-    
+
     // Left side: checkbox + icon + name + date
     const leftSide = document.createElement('div');
-    leftSide.classList.add('flex', 'items-center', 'gap-3');
-    
+    leftSide.classList.add('mobile-item-left');
+
     // Checkbox
     const checkbox = document.createElement('input');
     checkbox.type = 'checkbox';
-    checkbox.classList.add('w-5', 'h-5');
+    checkbox.classList.add('mobile-item-checkbox');
     checkbox.dataset.path = key;
     checkbox.checked = state.selected.has(key);
     checkbox.setAttribute('aria-label', `Pilih ${item.name}`);
@@ -902,11 +911,11 @@ export function createMobileItem(item, state, params) {
         toggleSelection(key, isChecked);
     });
     leftSide.appendChild(checkbox);
-    
+
     // Icon
     const iconContainer = document.createElement('div');
-    iconContainer.classList.add('flex', 'items-center', 'justify-center');
-    
+    iconContainer.classList.add('mobile-item-icon');
+
     const iconInfo = getItemIcon(item);
     const icon = document.createElement('span');
     icon.classList.add('item-icon');
@@ -919,14 +928,14 @@ export function createMobileItem(item, state, params) {
     icon.style.width = '32px';
     icon.style.height = '32px';
     icon.style.borderRadius = '6px';
-    
+
     const mobileIconColors = getIconColors(item);
     icon.style.backgroundColor = mobileIconColors.backgroundColor;
     icon.style.color = mobileIconColors.color;
-    
+
     icon.style.flexShrink = '0';
     icon.style.marginTop = '2px';
-    
+
     if (iconInfo && iconInfo.svg) {
         try {
             if (typeof iconInfo.svg === 'object' && iconInfo.svg.nodeType === 1) {
@@ -941,33 +950,33 @@ export function createMobileItem(item, state, params) {
             console.warn('[tableRenderer] Failed to render icon for', item && item.path, e);
         }
     }
-    
+
     iconContainer.appendChild(icon);
     leftSide.appendChild(iconContainer);
-    
+
     // Name + date
     const nameDateContainer = document.createElement('div');
     nameDateContainer.classList.add('flex', 'flex-col');
-    
+
     const nameSpan = document.createElement('span');
-    nameSpan.classList.add('font-medium', 'text-gray-800');
+    nameSpan.classList.add('mobile-item-name');
     nameSpan.textContent = item.name;
     nameDateContainer.appendChild(nameSpan);
-    
+
     const dateSpan = document.createElement('span');
-    dateSpan.classList.add('text-xs', 'text-gray-500');
+    dateSpan.classList.add('mobile-item-date');
     dateSpan.textContent = formatDate(item.modified);
     nameDateContainer.appendChild(dateSpan);
-    
+
     leftSide.appendChild(nameDateContainer);
     mobileItem.appendChild(leftSide);
-    
+
     // Right side: action menu button (three dots)
     const rightSide = document.createElement('div');
     rightSide.classList.add('flex', 'items-center', 'gap-2');
-    
+
     const actionBtn = document.createElement('button');
-    actionBtn.classList.add('p-2', 'rounded-full', 'text-gray-600', 'hover:bg-gray-100', 'transition-colors');
+    actionBtn.classList.add('mobile-action-btn');
     actionBtn.innerHTML = '⋮';
     actionBtn.style.fontSize = '20px';
     actionBtn.style.lineHeight = '1';
@@ -982,18 +991,20 @@ export function createMobileItem(item, state, params) {
         }
     });
     rightSide.appendChild(actionBtn);
-    
+
     mobileItem.appendChild(rightSide);
-    
+
     // Single-click on item toggles checkbox selection (click-to-select enhancement)
     // Double-click opens the item
     // Supports Shift+Click for range selection and Ctrl+Click for toggle
     let clickTimeout = null;
-    
+
     mobileItem.addEventListener('click', (event) => {
         // Don't handle if clicking on interactive elements
-        if (event.target.closest('button') || event.target.closest('input')) return;
-        
+        if (event.target.closest('button') || event.target.closest('input')) {
+            return;
+        }
+
         // Clear any pending click timeout for double-click detection
         if (clickTimeout) {
             clearTimeout(clickTimeout);
@@ -1014,23 +1025,25 @@ export function createMobileItem(item, state, params) {
                 } else {
                     const url = buildFileUrl(item.path);
                     const newWindow = window.open(url, '_blank');
-                    if (newWindow) newWindow.opener = null;
+                    if (newWindow) {
+                        newWindow.opener = null;
+                    }
                 }
             }
             return;
         }
-        
+
         // For Shift+Click and Ctrl+Click, handle immediately without timeout
         if (event.shiftKey || event.ctrlKey || event.metaKey) {
             const mobileList = mobileItem.parentElement;
             const allItems = Array.from(mobileList.querySelectorAll('div[data-item-path]'));
             const currentIndex = allItems.indexOf(mobileItem);
-            
+
             if (event.shiftKey && lastSelectedIndex >= 0) {
                 // Shift+Click: Range selection
                 const start = Math.min(lastSelectedIndex, currentIndex);
                 const end = Math.max(lastSelectedIndex, currentIndex);
-                
+
                 for (let i = start; i <= end; i++) {
                     const targetItem = allItems[i];
                     if (targetItem) {
@@ -1050,7 +1063,7 @@ export function createMobileItem(item, state, params) {
                 const newState = !checkbox.checked;
                 checkbox.checked = newState;
                 toggleSelection(key, newState);
-                
+
                 if (newState) {
                     mobileItem.classList.add('selected');
                     mobileItem.setAttribute('aria-selected', 'true');
@@ -1062,22 +1075,22 @@ export function createMobileItem(item, state, params) {
             }
             return;
         }
-        
+
         // Set a timeout for single click (toggle selection)
         clickTimeout = setTimeout(() => {
             clickTimeout = null;
-            
+
             // Get current index for tracking
             const mobileList = mobileItem.parentElement;
             const allItems = Array.from(mobileList.querySelectorAll('div[data-item-path]'));
             const currentIndex = allItems.indexOf(mobileItem);
-            
+
             // Single click - toggle checkbox
             const newState = !checkbox.checked;
             checkbox.checked = newState;
-            
+
             toggleSelection(key, newState);
-            
+
             // Update visual state
             if (newState) {
                 mobileItem.classList.add('selected');
@@ -1086,31 +1099,30 @@ export function createMobileItem(item, state, params) {
                 mobileItem.classList.remove('selected');
                 mobileItem.setAttribute('aria-selected', 'false');
             }
-            
+
             lastSelectedIndex = currentIndex;
         }, 250); // 250ms delay to distinguish single vs double click
     });
-    
+
     // Context menu
     mobileItem.addEventListener('contextmenu', (event) => {
         event.preventDefault();
         openContextMenu(event.clientX, event.clientY, item);
     });
-    
+
     // Drag and drop
     mobileItem.draggable = true;
     mobileItem.addEventListener('dragstart', (event) => handleDragStart(event, item));
     mobileItem.addEventListener('dragend', (event) => handleDragEnd(event));
-    
+
     if (item.type === 'folder') {
         mobileItem.addEventListener('dragover', (event) => handleDragOver(event, item));
         mobileItem.addEventListener('drop', (event) => handleDrop(event, item));
         mobileItem.addEventListener('dragleave', (event) => handleDragLeave(event));
     }
-    
+
     const itemEndTime = performance.now();
-    console.log('[PAGINATION DEBUG] createMobileItem completed for:', item.name, 'at:', itemEndTime, 'delta:', itemEndTime - itemStartTime);
-    
+
     return mobileItem;
 }
 
@@ -1138,3 +1150,5 @@ export function cleanupScrollTracking() {
         scrollTrackingCleanup = null;
     }
 }
+
+

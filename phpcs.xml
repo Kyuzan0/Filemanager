@@ -1,0 +1,50 @@
+<?xml version="1.0"?>
+<ruleset name="FileManager">
+    <description>PHP_CodeSniffer configuration for File Manager project</description>
+
+    <!-- Base standard: PSR-12 -->
+    <rule ref="PSR12"/>
+
+    <!-- File extensions to check -->
+    <arg name="extensions" value="php"/>
+
+    <!-- Show progress and use colors -->
+    <arg value="p"/>
+    <arg name="colors"/>
+
+    <!-- Paths to check -->
+    <file>app/</file>
+    <file>public/</file>
+    <file>bootstrap.php</file>
+    <file>autoload.php</file>
+
+    <!-- Exclude directories -->
+    <exclude-pattern>vendor/</exclude-pattern>
+    <exclude-pattern>node_modules/</exclude-pattern>
+    <exclude-pattern>storage/</exclude-pattern>
+    <exclude-pattern>bin/</exclude-pattern>
+
+    <!-- Exclude specific sniffs that conflict with existing patterns -->
+    <!-- Project uses procedural functions alongside classes -->
+    <rule ref="PSR1.Files.SideEffects">
+        <exclude-pattern>bootstrap.php</exclude-pattern>
+        <exclude-pattern>autoload.php</exclude-pattern>
+        <exclude-pattern>public/api.php</exclude-pattern>
+        <exclude-pattern>public/index.php</exclude-pattern>
+    </rule>
+
+    <!-- Allow mixed case for function names (existing codebase uses snake_case) -->
+    <rule ref="PSR1.Methods.CamelCapsMethodName">
+        <exclude-pattern>app/Core/</exclude-pattern>
+        <exclude-pattern>app/Handlers/</exclude-pattern>
+        <exclude-pattern>app/Helpers/</exclude-pattern>
+    </rule>
+
+    <!-- Relax line length for readability -->
+    <rule ref="Generic.Files.LineLength">
+        <properties>
+            <property name="lineLimit" value="120"/>
+            <property name="absoluteLineLimit" value="150"/>
+        </properties>
+    </rule>
+</ruleset>

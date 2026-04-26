@@ -17,7 +17,7 @@
 }
 
 .log-overlay.hidden {
-  display: none !important;
+  display: none;
 }
 
 .log-overlay[aria-hidden="false"] {
@@ -107,7 +107,40 @@
 
 /* Log table row specific styles */
 .log-table-row {
+  border-bottom: 1px solid var(--card-border);
+  color: var(--text);
   transition: background-color 0.15s ease;
+}
+
+/* Log table cell */
+.log-cell {
+  padding: 0.5rem 0.75rem;
+  font-size: 0.75rem;
+}
+
+.log-cell-responsive-sm {
+  padding: 0.5rem 0.75rem;
+  font-size: 0.75rem;
+}
+
+.log-cell-responsive-md {
+  padding: 0.5rem 0.75rem;
+  font-size: 0.75rem;
+}
+
+@media (max-width: 639px) {
+  .log-cell-responsive-sm {
+    display: none;
+  }
+  .log-cell-responsive-md {
+    display: none;
+  }
+}
+
+@media (min-width: 640px) and (max-width: 767px) {
+  .log-cell-responsive-md {
+    display: none;
+  }
 }
 
 /* Fixed column widths for log table - percentage based */
@@ -164,20 +197,20 @@
 
 .log-button.outline {
   background: #ffffff;
-  border: 1px solid #e5e7eb !important;
+  border: 1px solid #e5e7eb;
   color: #374151;
   outline: none;
 }
 
 .log-button.outline:hover {
   background: #f9fafb;
-  border-color: #e5e7eb !important;
+  border-color: #e5e7eb;
 }
 
 .log-button.outline:focus,
 .log-button.outline:focus-visible {
   outline: none;
-  border-color: #e5e7eb !important;
+  border-color: #e5e7eb;
   box-shadow: none;
 }
 
@@ -193,7 +226,7 @@
 
 .log-pagination-btn {
   background: #ffffff;
-  border: 1px solid #e5e7eb !important;
+  border: 1px solid #e5e7eb;
   color: #374151;
   outline: none;
 }
@@ -205,31 +238,31 @@
 .log-pagination-btn:focus,
 .log-pagination-btn:focus-visible {
   outline: none;
-  border-color: #e5e7eb !important;
+  border-color: #e5e7eb;
   box-shadow: none;
 }
 
 [data-theme="dark"] .log-button.outline {
   background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1);
   color: #e5e7eb;
 }
 
 [data-theme="dark"] .log-button.outline:hover {
   background: rgba(255, 255, 255, 0.1);
-  border-color: rgba(255, 255, 255, 0.1) !important;
+  border-color: rgba(255, 255, 255, 0.1);
 }
 
 [data-theme="dark"] .log-button.outline:focus,
 [data-theme="dark"] .log-button.outline:focus-visible {
   outline: none;
-  border-color: rgba(255, 255, 255, 0.1) !important;
+  border-color: rgba(255, 255, 255, 0.1);
   box-shadow: none;
 }
 
 [data-theme="dark"] .log-pagination-btn {
   background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1);
   color: #e5e7eb;
 }
 
@@ -240,7 +273,7 @@
 [data-theme="dark"] .log-pagination-btn:focus,
 [data-theme="dark"] .log-pagination-btn:focus-visible {
   outline: none;
-  border-color: rgba(255, 255, 255, 0.1) !important;
+  border-color: rgba(255, 255, 255, 0.1);
   box-shadow: none;
 }
 
@@ -274,6 +307,333 @@
   }
   
   #log-page-info {
-    display: inline !important;
+    display: inline;
+  }
+}
+
+/* ============================================================================
+   Log Handler Semantic Classes (Replacing Tailwind)
+   ============================================================================ */
+
+/* Loading State */
+.log-loading {
+  padding: 0.75rem 1rem;
+  text-align: center;
+  color: var(--text-secondary);
+}
+
+[data-theme="dark"] .log-loading {
+  color: rgb(148, 163, 184);
+}
+
+/* Error State */
+.log-error-cell {
+  padding: 0.75rem 1rem;
+  text-align: center;
+  color: var(--danger);
+}
+
+[data-theme="dark"] .log-error-cell {
+  color: rgb(248, 113, 113);
+}
+
+/* Empty State */
+.log-empty-cell {
+  padding: 0.75rem 1rem;
+  text-align: center;
+  color: var(--text-secondary);
+}
+
+[data-theme="dark"] .log-empty-cell {
+  color: rgb(148, 163, 184);
+}
+
+/* Table Row */
+.log-table-row {
+  border-bottom: 1px solid rgb(243, 244, 246);
+}
+
+[data-theme="dark"] .log-table-row {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+/* Table Cells */
+.log-table-cell {
+  padding: 0.5rem 0.75rem;
+  font-size: 0.75rem;
+  line-height: 1rem;
+  color: var(--text);
+}
+
+[data-theme="dark"] .log-table-cell {
+  color: rgb(226, 232, 240);
+}
+
+.log-table-cell--secondary {
+  padding: 0.5rem 0.75rem;
+  font-size: 0.75rem;
+  line-height: 1rem;
+  color: var(--text-secondary);
+}
+
+[data-theme="dark"] .log-table-cell--secondary {
+  color: rgb(148, 163, 184);
+}
+
+.log-table-cell--muted {
+  padding: 0.5rem 0.75rem;
+  font-size: 0.75rem;
+  line-height: 1rem;
+  color: var(--muted);
+}
+
+[data-theme="dark"] .log-table-cell--muted {
+  color: rgb(100, 116, 139);
+}
+
+/* Responsive table cells */
+.log-table-cell--sm-hidden {
+  display: none;
+}
+
+@media (min-width: 640px) {
+  .log-table-cell--sm-hidden {
+    display: table-cell;
+  }
+}
+
+.log-table-cell--md-hidden {
+  display: none;
+}
+
+@media (min-width: 768px) {
+  .log-table-cell--md-hidden {
+    display: table-cell;
+  }
+}
+
+/* Action Badges */
+.log-badge {
+  display: inline-block;
+  padding: 0.125rem 0.5rem;
+  border-radius: 0.25rem;
+  font-size: 0.75rem;
+  line-height: 1rem;
+  font-weight: 500;
+}
+
+/* Action Badge Colors */
+.log-badge--create {
+  background-color: rgb(220, 252, 231);
+  color: rgb(21, 128, 61);
+}
+
+[data-theme="dark"] .log-badge--create {
+  background-color: rgba(34, 197, 94, 0.3);
+  color: rgb(74, 222, 128);
+}
+
+.log-badge--delete {
+  background-color: rgb(254, 226, 226);
+  color: rgb(185, 28, 28);
+}
+
+[data-theme="dark"] .log-badge--delete {
+  background-color: rgba(239, 68, 68, 0.3);
+  color: rgb(248, 113, 113);
+}
+
+.log-badge--move {
+  background-color: rgb(219, 234, 254);
+  color: rgb(29, 78, 216);
+}
+
+[data-theme="dark"] .log-badge--move {
+  background-color: rgba(59, 130, 246, 0.3);
+  color: rgb(96, 165, 250);
+}
+
+.log-badge--rename {
+  background-color: rgb(254, 249, 195);
+  color: rgb(161, 98, 7);
+}
+
+[data-theme="dark"] .log-badge--rename {
+  background-color: rgba(234, 179, 8, 0.3);
+  color: rgb(250, 204, 21);
+}
+
+.log-badge--upload {
+  background-color: rgb(243, 232, 255);
+  color: rgb(107, 33, 168);
+}
+
+[data-theme="dark"] .log-badge--upload {
+  background-color: rgba(168, 85, 247, 0.3);
+  color: rgb(192, 132, 252);
+}
+
+.log-badge--download {
+  background-color: rgb(224, 231, 255);
+  color: rgb(67, 56, 202);
+}
+
+[data-theme="dark"] .log-badge--download {
+  background-color: rgba(99, 102, 241, 0.3);
+  color: rgb(129, 140, 248);
+}
+
+.log-badge--save {
+  background-color: rgb(207, 250, 254);
+  color: rgb(14, 116, 144);
+}
+
+[data-theme="dark"] .log-badge--save {
+  background-color: rgba(6, 182, 212, 0.3);
+  color: rgb(34, 211, 238);
+}
+
+.log-badge--cleanup {
+  background-color: rgb(255, 237, 213);
+  color: rgb(194, 65, 12);
+}
+
+[data-theme="dark"] .log-badge--cleanup {
+  background-color: rgba(249, 115, 22, 0.3);
+  color: rgb(251, 146, 60);
+}
+
+.log-badge--default {
+  background-color: rgb(243, 244, 246);
+  color: var(--muted);
+}
+
+[data-theme="dark"] .log-badge--default {
+  background-color: rgba(255, 255, 255, 0.1);
+  color: rgb(203, 213, 225);
+}
+
+/* Pagination Page Info */
+.log-page-info {
+  padding: 0.375rem 0.75rem;
+  font-size: 0.75rem;
+  line-height: 1rem;
+  font-weight: 500;
+  color: var(--muted);
+  background-color: rgb(219, 234, 254);
+  border-radius: 0.375rem;
+}
+
+[data-theme="dark"] .log-page-info {
+  color: rgb(203, 213, 225);
+  background-color: rgba(59, 130, 246, 0.4);
+}
+
+/* Page Number Button Base */
+.log-page-number {
+  min-width: 32px;
+  padding: 0.375rem 0.5rem;
+  font-size: 0.75rem;
+  line-height: 1rem;
+  font-weight: 500;
+  border-radius: 0.375rem;
+  transition: all 0.15s ease;
+}
+
+.log-page-number:focus {
+  outline: none;
+}
+
+/* Active Page Number */
+.log-page-number--active {
+  background-color: rgb(37, 99, 235);
+  color: #ffffff;
+}
+
+/* Inactive Page Number */
+.log-page-number--inactive {
+  background-color: #ffffff;
+  color: var(--muted);
+  border: 1px solid rgb(229, 231, 235);
+}
+
+.log-page-number--inactive:hover {
+  background-color: rgb(249, 250, 251);
+}
+
+[data-theme="dark"] .log-page-number--inactive {
+  background-color: rgba(255, 255, 255, 0.05);
+  color: rgb(203, 213, 225);
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+[data-theme="dark"] .log-page-number--inactive:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+/* Page Ellipsis */
+.log-page-ellipsis {
+  padding: 0.25rem 0.5rem;
+  font-size: 0.75rem;
+  line-height: 1rem;
+  color: rgb(156, 163, 175);
+}
+
+[data-theme="dark"] .log-page-ellipsis {
+  color: rgb(100, 116, 139);
+}
+
+/* Filter Tags */
+.log-filter-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.25rem 0.5rem;
+  background-color: rgb(219, 234, 254);
+  color: rgb(29, 78, 216);
+  border-radius: 0.25rem;
+  font-size: 0.75rem;
+  line-height: 1rem;
+  transition: background-color 0.15s ease;
+}
+
+.log-filter-tag:hover {
+  background-color: rgb(191, 219, 254);
+}
+
+[data-theme="dark"] .log-filter-tag {
+  background-color: rgba(59, 130, 246, 0.3);
+  color: rgb(96, 165, 250);
+}
+
+[data-theme="dark"] .log-filter-tag:hover {
+  background-color: rgba(59, 130, 246, 0.5);
+}
+
+.log-filter-tag__close {
+  margin-left: 0.25rem;
+}
+
+/* Spinner Animation */
+.log-spinner {
+  animation: spin 1s linear infinite;
+  width: 1rem;
+  height: 1rem;
+}
+
+.log-spinner__circle {
+  opacity: 0.25;
+}
+
+.log-spinner__path {
+  opacity: 0.75;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
   }
 }

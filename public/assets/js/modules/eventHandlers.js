@@ -62,6 +62,24 @@ export {
 
 
 // ============================================================================
+// Preview editor cleanup state
+// ============================================================================
+
+/** @type {ResizeObserver|null} */
+let _previewResizeObserver = null;
+
+/**
+ * Cleanup preview editor resources (ResizeObserver, etc.)
+ * Call this when closing the preview overlay to prevent memory leaks.
+ */
+export function cleanupPreviewEditor() {
+    if (_previewResizeObserver) {
+        _previewResizeObserver.disconnect();
+        _previewResizeObserver = null;
+    }
+}
+
+// ============================================================================
 // Functions that remain in this file (facade-specific or cross-cutting)
 // ============================================================================
 
@@ -79,12 +97,12 @@ export function setupFilterHandler(filterInput, clearSearch, state, renderItems,
     const debouncedFilter = debounce((value, items, lastUpdated) => {
         state.filter = value.trim();
         clearSearch.hidden = state.filter === '';
-        
+
         // Reset pagination to page 1 when filter changes
         if (resetPagination) {
             resetPagination();
         }
-        
+
         renderItems(items, lastUpdated, false);
     }, 300); // 300ms delay
 
@@ -102,12 +120,12 @@ export function setupFilterHandler(filterInput, clearSearch, state, renderItems,
             filterInput.value = '';
             state.filter = '';
             clearSearch.hidden = true;
-            
+
             // Reset pagination when clearing filter
             if (resetPagination) {
                 resetPagination();
             }
-            
+
             renderItems(state.items, state.lastUpdated, false);
         }
     });
@@ -116,12 +134,12 @@ export function setupFilterHandler(filterInput, clearSearch, state, renderItems,
         filterInput.value = '';
         state.filter = '';
         clearSearch.hidden = true;
-        
+
         // Reset pagination when clearing filter
         if (resetPagination) {
             resetPagination();
         }
-        
+
         renderItems(state.items, state.lastUpdated, false);
         filterInput.focus();
     });
@@ -169,11 +187,11 @@ export function setupUploadHandler(
         return;
     }
     btnUpload._uploadHandlerAttached = true;
-    
+
     btnUpload.addEventListener('click', (e) => {
         e.preventDefault();
         e.stopPropagation();
-        
+
         if (state.isLoading) {
             return;
         }
@@ -222,11 +240,11 @@ export function setupUploadDesktopHandler(
         return;
     }
     btnUploadDesktop._uploadHandlerAttached = true;
-    
+
     btnUploadDesktop.addEventListener('click', (e) => {
         e.preventDefault();
         e.stopPropagation();
-        
+
         if (state.isLoading) {
             return;
         }
@@ -275,11 +293,11 @@ export function setupUploadFolderHandler(
         return;
     }
     btnUploadFolder._uploadFolderHandlerAttached = true;
-    
+
     btnUploadFolder.addEventListener('click', (e) => {
         e.preventDefault();
         e.stopPropagation();
-        
+
         if (state.isLoading) {
             return;
         }
@@ -328,11 +346,11 @@ export function setupUploadFolderDesktopHandler(
         return;
     }
     btnUploadFolderDesktop._uploadFolderHandlerAttached = true;
-    
+
     btnUploadFolderDesktop.addEventListener('click', (e) => {
         e.preventDefault();
         e.stopPropagation();
-        
+
         if (state.isLoading) {
             return;
         }
@@ -388,7 +406,7 @@ export function setupPreviewEditorHandler(
             savePreviewContent();
         }
     });
-    
+
     previewEditor.addEventListener('input', () => {
         if (!state.preview.isOpen) {
             return;
@@ -402,7 +420,7 @@ export function setupPreviewEditorHandler(
         }
 
         previewSave.disabled = !isDirty;
-        
+
         // Update save button text and style
         if (isDirty) {
             previewSave.textContent = 'Simpan *';
@@ -411,15 +429,15 @@ export function setupPreviewEditorHandler(
             previewSave.textContent = 'Simpan';
             previewSave.classList.remove('dirty');
         }
-        
+
         updatePreviewStatus();
         updateLineNumbers();
-        
+
         // Ensure consistent styling after content changes
         setTimeout(() => ensureConsistentStyling(), 0);
-        
+
         syncLineNumbersScroll();
-        
+
         // Update window title to indicate unsaved changes
         const originalTitle = document.title.replace(/^\* /, '');
         document.title = isDirty ? `* ${originalTitle}` : originalTitle;
@@ -427,9 +445,11 @@ export function setupPreviewEditorHandler(
 
     previewEditor.addEventListener('scroll', () => {
         syncLineNumbersScroll();
-        
+
         // Debug scroll alignment every 10 scroll events
-        if (!window.scrollDebugCounter) window.scrollDebugCounter = 0;
+        if (!window.scrollDebugCounter) {
+            window.scrollDebugCounter = 0;
+        }
         if (++window.scrollDebugCounter % 10 === 0) {
             // debugElementStyles();
         }
@@ -499,14 +519,14 @@ export function setupPreviewEditorHandler(
             const start = previewEditor.selectionStart;
             const end = previewEditor.selectionEnd;
             const value = previewEditor.value;
-            
+
             // Insert 4 spaces for tab
             const spaces = '    ';
             previewEditor.value = value.substring(0, start) + spaces + value.substring(end);
-            
+
             // Restore cursor position
             previewEditor.selectionStart = previewEditor.selectionEnd = start + spaces.length;
-            
+
             // Trigger input event to update line numbers
             previewEditor.dispatchEvent(new Event('input', { bubbles: true }));
             return;
@@ -519,11 +539,11 @@ export function setupPreviewEditorHandler(
     if (isMobile) {
         let scrollMonitorInterval = null;
         let isKeyboardVisible = false;
-        
+
         previewEditor.addEventListener('focusin', () => {
             if (!isKeyboardVisible) {
                 isKeyboardVisible = true;
-                console.log('[PREVIEW] Mobile: Focus detected, keyboard likely visible');
+
                 // Start aggressive monitoring while keyboard is visible
                 scrollMonitorInterval = setInterval(() => {
                     syncLineNumbersScroll();
@@ -532,7 +552,7 @@ export function setupPreviewEditorHandler(
         });
 
         previewEditor.addEventListener('focusout', () => {
-            console.log('[PREVIEW] Mobile: Blur detected, stopping scroll monitor');
+
             if (scrollMonitorInterval) {
                 clearInterval(scrollMonitorInterval);
                 scrollMonitorInterval = null;
@@ -549,19 +569,23 @@ export function setupPreviewEditorHandler(
 
         // Monitor resize events for keyboard appearing/disappearing
         previewEditor.addEventListener('resize', () => {
-            console.log('[PREVIEW] Mobile: Resize detected, syncing line numbers');
+
             syncLineNumbersScroll();
         });
 
         // Observe visibility and size changes on the editor wrapper
         const previewEditorWrapper = previewEditor.parentElement;
         if (previewEditorWrapper && 'ResizeObserver' in window) {
-            const resizeObserver = new ResizeObserver(() => {
+            // Disconnect previous observer if any (prevents leak on re-init)
+            if (_previewResizeObserver) {
+                _previewResizeObserver.disconnect();
+            }
+            _previewResizeObserver = new ResizeObserver(() => {
                 if (isKeyboardVisible) {
                     syncLineNumbersScroll();
                 }
             });
-            resizeObserver.observe(previewEditorWrapper);
+            _previewResizeObserver.observe(previewEditorWrapper);
         }
     }
 }
@@ -672,7 +696,7 @@ export function setupCreateOverlayHandler(
         const createTypeRadio = document.querySelector('input[name="create-type"]:checked');
         const kind = createTypeRadio ? createTypeRadio.value : 'folder';
         const name = createName.value;
-        
+
         // Update state dan panggil create wrapper
         state.create.kind = kind;
         createItemWrapper(kind, name);
@@ -689,7 +713,7 @@ export function setupCreateOverlayHandler(
             const createTypeRadio = document.querySelector('input[name="create-type"]:checked');
             const kind = createTypeRadio ? createTypeRadio.value : 'folder';
             const name = createName.value;
-            
+
             // Update state dan panggil create wrapper
             state.create.kind = kind;
             createItemWrapper(kind, name);
@@ -783,54 +807,45 @@ export function setupUnsavedOverlayHandler(
 ) {
     unsavedSave.addEventListener('click', async (event) => {
         event.stopPropagation();
-        console.log('[DEBUG] unsavedSave clicked');
-        console.log('[DEBUG] state.unsaved.callback:', state.unsaved.callback);
-        console.log('[DEBUG] onSave exists:', !!(state.unsaved.callback && state.unsaved.callback.onSave));
-        
+
         if (state.unsaved.callback && state.unsaved.callback.onSave) {
-            console.log('[DEBUG] Calling onSave callback');
+
             // Don't close overlay yet, let the callback handle it
             await state.unsaved.callback.onSave();
         } else {
-            console.log('[DEBUG] No onSave callback found, closing overlay');
+
             closeUnsavedOverlay();
         }
     });
 
     unsavedDiscard.addEventListener('click', async (event) => {
         event.stopPropagation();
-        console.log('[DEBUG] unsavedDiscard clicked');
-        console.log('[DEBUG] state.unsaved.callback:', state.unsaved.callback);
-        console.log('[DEBUG] onDiscard exists:', !!(state.unsaved.callback && state.unsaved.callback.onDiscard));
-        
+
         if (state.unsaved.callback && state.unsaved.callback.onDiscard) {
-            console.log('[DEBUG] Calling onDiscard callback');
+
             await state.unsaved.callback.onDiscard();
         } else {
-            console.log('[DEBUG] No onDiscard callback found, closing overlay');
+
             closeUnsavedOverlay();
         }
     });
 
     unsavedCancel.addEventListener('click', async (event) => {
         event.stopPropagation();
-        console.log('[DEBUG] unsavedCancel clicked');
-        console.log('[DEBUG] state.unsaved.callback:', state.unsaved.callback);
-        console.log('[DEBUG] onCancel exists:', !!(state.unsaved.callback && state.unsaved.callback.onCancel));
-        
+
         if (state.unsaved.callback && state.unsaved.callback.onCancel) {
-            console.log('[DEBUG] Calling onCancel callback');
+
             await state.unsaved.callback.onCancel();
         } else {
-            console.log('[DEBUG] No onCancel callback found, closing overlay');
+
             closeUnsavedOverlay();
         }
     });
 
     unsavedOverlay.addEventListener('click', async (event) => {
-        console.log('[DEBUG] unsavedOverlay clicked, target:', event.target);
+
         if (event.target === unsavedOverlay) {
-            console.log('[DEBUG] Click on overlay background, triggering cancel');
+
             if (state.unsaved.callback && state.unsaved.callback.onCancel) {
                 await state.unsaved.callback.onCancel();
             } else {
@@ -1122,7 +1137,7 @@ export function setupSearchModalHandler(
     };
 
     searchClose.addEventListener('click', closeModal);
-    
+
     // Close on backdrop click
     searchModal.addEventListener('click', (event) => {
         if (event.target === searchModal) {
@@ -1165,3 +1180,4 @@ export function setupSearchModalHandler(
         }
     });
 }
+

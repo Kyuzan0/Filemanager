@@ -117,7 +117,7 @@
                             break;
 
                         default:
-                            console.warn('Unknown nav target:', navTarget);
+                            // Unknown nav target
                     }
 
                     // Update active state

@@ -45,18 +45,161 @@ require_once dirname(__DIR__) . '/bootstrap.php';
             }
         }
     </style>
-    <!-- Using Tailwind CDN (reverted to CDN-based workflow) -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        // Configure Tailwind to use data-theme attribute for dark mode
-        tailwind.config = {
-            darkMode: ['class', '[data-theme="dark"]'],
-        }
-    </script>
     <!-- Modular CSS - Main entry point -->
     <link rel="stylesheet" href="assets/css/main.css">
     <!-- RemixIcon CDN -->
     <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
+    <!-- Component-specific styles -->
+    <style>
+        .header-actions {
+            margin-bottom: 16px;
+            padding: 6px;
+            background: var(--card);
+            border: 1px solid var(--card-border);
+            border-radius: var(--radius-sm);
+            box-shadow: var(--shadow-sm);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+            position: sticky;
+            top: 0;
+            z-index: var(--z-sticky);
+        }
+
+        .search-bar {
+            display: none;
+            align-items: center;
+            gap: 8px;
+            padding: 4px 8px;
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--card-border);
+            background: var(--bg-secondary);
+            flex-shrink: 0;
+            margin-left: auto;
+        }
+        @media (min-width: 768px) {
+            .search-bar { display: flex; }
+        }
+
+        .btn-primary {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 12px;
+            background: var(--accent);
+            color: #fff;
+            border-radius: 6px;
+            transition: background-color var(--transition);
+            box-shadow: var(--shadow-sm);
+            border: none;
+            cursor: pointer;
+        }
+        .btn-primary:hover {
+            background: var(--accent-hover);
+        }
+
+        .btn-secondary {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 12px;
+            background: var(--card);
+            color: var(--text-secondary);
+            border: 1px solid var(--card-border);
+            border-radius: 6px;
+            transition: background-color var(--transition);
+            cursor: pointer;
+            position: relative;
+        }
+        .btn-secondary:hover {
+            background: var(--bg-secondary);
+        }
+
+        .pagination-footer {
+            margin-top: 12px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 13px;
+            color: var(--text-secondary);
+            gap: 12px;
+            padding: 12px;
+            background: var(--card);
+            border: 1px solid var(--card-border);
+            border-radius: var(--radius-sm);
+        }
+        @media (min-width: 640px) {
+            .pagination-footer { flex-direction: row; }
+        }
+
+        .pagination-nav-btn:hover:not(:disabled) {
+            background: var(--bg-secondary) !important;
+        }
+        .pagination-nav-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .loader-overlay {
+            position: fixed;
+            top: 0; right: 0; bottom: 0; left: 0;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            background: var(--surface-overlay-light);
+            z-index: var(--z-modal);
+            padding: 16px;
+        }
+
+        .modal-overlay {
+            position: fixed;
+            top: 0; right: 0; bottom: 0; left: 0;
+            background: var(--surface-overlay);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: var(--z-modal);
+        }
+
+        .context-dropdown {
+            display: none;
+            position: fixed;
+            z-index: var(--z-popover);
+            background: var(--card);
+            border-radius: var(--radius-sm);
+            box-shadow: var(--shadow-lg);
+            border: 1px solid var(--card-border);
+            padding: 4px 0;
+            min-width: 160px;
+        }
+
+        .upload-context-item:hover {
+            background: var(--surface-hover);
+        }
+
+        #fileDropZone:hover {
+            border-color: var(--border-focus) !important;
+        }
+
+        #deleteSel:hover {
+            color: var(--danger) !important;
+        }
+        #deleteSel:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .btn.btn-icon:hover {
+            background: var(--surface-hover);
+        }
+
+        #pageSize:focus {
+            outline: none;
+            border-color: var(--accent);
+        }
+    </style>
     <meta charset="UTF-8">
     <meta name="viewport"
         content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
@@ -68,85 +211,88 @@ require_once dirname(__DIR__) . '/bootstrap.php';
     <title>File Manager — SiyNLic Pro</title>
 </head>
 
-<body class="bg-slate-50 text-slate-900 dark:bg-[#0f1419] dark:text-slate-300 overflow-hidden">
+<body class="overflow-hidden">
     <!-- Skip Links for Accessibility -->
     <a href="#main-content" class="skip-link">Skip to main content</a>
     <a href="#fileTable" class="skip-link">Skip to file list</a>
 
-    <div class="app h-screen flex overflow-hidden" id="app" role="application" aria-label="File Manager Application">
+    <div class="app h-screen d-flex overflow-hidden" id="app" role="application" aria-label="File Manager Application">
         <?php $activePage = 'dashboard';
         include __DIR__ . '/partials/sidebar.php'; ?>
 
-        <main class="main flex-1 h-full overflow-y-auto relative" id="main-content" role="main"
+        <main class="main flex-1 h-full overflow-y-auto pos-relative" id="main-content" role="main"
             aria-label="File Manager Main Content">
             <!-- HEADER ACTIONS -->
             <section
-                class="header-actions mb-4 p-1.5 bg-white dark:bg-[#1a2332] border border-gray-200 dark:border-white/10 rounded-lg shadow-sm flex items-center justify-between gap-2 sticky top-0 z-20"
+                class="header-actions"
                 role="toolbar" aria-label="File manager actions">
                 <!-- Left Group: Navigation & Search -->
-                <div class="flex items-center gap-2 flex-1 min-w-0">
+                <div class="d-flex items-center gap-2 flex-1 min-w-0">
                     <!-- Mobile Menu Toggle -->
                     <button
-                        class="btn btn-icon md:hidden p-0.5 hover:bg-slate-100 dark:hover:bg-white/5 rounded flex-shrink-0"
+                        class="btn btn-icon md\:d-none p-1 rounded flex-shrink-0"
                         id="mobile-menu-toggle" title="Menu" aria-label="Open navigation menu" aria-expanded="false"
                         aria-controls="sidebar">
-                        <i class="ri-menu-line text-base text-slate-600 dark:text-gray-400" aria-hidden="true"></i>
+                        <i class="ri-menu-line text-base text-muted" aria-hidden="true"></i>
                     </button>
 
                     <!-- Breadcrumbs - Hidden on mobile, visible on desktop -->
-                    <nav class="breadcrumbs hidden md:flex text-sm text-slate-600 dark:text-gray-400 min-w-0 flex-shrink"
+                    <nav class="breadcrumbs d-none md\:d-flex text-sm text-muted min-w-0 flex-shrink-0"
                         id="breadcrumbs" aria-label="Breadcrumb navigation">Home</nav>
 
                     <!-- Search - Compact version for desktop -->
-                    <div class="search hidden md:flex items-center gap-2 px-2 py-1.5 rounded-lg border border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-white/5 flex-shrink-0 ml-auto"
+                    <div class="search-bar"
                         role="search">
                         <span class="text-sm" aria-hidden="true">🔎</span>
                         <input type="search" id="search" placeholder="Find files..."
-                            class="border-0 outline-none bg-transparent text-sm w-32 placeholder-gray-400 dark:placeholder-gray-500"
+                            class="border-0 outline-none bg-transparent text-sm w-32"
+                            style="color: var(--text-secondary);"
                             aria-label="Search files and folders (Ctrl+F)" />
                     </div>
                 </div>
 
                 <!-- Primary Actions (Left side of right group) -->
-                <div class="flex items-center gap-2 flex-shrink-0" role="group" aria-label="Create actions">
+                <div class="d-flex items-center gap-2 flex-shrink-0" role="group" aria-label="Create actions">
                     <button
-                        class="flex items-center gap-1.5 px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-md transition-colors shadow-sm"
+                        class="btn-primary"
                         id="newBtn" aria-label="Create new file or folder (Ctrl+N)">
                         <i class="ri-add-line text-lg" aria-hidden="true"></i>
-                        <span class="text-sm font-medium hidden sm:inline">New</span>
+                        <span class="text-sm font-medium d-none sm\:d-inline">New</span>
                     </button>
                     <button
-                        class="flex items-center gap-1.5 px-3 py-1.5 bg-white dark:bg-white/5 hover:bg-gray-50 dark:hover:bg-white/10 text-gray-700 dark:text-gray-200 border border-gray-200 dark:border-white/10 rounded-md transition-colors relative"
+                        class="btn-secondary"
                         id="uploadBtn" aria-label="Upload files or folder" aria-haspopup="true" aria-expanded="false">
                         <i class="ri-upload-cloud-2-line text-lg" aria-hidden="true"></i>
-                        <span class="text-sm font-medium hidden sm:inline">Upload</span>
-                        <i class="ri-arrow-down-s-line text-sm ml-0.5" aria-hidden="true"></i>
+                        <span class="text-sm font-medium d-none sm\:d-inline">Upload</span>
+                        <i class="ri-arrow-down-s-line text-sm" style="margin-left: 2px;" aria-hidden="true"></i>
                     </button>
                 </div>
 
                 <!-- Word Wrap Toggle (Mobile Only) -->
-                <div class="flex items-center gap-2 flex-shrink-0 md:hidden">
+                <div class="d-flex items-center gap-2 flex-shrink-0 md\:d-none">
                     <button class="btn-word-wrap" id="wordWrapToggle" title="Toggle Word Wrap"
                         aria-label="Toggle word wrap" aria-pressed="false">
                         <i class="ri-text-wrap" aria-hidden="true"></i>
-                        <span class="hidden sm:inline text-xs">Wrap</span>
+                        <span class="d-none sm\:d-inline text-xs">Wrap</span>
                     </button>
                 </div>
 
                 <!-- Right Group: Utilities -->
-                <div class="flex items-center gap-2 flex-shrink-0" role="group" aria-label="Utility actions">
-                    <!-- Selection Info & Actions -->
-                    <div class="items-center gap-2 px-2 py-1.5 bg-gray-50 dark:bg-white/5 rounded-md border border-gray-100 dark:border-white/5 hidden sm:flex"
+                <div class="d-flex items-center gap-2 flex-shrink-0" role="group" aria-label="Utility actions">
+                    <div class="items-center gap-2 px-2 py-1-5 rounded-md border d-none sm\:d-flex"
+                        style="background: var(--bg-secondary); border-color: var(--border-light);"
                         role="status" aria-live="polite">
-                        <span class="text-xs font-medium text-gray-500 dark:text-gray-400" id="selectedCount"
+                        <span class="text-xs font-medium text-muted" id="selectedCount"
                             aria-label="Selection count">0 selected</span>
-                        <div class="h-4 w-px bg-gray-300 dark:bg-white/10 mx-1" aria-hidden="true"></div>
+                        <div class="h-4 w-px mx-1" style="background: var(--border);" aria-hidden="true"></div>
                         <button
-                            class="text-gray-400 hover:text-red-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                            class="transition-colors"
+                            style="color: var(--text-secondary);"
                             id="deleteSel" title="Hapus" aria-label="Delete selected items (Delete key)">
                             <i class="ri-delete-bin-line text-lg" aria-hidden="true"></i>
                         </button>
                     </div>
+                </div>
                 </div>
             </section>
 
@@ -156,15 +302,16 @@ require_once dirname(__DIR__) . '/bootstrap.php';
             </div>
 
             <!-- PAGINATION FOOTER -->
-            <nav class="footer mt-3 flex flex-col sm:flex-row items-center justify-between text-sm text-slate-600 dark:text-slate-400 gap-3 p-3 bg-white dark:bg-slate-900 border border-gray-200 dark:border-white/10 rounded-lg"
+            <nav class="pagination-footer"
                 role="navigation" aria-label="Pagination">
-                <div id="showing" class="text-center sm:text-left" role="status" aria-live="polite">Menampilkan 0 dari 0
+                <div id="showing" class="text-center sm\:text-left" role="status" aria-live="polite">Menampilkan 0 dari 0
                     item</div>
-                <div class="flex flex-wrap items-center justify-center gap-2">
-                    <div class="flex items-center gap-2">
-                        <label for="pageSize" class="hidden sm:inline">Item per halaman:</label>
+                <div class="d-flex flex-wrap items-center justify-center gap-2">
+                    <div class="d-flex items-center gap-2">
+                        <label for="pageSize" class="d-none sm\:d-inline">Item per halaman:</label>
                         <select id="pageSize"
-                            class="px-2 py-1.5 border border-slate-200 dark:border-white/10 dark:bg-slate-800 dark:text-slate-200 rounded-md text-sm focus:outline-none focus:border-blue-500"
+                            class="px-2 py-1-5 border rounded-md text-sm"
+                            style="border-color: var(--card-border); background: var(--card); color: var(--text);"
                             aria-label="Items per page">
                             <option value="10">10</option>
                             <option value="25">25</option>
@@ -172,25 +319,27 @@ require_once dirname(__DIR__) . '/bootstrap.php';
                             <option value="100">100</option>
                         </select>
                     </div>
-                    <div class="flex items-center gap-1" id="pagination-buttons" role="group"
+                    <div class="d-flex items-center gap-1" id="pagination-buttons" role="group"
                         aria-label="Page navigation">
                         <button id="prevPage"
-                            class="pagination-nav-btn px-2 py-1.5 rounded-md text-sm border border-slate-200 dark:border-white/10 dark:bg-slate-800 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                            class="pagination-nav-btn px-2 py-1-5 rounded-md text-sm border transition-colors"
+                            style="border-color: var(--card-border); background: var(--card); color: var(--text);"
                             aria-label="Go to previous page">‹ Prev</button>
-                        <div id="page-numbers" class="flex items-center gap-1" role="list" aria-label="Page numbers">
+                        <div id="page-numbers" class="d-flex items-center gap-1" role="list" aria-label="Page numbers">
                             <!-- Page numbers will be rendered by JavaScript -->
                         </div>
                         <button id="nextPage"
-                            class="pagination-nav-btn px-2 py-1.5 rounded-md text-sm border border-slate-200 dark:border-white/10 dark:bg-slate-800 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                            class="pagination-nav-btn px-2 py-1-5 rounded-md text-sm border transition-colors"
+                            style="border-color: var(--card-border); background: var(--card); color: var(--text);"
                             aria-label="Go to next page">Next ›</button>
                     </div>
                 </div>
             </nav>
 
             <!-- LOADER -->
-            <div class="loader-overlay fixed inset-0 hidden items-center justify-center bg-black/30 z-50 p-4"
+            <div class="loader-overlay"
                 id="loader-overlay" aria-hidden="true" role="dialog" aria-modal="true" aria-label="Loading">
-                <div class="loader-inner px-4 py-3 rounded-md shadow flex items-center gap-3 max-w-xs w-full"
+                <div class="loader-inner px-4 py-3 rounded-md shadow d-flex items-center gap-3 max-w-xs w-full"
                     role="status" aria-live="polite">
                     <svg class="w-5 h-5 animate-spin flex-shrink-0" style="color: var(--accent)" viewBox="0 0 24 24"
                         xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
@@ -206,28 +355,29 @@ require_once dirname(__DIR__) . '/bootstrap.php';
     </div>
 
     <!-- MODAL UPLOAD -->
-    <div class="modal-backdrop fixed inset-0 bg-black/45 hidden items-center justify-center z-50" id="modalBackdrop"
+    <div class="modal-overlay" id="modalBackdrop"
         role="dialog" aria-modal="true" aria-labelledby="uploadModalTitle" aria-describedby="uploadModalDesc">
         <div class="modal" id="uploadModal">
             <h3 class="text-lg font-semibold mb-2" id="uploadModalTitle">Upload File</h3>
             <p class="text-sm mb-4" id="uploadModalDesc">Pilih satu atau beberapa file untuk diunggah ke direktori saat
                 ini.</p>
-            <div class="mb-4 flex items-center justify-center border-2 border-dashed border-slate-300 dark:border-slate-600 rounded-lg p-6 cursor-pointer hover:border-slate-400 dark:hover:border-slate-500 transition-colors"
+            <div class="mb-4 d-flex items-center justify-center border rounded-lg p-6 cursor-pointer transition-colors"
+                style="border: 2px dashed var(--border); border-radius: var(--radius-sm);"
                 id="fileDropZone" role="button" tabindex="0"
                 aria-label="Click to select files or drag and drop files here">
                 <div class="text-center">
-                    <i class="ri-upload-cloud-line text-3xl text-slate-400 dark:text-slate-500 mb-2 block"
+                    <i class="ri-upload-cloud-line text-3xl text-muted mb-2 d-block"
                         id="uploadIcon" aria-hidden="true"></i>
-                    <p class="text-sm text-slate-600 dark:text-slate-400" id="uploadDropText">Klik untuk memilih file
+                    <p class="text-sm text-muted" id="uploadDropText">Klik untuk memilih file
                         atau drag & drop di sini</p>
                 </div>
             </div>
-            <input type="file" id="fileInput" multiple class="hidden" aria-label="Select files to upload">
-            <input type="file" id="folderInput" webkitdirectory directory multiple class="hidden"
+            <input type="file" id="fileInput" multiple class="d-none" aria-label="Select files to upload">
+            <input type="file" id="folderInput" webkitdirectory directory multiple class="d-none"
                 aria-label="Select folder to upload">
-            <div class="mb-4 text-sm text-slate-600 max-h-48 overflow-y-auto" id="fileList" role="list"
+            <div class="mb-4 text-sm max-h-48 overflow-y-auto" style="color: var(--text-secondary);" id="fileList" role="list"
                 aria-label="Selected files"></div>
-            <div class="flex gap-2 justify-end" role="group" aria-label="Upload actions">
+            <div class="d-flex gap-2 justify-end" role="group" aria-label="Upload actions">
                 <button class="btn px-4 py-2 rounded-lg" id="cancelUpload" aria-label="Cancel upload">Batal</button>
                 <button class="btn btn-primary px-4 py-2 rounded-lg" id="doUpload"
                     aria-label="Start upload">Unggah</button>
@@ -268,19 +418,19 @@ require_once dirname(__DIR__) . '/bootstrap.php';
     </div>
 
     <!-- UPLOAD CONTEXT MENU -->
-    <div class="upload-context-menu hidden fixed z-50 bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 py-1 min-w-[160px]"
+    <div class="context-dropdown"
         id="uploadContextMenu" role="menu" aria-hidden="true" aria-label="Upload options">
         <button
-            class="upload-context-item w-full flex items-center gap-3 px-4 py-2.5 text-left hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+            class="upload-context-item w-full d-flex items-center gap-3 px-4 py-2-5 text-left transition-colors"
             id="uploadFilesOption" role="menuitem" aria-label="Upload files">
-            <i class="ri-upload-cloud-2-line text-blue-600 dark:text-blue-400 text-lg"></i>
-            <span class="text-sm text-gray-700 dark:text-gray-200">Upload Files</span>
+            <i class="ri-upload-cloud-2-line text-lg" style="color: var(--accent);"></i>
+            <span class="text-sm" style="color: var(--text);">Upload Files</span>
         </button>
         <button
-            class="upload-context-item w-full flex items-center gap-3 px-4 py-2.5 text-left hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+            class="upload-context-item w-full d-flex items-center gap-3 px-4 py-2-5 text-left transition-colors"
             id="uploadFolderOption" role="menuitem" aria-label="Upload folder">
-            <i class="ri-folder-upload-line text-amber-600 dark:text-amber-400 text-lg"></i>
-            <span class="text-sm text-gray-700 dark:text-gray-200">Upload Folder</span>
+            <i class="ri-folder-upload-line text-lg" style="color: var(--warning);"></i>
+            <span class="text-sm" style="color: var(--text);">Upload Folder</span>
         </button>
     </div>
 

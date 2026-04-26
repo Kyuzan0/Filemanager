@@ -56,7 +56,7 @@
         </tr>
     </thead>
     <tbody id="tbody"
-           class="divide-y divide-slate-100"
+           class="divide-y"
            role="rowgroup"
            aria-label="File list contents">
     </tbody>
@@ -78,7 +78,7 @@
     </button>
 </div>
 
-<div class="empty-state py-8 text-center text-slate-500 text-sm hidden"
+<div class="empty-state py-8 text-center text-muted text-sm d-none"
      id="empty-state"
      role="status"
      aria-label="Empty directory">

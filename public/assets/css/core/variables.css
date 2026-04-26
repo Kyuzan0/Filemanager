@@ -53,6 +53,44 @@
   /* Transitions */
   --transition: 0.2s ease-in-out;
   --transition-slow: 0.3s ease-in-out;
+  
+  /* Z-Index Scale */
+  --z-dropdown: 100;
+  --z-sticky: 200;
+  --z-fixed: 300;
+  --z-modal-backdrop: 400;
+  --z-modal: 500;
+  --z-popover: 600;
+  --z-tooltip: 700;
+  --z-toast: 800;
+  
+  /* Surface Colors */
+  --surface-hover: rgba(0, 0, 0, 0.04);
+  --surface-active: rgba(0, 0, 0, 0.08);
+  --surface-overlay: rgba(0, 0, 0, 0.45);
+  --surface-overlay-light: rgba(0, 0, 0, 0.30);
+  
+  /* Border Colors */
+  --border: #e8ecf1;
+  --border-light: rgba(0, 0, 0, 0.06);
+  --border-focus: var(--accent);
+  
+  /* Focus Ring */
+  --focus-ring: rgba(57, 120, 255, 0.2);
+  
+  /* Status Colors (lighter variants for backgrounds) */
+  --danger-bg: #fef2f2;
+  --danger-border: #fecaca;
+  --warning-bg: #fffbeb;
+  --warning-border: #fed7aa;
+  --success-bg: #f0fdf4;
+  --success-border: #bbf7d0;
+  --info-bg: #eff6ff;
+  --info-border: #bfdbfe;
+  
+  /* Accent variants */
+  --accent-hover: #2563eb;
+  --accent-bg: rgba(57, 120, 255, 0.08);
 }
 
 /* ============================================================================
@@ -97,4 +135,42 @@
   /* Transitions */
   --transition: 0.2s ease-in-out;
   --transition-slow: 0.3s ease-in-out;
+  
+  /* Z-Index Scale */
+  --z-dropdown: 100;
+  --z-sticky: 200;
+  --z-fixed: 300;
+  --z-modal-backdrop: 400;
+  --z-modal: 500;
+  --z-popover: 600;
+  --z-tooltip: 700;
+  --z-toast: 800;
+  
+  /* Surface Colors */
+  --surface-hover: rgba(255, 255, 255, 0.04);
+  --surface-active: rgba(255, 255, 255, 0.08);
+  --surface-overlay: rgba(0, 0, 0, 0.60);
+  --surface-overlay-light: rgba(0, 0, 0, 0.45);
+  
+  /* Border Colors */
+  --border: rgba(255, 255, 255, 0.08);
+  --border-light: rgba(255, 255, 255, 0.04);
+  --border-focus: var(--accent);
+  
+  /* Focus Ring */
+  --focus-ring: rgba(107, 161, 255, 0.2);
+  
+  /* Status Colors */
+  --danger-bg: rgba(255, 71, 87, 0.1);
+  --danger-border: rgba(255, 71, 87, 0.3);
+  --warning-bg: rgba(255, 165, 2, 0.1);
+  --warning-border: rgba(255, 165, 2, 0.3);
+  --success-bg: rgba(46, 213, 115, 0.1);
+  --success-border: rgba(46, 213, 115, 0.3);
+  --info-bg: rgba(59, 130, 246, 0.1);
+  --info-border: rgba(59, 130, 246, 0.3);
+  
+  /* Accent variants */
+  --accent-hover: #8ab5ff;
+  --accent-bg: rgba(107, 161, 255, 0.15);
 }

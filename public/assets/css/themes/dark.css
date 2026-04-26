@@ -10,18 +10,6 @@
  */
 
 /* ============================================================================
-   VARIABLES - Dark Theme CSS Custom Properties (Core)
-   Note: Defined in core/variables.css, but repeated here for clarity
-   ============================================================================ */
-[data-theme="dark"] {
-  --bg: #131a24;
-  --card: #1a2332;
-  --muted: #c0c8d4;
-  --accent: #6ba1ff;
-  --glass: rgba(255, 255, 255, 0.06);
-}
-
-/* ============================================================================
    BASE - Dark Theme Body & Global Styles
    ============================================================================ */
 [data-theme="dark"] body {
@@ -33,7 +21,7 @@
    ============================================================================ */
 [data-theme="dark"] .sidebar {
   background: var(--card);
-  border-right-color: rgba(255, 255, 255, 0.08);
+  border-right-color: var(--border);
 }
 
 /* ============================================================================
@@ -43,7 +31,7 @@
 /* Buttons */
 [data-theme="dark"] .btn {
   background: var(--card);
-  border-color: rgba(255, 255, 255, 0.1);
+  border-color: var(--border);
   color: var(--muted);
 }
 
@@ -55,26 +43,26 @@
 /* Search */
 [data-theme="dark"] .search {
   background: var(--card);
-  border-color: rgba(255, 255, 255, 0.1);
+  border-color: var(--border);
   color: var(--muted);
 }
 
 /* Cards */
 [data-theme="dark"] .card {
   background: var(--card);
-  border-color: rgba(255, 255, 255, 0.08);
+  border-color: var(--border);
 }
 
 /* Tables */
 [data-theme="dark"] th,
 [data-theme="dark"] td {
-  border-bottom-color: rgba(255, 255, 255, 0.04);
+  border-bottom-color: var(--border-light);
   color: var(--muted);
 }
 
 /* Icons */
 [data-theme="dark"] .icon:hover {
-  background: rgba(255, 255, 255, 0.08);
+  background: var(--surface-active);
 }
 
 /* ============================================================================
@@ -83,7 +71,7 @@
 
 /* Modal Backdrop */
 [data-theme="dark"] .modal-backdrop {
-  background: rgba(0, 0, 0, 0.7);
+  background: var(--surface-overlay);
 }
 
 /* Modals & Dialogs - General */
@@ -111,7 +99,7 @@
 [data-theme="dark"] .modal select,
 [data-theme="dark"] .modal textarea {
   background: rgba(0, 0, 0, 0.2);
-  border-color: rgba(255, 255, 255, 0.1);
+  border-color: var(--border);
   color: var(--muted);
 }
 
@@ -121,13 +109,13 @@
 [data-theme="dark"] .modal select:focus,
 [data-theme="dark"] .modal textarea:focus {
   border-color: var(--accent);
-  box-shadow: 0 0 0 3px rgba(107, 161, 255, 0.15);
+  box-shadow: 0 0 0 3px var(--accent-bg);
 }
 
 /* Select Elements */
 [data-theme="dark"] select {
   background: var(--card);
-  border-color: rgba(255, 255, 255, 0.1);
+  border-color: var(--border);
   color: var(--muted);
 }
 
@@ -139,8 +127,8 @@
 
 /* Badges */
 [data-theme="dark"] .badge {
-  background: rgba(255, 255, 255, 0.08);
-  border-color: rgba(255, 255, 255, 0.1);
+  background: var(--surface-active);
+  border-color: var(--border);
   color: var(--muted);
 }
 
@@ -170,7 +158,7 @@
 [data-theme="dark"] .filter-search-input,
 [data-theme="dark"] .preview-editor {
   background: rgba(0, 0, 0, 0.2);
-  border-color: rgba(255, 255, 255, 0.1);
+  border-color: var(--border);
   color: var(--muted);
 }
 
@@ -211,7 +199,7 @@
 [data-theme="dark"] .unsaved-button.outline:focus,
 [data-theme="dark"] .settings-button.outline:focus {
   outline: none;
-  box-shadow: 0 0 0 3px rgba(107, 161, 255, 0.2);
+  box-shadow: 0 0 0 3px var(--focus-ring);
 }
 
 /* ============================================================================
@@ -220,30 +208,30 @@
 
 /* Log Header */
 [data-theme="dark"] .log-header {
-  background: linear-gradient(to right, rgba(30, 58, 138, 0.3), rgba(30, 58, 138, 0.2));
-  border-bottom-color: rgba(255, 255, 255, 0.08);
+  background: linear-gradient(to right, var(--accent-bg), rgba(107, 161, 255, 0.08));
+  border-bottom-color: var(--border);
 }
 
 [data-theme="dark"] .log-icon {
-  background: rgba(59, 130, 246, 0.2);
-  color: #60a5fa;
+  background: var(--info-bg);
+  color: var(--accent-light);
 }
 
 [data-theme="dark"] .log-title {
-  color: #e2e8f0;
+  color: var(--text);
 }
 
 [data-theme="dark"] .log-subtitle {
-  color: #94a3b8;
+  color: var(--text-secondary);
 }
 
 [data-theme="dark"] .log-header button {
-  color: #94a3b8;
+  color: var(--text-secondary);
 }
 
 [data-theme="dark"] .log-header button:hover {
-  color: #e2e8f0;
-  background: rgba(255, 255, 255, 0.1);
+  color: var(--text);
+  background: var(--border);
 }
 
 /* Log Body */
@@ -255,50 +243,50 @@
 [data-theme="dark"] .log-filter-bar .filter-search-input,
 [data-theme="dark"] #log-path-search {
   background: rgba(0, 0, 0, 0.3);
-  border-color: rgba(255, 255, 255, 0.1);
-  color: #e2e8f0;
+  border-color: var(--border);
+  color: var(--text);
 }
 
 [data-theme="dark"] .log-filter-bar .filter-search-input::placeholder,
 [data-theme="dark"] #log-path-search::placeholder {
-  color: #64748b;
+  color: var(--muted);
 }
 
 [data-theme="dark"] .log-filter-bar .filter-search-input:focus,
 [data-theme="dark"] #log-path-search:focus {
-  border-color: #3b82f6;
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+  border-color: var(--border-focus);
+  box-shadow: 0 0 0 3px var(--focus-ring);
 }
 
 [data-theme="dark"] .log-filter-bar .search-icon {
-  color: #64748b;
+  color: var(--muted);
 }
 
 [data-theme="dark"] #log-filter,
 [data-theme="dark"] #log-target-type,
 [data-theme="dark"] .filter-select-compact {
   background: rgba(0, 0, 0, 0.3);
-  border-color: rgba(255, 255, 255, 0.1);
-  color: #e2e8f0;
+  border-color: var(--border);
+  color: var(--text);
 }
 
 [data-theme="dark"] #log-filter:focus,
 [data-theme="dark"] #log-target-type:focus,
 [data-theme="dark"] .filter-select-compact:focus {
-  border-color: #3b82f6;
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+  border-color: var(--border-focus);
+  box-shadow: 0 0 0 3px var(--focus-ring);
 }
 
 [data-theme="dark"] #log-filter option,
 [data-theme="dark"] #log-target-type option,
 [data-theme="dark"] .filter-select-compact option {
   background: var(--card);
-  color: #e2e8f0;
+  color: var(--text);
 }
 
 /* Log Table */
 [data-theme="dark"] .log-table-wrapper {
-  border-color: rgba(255, 255, 255, 0.08);
+  border-color: var(--border);
 }
 
 [data-theme="dark"] .log-table thead {
@@ -306,41 +294,41 @@
 }
 
 [data-theme="dark"] .log-table th {
-  color: #94a3b8;
-  border-bottom-color: rgba(255, 255, 255, 0.08);
+  color: var(--text-secondary);
+  border-bottom-color: var(--border);
 }
 
 [data-theme="dark"] .log-table tbody tr {
-  border-bottom-color: rgba(255, 255, 255, 0.04);
+  border-bottom-color: var(--border-light);
   box-sizing: border-box;
 }
 
 [data-theme="dark"] .log-table tbody tr:hover,
 [data-theme="dark"] .log-table-row:hover {
-  background: rgba(255, 255, 255, 0.04);
+  background: var(--surface-hover);
   box-sizing: border-box;
 }
 
 [data-theme="dark"] .log-table td {
-  color: #e2e8f0;
-  border-bottom-color: rgba(255, 255, 255, 0.04);
+  color: var(--text);
+  border-bottom-color: var(--border-light);
   box-sizing: border-box;
 }
 
 [data-theme="dark"] .log-loading {
-  color: #94a3b8;
+  color: var(--text-secondary);
 }
 
 /* Log Pagination */
 [data-theme="dark"] .log-pagination-btn {
   background: var(--card);
-  border-color: rgba(255, 255, 255, 0.1);
-  color: #94a3b8;
+  border-color: var(--border);
+  color: var(--text-secondary);
 }
 
 [data-theme="dark"] .log-pagination-btn:hover:not(:disabled) {
-  background: rgba(255, 255, 255, 0.08);
-  color: #e2e8f0;
+  background: var(--surface-active);
+  color: var(--text);
 }
 
 [data-theme="dark"] .log-pagination-btn:disabled {
@@ -348,40 +336,40 @@
 }
 
 [data-theme="dark"] #log-page-info {
-  color: #94a3b8;
+  color: var(--text-secondary);
 }
 
 /* Log Page Number Buttons */
 [data-theme="dark"] .log-page-btn {
   background: var(--card);
-  border-color: rgba(255, 255, 255, 0.1);
-  color: #e2e8f0;
+  border-color: var(--border);
+  color: var(--text);
 }
 
 [data-theme="dark"] .log-page-btn:hover:not(:disabled):not([aria-current="page"]) {
-  background: rgba(255, 255, 255, 0.08);
+  background: var(--surface-active);
 }
 
 /* Main Table Pagination */
 [data-theme="dark"] .pagination-controls {
   background: var(--card);
-  border-color: rgba(255, 255, 255, 0.1);
+  border-color: var(--border);
 }
 
 [data-theme="dark"] .pagination-controls .text-gray-700 {
-  color: #e2e8f0;
+  color: var(--text);
 }
 
 [data-theme="dark"] .pagination-btn,
 [data-theme="dark"] .pagination-page-btn {
   background: var(--card);
-  border-color: rgba(255, 255, 255, 0.1);
-  color: #e2e8f0;
+  border-color: var(--border);
+  color: var(--text);
 }
 
 [data-theme="dark"] .pagination-btn:hover:not(:disabled),
-[data-theme="dark"] .pagination-page-btn:hover:not(:disabled):not(.bg-blue-600) {
-  background: rgba(255, 255, 255, 0.08);
+[data-theme="dark"] .pagination-page-btn:hover:not(:disabled):not(.active) {
+  background: var(--surface-active);
 }
 
 [data-theme="dark"] .pagination-btn:disabled {
@@ -390,17 +378,17 @@
 
 [data-theme="dark"] .pagination-page-size-select {
   background: var(--card);
-  border-color: rgba(255, 255, 255, 0.1);
-  color: #e2e8f0;
+  border-color: var(--border);
+  color: var(--text);
 }
 
 [data-theme="dark"] .pagination-page-size-select:focus {
-  border-color: #3b82f6;
+  border-color: var(--border-focus);
 }
 
 /* Log Auto Refresh */
 [data-theme="dark"] .log-auto-refresh label {
-  color: #94a3b8;
+  color: var(--text-secondary);
 }
 
 [data-theme="dark"] .log-auto-refresh input[type="checkbox"] {
@@ -411,64 +399,64 @@
 /* Log Export Dropdown */
 [data-theme="dark"] #log-export-toggle {
   background: var(--card);
-  border-color: rgba(255, 255, 255, 0.1);
-  color: #e2e8f0;
+  border-color: var(--border);
+  color: var(--text);
 }
 
 [data-theme="dark"] #log-export-toggle:hover {
-  background: rgba(255, 255, 255, 0.08);
+  background: var(--surface-active);
 }
 
 [data-theme="dark"] .log-export-menu {
   background: var(--card);
-  border-color: rgba(255, 255, 255, 0.1);
+  border-color: var(--border);
   box-shadow: 0 8px 30px rgba(0, 0, 0, 0.5);
 }
 
 [data-theme="dark"] .log-export-option {
-  color: #e2e8f0;
+  color: var(--text);
 }
 
 [data-theme="dark"] .log-export-option:hover {
-  background: rgba(255, 255, 255, 0.08);
+  background: var(--surface-active);
 }
 
 /* Log Footer */
 [data-theme="dark"] .log-actions {
   background: rgba(0, 0, 0, 0.2);
-  border-top-color: rgba(255, 255, 255, 0.08);
+  border-top-color: var(--border);
 }
 
 [data-theme="dark"] #log-cleanup-days,
 [data-theme="dark"] .log-cleanup-select {
   background: rgba(0, 0, 0, 0.3);
-  border-color: rgba(255, 255, 255, 0.1);
-  color: #e2e8f0;
+  border-color: var(--border);
+  color: var(--text);
 }
 
 [data-theme="dark"] #log-cleanup-days option,
 [data-theme="dark"] .log-cleanup-select option {
   background: var(--card);
-  color: #e2e8f0;
+  color: var(--text);
 }
 
 [data-theme="dark"] #log-refresh {
   background: var(--card);
-  border-color: rgba(255, 255, 255, 0.1);
-  color: #e2e8f0;
+  border-color: var(--border);
+  color: var(--text);
 }
 
 [data-theme="dark"] #log-refresh:hover {
-  background: rgba(255, 255, 255, 0.08);
+  background: var(--surface-active);
 }
 
 /* Active Filters */
 [data-theme="dark"] .active-filters-label {
-  color: #94a3b8;
+  color: var(--text-secondary);
 }
 
 [data-theme="dark"] .active-filters-tags .tag {
-  background: rgba(59, 130, 246, 0.2);
-  color: #60a5fa;
-  border-color: rgba(59, 130, 246, 0.3);
+  background: var(--info-bg);
+  color: var(--accent-light);
+  border-color: var(--info-border);
 }

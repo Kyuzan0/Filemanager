@@ -65,7 +65,7 @@
     const tbody = document.getElementById('log-table-body');
     const error = document.getElementById('log-error');
 
-    tbody.innerHTML = '<tr><td colspan="5" class="log-loading px-3 py-4 text-center text-gray-500 dark:text-slate-400">Memuat data log...</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="5" class="log-loading">Memuat data log...</td></tr>';
     error.hidden = true;
 
     try {
@@ -103,7 +103,7 @@
       console.error('Error loading logs:', err);
       error.textContent = 'Gagal memuat log: ' + err.message;
       error.hidden = false;
-      tbody.innerHTML = '<tr><td colspan="5" class="px-3 py-4 text-center text-red-500 dark:text-red-400">Gagal memuat data log</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="5" class="log-error-cell">Gagal memuat data log</td></tr>';
     } finally {
       logState.isLoading = false;
     }
@@ -117,22 +117,22 @@
     const pageNumbersContainer = document.getElementById('log-page-numbers');
 
     if (logState.logs.length === 0) {
-      tbody.innerHTML = '<tr><td colspan="5" class="px-3 py-4 text-center text-gray-500 dark:text-slate-400">Tidak ada log yang ditemukan</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="5" class="log-empty-cell">Tidak ada log yang ditemukan</td></tr>';
     } else {
       tbody.innerHTML = logState.logs.map(log => {
         const fileName = log.filename || log.target || '-';
         const displayName = truncateLogFileName(fileName);
         return `
-      <tr class="log-table-row border-b border-gray-100 dark:border-white/5">
-        <td class="px-3 py-2 text-xs text-gray-900 dark:text-slate-200">${formatLogTime(log.timestamp)}</td>
-        <td class="px-3 py-2 text-xs text-gray-900 dark:text-slate-200" title="${escapeHtml(fileName)}">${displayName}</td>
-        <td class="px-3 py-2">
-          <span class="inline-block px-2 py-0.5 rounded text-xs font-medium ${getActionColor(log.action)}">
+      <tr class="log-table-row">
+        <td class="log-table-cell">${formatLogTime(log.timestamp)}</td>
+        <td class="log-table-cell" title="${escapeHtml(fileName)}">${displayName}</td>
+        <td class="log-table-cell">
+          <span class="log-badge ${getActionColor(log.action)}">
             ${translateAction(log.action)}
           </span>
         </td>
-        <td class="px-3 py-2 text-xs hidden sm:table-cell text-gray-600 dark:text-slate-400">${log.ip || '-'}</td>
-        <td class="px-3 py-2 text-xs hidden md:table-cell text-gray-500 dark:text-slate-500" title="${escapeHtml(log.userAgent || '-')}">${truncateUserAgent(log.userAgent)}</td>
+        <td class="log-table-cell--secondary log-table-cell--sm-hidden">${log.ip || '-'}</td>
+        <td class="log-table-cell--muted log-table-cell--md-hidden" title="${escapeHtml(log.userAgent || '-')}">${truncateUserAgent(log.userAgent)}</td>
       </tr>
     `}).join('');
     }
@@ -205,7 +205,7 @@
     const currentPage = logState.currentPage;
 
     if (totalPages <= 1) {
-      container.innerHTML = '<span class="px-3 py-1.5 text-xs font-medium text-gray-700 dark:text-slate-300 bg-blue-100 dark:bg-blue-900/40 rounded-md">1</span>';
+      container.innerHTML = '<span class="log-page-info">1</span>';
       return;
     }
 
@@ -213,15 +213,14 @@
 
     container.innerHTML = pages.map(page => {
       if (page === '...') {
-        return '<span class="px-2 py-1 text-xs text-gray-400 dark:text-slate-500">...</span>';
+        return '<span class="log-page-ellipsis">...</span>';
       }
 
       const isActive = page === currentPage;
-      const baseClasses = 'log-page-btn min-w-[32px] px-2 py-1.5 text-xs font-medium rounded-md transition-colors focus:outline-none';
-      const activeClasses = 'bg-blue-600 text-white';
-      const inactiveClasses = 'bg-white dark:bg-white/5 text-gray-700 dark:text-slate-300 border border-gray-200 dark:border-white/10 hover:bg-gray-50 dark:hover:bg-white/10';
+      const baseClasses = 'log-page-btn log-page-number';
+      const stateClass = isActive ? 'log-page-number--active' : 'log-page-number--inactive';
 
-      return `<button type="button" class="${baseClasses} ${isActive ? activeClasses : inactiveClasses}" data-page="${page}" ${isActive ? 'aria-current="page"' : ''}>${page}</button>`;
+      return `<button type="button" class="${baseClasses} ${stateClass}" data-page="${page}" ${isActive ? 'aria-current="page"' : ''}>${page}</button>`;
     }).join('');
 
     // Add click handlers
@@ -316,16 +315,16 @@
 
   function getActionColor(action) {
     const colors = {
-      'create': 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400',
-      'delete': 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400',
-      'move': 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400',
-      'rename': 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400',
-      'upload': 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400',
-      'download': 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-400',
-      'save': 'bg-cyan-100 text-cyan-700 dark:bg-cyan-900/30 dark:text-cyan-400',
-      'cleanup': 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400'
+      'create': 'log-badge--create',
+      'delete': 'log-badge--delete',
+      'move': 'log-badge--move',
+      'rename': 'log-badge--rename',
+      'upload': 'log-badge--upload',
+      'download': 'log-badge--download',
+      'save': 'log-badge--save',
+      'cleanup': 'log-badge--cleanup'
     };
-    return colors[action] || 'bg-gray-100 text-gray-700 dark:bg-white/10 dark:text-slate-300';
+    return colors[action] || 'log-badge--default';
   }
 
   function updateActiveFilters() {
@@ -347,9 +346,9 @@
     if (activeFilters.length > 0) {
       display.style.display = 'block';
       tags.innerHTML = activeFilters.map(filter => `
-      <button class="inline-flex items-center gap-1 px-2 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 rounded text-xs hover:bg-blue-200 dark:hover:bg-blue-900/50 transition-colors" data-filter="${filter.type}">
+      <button class="log-filter-tag" data-filter="${filter.type}">
         ${filter.label}
-        <span class="ml-1">×</span>
+        <span class="log-filter-tag__close">×</span>
       </button>
     `).join('');
 
@@ -415,10 +414,9 @@
       // Open download in new window/tab
       window.open(`${LOG_API_BASE}?${params.toString()}`, '_blank');
     } catch (err) {
-      console.error('Error exporting logs:', err);
-      if (window.showError) {
-        window.showError('Gagal mengekspor log: ' + err.message);
-      }
+        if (window.showError) {
+            window.showError('Gagal mengekspor log: ' + err.message);
+        }
     }
   }
 
@@ -449,7 +447,7 @@
     const originalContent = cleanupBtn?.innerHTML;
     if (cleanupBtn) {
       cleanupBtn.disabled = true;
-      cleanupBtn.innerHTML = '<svg class="animate-spin w-4 h-4" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" fill="none"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg><span>Menghapus...</span>';
+      cleanupBtn.innerHTML = '<svg class="log-spinner" viewBox="0 0 24 24"><circle class="log-spinner__circle" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" fill="none"></circle><path class="log-spinner__path" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg><span>Menghapus...</span>';
     }
 
     try {

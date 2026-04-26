@@ -520,6 +520,16 @@ function upload_files(string $root, string $relativePath, array $files): array
             continue;
         }
 
+        // Validate file extension against dangerous extensions blocklist
+        $extValidation = validate_file_extension($basename);
+        if (!$extValidation['valid']) {
+            $errors[] = [
+                'name' => $originalName,
+                'error' => $extValidation['error'],
+            ];
+            continue;
+        }
+
         if (!is_uploaded_file($tmpName)) {
             $errors[] = [
                 'name' => $originalName,
@@ -643,6 +653,16 @@ function upload_files_with_folders(string $root, string $relativePath, array $fi
             $errors[] = [
                 'name' => $relPath ?: $originalName,
                 'error' => 'Nama file tidak valid.',
+            ];
+            continue;
+        }
+
+        // Validate file extension against dangerous extensions blocklist
+        $extValidation = validate_file_extension($basename);
+        if (!$extValidation['valid']) {
+            $errors[] = [
+                'name' => $relPath ?: $originalName,
+                'error' => $extValidation['error'],
             ];
             continue;
         }
@@ -774,6 +794,16 @@ function upload_chunk(string $root, string $relativePath, array $fileEntry, stri
         $basename = basename($originalName);
         if ($basename === '' || preg_match('/[\\\\\/]/', $basename)) {
             throw new RuntimeException('Nama file tidak valid.');
+        }
+
+        // Validate file extension against dangerous extensions blocklist
+        $extValidation = validate_file_extension($basename);
+        if (!$extValidation['valid']) {
+            $result['errors'][] = [
+                'name' => $originalName,
+                'error' => $extValidation['error'],
+            ];
+            return $result;
         }
 
         if ($chunkIndex < 0 || $totalChunks < 1) {
@@ -978,6 +1008,16 @@ function upload_chunk_with_folder(string $root, string $relativePath, array $fil
         $basename = basename($originalName);
         if ($basename === '' || preg_match('/[\\\\\/]/', $basename)) {
             throw new RuntimeException('Nama file tidak valid.');
+        }
+
+        // Validate file extension against dangerous extensions blocklist
+        $extValidation = validate_file_extension($basename);
+        if (!$extValidation['valid']) {
+            $result['errors'][] = [
+                'name' => $folderRelativePath ?: $originalName,
+                'error' => $extValidation['error'],
+            ];
+            return $result;
         }
 
         if (($fileEntry['error'] ?? UPLOAD_ERR_NO_FILE) !== UPLOAD_ERR_OK) {
@@ -1602,7 +1642,27 @@ function validate_file_extension(string $filename, ?array $allowedExtensions = n
         'cpl',
         'msc',
         'jar',
-        'jnlp'
+        'jnlp',
+        // Server-side executable extensions
+        'php',
+        'phtml',
+        'phar',
+        'php3',
+        'php4',
+        'php5',
+        'php7',
+        'phps',
+        'sh',
+        'bash',
+        'py',
+        'pyc',
+        'pyo',
+        'cgi',
+        'pl',
+        'asp',
+        'aspx',
+        'jsp',
+        'shtml',
     ];
 
     $ext = strtolower(pathinfo($filename, PATHINFO_EXTENSION));

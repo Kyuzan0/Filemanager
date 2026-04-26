@@ -1,7 +1,7 @@
 /**
  * Accessibility Module
  * Provides WCAG 2.1 AA compliant accessibility features for the File Manager
- * 
+ *
  * Features:
  * - ARIA labels and live regions
  * - Focus management for modals and overlays
@@ -96,7 +96,7 @@ export function announceAction(action, itemName, success = true) {
  * @param {number} count - Number of selected items
  */
 export function announceSelection(count) {
-    const message = count === 0 
+    const message = count === 0
         ? 'Tidak ada item yang dipilih'
         : `${count} item dipilih`;
     announce(message);
@@ -107,7 +107,7 @@ export function announceSelection(count) {
  * @param {string} path - The current path
  */
 export function announceNavigation(path) {
-    const message = path 
+    const message = path
         ? `Navigasi ke folder ${path}`
         : 'Navigasi ke folder root';
     announce(message);
@@ -119,7 +119,7 @@ export function announceNavigation(path) {
  * @param {string} context - Context of loading (e.g., 'folder', 'file')
  */
 export function announceLoading(isLoading, context = 'konten') {
-    const message = isLoading 
+    const message = isLoading
         ? `Memuat ${context}...`
         : `${context} selesai dimuat`;
     announce(message);
@@ -134,7 +134,9 @@ export function announceLoading(isLoading, context = 'konten') {
  * @param {HTMLElement} tableBody - The table body containing file rows
  */
 export function addFileListAriaLabels(tableBody) {
-    if (!tableBody) return;
+    if (!tableBody) {
+        return;
+    }
 
     const rows = tableBody.querySelectorAll('tr[data-item-path]');
     rows.forEach((row, index) => {
@@ -146,7 +148,7 @@ export function addFileListAriaLabels(tableBody) {
         // Set row attributes
         row.setAttribute('role', 'row');
         row.setAttribute('aria-rowindex', String(index + 1));
-        
+
         const typeLabel = type === 'folder' ? 'Folder' : 'File';
         row.setAttribute('aria-label', `${typeLabel}: ${name}`);
 
@@ -185,13 +187,13 @@ export function addControlAriaLabels() {
         const sortKey = header.dataset.sortKey;
         const direction = state.sortDirection === 'asc' ? 'naik' : 'turun';
         const isActive = state.sortKey === sortKey;
-        
+
         header.setAttribute('role', 'columnheader');
-        header.setAttribute('aria-sort', isActive 
+        header.setAttribute('aria-sort', isActive
             ? (state.sortDirection === 'asc' ? 'ascending' : 'descending')
             : 'none'
         );
-        
+
         if (isActive) {
             header.setAttribute('aria-label', `Urut berdasarkan ${sortKey}, ${direction}`);
         } else {
@@ -233,7 +235,9 @@ let currentFocusTrap = null;
  * @param {HTMLElement} firstFocusable - Element to focus first (optional)
  */
 export function trapFocusInModal(modal, firstFocusable = null) {
-    if (!modal) return;
+    if (!modal) {
+        return;
+    }
 
     // Save current focus
     const previouslyFocused = document.activeElement;
@@ -260,7 +264,9 @@ export function trapFocusInModal(modal, firstFocusable = null) {
 
     // Set up focus trap handler
     const handleKeyDown = (event) => {
-        if (event.key !== 'Tab') return;
+        if (event.key !== 'Tab') {
+            return;
+        }
 
         if (event.shiftKey) {
             // Shift+Tab: moving backwards
@@ -331,7 +337,9 @@ export function isFocusTrapped() {
  * @param {Object} options - Focus options
  */
 export function setFocus(element, options = {}) {
-    if (!element || typeof element.focus !== 'function') return;
+    if (!element || typeof element.focus !== 'function') {
+        return;
+    }
 
     const { preventScroll = false, highlight = false } = options;
 
@@ -358,7 +366,9 @@ let fileListNavActive = false;
  * @param {Object} callbacks - Callback functions for actions
  */
 export function initFileListNavigation(container, callbacks = {}) {
-    if (!container) return;
+    if (!container) {
+        return;
+    }
 
     const {
         onSelect = () => {},
@@ -369,7 +379,9 @@ export function initFileListNavigation(container, callbacks = {}) {
 
     const handleKeyDown = (event) => {
         const items = getItems();
-        if (items.length === 0) return;
+        if (items.length === 0) {
+            return;
+        }
 
         // Don't handle if focus is in input/textarea
         if (['INPUT', 'TEXTAREA', 'SELECT'].includes(document.activeElement.tagName)) {
@@ -377,7 +389,9 @@ export function initFileListNavigation(container, callbacks = {}) {
         }
 
         // Don't handle if modal is open
-        if (focusTrapActive) return;
+        if (focusTrapActive) {
+            return;
+        }
 
         let handled = false;
 
@@ -487,7 +501,9 @@ export function initFileListNavigation(container, callbacks = {}) {
  * @param {HTMLElement} item - The item element to focus
  */
 function focusItem(item) {
-    if (!item) return;
+    if (!item) {
+        return;
+    }
 
     item.focus();
     item.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
@@ -522,7 +538,9 @@ export function resetFileListNavigation() {
  */
 export function createSkipLinks() {
     // Check if skip links already exist
-    if (document.getElementById('skip-links')) return;
+    if (document.getElementById('skip-links')) {
+        return;
+    }
 
     const skipLinksContainer = document.createElement('div');
     skipLinksContainer.id = 'skip-links';

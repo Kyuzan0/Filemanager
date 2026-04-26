@@ -17,7 +17,7 @@
 }
 
 .confirm-overlay.hidden {
-  display: none !important;
+  display: none;
 }
 
 .confirm-overlay[aria-hidden="false"] {
@@ -87,7 +87,7 @@
 
 .confirm-button.outline {
   background: #ffffff;
-  border: 1px solid #e5e7eb !important;
+  border: 1px solid #e5e7eb;
   color: #374151;
   padding: 0.375rem 0.75rem;
   outline: none;
@@ -95,13 +95,13 @@
 
 .confirm-button.outline:hover {
   background: #f9fafb;
-  border-color: #e5e7eb !important;
+  border-color: #e5e7eb;
 }
 
 .confirm-button.outline:focus,
 .confirm-button.outline:focus-visible {
   outline: none;
-  border-color: #e5e7eb !important;
+  border-color: #e5e7eb;
   box-shadow: none;
 }
 

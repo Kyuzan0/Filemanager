@@ -21,6 +21,16 @@ require_once dirname(__DIR__) . '/bootstrap.php';
 
 header('Content-Type: application/json; charset=utf-8');
 
+// Enforce CSRF protection for state-changing requests
+if (!check_origin()) {
+    http_response_code(403);
+    echo json_encode([
+        'success' => false,
+        'error' => 'Request origin tidak valid.',
+    ]);
+    exit;
+}
+
 // Validate root directory
 $root = get_root_path();
 if ($root === false) {

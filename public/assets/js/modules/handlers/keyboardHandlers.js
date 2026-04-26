@@ -82,7 +82,7 @@ export function setupKeyboardHandler(
                 document.activeElement.isContentEditable) {
                 return;
             }
-            
+
             event.preventDefault();
             handleSearchKey();
             return;
@@ -107,15 +107,19 @@ export function handleKeyboardNavigation(event, state) {
     }
 
     const tableBody = document.getElementById('table-body');
-    if (!tableBody) return;
+    if (!tableBody) {
+        return;
+    }
 
     const rows = tableBody.querySelectorAll('tr[data-path]');
-    if (rows.length === 0) return;
+    if (rows.length === 0) {
+        return;
+    }
 
     // Find currently focused or selected row
     let currentIndex = -1;
     const focusedRow = tableBody.querySelector('tr:focus');
-    
+
     if (focusedRow) {
         currentIndex = Array.from(rows).indexOf(focusedRow);
     } else if (state.selected.size > 0) {
@@ -132,33 +136,33 @@ export function handleKeyboardNavigation(event, state) {
             event.preventDefault();
             newIndex = Math.min(currentIndex + 1, rows.length - 1);
             break;
-            
+
         case 'ArrowUp':
         case 'k':
             event.preventDefault();
             newIndex = Math.max(currentIndex - 1, 0);
             break;
-            
+
         case 'Home':
             event.preventDefault();
             newIndex = 0;
             break;
-            
+
         case 'End':
             event.preventDefault();
             newIndex = rows.length - 1;
             break;
-            
+
         case 'PageDown':
             event.preventDefault();
             newIndex = Math.min(currentIndex + 10, rows.length - 1);
             break;
-            
+
         case 'PageUp':
             event.preventDefault();
             newIndex = Math.max(currentIndex - 10, 0);
             break;
-            
+
         case 'Enter':
             event.preventDefault();
             if (currentIndex >= 0) {
@@ -168,7 +172,7 @@ export function handleKeyboardNavigation(event, state) {
                 }
             }
             return;
-            
+
         case ' ':
             event.preventDefault();
             if (currentIndex >= 0) {
@@ -181,7 +185,7 @@ export function handleKeyboardNavigation(event, state) {
                 }
             }
             return;
-            
+
         default:
             return;
     }
@@ -191,12 +195,12 @@ export function handleKeyboardNavigation(event, state) {
         if (newRow) {
             newRow.focus();
             newRow.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
-            
+
             // If shift is held, extend selection
             if (event.shiftKey && currentIndex >= 0) {
                 const startIndex = Math.min(currentIndex, newIndex);
                 const endIndex = Math.max(currentIndex, newIndex);
-                
+
                 for (let i = startIndex; i <= endIndex; i++) {
                     const path = rows[i].dataset.path;
                     if (path) {
@@ -215,8 +219,10 @@ export function handleKeyboardNavigation(event, state) {
  * @param {Function} clearSearch - Clear search function
  */
 export function setupSearchKeyboardHandler(searchInput, doSearch, clearSearch) {
-    if (!searchInput) return;
-    
+    if (!searchInput) {
+        return;
+    }
+
     searchInput.addEventListener('keydown', (event) => {
         if (event.key === 'Enter') {
             event.preventDefault();

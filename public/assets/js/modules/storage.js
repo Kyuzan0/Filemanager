@@ -43,7 +43,7 @@ export function saveToStorage(key, value) {
         console.warn('[Storage] localStorage not available');
         return false;
     }
-    
+
     try {
         const serialized = JSON.stringify(value);
         localStorage.setItem(key, serialized);
@@ -64,7 +64,7 @@ export function loadFromStorage(key, defaultValue = null) {
     if (!isLocalStorageAvailable()) {
         return defaultValue;
     }
-    
+
     try {
         const item = localStorage.getItem(key);
         if (item === null) {
@@ -86,7 +86,7 @@ export function removeFromStorage(key) {
     if (!isLocalStorageAvailable()) {
         return false;
     }
-    
+
     try {
         localStorage.removeItem(key);
         return true;
@@ -104,7 +104,7 @@ export function clearAllStorage() {
     if (!isLocalStorageAvailable()) {
         return false;
     }
-    
+
     try {
         Object.values(STORAGE_KEYS).forEach(key => {
             localStorage.removeItem(key);
@@ -242,11 +242,11 @@ export function getStorageInfo() {
             keys: []
         };
     }
-    
+
     try {
         let used = 0;
         const keys = [];
-        
+
         Object.values(STORAGE_KEYS).forEach(key => {
             const item = localStorage.getItem(key);
             if (item) {
@@ -254,7 +254,7 @@ export function getStorageInfo() {
                 keys.push(key);
             }
         });
-        
+
         return {
             available: true,
             used: used,
@@ -263,7 +263,6 @@ export function getStorageInfo() {
             keysCount: keys.length
         };
     } catch (error) {
-        console.error('[Storage] Error getting storage info:', error);
         return {
             available: false,
             used: 0,
