@@ -17,26 +17,26 @@
 
 :root {
   /* Background Colors */
-  --bg: #faf9f6; /* Off-white pastel */
-  --bg-secondary: #f4f1ea; /* Soft beige */
+  --bg: #f0ebe4; /* Warm linen */
+  --bg-secondary: #e8e0d6; /* Soft sand */
   
   /* Component Colors */
-  --card: #ffffff;
-  --card-border: #e8e3d9;
+  --card: #f5f0e8; /* Cream parchment */
+  --card-border: #d4c9b8; /* Muted tan border */
   
   /* Text Colors */
-  --text: #4a4a4a; /* Soft dark gray */
-  --text-secondary: #7a7a7a;
-  --muted: #a3a3a3;
+  --text: #4a3f35; /* Dark brown */
+  --text-secondary: #6d5f52; /* Medium brown */
+  --muted: #9a8d80; /* Warm taupe */
   
   /* Accent Colors */
-  --accent: #a8b8d0; /* Pastel blue */
-  --accent-rgb: 168, 184, 208;
-  --accent-light: #cdd8eb;
-  --accent-light-rgb: 205, 216, 235;
-  --danger: #f0b4b4; /* Pastel red */
-  --warning: #f5d6a6; /* Pastel orange/amber */
-  --success: #aed3b6; /* Pastel green */
+  --accent: #b08968; /* Warm caramel brown */
+  --accent-rgb: 176, 137, 104;
+  --accent-light: #c9a98a; /* Light caramel */
+  --accent-light-rgb: 201, 169, 138;
+  --danger: #c98a7a; /* Dusty terracotta */
+  --warning: #d4a96a; /* Warm honey */
+  --success: #8aab7c; /* Sage green */
   
   /* Layout & Radius */
   --radius: 12px;
@@ -44,13 +44,13 @@
   --radius-lg: 16px;
   
   /* Glass/Backdrop */
-  --glass: rgba(255, 255, 255, 0.6);
-  --glass-light: rgba(255, 255, 255, 0.8);
+  --glass: rgba(245, 240, 232, 0.7);
+  --glass-light: rgba(245, 240, 232, 0.85);
   
   /* Shadow */
-  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
-  --shadow: 0 4px 6px rgba(0, 0, 0, 0.07);
-  --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1);
+  --shadow-sm: 0 1px 2px rgba(74, 63, 53, 0.06);
+  --shadow: 0 4px 6px rgba(74, 63, 53, 0.08);
+  --shadow-lg: 0 10px 15px rgba(74, 63, 53, 0.12);
   
   /* Transitions */
   --transition: 0.2s ease-in-out;
@@ -67,33 +67,33 @@
   --z-toast: 800;
   
   /* Surface Colors */
-  --surface-hover: rgba(0, 0, 0, 0.04);
-  --surface-active: rgba(0, 0, 0, 0.08);
-  --surface-overlay: rgba(0, 0, 0, 0.45);
-  --surface-overlay-light: rgba(0, 0, 0, 0.30);
+  --surface-hover: rgba(74, 63, 53, 0.05);
+  --surface-active: rgba(74, 63, 53, 0.10);
+  --surface-overlay: rgba(74, 63, 53, 0.45);
+  --surface-overlay-light: rgba(74, 63, 53, 0.25);
   
   /* Border Colors */
-  --border: #e8ecf1;
-  --border-light: rgba(0, 0, 0, 0.06);
+  --border: #d4c9b8; /* Tan border */
+  --border-light: rgba(74, 63, 53, 0.08);
   --border-focus: var(--accent);
   
   /* Focus Ring */
-  --focus-ring: rgba(var(--accent-rgb), 0.3); /* Pastel blue --accent for focus */
+  --focus-ring: rgba(var(--accent-rgb), 0.3); /* Warm brown focus */
   
   /* Status Colors (lighter variants for backgrounds) */
-  --danger-bg: #fdf2f2;
-  --danger-border: #f9dcdc;
-  --warning-bg: #fdfaf4;
-  --warning-border: #faecd5;
-  --success-bg: #f5f9f6;
-  --success-border: #dbead2;
-  --info-bg: #f2f6fb;
-  --info-border: #d7e3f2;
+  --danger-bg: #f5e8e4; /* Soft blush */
+  --danger-border: #e4cdc6;
+  --warning-bg: #f5ede0; /* Warm cream */
+  --warning-border: #e8d8be;
+  --success-bg: #e8efe5; /* Pale sage */
+  --success-border: #c8d8c0;
+  --info-bg: #ede6dc; /* Light parchment */
+  --info-border: #d4c9b8;
   
   /* Accent variants */
-  --accent-hover: #8da4c4; /* Darker pastel blue */
-  --accent-hover-rgb: 141, 164, 196;
-  --accent-bg: rgba(var(--accent-rgb), 0.15); /* Pastel blue background */
+  --accent-hover: #96724f; /* Deeper brown on hover */
+  --accent-hover-rgb: 150, 114, 79;
+  --accent-bg: rgba(var(--accent-rgb), 0.15); /* Warm brown background */
 }
 
 /* ============================================================================
