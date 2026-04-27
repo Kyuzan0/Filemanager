@@ -48,7 +48,7 @@
 }
 
 .details-header {
-  background: linear-gradient(to right, #eff6ff, #dbeafe);
+  background: linear-gradient(to right, var(--accent-bg), var(--accent-bg));
   border-bottom: 1px solid #bfdbfe;
   padding: 1.25rem 1.5rem;
   display: flex;
@@ -61,7 +61,7 @@
   width: 3rem;
   height: 3rem;
   border-radius: 9999px;
-  background: #dbeafe;
+  background: var(--accent-bg);
   color: var(--accent);
   display: flex;
   align-items: center;
@@ -75,7 +75,7 @@
 }
 
 .details-icon-file {
-  background: #dbeafe;
+  background: var(--accent-bg);
   color: var(--accent);
 }
 
@@ -226,13 +226,13 @@
 
 [data-theme="dark"] .details-header,
 .dark .details-header {
-  background: linear-gradient(to right, rgba(var(--accent-rgb, 168, 184, 208), ), rgba(var(--accent-rgb, 168, 184, 208), ));
-  border-bottom-color: rgba(var(--accent-rgb, 168, 184, 208), );
+  background: linear-gradient(to right, var(--accent), var(--accent));
+  border-bottom-color: var(--accent);
 }
 
 [data-theme="dark"] .details-icon,
 .dark .details-icon {
-  background: rgba(var(--accent-rgb, 168, 184, 208), );
+  background: var(--accent);
   color: var(--accent-light);
 }
 

@@ -178,7 +178,7 @@
   left: 0;
   right: 0;
   height: 3px;
-  background: rgba(var(--accent-rgb, 168, 184, 208), );
+  background: var(--accent);
   z-index: 9999;
   overflow: hidden;
 }

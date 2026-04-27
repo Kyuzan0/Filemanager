@@ -248,13 +248,13 @@
 /* ============= Upload Modal Components ============= */
 
 .upload-file-list {
-  background-color: #eff6ff;
+  background-color: var(--accent-bg);
   padding: 12px;
   border-radius: 8px;
 }
 
 [data-theme="dark"] .upload-file-list {
-  background-color: rgba(var(--accent-rgb, 168, 184, 208), );
+  background-color: var(--accent);
 }
 
 .upload-file-list__title {
@@ -263,7 +263,7 @@
 }
 
 [data-theme="dark"] .upload-file-list__title {
-  color: #dbeafe;
+  color: var(--accent-bg);
 }
 
 .upload-file-list__subtitle {
@@ -292,12 +292,12 @@
 
 .drop-zone--active {
   border-color: var(--accent-light);
-  background-color: #eff6ff;
+  background-color: var(--accent-bg);
 }
 
 [data-theme="dark"] .drop-zone--active {
   border-color: var(--accent);
-  background-color: rgba(var(--accent-rgb, 168, 184, 208), );
+  background-color: var(--accent);
 }
 
 /* ============= Card Upload Modal ============= */
@@ -397,12 +397,12 @@
 }
 
 .summary-info {
-  background-color: #eff6ff;
+  background-color: var(--accent-bg);
   color: var(--accent-hover);
 }
 
 [data-theme="dark"] .summary-info {
-  background-color: rgba(var(--accent-rgb, 168, 184, 208), );
+  background-color: var(--accent);
   color: var(--accent-light);
 }
 
@@ -474,7 +474,7 @@
 /* Icon background colors */
 .icon-bg--red { background-color: #fee2e2; }
 .icon-bg--yellow { background-color: #fef3c7; }
-.icon-bg--blue { background-color: #dbeafe; }
+.icon-bg--blue { background-color: var(--accent-bg); }
 .icon-bg--purple { background-color: #f3e8ff; }
 .icon-bg--orange { background-color: #ffedd5; }
 .icon-bg--sky { background-color: #e0f2fe; }
@@ -484,10 +484,10 @@
 
 [data-theme="dark"] .icon-bg--red { background-color: rgba(239, 68, 68, 0.3); }
 [data-theme="dark"] .icon-bg--yellow { background-color: rgba(251, 191, 36, 0.3); }
-[data-theme="dark"] .icon-bg--blue { background-color: rgba(var(--accent-rgb, 168, 184, 208), ); }
+[data-theme="dark"] .icon-bg--blue { background-color: var(--accent); }
 [data-theme="dark"] .icon-bg--purple { background-color: rgba(168, 85, 247, 0.3); }
 [data-theme="dark"] .icon-bg--orange { background-color: rgba(249, 115, 22, 0.3); }
-[data-theme="dark"] .icon-bg--sky { background-color: rgba(14, 165, 233, 0.3); }
+[data-theme="dark"] .icon-bg--sky { background-color: rgba(var(--accent-light-rgb, 205, 216, 235), ); }
 [data-theme="dark"] .icon-bg--green { background-color: rgba(34, 197, 94, 0.3); }
 [data-theme="dark"] .icon-bg--amber { background-color: rgba(245, 158, 11, 0.3); }
 [data-theme="dark"] .icon-bg--gray { background-color: rgba(107, 114, 128, 0.3); }

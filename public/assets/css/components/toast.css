@@ -155,9 +155,9 @@
 
 /* Info */
 .toast.toast-info {
-  background: rgba(var(--accent-rgb, 168, 184, 208), );
+  background: var(--accent);
   color: #ffffff;
-  border: 1px solid rgba(var(--accent-rgb, 168, 184, 208), );
+  border: 1px solid var(--accent);
 }
 
 .toast.toast-info .toast-icon {
@@ -185,8 +185,8 @@
 }
 
 [data-theme="dark"] .toast.toast-info {
-  background: rgba(var(--accent-rgb, 168, 184, 208), );
-  border-color: rgba(var(--accent-rgb, 168, 184, 208), );
+  background: var(--accent);
+  border-color: var(--accent);
 }
 
 /* Responsive */

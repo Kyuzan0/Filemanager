@@ -208,7 +208,7 @@
 
 /* Log Header */
 [data-theme="dark"] .log-header {
-  background: linear-gradient(to right, var(--accent-bg), rgba(107, 161, 255, 0.08));
+  background: linear-gradient(to right, var(--accent-bg), rgba(var(--accent-light-rgb, 205, 216, 235), 0.08));
   border-bottom-color: var(--border);
 }
 

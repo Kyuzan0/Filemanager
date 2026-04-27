@@ -57,7 +57,7 @@ select {
 select:focus {
   outline: none;
   border-color: var(--accent);
-  box-shadow: 0 0 0 3px rgba(57, 120, 255, 0.1);
+  box-shadow: 0 0 0 3px var(--accent-hover);
 }
 
 [data-theme="dark"] .form-control:focus,
@@ -67,7 +67,7 @@ select:focus {
 [data-theme="dark"] .modal select:focus,
 [data-theme="dark"] .modal textarea:focus,
 [data-theme="dark"] select:focus {
-  box-shadow: 0 0 0 3px rgba(107, 161, 255, 0.15);
+  box-shadow: 0 0 0 3px rgba(var(--accent-light-rgb, 205, 216, 235), );
 }
 
 .form-control:disabled {

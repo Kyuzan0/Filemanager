@@ -104,7 +104,7 @@ textarea:focus-visible,
 [tabindex]:focus-visible:not([tabindex="-1"]) {
     outline: 2px solid var(--primary);
     outline-offset: 2px;
-    box-shadow: 0 0 0 4px rgba(var(--accent-rgb, 168, 184, 208), );
+    box-shadow: 0 0 0 4px var(--accent);
 }
 
 /* Focus ring for table rows */
@@ -112,7 +112,7 @@ tr:focus-visible,
 tr.focus-visible {
     outline: 2px solid var(--primary);
     outline-offset: -2px;
-    background-color: rgba(var(--accent-rgb, 168, 184, 208), );
+    background-color: var(--accent);
 }
 
 /* Focus ring for file list items */
@@ -120,7 +120,7 @@ div[data-item-path]:focus-visible,
 div[data-item-path].focus-visible {
     outline: 2px solid var(--primary);
     outline-offset: -2px;
-    background-color: rgba(var(--accent-rgb, 168, 184, 208), );
+    background-color: var(--accent);
 }
 
 /* Custom focus highlight animation */
@@ -130,7 +130,7 @@ div[data-item-path].focus-visible {
 
 @keyframes focusHighlight {
     0% {
-        box-shadow: 0 0 0 4px rgba(var(--accent-rgb, 168, 184, 208), );
+        box-shadow: 0 0 0 4px var(--accent);
     }
     100% {
         box-shadow: 0 0 0 4px transparent;
@@ -288,11 +288,11 @@ div[data-item-path].focus-visible {
 @keyframes selectionIndicatorPulse {
     0% {
         background-color: var(--accent-light, var(--primary)); /* Lighter blue */
-        box-shadow: 0 0 20px rgba(var(--accent-rgb, 168, 184, 208), );
+        box-shadow: 0 0 20px var(--accent);
     }
     50% {
         background-color: var(--primary); /* Darker blue */
-        box-shadow: 0 0 30px rgba(var(--accent-rgb, 168, 184, 208), );
+        box-shadow: 0 0 30px var(--accent);
     }
     100% {
         background-color: var(--primary);
@@ -641,24 +641,24 @@ div.item-cut::before {
 
 tr.selected,
 div.selected {
-    background-color: rgba(var(--accent-rgb, 168, 184, 208), );
+    background-color: var(--accent);
 }
 
 tr.selected:hover,
 div.selected:hover {
-    background-color: rgba(var(--accent-rgb, 168, 184, 208), );
+    background-color: var(--accent);
 }
 
 /* Dark mode adjustments */
 @media (prefers-color-scheme: dark) {
     tr.selected,
     div.selected {
-        background-color: rgba(var(--accent-rgb, 168, 184, 208), );
+        background-color: var(--accent);
     }
 
     tr.selected:hover,
     div.selected:hover {
-        background-color: rgba(var(--accent-rgb, 168, 184, 208), );
+        background-color: var(--accent);
     }
 
     .kbd,

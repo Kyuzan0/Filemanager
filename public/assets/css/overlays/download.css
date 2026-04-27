@@ -106,7 +106,7 @@
   width: 2.5rem;
   height: 2.5rem;
   border-radius: 0.5rem;
-  background: #dbeafe;
+  background: var(--accent-bg);
   color: var(--accent);
   display: flex;
   align-items: center;
@@ -125,7 +125,7 @@
 }
 
 .download-file-icon.document {
-  background: #dbeafe;
+  background: var(--accent-bg);
   color: var(--accent);
 }
 
@@ -271,7 +271,7 @@
 }
 
 [data-theme="dark"] .download-file-icon {
-  background: rgba(var(--accent-rgb, 168, 184, 208), );
+  background: var(--accent);
   color: var(--accent-light);
 }
 
@@ -286,7 +286,7 @@
 }
 
 [data-theme="dark"] .download-file-icon.document {
-  background: rgba(var(--accent-rgb, 168, 184, 208), );
+  background: var(--accent);
   color: var(--accent-light);
 }
 

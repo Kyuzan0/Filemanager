@@ -39,7 +39,7 @@
 }
 
 .log-header {
-  background: linear-gradient(to right, #eff6ff, #eff6ff);
+  background: linear-gradient(to right, var(--accent-bg), var(--accent-bg));
   border-bottom: 1px solid #f3f4f6;
   padding: 1.5rem;
   display: flex;
@@ -52,7 +52,7 @@
   width: 3rem;
   height: 3rem;
   border-radius: 9999px;
-  background: #dbeafe;
+  background: var(--accent-bg);
   color: var(--accent);
   display: flex;
   align-items: center;
@@ -286,12 +286,12 @@
 .log-page-btn:focus,
 .log-page-btn:focus-visible {
   outline: none;
-  box-shadow: 0 0 0 2px rgba(var(--accent-rgb, 168, 184, 208), );
+  box-shadow: 0 0 0 2px var(--accent);
 }
 
 [data-theme="dark"] .log-page-btn:focus,
 [data-theme="dark"] .log-page-btn:focus-visible {
-  box-shadow: 0 0 0 2px rgba(var(--accent-rgb, 168, 184, 208), );
+  box-shadow: 0 0 0 2px var(--accent);
 }
 
 #log-page-numbers {
@@ -449,7 +449,7 @@
 }
 
 [data-theme="dark"] .log-badge--move {
-  background-color: rgba(var(--accent-rgb, 168, 184, 208), );
+  background-color: var(--accent);
   color: rgb(96, 165, 250);
 }
 
@@ -526,7 +526,7 @@
 
 [data-theme="dark"] .log-page-info {
   color: rgb(203, 213, 225);
-  background-color: rgba(var(--accent-rgb, 168, 184, 208), );
+  background-color: var(--accent);
 }
 
 /* Page Number Button Base */
@@ -602,12 +602,12 @@
 }
 
 [data-theme="dark"] .log-filter-tag {
-  background-color: rgba(var(--accent-rgb, 168, 184, 208), );
+  background-color: var(--accent);
   color: rgb(96, 165, 250);
 }
 
 [data-theme="dark"] .log-filter-tag:hover {
-  background-color: rgba(var(--accent-rgb, 168, 184, 208), );
+  background-color: var(--accent);
 }
 
 .log-filter-tag__close {
@@ -693,7 +693,7 @@
 
 .filter-search-input:focus {
   border-color: var(--accent-light);
-  box-shadow: 0 0 0 2px rgba(var(--accent-rgb, 168, 184, 208), );
+  box-shadow: 0 0 0 2px var(--accent);
 }
 
 [data-theme="dark"] .filter-search-input {
@@ -703,8 +703,8 @@
 }
 
 [data-theme="dark"] .filter-search-input:focus {
-  border-color: rgba(var(--accent-rgb, 168, 184, 208), );
-  box-shadow: 0 0 0 2px rgba(var(--accent-rgb, 168, 184, 208), );
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px var(--accent);
 }
 
 [data-theme="dark"] .search-icon {

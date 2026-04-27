@@ -49,7 +49,7 @@
 }
 
 .rename-header {
-  background: linear-gradient(to right, #eff6ff, #dbeafe);
+  background: linear-gradient(to right, var(--accent-bg), var(--accent-bg));
   border-bottom: 1px solid #bfdbfe;
   padding: 1.25rem 1.5rem;
   display: flex;
@@ -62,7 +62,7 @@
   width: 3rem;
   height: 3rem;
   border-radius: 9999px;
-  background: #dbeafe;
+  background: var(--accent-bg);
   color: var(--accent);
   display: flex;
   align-items: center;
@@ -114,7 +114,7 @@
 .rename-form input[type="text"]:focus {
   outline: none;
   border-color: var(--accent);
-  box-shadow: 0 0 0 3px rgba(var(--accent-rgb, 168, 184, 208), );
+  box-shadow: 0 0 0 3px var(--accent);
 }
 
 .rename-form .form-hint {
@@ -178,7 +178,7 @@
 
 .rename-button.primary:focus {
   outline: none;
-  box-shadow: 0 0 0 3px rgba(var(--accent-hover-rgb, 141, 164, 196), );
+  box-shadow: 0 0 0 3px var(--accent-hover);
 }
 
 /* ============================================================================
@@ -191,12 +191,12 @@
 }
 
 [data-theme="dark"] .rename-header {
-  background: linear-gradient(to right, rgba(var(--accent-hover-rgb, 141, 164, 196), ), rgba(var(--accent-rgb, 168, 184, 208), ));
-  border-bottom: 1px solid rgba(var(--accent-rgb, 168, 184, 208), );
+  background: linear-gradient(to right, var(--accent-hover), var(--accent));
+  border-bottom: 1px solid var(--accent);
 }
 
 [data-theme="dark"] .rename-icon {
-  background: rgba(var(--accent-rgb, 168, 184, 208), );
+  background: var(--accent);
   color: var(--accent-light);
 }
 
@@ -220,7 +220,7 @@
 
 [data-theme="dark"] .rename-form input[type="text"]:focus {
   border-color: var(--accent);
-  box-shadow: 0 0 0 3px rgba(var(--accent-rgb, 168, 184, 208), );
+  box-shadow: 0 0 0 3px var(--accent);
 }
 
 [data-theme="dark"] .rename-form input[type="text"]::placeholder {

@@ -124,7 +124,7 @@
   left: 4px;
   width: calc(50% - 4px);
   height: calc(100% - 8px);
-  background-color: rgba(58, 123, 255, 0.12);
+  background-color: var(--accent-hover);
   border-radius: 6px;
   transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.08);
@@ -153,7 +153,7 @@
 .input-text-add-item:focus {
   outline: none;
   border-color: var(--accent);
-  box-shadow: 0 0 0 3px rgba(var(--accent-hover-rgb, 141, 164, 196), );
+  box-shadow: 0 0 0 3px var(--accent-hover);
 }
 
 .modal-actions-add-item {
@@ -175,13 +175,13 @@
 }
 
 .button-primary-add-item {
-  background: linear-gradient(180deg, var(--accent), #245ecf);
+  background: linear-gradient(180deg, var(--accent), var(--accent-hover));
   color: #fff;
 }
 
 .button-primary-add-item:hover {
   background-color: #0056b3;
-  box-shadow: 0 4px 10px rgba(0, 123, 255, 0.2);
+  box-shadow: 0 4px 10px var(--accent-hover);
 }
 
 .button-secondary-add-item {
@@ -190,21 +190,21 @@
 }
 
 .button-secondary-add-item:hover {
-  background: rgba(58, 123, 255, 0.12);
-  border: 1px solid rgba(58, 123, 255, 0.14);
+  background: var(--accent-hover);
+  border: 1px solid var(--accent-hover);
   color: var(--muted);
 }
 
 @media (prefers-color-scheme: dark) {
   .button-secondary-add-item:hover {
-    background: rgba(58, 123, 255, 0.16);
-    border: 1px solid rgba(58, 123, 255, 0.18);
+    background: var(--accent-hover);
+    border: 1px solid var(--accent-hover);
     color: #fff;
   }
 }
 
 [data-theme="dark"] .modal-add-item .button-secondary-add-item:hover {
-  background: rgba(58, 123, 255, 0.16);
-  border: 1px solid rgba(58, 123, 255, 0.18);
+  background: var(--accent-hover);
+  border: 1px solid var(--accent-hover);
   color: #fff;
 }

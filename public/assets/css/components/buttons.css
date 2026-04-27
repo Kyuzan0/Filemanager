@@ -55,15 +55,15 @@
 /* Primary Button */
 .btn.primary,
 .btn-primary {
-  background: linear-gradient(180deg, var(--accent), #245ecf);
+  background: linear-gradient(180deg, var(--accent), var(--accent-hover));
   color: #fff;
   border: none;
-  box-shadow: 0 4px 12px rgba(57, 120, 255, 0.3);
+  box-shadow: 0 4px 12px var(--accent-hover);
 }
 
 .btn.primary:hover,
 .btn-primary:hover {
-  box-shadow: 0 6px 16px rgba(57, 120, 255, 0.4);
+  box-shadow: 0 6px 16px var(--accent-hover);
   transform: translateY(-2px);
 }
 
@@ -262,5 +262,5 @@
 .unsaved-button.outline:focus,
 .settings-button.outline:focus {
   outline: none;
-  box-shadow: 0 0 0 3px rgba(57, 120, 255, 0.2);
+  box-shadow: 0 0 0 3px var(--accent-hover);
 }

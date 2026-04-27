@@ -149,8 +149,8 @@
 
 /* Visual for card drag over */
 .card-drag-over {
-  outline: 2px dashed rgba(14,165,233,0.9);
-  background: rgba(14,165,233,0.04);
+  outline: 2px dashed rgba(var(--accent-light-rgb, 205, 216, 235), );
+  background: rgba(var(--accent-light-rgb, 205, 216, 235), );
   transition: background-color 120ms ease, outline-color 120ms ease;
 }
 

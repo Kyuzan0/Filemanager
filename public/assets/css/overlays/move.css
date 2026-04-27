@@ -187,7 +187,7 @@
 .move-search-input:focus {
   outline: none;
   border-color: var(--accent);
-  box-shadow: 0 0 0 3px rgba(var(--accent-rgb, 168, 184, 208), );
+  box-shadow: 0 0 0 3px var(--accent);
 }
 
 /* Recents Section */
@@ -260,12 +260,12 @@
 
 .move-folder-item.selected,
 .move-list-item.selected {
-  background: #eff6ff;
+  background: var(--accent-bg);
 }
 
 .move-folder-item.selected:hover,
 .move-list-item.selected:hover {
-  background: #dbeafe;
+  background: var(--accent-bg);
 }
 
 /* Folder Icon */
@@ -357,7 +357,7 @@
 
 .move-button.outline:focus {
   outline: none;
-  box-shadow: 0 0 0 3px rgba(var(--accent-rgb, 168, 184, 208), );
+  box-shadow: 0 0 0 3px var(--accent);
 }
 
 .move-button.outline:active {
@@ -367,17 +367,17 @@
 .move-button.primary {
   background: linear-gradient(135deg, var(--accent) 0%, var(--accent) 100%);
   color: #ffffff;
-  box-shadow: 0 1px 2px rgba(var(--accent-hover-rgb, 141, 164, 196), );
+  box-shadow: 0 1px 2px var(--accent-hover);
 }
 
 .move-button.primary:hover {
   background: linear-gradient(135deg, var(--accent) 0%, var(--accent-hover) 100%);
-  box-shadow: 0 2px 4px rgba(var(--accent-hover-rgb, 141, 164, 196), );
+  box-shadow: 0 2px 4px var(--accent-hover);
 }
 
 .move-button.primary:focus {
   outline: none;
-  box-shadow: 0 0 0 3px rgba(var(--accent-rgb, 168, 184, 208), );
+  box-shadow: 0 0 0 3px var(--accent);
 }
 
 .move-button.primary:active {
@@ -468,7 +468,7 @@
 
 [data-theme="dark"] .move-search-input:focus {
   border-color: var(--accent);
-  box-shadow: 0 0 0 3px rgba(var(--accent-rgb, 168, 184, 208), );
+  box-shadow: 0 0 0 3px var(--accent);
 }
 
 [data-theme="dark"] .move-list {
@@ -496,12 +496,12 @@
 
 [data-theme="dark"] .move-folder-item.selected,
 [data-theme="dark"] .move-list-item.selected {
-  background: rgba(var(--accent-rgb, 168, 184, 208), );
+  background: var(--accent);
 }
 
 [data-theme="dark"] .move-folder-item.selected:hover,
 [data-theme="dark"] .move-list-item.selected:hover {
-  background: rgba(var(--accent-rgb, 168, 184, 208), );
+  background: var(--accent);
 }
 
 [data-theme="dark"] .move-folder-item>span:last-child,
@@ -533,7 +533,7 @@
 }
 
 [data-theme="dark"] .move-button.outline:focus {
-  box-shadow: 0 0 0 3px rgba(var(--accent-rgb, 168, 184, 208), );
+  box-shadow: 0 0 0 3px var(--accent);
 }
 
 [data-theme="dark"] .move-button.primary {
@@ -545,7 +545,7 @@
 }
 
 [data-theme="dark"] .move-button.primary:focus {
-  box-shadow: 0 0 0 3px rgba(var(--accent-rgb, 168, 184, 208), );
+  box-shadow: 0 0 0 3px var(--accent);
 }
 
 /* ============================================================================

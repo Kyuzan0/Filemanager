@@ -358,7 +358,7 @@ body {
 }
 
 .action-badge.download {
-    background: rgba(var(--accent-rgb, 168, 184, 208), );
+    background: var(--accent);
     color: var(--accent);
 }
 
@@ -403,7 +403,7 @@ body {
 }
 
 .action-badge.restore {
-    background: rgba(var(--accent-rgb, 168, 184, 208), );
+    background: var(--accent);
     color: var(--accent);
 }
 
@@ -428,7 +428,7 @@ body {
 }
 
 [data-theme="dark"] .action-badge.download {
-    background: rgba(var(--accent-rgb, 168, 184, 208), );
+    background: var(--accent);
     color: var(--accent-light);
 }
 
@@ -473,7 +473,7 @@ body {
 }
 
 [data-theme="dark"] .action-badge.restore {
-    background: rgba(var(--accent-rgb, 168, 184, 208), );
+    background: var(--accent);
     color: var(--accent-light);
 }
 

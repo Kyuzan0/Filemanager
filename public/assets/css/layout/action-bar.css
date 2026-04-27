@@ -135,7 +135,7 @@
 }
 
 .batch-badge-close:hover {
-  background: rgba(var(--accent-hover-rgb, 141, 164, 196), );
+  background: var(--accent-hover);
 }
 
 /* Desktop Action Buttons */

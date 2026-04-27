@@ -195,7 +195,7 @@
 }
 
 .preview-action-btn:focus-visible {
-  box-shadow: 0 0 0 3px rgba(var(--accent-rgb, 168, 184, 208), );
+  box-shadow: 0 0 0 3px var(--accent);
 }
 
 /* Icon styling */
@@ -227,12 +227,12 @@
 .preview-action-btn--primary {
   background: linear-gradient(135deg, var(--accent) 0%, var(--accent) 100%);
   color: white;
-  box-shadow: 0 2px 8px rgba(var(--accent-rgb, 168, 184, 208), );
+  box-shadow: 0 2px 8px var(--accent);
 }
 
 .preview-action-btn--primary:hover {
   background: linear-gradient(135deg, var(--accent) 0%, var(--accent-hover) 100%);
-  box-shadow: 0 4px 16px rgba(var(--accent-rgb, 168, 184, 208), );
+  box-shadow: 0 4px 16px var(--accent);
 }
 
 /* Success variant (Download) */
