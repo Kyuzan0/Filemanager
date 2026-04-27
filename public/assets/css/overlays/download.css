@@ -107,7 +107,7 @@
   height: 2.5rem;
   border-radius: 0.5rem;
   background: #dbeafe;
-  color: #2563eb;
+  color: var(--accent);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -126,7 +126,7 @@
 
 .download-file-icon.document {
   background: #dbeafe;
-  color: #2563eb;
+  color: var(--accent);
 }
 
 .download-file-icon.code {
@@ -271,8 +271,8 @@
 }
 
 [data-theme="dark"] .download-file-icon {
-  background: rgba(59, 130, 246, 0.15);
-  color: #60a5fa;
+  background: rgba(var(--accent-rgb, 168, 184, 208), );
+  color: var(--accent-light);
 }
 
 [data-theme="dark"] .download-file-icon.folder {
@@ -286,8 +286,8 @@
 }
 
 [data-theme="dark"] .download-file-icon.document {
-  background: rgba(59, 130, 246, 0.15);
-  color: #60a5fa;
+  background: rgba(var(--accent-rgb, 168, 184, 208), );
+  color: var(--accent-light);
 }
 
 [data-theme="dark"] .download-file-icon.code {

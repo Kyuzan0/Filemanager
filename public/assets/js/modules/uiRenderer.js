@@ -104,6 +104,8 @@ import {
     getItemsForPage
 } from './pagination.js';
 
+import { renderGridItems } from './ui/gridRenderer.js';
+
 // Global flag to prevent multiple simultaneous renders
 let isRendering = false;
 let lastRenderTime = 0;
@@ -488,6 +490,12 @@ export function renderItems(
         } else {
             debugLog(`[Normal Render] Rendering ${filtered.length} items normally`);
             renderNormalItems(tableBody, filtered, state, renderParams);
+        }
+
+        // Grid view rendering
+        const gridContainer = document.getElementById('grid-view-container');
+        if (gridContainer) {
+            renderGridItems(gridContainer, getItemsForPage(filtered), state, renderParams);
         }
 
         // Mobile render (only on mobile devices)

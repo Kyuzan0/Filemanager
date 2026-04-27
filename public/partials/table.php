@@ -19,6 +19,7 @@
      role="alert">
 </div>
 
+<div class="table-scroll-wrapper">
 <table id="fileTable"
        class="w-full"
        role="grid"
@@ -40,9 +41,6 @@
             <th class="px-3 py-3 text-left text-sm font-semibold" scope="col" aria-sort="none">
                 Name
             </th>
-            <th class="px-3 py-3 text-left text-sm font-semibold" scope="col">
-                Type
-            </th>
             <th class="px-3 py-3 text-left text-sm font-semibold" scope="col" aria-sort="none">
                 Date Modified
             </th>
@@ -61,6 +59,7 @@
            aria-label="File list contents">
     </tbody>
 </table>
+</div>
 
 <!-- Selection indicator for batch operations -->
 <div id="selection-indicator"

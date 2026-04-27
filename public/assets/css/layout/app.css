@@ -35,16 +35,15 @@
 .main {
   flex: 1;
   height: 100%;
-  overflow-y: auto;
-  overflow-x: hidden; /* Prevent horizontal overflow */
+  overflow-y: auto; /* Main handles scrolling */
+  overflow-x: hidden;
   position: relative;
   padding: 18px;
   background: var(--bg);
   transition: background-color 0.3s ease;
-  /* Flexbox layout to push footer to bottom */
   display: flex;
   flex-direction: column;
-  min-height: 0; /* Allow flex shrinking */
+  min-height: 0;
 }
 
 /* Main content wrapper to hold header, card, and footer */
@@ -52,20 +51,17 @@
   flex-shrink: 0;
 }
 
-/* Card should grow and have internal scrolling */
+/* Card sizes to content */
 .main > .card {
-  flex: 1;
-  min-height: 0;
-  overflow-y: auto;
-  overflow-x: hidden;
-  display: flex;
-  flex-direction: column;
+  flex-shrink: 0; /* Let it be content-sized */
+  overflow: visible; /* No internal scroll, main scrolls */
 }
 
-/* Footer always visible at bottom */
-.main > nav.footer {
+/* Footer stays at bottom of main */
+.main > .pagination-footer {
   flex-shrink: 0;
-  margin-top: 12px;
+  margin-top: auto; /* Push it to bottom */
+  padding-top: 12px;
 }
 
 /* Scrollbar styling with hover effect */
@@ -118,7 +114,7 @@
     margin-bottom: 8px;
   }
   
-  .main > nav.footer {
+  .main > .pagination-footer {
     margin-top: 8px;
   }
 }
@@ -134,7 +130,7 @@
     margin-bottom: 6px;
   }
   
-  .main > nav.footer {
+  .main > .pagination-footer {
     margin-top: 6px;
   }
 }

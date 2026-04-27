@@ -17,24 +17,26 @@
 
 :root {
   /* Background Colors */
-  --bg: #f5f7fb;
-  --bg-secondary: #eef1f6;
+  --bg: #faf9f6; /* Off-white pastel */
+  --bg-secondary: #f4f1ea; /* Soft beige */
   
   /* Component Colors */
-  --card: #fff;
-  --card-border: #e8ecf1;
+  --card: #ffffff;
+  --card-border: #e8e3d9;
   
   /* Text Colors */
-  --text: #131a24;
-  --text-secondary: #5a6b7d;
-  --muted: #7b8794;
+  --text: #4a4a4a; /* Soft dark gray */
+  --text-secondary: #7a7a7a;
+  --muted: #a3a3a3;
   
   /* Accent Colors */
-  --accent: #3978ff;
-  --accent-light: #6ba1ff;
-  --danger: #ff4757;
-  --warning: #ffa502;
-  --success: #2ed573;
+  --accent: #a8b8d0; /* Pastel blue */
+  --accent-rgb: 168, 184, 208;
+  --accent-light: #cdd8eb;
+  --accent-light-rgb: 205, 216, 235;
+  --danger: #f0b4b4; /* Pastel red */
+  --warning: #f5d6a6; /* Pastel orange/amber */
+  --success: #aed3b6; /* Pastel green */
   
   /* Layout & Radius */
   --radius: 12px;
@@ -76,21 +78,22 @@
   --border-focus: var(--accent);
   
   /* Focus Ring */
-  --focus-ring: rgba(57, 120, 255, 0.2);
+  --focus-ring: rgba(var(--accent-rgb), 0.3); /* Pastel blue --accent for focus */
   
   /* Status Colors (lighter variants for backgrounds) */
-  --danger-bg: #fef2f2;
-  --danger-border: #fecaca;
-  --warning-bg: #fffbeb;
-  --warning-border: #fed7aa;
-  --success-bg: #f0fdf4;
-  --success-border: #bbf7d0;
-  --info-bg: #eff6ff;
-  --info-border: #bfdbfe;
+  --danger-bg: #fdf2f2;
+  --danger-border: #f9dcdc;
+  --warning-bg: #fdfaf4;
+  --warning-border: #faecd5;
+  --success-bg: #f5f9f6;
+  --success-border: #dbead2;
+  --info-bg: #f2f6fb;
+  --info-border: #d7e3f2;
   
   /* Accent variants */
-  --accent-hover: #2563eb;
-  --accent-bg: rgba(57, 120, 255, 0.08);
+  --accent-hover: #8da4c4; /* Darker pastel blue */
+  --accent-hover-rgb: 141, 164, 196;
+  --accent-bg: rgba(var(--accent-rgb), 0.15); /* Pastel blue background */
 }
 
 /* ============================================================================
@@ -99,24 +102,26 @@
 
 [data-theme="dark"] {
   /* Background Colors */
-  --bg: #131a24;
-  --bg-secondary: #1a2332;
+  --bg: #2d2b38; /* Soft dark mauve/purple pastel */
+  --bg-secondary: #383545;
   
   /* Component Colors */
-  --card: #1a2332;
-  --card-border: #2a3a4a;
+  --card: #383545;
+  --card-border: #4d495d;
   
   /* Text Colors */
-  --text: #f5f7fb;
-  --text-secondary: #c0c8d4;
-  --muted: #c0c8d4;
+  --text: #e6e4f0; /* Soft pastel white */
+  --text-secondary: #b8b4cc;
+  --muted: #8d88a6;
   
   /* Accent Colors */
-  --accent: #6ba1ff;
-  --accent-light: #8ab5ff;
-  --danger: #ff6b7a;
-  --warning: #ffb820;
-  --success: #55dd92;
+  --accent: #b0a8d6; /* Pastel purple/blue */
+  --accent-rgb: 176, 168, 214;
+  --accent-light: #c9c3e6;
+  --accent-light-rgb: 201, 195, 230;
+  --danger: #e69c9c; /* Pastel dark mode red */
+  --warning: #e8cd9c; /* Pastel dark mode yellow */
+  --success: #9dc2a8; /* Pastel dark mode green */
   
   /* Layout & Radius */
   --radius: 12px;
@@ -158,19 +163,20 @@
   --border-focus: var(--accent);
   
   /* Focus Ring */
-  --focus-ring: rgba(107, 161, 255, 0.2);
+  --focus-ring: rgba(var(--accent-rgb), 0.3); /* Pastel purple --accent for focus */
   
   /* Status Colors */
-  --danger-bg: rgba(255, 71, 87, 0.1);
-  --danger-border: rgba(255, 71, 87, 0.3);
-  --warning-bg: rgba(255, 165, 2, 0.1);
-  --warning-border: rgba(255, 165, 2, 0.3);
-  --success-bg: rgba(46, 213, 115, 0.1);
-  --success-border: rgba(46, 213, 115, 0.3);
-  --info-bg: rgba(59, 130, 246, 0.1);
-  --info-border: rgba(59, 130, 246, 0.3);
+  --danger-bg: rgba(230, 156, 156, 0.1);
+  --danger-border: rgba(230, 156, 156, 0.3);
+  --warning-bg: rgba(232, 205, 156, 0.1);
+  --warning-border: rgba(232, 205, 156, 0.3);
+  --success-bg: rgba(157, 194, 168, 0.1);
+  --success-border: rgba(157, 194, 168, 0.3);
+  --info-bg: rgba(var(--accent-rgb), 0.1);
+  --info-border: rgba(var(--accent-rgb), 0.3);
   
   /* Accent variants */
-  --accent-hover: #8ab5ff;
-  --accent-bg: rgba(107, 161, 255, 0.15);
+  --accent-hover: #c9c3e6;
+  --accent-hover-rgb: 201, 195, 230;
+  --accent-bg: rgba(var(--accent-rgb), 0.15);
 }

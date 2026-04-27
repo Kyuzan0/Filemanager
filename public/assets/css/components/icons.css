@@ -161,7 +161,7 @@
 
 /* Code files - Biru */
 .file-icon.code {
-  color: #3b82f6;
+  color: var(--accent);
 }
 
 /* Image files - Merah/Pink */
@@ -191,7 +191,7 @@
 
 /* Document - Biru */
 .file-icon.doc {
-  color: #2563eb;
+  color: var(--accent);
 }
 
 /* Presentation - Orange */

@@ -45,7 +45,7 @@
   height: 3rem;
   border-radius: 9999px;
   background: #dbeafe;
-  color: #2563eb;
+  color: var(--accent);
   display: flex;
   align-items: center;
   justify-content: center;

@@ -63,7 +63,7 @@
   height: 3rem;
   border-radius: 9999px;
   background: #dbeafe;
-  color: #2563eb;
+  color: var(--accent);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -113,8 +113,8 @@
 
 .rename-form input[type="text"]:focus {
   outline: none;
-  border-color: #3b82f6;
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(var(--accent-rgb, 168, 184, 208), );
 }
 
 .rename-form .form-hint {
@@ -167,18 +167,18 @@
 }
 
 .rename-button.primary {
-  background: #2563eb;
+  background: var(--accent);
   border: none;
   color: #ffffff;
 }
 
 .rename-button.primary:hover {
-  background: #1d4ed8;
+  background: var(--accent-hover);
 }
 
 .rename-button.primary:focus {
   outline: none;
-  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.3);
+  box-shadow: 0 0 0 3px rgba(var(--accent-hover-rgb, 141, 164, 196), );
 }
 
 /* ============================================================================
@@ -191,13 +191,13 @@
 }
 
 [data-theme="dark"] .rename-header {
-  background: linear-gradient(to right, rgba(37, 99, 235, 0.15), rgba(59, 130, 246, 0.1));
-  border-bottom: 1px solid rgba(59, 130, 246, 0.2);
+  background: linear-gradient(to right, rgba(var(--accent-hover-rgb, 141, 164, 196), ), rgba(var(--accent-rgb, 168, 184, 208), ));
+  border-bottom: 1px solid rgba(var(--accent-rgb, 168, 184, 208), );
 }
 
 [data-theme="dark"] .rename-icon {
-  background: rgba(59, 130, 246, 0.15);
-  color: #60a5fa;
+  background: rgba(var(--accent-rgb, 168, 184, 208), );
+  color: var(--accent-light);
 }
 
 [data-theme="dark"] .rename-title {
@@ -219,8 +219,8 @@
 }
 
 [data-theme="dark"] .rename-form input[type="text"]:focus {
-  border-color: #3b82f6;
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.3);
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(var(--accent-rgb, 168, 184, 208), );
 }
 
 [data-theme="dark"] .rename-form input[type="text"]::placeholder {
@@ -251,11 +251,11 @@
 }
 
 [data-theme="dark"] .rename-button.primary {
-  background: #2563eb;
+  background: var(--accent);
 }
 
 [data-theme="dark"] .rename-button.primary:hover {
-  background: #3b82f6;
+  background: var(--accent);
 }
 
 /* Responsive */

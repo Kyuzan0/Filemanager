@@ -40,7 +40,7 @@ require_once dirname(__DIR__) . '/bootstrap.php';
                 padding-bottom: calc(env(safe-area-inset-bottom) + 16px) !important;
             }
 
-            nav.footer {
+            nav.pagination-footer {
                 padding-bottom: calc(env(safe-area-inset-bottom) + 12px) !important;
             }
         }
@@ -77,6 +77,17 @@ require_once dirname(__DIR__) . '/bootstrap.php';
             background: var(--bg-secondary);
             flex-shrink: 0;
             margin-left: auto;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        }
+        .search-bar:focus-within {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.15);
+        }
+        .search-bar input {
+            transition: width 0.2s ease;
+        }
+        .search-bar input:focus {
+            width: 300px !important;
         }
         @media (min-width: 768px) {
             .search-bar { display: flex; }
@@ -245,8 +256,8 @@ require_once dirname(__DIR__) . '/bootstrap.php';
                         role="search">
                         <span class="text-sm" aria-hidden="true">🔎</span>
                         <input type="search" id="search" placeholder="Find files..."
-                            class="border-0 outline-none bg-transparent text-sm w-32"
-                            style="color: var(--text-secondary);"
+                            class="border-0 outline-none bg-transparent text-sm"
+                            style="width: 200px; color: var(--text-secondary);"
                             aria-label="Search files and folders (Ctrl+F)" />
                     </div>
                 </div>
@@ -292,6 +303,16 @@ require_once dirname(__DIR__) . '/bootstrap.php';
                             <i class="ri-delete-bin-line text-lg" aria-hidden="true"></i>
                         </button>
                     </div>
+                    
+                    <!-- View Toggle -->
+                    <div class="view-toggle d-flex items-center gap-1 flex-shrink-0" role="group" aria-label="View mode">
+                        <button class="view-toggle-btn active" id="listViewBtn" title="List View" aria-label="Switch to list view" aria-pressed="true">
+                            <i class="ri-list-check text-base" aria-hidden="true"></i>
+                        </button>
+                        <button class="view-toggle-btn" id="gridViewBtn" title="Grid View" aria-label="Switch to grid view" aria-pressed="false">
+                            <i class="ri-grid-fill text-base" aria-hidden="true"></i>
+                        </button>
+                    </div>
                 </div>
             </section>
 
@@ -299,6 +320,9 @@ require_once dirname(__DIR__) . '/bootstrap.php';
             <div class="card" role="region" aria-label="File list container">
                 <?php include __DIR__ . '/partials/table.php'; ?>
             </div>
+            
+            <!-- GRID VIEW -->
+            <div class="grid-view-container" id="grid-view-container" role="grid" aria-label="File grid view"></div>
 
             <!-- PAGINATION FOOTER -->
             <nav class="pagination-footer"

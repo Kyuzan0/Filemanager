@@ -53,7 +53,7 @@
   height: 3rem;
   border-radius: 9999px;
   background: #dbeafe;
-  color: #2563eb;
+  color: var(--accent);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -286,12 +286,12 @@
 .log-page-btn:focus,
 .log-page-btn:focus-visible {
   outline: none;
-  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.3);
+  box-shadow: 0 0 0 2px rgba(var(--accent-rgb, 168, 184, 208), );
 }
 
 [data-theme="dark"] .log-page-btn:focus,
 [data-theme="dark"] .log-page-btn:focus-visible {
-  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.4);
+  box-shadow: 0 0 0 2px rgba(var(--accent-rgb, 168, 184, 208), );
 }
 
 #log-page-numbers {
@@ -449,7 +449,7 @@
 }
 
 [data-theme="dark"] .log-badge--move {
-  background-color: rgba(59, 130, 246, 0.3);
+  background-color: rgba(var(--accent-rgb, 168, 184, 208), );
   color: rgb(96, 165, 250);
 }
 
@@ -526,7 +526,7 @@
 
 [data-theme="dark"] .log-page-info {
   color: rgb(203, 213, 225);
-  background-color: rgba(59, 130, 246, 0.4);
+  background-color: rgba(var(--accent-rgb, 168, 184, 208), );
 }
 
 /* Page Number Button Base */
@@ -546,7 +546,7 @@
 
 /* Active Page Number */
 .log-page-number--active {
-  background-color: rgb(37, 99, 235);
+  background-color: var(--accent-hover);
   color: #ffffff;
 }
 
@@ -602,12 +602,12 @@
 }
 
 [data-theme="dark"] .log-filter-tag {
-  background-color: rgba(59, 130, 246, 0.3);
+  background-color: rgba(var(--accent-rgb, 168, 184, 208), );
   color: rgb(96, 165, 250);
 }
 
 [data-theme="dark"] .log-filter-tag:hover {
-  background-color: rgba(59, 130, 246, 0.5);
+  background-color: rgba(var(--accent-rgb, 168, 184, 208), );
 }
 
 .log-filter-tag__close {
@@ -692,8 +692,8 @@
 }
 
 .filter-search-input:focus {
-  border-color: #93c5fd;
-  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
+  border-color: var(--accent-light);
+  box-shadow: 0 0 0 2px rgba(var(--accent-rgb, 168, 184, 208), );
 }
 
 [data-theme="dark"] .filter-search-input {
@@ -703,8 +703,8 @@
 }
 
 [data-theme="dark"] .filter-search-input:focus {
-  border-color: rgba(59, 130, 246, 0.5);
-  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.15);
+  border-color: rgba(var(--accent-rgb, 168, 184, 208), );
+  box-shadow: 0 0 0 2px rgba(var(--accent-rgb, 168, 184, 208), );
 }
 
 [data-theme="dark"] .search-icon {
@@ -730,7 +730,7 @@
 }
 
 .filter-select-compact:focus {
-  border-color: #93c5fd;
+  border-color: var(--accent-light);
 }
 
 [data-theme="dark"] .filter-select-compact {
@@ -810,7 +810,7 @@
   width: 0.875rem;
   height: 0.875rem;
   cursor: pointer;
-  accent-color: var(--accent, #2563eb);
+  accent-color: var(--accent);
 }
 
 /* Export Dropdown */
@@ -912,7 +912,7 @@
 }
 
 .log-cleanup-select:focus {
-  border-color: #93c5fd;
+  border-color: var(--accent-light);
 }
 
 /* Log Table Header */

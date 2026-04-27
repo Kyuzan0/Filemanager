@@ -62,7 +62,7 @@
   height: 3rem;
   border-radius: 9999px;
   background: #dbeafe;
-  color: #2563eb;
+  color: var(--accent);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -76,7 +76,7 @@
 
 .details-icon-file {
   background: #dbeafe;
-  color: #2563eb;
+  color: var(--accent);
 }
 
 .details-icon-svg {
@@ -198,7 +198,7 @@
 
 .details-action-btn:focus {
   outline: none;
-  box-shadow: 0 0 0 2px #3b82f6;
+  box-shadow: 0 0 0 2px var(--accent);
 }
 
 .details-action-btn svg {
@@ -226,14 +226,14 @@
 
 [data-theme="dark"] .details-header,
 .dark .details-header {
-  background: linear-gradient(to right, rgba(59, 130, 246, 0.1), rgba(59, 130, 246, 0.05));
-  border-bottom-color: rgba(59, 130, 246, 0.2);
+  background: linear-gradient(to right, rgba(var(--accent-rgb, 168, 184, 208), ), rgba(var(--accent-rgb, 168, 184, 208), ));
+  border-bottom-color: rgba(var(--accent-rgb, 168, 184, 208), );
 }
 
 [data-theme="dark"] .details-icon,
 .dark .details-icon {
-  background: rgba(59, 130, 246, 0.2);
-  color: #60a5fa;
+  background: rgba(var(--accent-rgb, 168, 184, 208), );
+  color: var(--accent-light);
 }
 
 [data-theme="dark"] .details-icon-folder,

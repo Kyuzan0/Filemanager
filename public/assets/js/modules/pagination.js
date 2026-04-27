@@ -132,6 +132,16 @@ export function updatePaginationState(currentPage, totalPages, totalItems) {
             detail: { ...paginationState }
         }));
     }
+
+    // Hide pagination footer when only 1 page
+    const paginationFooter = document.querySelector('nav.footer');
+    if (paginationFooter) {
+        if (totalPages <= 1) {
+            paginationFooter.classList.add('hidden-pagination');
+        } else {
+            paginationFooter.classList.remove('hidden-pagination');
+        }
+    }
 }
 
 /**

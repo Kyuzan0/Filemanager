@@ -90,7 +90,7 @@ $activePage = $activePage ?? 'dashboard';
         <ul class="sidebar-section-list" id="favorites-list" role="list">
             <!-- Populated by JavaScript -->
             <li class="sidebar-section-empty" id="favorites-empty">
-                <span>No favorites yet</span>
+                <span>Right-click a file to add favorites</span>
             </li>
         </ul>
     </div>
@@ -105,7 +105,7 @@ $activePage = $activePage ?? 'dashboard';
         <ul class="sidebar-section-list" id="recent-list" role="list">
             <!-- Populated by JavaScript -->
             <li class="sidebar-section-empty" id="recent-empty">
-                <span>No recent files</span>
+                <span>Recently opened files appear here</span>
             </li>
         </ul>
         <button type="button" class="sidebar-section-action" id="clear-recent" title="Clear recent files">

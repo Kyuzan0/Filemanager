@@ -61,11 +61,11 @@
 }
 
 .action-btn-upload {
-  background: #3b82f6;
+  background: var(--accent);
 }
 
 .action-btn-upload:hover:not(:disabled) {
-  background: #2563eb;
+  background: var(--accent);
 }
 
 .action-btn-folder {
@@ -113,7 +113,7 @@
   position: fixed;
   bottom: 0.75rem;
   right: 0.75rem;
-  background: #3b82f6;
+  background: var(--accent);
   color: white;
   border-radius: 9999px;
   padding: 0.5rem;
@@ -135,7 +135,7 @@
 }
 
 .batch-badge-close:hover {
-  background: rgba(37, 99, 235, 0.8);
+  background: rgba(var(--accent-hover-rgb, 141, 164, 196), );
 }
 
 /* Desktop Action Buttons */
@@ -158,11 +158,11 @@
 }
 
 .action-btn-desktop.action-btn-upload {
-  background: #3b82f6;
+  background: var(--accent);
 }
 
 .action-btn-desktop.action-btn-upload:hover:not(:disabled) {
-  background: #2563eb;
+  background: var(--accent);
 }
 
 .action-btn-desktop.action-btn-folder {

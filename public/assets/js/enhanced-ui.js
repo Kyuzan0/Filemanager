@@ -392,22 +392,30 @@ function updateBreadcrumbs(path) {
   if (!breadcrumbEl) return;
 
   if (!path) {
-    breadcrumbEl.textContent = 'Home';
+    breadcrumbEl.innerHTML = '<i class="ri-home-4-line" aria-hidden="true" style="margin-right: 4px; font-size: 14px;"></i>Home';
     return;
-  }
+}
 
-  const parts = path.split('/');
-  breadcrumbEl.innerHTML = '<span>Home</span>';
+const parts = path.split('/');
+breadcrumbEl.innerHTML = '<span style="cursor: pointer;"><i class="ri-home-4-line" aria-hidden="true" style="margin-right: 4px; font-size: 14px;"></i>Home</span>';
 
-  let currentSegment = '';
-  for (const part of parts) {
+let currentSegment = '';
+for (const part of parts) {
     currentSegment = currentSegment ? `${currentSegment}/${part}` : part;
+    
+    const separator = document.createElement('span');
+    separator.textContent = ' › ';
+    separator.style.cssText = 'margin: 0 4px; color: var(--muted); user-select: none;';
+    separator.setAttribute('aria-hidden', 'true');
+    breadcrumbEl.appendChild(separator);
+    
     const link = document.createElement('span');
-    link.textContent = ` / ${part}`;
+    link.textContent = part;
     link.style.cursor = 'pointer';
-    link.addEventListener('click', () => loadFiles(currentSegment));
+    const segmentPath = currentSegment;
+    link.addEventListener('click', () => loadFiles(segmentPath));
     breadcrumbEl.appendChild(link);
-  }
+}
 }
 
 // ============= Data Loading & Rendering =============
@@ -2477,6 +2485,35 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   // Load files
   await loadFiles('');
+
+  // View Toggle (List/Grid)
+  const listViewBtn = document.getElementById('listViewBtn');
+  const gridViewBtn = document.getElementById('gridViewBtn');
+  const savedView = localStorage.getItem('filemanager-view') || 'list';
+
+  function setViewMode(mode) {
+      if (mode === 'grid') {
+          document.body.classList.add('grid-view-active');
+          gridViewBtn?.classList.add('active');
+          gridViewBtn?.setAttribute('aria-pressed', 'true');
+          listViewBtn?.classList.remove('active');
+          listViewBtn?.setAttribute('aria-pressed', 'false');
+      } else {
+          document.body.classList.remove('grid-view-active');
+          listViewBtn?.classList.add('active');
+          listViewBtn?.setAttribute('aria-pressed', 'true');
+          gridViewBtn?.classList.remove('active');
+          gridViewBtn?.setAttribute('aria-pressed', 'false');
+      }
+      localStorage.setItem('filemanager-view', mode);
+  }
+
+  // Initialize
+  setViewMode(savedView);
+
+  listViewBtn?.addEventListener('click', () => setViewMode('list'));
+  gridViewBtn?.addEventListener('click', () => setViewMode('grid'));
+
 });
 
 
