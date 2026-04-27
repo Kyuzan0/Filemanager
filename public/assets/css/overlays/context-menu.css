@@ -134,7 +134,7 @@
 
 :root .context-menu-item-danger:hover {
   background: rgba(255, 71, 87, 0.08);
-  color: #dc2626;
+  color: var(--danger);
 }
 
 /* ============================================================================
@@ -150,7 +150,7 @@
 }
 
 [data-theme="dark"] .context-menu-item {
-  color: #e5e7eb;
+  color: var(--text);
 }
 
 [data-theme="dark"] .context-menu-item:hover {
@@ -166,7 +166,7 @@
 }
 
 [data-theme="dark"] .context-menu-item-danger {
-  color: #ff6b7a;
+  color: var(--danger);
 }
 
 [data-theme="dark"] .context-menu-item-danger:hover {
@@ -260,7 +260,7 @@
 }
 
 [data-theme="dark"] .mobile-actions-item {
-  color: #e5e7eb;
+  color: var(--text);
 }
 
 [data-theme="dark"] .mobile-actions-item:hover,
@@ -269,7 +269,7 @@
 }
 
 [data-theme="dark"] .mobile-actions-item-danger {
-  color: #ff6b7a;
+  color: var(--danger);
 }
 
 [data-theme="dark"] .mobile-actions-item-danger:hover {
@@ -323,8 +323,8 @@
 }
 
 [data-theme="dark"] .mobile-context-menu {
-  background: #1f2937;
-  border-color: #374151;
+  background: var(--card);
+  border-color: var(--card-border);
 }
 
 .mobile-context-item {
@@ -345,7 +345,7 @@
 }
 
 [data-theme="dark"] .mobile-context-item:hover {
-  background: #374151;
+  background: var(--surface-active);
 }
 
 .context-item-label {
@@ -354,18 +354,18 @@
 }
 
 [data-theme="dark"] .context-item-label {
-  color: #e5e7eb;
+  color: var(--text);
 }
 
 /* Context menu action colors */
 .context-action-open { color: var(--accent); }
 .context-action-download { color: var(--success); }
 .context-action-rename { color: var(--warning); }
-.context-action-move { color: #8b5cf6; }
+.context-action-move { color: var(--action-purple); }
 .context-action-delete { color: var(--danger); }
 
 [data-theme="dark"] .context-action-open { color: var(--accent-light); }
-[data-theme="dark"] .context-action-download { color: #6ee7b7; }
-[data-theme="dark"] .context-action-rename { color: #fbbf24; }
-[data-theme="dark"] .context-action-move { color: #a78bfa; }
-[data-theme="dark"] .context-action-delete { color: #f87171; }
+[data-theme="dark"] .context-action-download { color: var(--action-green); }
+[data-theme="dark"] .context-action-rename { color: var(--action-amber); }
+[data-theme="dark"] .context-action-move { color: var(--action-purple); }
+[data-theme="dark"] .context-action-delete { color: var(--danger); }

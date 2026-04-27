@@ -60,6 +60,19 @@ export function fileKindFromExtension(ext) {
     return 'file';
 }
 
+// CSS variable reader with theme-aware caching
+let _cachedStyle = null;
+let _cachedTheme = null;
+
+function getCSSVar(name) {
+    const currentTheme = document.documentElement.getAttribute('data-theme') || 'light';
+    if (!_cachedStyle || _cachedTheme !== currentTheme) {
+        _cachedStyle = getComputedStyle(document.documentElement);
+        _cachedTheme = currentTheme;
+    }
+    return _cachedStyle.getPropertyValue(name).trim();
+}
+
 // Helper to create an SVG element from path data (supports single or multiple paths)
 function createSvg(viewBox, pathDs, fillColor = 'currentColor') {
     const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
@@ -87,7 +100,7 @@ function createFileTypeIcon(label, foldColor, labelColor = '#ffffff') {
 
     // Base document shape (gray)
     const basePage = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-    basePage.setAttribute('fill', '#e2e8f0'); // Light slate gray base
+    basePage.setAttribute('fill', getCSSVar('--icon-default-bg') || '#e2e8f0');
     basePage.setAttribute('d', 'M5 3C5 1.89543 5.89543 1 7 1H13.5858C14.1162 1 14.6249 1.21071 15 1.58579L19.4142 6C19.7893 6.37508 20 6.88378 20 7.41421V21C20 22.1046 19.1046 23 18 23H7C5.89543 23 5 22.1046 5 21V3Z');
     svg.appendChild(basePage);
 

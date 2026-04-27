@@ -44,7 +44,7 @@
   border: none;
   cursor: pointer;
   transition: all 0.2s ease;
-  color: white;
+  color: var(--btn-primary-text);
 }
 
 .action-btn-mobile:disabled {
@@ -53,11 +53,11 @@
 }
 
 .action-btn-select {
-  background: #6366f1;
+  background: var(--action-btn-select);
 }
 
 .action-btn-select:hover:not(:disabled) {
-  background: #4f46e5;
+  background: var(--action-btn-select-hover);
 }
 
 .action-btn-upload {
@@ -69,27 +69,27 @@
 }
 
 .action-btn-folder {
-  background: #06b6d4;
+  background: var(--action-btn-folder);
 }
 
 .action-btn-folder:hover:not(:disabled) {
-  background: #0891b2;
+  background: var(--action-btn-folder-hover);
 }
 
 .action-btn-new-folder {
-  background: #10b981;
+  background: var(--action-btn-new-folder);
 }
 
 .action-btn-new-folder:hover:not(:disabled) {
-  background: #059669;
+  background: var(--action-btn-new-folder-hover);
 }
 
 .action-btn-search {
-  background: #a855f7;
+  background: var(--action-btn-search);
 }
 
 .action-btn-search:hover:not(:disabled) {
-  background: #9333ea;
+  background: var(--action-btn-search-hover);
 }
 
 .action-btn-delete {
@@ -97,15 +97,15 @@
 }
 
 .action-btn-delete:hover:not(:disabled) {
-  background: #dc2626;
+  background: var(--action-btn-delete-hover);
 }
 
 .action-btn-settings {
-  background: #6b7280;
+  background: var(--action-btn-settings);
 }
 
 .action-btn-settings:hover:not(:disabled) {
-  background: #4b5563;
+  background: var(--action-btn-settings-hover);
 }
 
 /* Floating Badge for Mobile */
@@ -114,7 +114,7 @@
   bottom: 0.75rem;
   right: 0.75rem;
   background: var(--accent);
-  color: white;
+  color: var(--btn-primary-text);
   border-radius: 9999px;
   padding: 0.5rem;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
@@ -125,7 +125,7 @@
 }
 
 .batch-badge-close {
-  color: white;
+  color: var(--btn-primary-text);
   background: transparent;
   border: none;
   border-radius: 9999px;
@@ -149,7 +149,7 @@
   border: none;
   cursor: pointer;
   transition: all 0.2s ease;
-  color: white;
+  color: var(--btn-primary-text);
 }
 
 .action-btn-desktop:disabled {
@@ -166,19 +166,19 @@
 }
 
 .action-btn-desktop.action-btn-folder {
-  background: #06b6d4;
+  background: var(--action-btn-folder);
 }
 
 .action-btn-desktop.action-btn-folder:hover:not(:disabled) {
-  background: #0891b2;
+  background: var(--action-btn-folder-hover);
 }
 
 .action-btn-desktop.action-btn-new-folder {
-  background: #10b981;
+  background: var(--action-btn-new-folder);
 }
 
 .action-btn-desktop.action-btn-new-folder:hover:not(:disabled) {
-  background: #059669;
+  background: var(--action-btn-new-folder-hover);
 }
 
 .action-btn-desktop.action-btn-delete {
@@ -186,7 +186,7 @@
 }
 
 .action-btn-desktop.action-btn-delete:hover:not(:disabled) {
-  background: #dc2626;
+  background: var(--action-btn-delete-hover);
 }
 
 .action-btn-desktop.action-btn-settings,

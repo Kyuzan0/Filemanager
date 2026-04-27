@@ -48,8 +48,8 @@ const SystemRequirements = {
 
         tab.classList.add('active');
         tab.setAttribute('aria-selected', 'true');
-        tab.style.borderBottomColor = '#3b82f6';
-        tab.style.color = '#3b82f6';
+        tab.style.borderBottomColor = 'var(--accent, #3b82f6)';
+        tab.style.color = 'var(--accent, #3b82f6)';
 
         // Show/hide panels
         document.querySelectorAll('.settings-panel').forEach(panel => {

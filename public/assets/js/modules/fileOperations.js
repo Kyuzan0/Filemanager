@@ -978,7 +978,7 @@ export function openInWord(
                 const panel = document.createElement('div');
                 panel.style.maxWidth = '640px';
                 panel.style.margin = '10vh auto';
-                panel.style.background = '#fff';
+                panel.style.background = 'var(--card, #fff)';
                 panel.style.borderRadius = '12px';
                 panel.style.boxShadow = '0 10px 30px rgba(0,0,0,0.2)';
                 panel.style.padding = '20px 24px';
@@ -1018,7 +1018,7 @@ export function openInWord(
                 input.readOnly = true;
                 input.style.width = '100%';
                 input.style.padding = '8px';
-                input.style.border = '1px solid #ddd';
+                input.style.border = '1px solid var(--border, #ddd)';
                 input.style.borderRadius = '8px';
 
                 const buttons = document.createElement('div');

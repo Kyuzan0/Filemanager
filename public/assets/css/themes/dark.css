@@ -1,462 +1,52 @@
 /**
  * Dark Theme Overrides
  * ====================
- * All dark mode specific styles consolidated in one place.
+ * Structural dark-mode overrides that can't be handled by CSS variables alone.
  * Dark mode is activated via [data-theme="dark"] attribute on document.
  * 
- * CSS variables are already defined in core/variables.css
- * This file contains component-specific overrides for dark theme.
- * Extracted from style.css lines 12-18, 32-33, 51-55, 119-136, 158-166, 195-216, 250-263, 277-283, 296-316, 334-383, 424-430, 461-468, 612-675, 782-843
+ * Most color switching is now handled by CSS custom properties in core/variables.css.
+ * This file only contains overrides for:
+ *   - Elements styled via Tailwind/inline (no CSS variable hook)
+ *   - Intentional dark-mode behavioral differences (e.g. different hover intensity)
+ *   - Shadow/opacity adjustments specific to dark backgrounds
  */
 
 /* ============================================================================
-   BASE - Dark Theme Body & Global Styles
+   BASE - Dark Theme Body
    ============================================================================ */
 [data-theme="dark"] body {
-  background: #0f1419;
+  background: var(--bg);
 }
 
 /* ============================================================================
-   LAYOUT - Dark Theme Layout Components
-   ============================================================================ */
-[data-theme="dark"] .sidebar {
-  background: var(--card);
-  border-right-color: var(--border);
-}
-
-/* ============================================================================
-   COMPONENTS - Dark Theme Component Overrides
+   COMPONENTS - Structural Dark Overrides
    ============================================================================ */
 
-/* Buttons */
-[data-theme="dark"] .btn {
-  background: var(--card);
-  border-color: var(--border);
-  color: var(--muted);
-}
-
-[data-theme="dark"] .btn:hover {
-  background: var(--glass);
-  border-color: rgba(255, 255, 255, 0.15);
-}
-
-/* Search */
+/* Search — base .search has no bg/border/color in CSS (styled via Tailwind inline) */
 [data-theme="dark"] .search {
   background: var(--card);
   border-color: var(--border);
   color: var(--muted);
 }
 
-/* Cards */
-[data-theme="dark"] .card {
-  background: var(--card);
-  border-color: var(--border);
-}
-
-/* Tables */
-[data-theme="dark"] th,
-[data-theme="dark"] td {
-  border-bottom-color: var(--border-light);
-  color: var(--muted);
-}
-
-/* Icons */
+/* Icons — intentionally different hover intensity in dark mode */
 [data-theme="dark"] .icon:hover {
   background: var(--surface-active);
 }
 
-/* ============================================================================
-   OVERLAYS - Dark Theme Modal/Dialog Styles
-   ============================================================================ */
-
-/* Modal Backdrop */
-[data-theme="dark"] .modal-backdrop {
-  background: var(--surface-overlay);
-}
-
-/* Modals & Dialogs - General */
-[data-theme="dark"] .modal {
-  background: var(--card);
-  color: var(--muted);
-}
-
-[data-theme="dark"] .modal h3,
-[data-theme="dark"] .modal p,
-[data-theme="dark"] .preview-title,
-[data-theme="dark"] .confirm-title,
-[data-theme="dark"] .create-title,
-[data-theme="dark"] .rename-title,
-[data-theme="dark"] .log-title,
-[data-theme="dark"] .move-title,
-[data-theme="dark"] .settings-title {
-  color: var(--muted);
-}
-
-/* Modal Form Controls */
-[data-theme="dark"] .modal input[type="text"],
-[data-theme="dark"] .modal input[type="file"],
-[data-theme="dark"] .modal input[type="search"],
-[data-theme="dark"] .modal select,
-[data-theme="dark"] .modal textarea {
-  background: rgba(0, 0, 0, 0.2);
-  border-color: var(--border);
-  color: var(--muted);
-}
-
-[data-theme="dark"] .modal input[type="text"]:focus,
-[data-theme="dark"] .modal input[type="file"]:focus,
-[data-theme="dark"] .modal input[type="search"]:focus,
-[data-theme="dark"] .modal select:focus,
-[data-theme="dark"] .modal textarea:focus {
-  border-color: var(--accent);
-  box-shadow: 0 0 0 3px var(--accent-bg);
-}
-
-/* Select Elements */
-[data-theme="dark"] select {
-  background: var(--card);
-  border-color: var(--border);
-  color: var(--muted);
-}
-
-/* Context Menu */
+/* Context Menu — .context selector (distinct from .context-menu), shadow override */
 [data-theme="dark"] .context {
   background: var(--card);
   box-shadow: 0 8px 30px rgba(0, 0, 0, 0.5);
 }
 
-/* Badges */
-[data-theme="dark"] .badge {
-  background: var(--surface-active);
-  border-color: var(--border);
-  color: var(--muted);
-}
-
-/* ============================================================================
-   DIALOGS - Dark Theme Dialog Container Styles
-   ============================================================================ */
-[data-theme="dark"] .preview-dialog,
-[data-theme="dark"] .confirm-dialog,
-[data-theme="dark"] .create-dialog,
-[data-theme="dark"] .rename-dialog,
-[data-theme="dark"] .unsaved-dialog,
-[data-theme="dark"] .move-dialog,
-[data-theme="dark"] .log-dialog,
-[data-theme="dark"] .settings-dialog {
-  background: var(--card);
-  color: var(--muted);
-}
-
-/* Form Labels */
+/* Form Fields — .form-field class used in overlays.php create/settings dialogs */
 [data-theme="dark"] .form-field label {
   color: var(--muted);
 }
 
-/* Form Inputs */
-[data-theme="dark"] .form-field input[type="text"],
-[data-theme="dark"] .move-search-input,
-[data-theme="dark"] .filter-search-input,
-[data-theme="dark"] .preview-editor {
-  background: rgba(0, 0, 0, 0.2);
+[data-theme="dark"] .form-field input[type="text"] {
+  background: var(--input-bg);
   border-color: var(--border);
   color: var(--muted);
-}
-
-/* Dialog Buttons - Outline Style */
-[data-theme="dark"] .create-button.outline,
-[data-theme="dark"] .rename-button.outline,
-[data-theme="dark"] .confirm-button.outline,
-[data-theme="dark"] .log-button.outline,
-[data-theme="dark"] .move-button.outline,
-[data-theme="dark"] .preview-button.outline,
-[data-theme="dark"] .unsaved-button.outline,
-[data-theme="dark"] .settings-button.outline {
-  background: transparent;
-  border: 1px solid var(--card-border);
-  color: var(--text-secondary);
-}
-
-[data-theme="dark"] .create-button.outline:hover,
-[data-theme="dark"] .rename-button.outline:hover,
-[data-theme="dark"] .confirm-button.outline:hover,
-[data-theme="dark"] .log-button.outline:hover,
-[data-theme="dark"] .move-button.outline:hover,
-[data-theme="dark"] .preview-button.outline:hover,
-[data-theme="dark"] .unsaved-button.outline:hover,
-[data-theme="dark"] .settings-button.outline:hover {
-  background: var(--bg-secondary);
-  color: var(--text);
-  border-color: var(--accent);
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
-}
-
-[data-theme="dark"] .create-button.outline:focus,
-[data-theme="dark"] .rename-button.outline:focus,
-[data-theme="dark"] .confirm-button.outline:focus,
-[data-theme="dark"] .log-button.outline:focus,
-[data-theme="dark"] .move-button.outline:focus,
-[data-theme="dark"] .preview-button.outline:focus,
-[data-theme="dark"] .unsaved-button.outline:focus,
-[data-theme="dark"] .settings-button.outline:focus {
-  outline: none;
-  box-shadow: 0 0 0 3px var(--focus-ring);
-}
-
-/* ============================================================================
-   LOG OVERLAY - Dark Theme Log Modal Styles
-   ============================================================================ */
-
-/* Log Header */
-[data-theme="dark"] .log-header {
-  background: linear-gradient(to right, var(--accent-bg), rgba(var(--accent-light-rgb, 205, 216, 235), 0.08));
-  border-bottom-color: var(--border);
-}
-
-[data-theme="dark"] .log-icon {
-  background: var(--info-bg);
-  color: var(--accent-light);
-}
-
-[data-theme="dark"] .log-title {
-  color: var(--text);
-}
-
-[data-theme="dark"] .log-subtitle {
-  color: var(--text-secondary);
-}
-
-[data-theme="dark"] .log-header button {
-  color: var(--text-secondary);
-}
-
-[data-theme="dark"] .log-header button:hover {
-  color: var(--text);
-  background: var(--border);
-}
-
-/* Log Body */
-[data-theme="dark"] .log-body {
-  background: var(--card);
-}
-
-/* Log Filter Bar */
-[data-theme="dark"] .log-filter-bar .filter-search-input,
-[data-theme="dark"] #log-path-search {
-  background: rgba(0, 0, 0, 0.3);
-  border-color: var(--border);
-  color: var(--text);
-}
-
-[data-theme="dark"] .log-filter-bar .filter-search-input::placeholder,
-[data-theme="dark"] #log-path-search::placeholder {
-  color: var(--muted);
-}
-
-[data-theme="dark"] .log-filter-bar .filter-search-input:focus,
-[data-theme="dark"] #log-path-search:focus {
-  border-color: var(--border-focus);
-  box-shadow: 0 0 0 3px var(--focus-ring);
-}
-
-[data-theme="dark"] .log-filter-bar .search-icon {
-  color: var(--muted);
-}
-
-[data-theme="dark"] #log-filter,
-[data-theme="dark"] #log-target-type,
-[data-theme="dark"] .filter-select-compact {
-  background: rgba(0, 0, 0, 0.3);
-  border-color: var(--border);
-  color: var(--text);
-}
-
-[data-theme="dark"] #log-filter:focus,
-[data-theme="dark"] #log-target-type:focus,
-[data-theme="dark"] .filter-select-compact:focus {
-  border-color: var(--border-focus);
-  box-shadow: 0 0 0 3px var(--focus-ring);
-}
-
-[data-theme="dark"] #log-filter option,
-[data-theme="dark"] #log-target-type option,
-[data-theme="dark"] .filter-select-compact option {
-  background: var(--card);
-  color: var(--text);
-}
-
-/* Log Table */
-[data-theme="dark"] .log-table-wrapper {
-  border-color: var(--border);
-}
-
-[data-theme="dark"] .log-table thead {
-  background: rgba(0, 0, 0, 0.3);
-}
-
-[data-theme="dark"] .log-table th {
-  color: var(--text-secondary);
-  border-bottom-color: var(--border);
-}
-
-[data-theme="dark"] .log-table tbody tr {
-  border-bottom-color: var(--border-light);
-  box-sizing: border-box;
-}
-
-[data-theme="dark"] .log-table tbody tr:hover,
-[data-theme="dark"] .log-table-row:hover {
-  background: var(--surface-hover);
-  box-sizing: border-box;
-}
-
-[data-theme="dark"] .log-table td {
-  color: var(--text);
-  border-bottom-color: var(--border-light);
-  box-sizing: border-box;
-}
-
-[data-theme="dark"] .log-loading {
-  color: var(--text-secondary);
-}
-
-/* Log Pagination */
-[data-theme="dark"] .log-pagination-btn {
-  background: var(--card);
-  border-color: var(--border);
-  color: var(--text-secondary);
-}
-
-[data-theme="dark"] .log-pagination-btn:hover:not(:disabled) {
-  background: var(--surface-active);
-  color: var(--text);
-}
-
-[data-theme="dark"] .log-pagination-btn:disabled {
-  opacity: 0.4;
-}
-
-[data-theme="dark"] #log-page-info {
-  color: var(--text-secondary);
-}
-
-/* Log Page Number Buttons */
-[data-theme="dark"] .log-page-btn {
-  background: var(--card);
-  border-color: var(--border);
-  color: var(--text);
-}
-
-[data-theme="dark"] .log-page-btn:hover:not(:disabled):not([aria-current="page"]) {
-  background: var(--surface-active);
-}
-
-/* Main Table Pagination */
-[data-theme="dark"] .pagination-controls {
-  background: var(--card);
-  border-color: var(--border);
-}
-
-[data-theme="dark"] .pagination-controls .text-gray-700 {
-  color: var(--text);
-}
-
-[data-theme="dark"] .pagination-btn,
-[data-theme="dark"] .pagination-page-btn {
-  background: var(--card);
-  border-color: var(--border);
-  color: var(--text);
-}
-
-[data-theme="dark"] .pagination-btn:hover:not(:disabled),
-[data-theme="dark"] .pagination-page-btn:hover:not(:disabled):not(.active) {
-  background: var(--surface-active);
-}
-
-[data-theme="dark"] .pagination-btn:disabled {
-  opacity: 0.4;
-}
-
-[data-theme="dark"] .pagination-page-size-select {
-  background: var(--card);
-  border-color: var(--border);
-  color: var(--text);
-}
-
-[data-theme="dark"] .pagination-page-size-select:focus {
-  border-color: var(--border-focus);
-}
-
-/* Log Auto Refresh */
-[data-theme="dark"] .log-auto-refresh label {
-  color: var(--text-secondary);
-}
-
-[data-theme="dark"] .log-auto-refresh input[type="checkbox"] {
-  background: rgba(0, 0, 0, 0.3);
-  border-color: rgba(255, 255, 255, 0.2);
-}
-
-/* Log Export Dropdown */
-[data-theme="dark"] #log-export-toggle {
-  background: var(--card);
-  border-color: var(--border);
-  color: var(--text);
-}
-
-[data-theme="dark"] #log-export-toggle:hover {
-  background: var(--surface-active);
-}
-
-[data-theme="dark"] .log-export-menu {
-  background: var(--card);
-  border-color: var(--border);
-  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.5);
-}
-
-[data-theme="dark"] .log-export-option {
-  color: var(--text);
-}
-
-[data-theme="dark"] .log-export-option:hover {
-  background: var(--surface-active);
-}
-
-/* Log Footer */
-[data-theme="dark"] .log-actions {
-  background: rgba(0, 0, 0, 0.2);
-  border-top-color: var(--border);
-}
-
-[data-theme="dark"] #log-cleanup-days,
-[data-theme="dark"] .log-cleanup-select {
-  background: rgba(0, 0, 0, 0.3);
-  border-color: var(--border);
-  color: var(--text);
-}
-
-[data-theme="dark"] #log-cleanup-days option,
-[data-theme="dark"] .log-cleanup-select option {
-  background: var(--card);
-  color: var(--text);
-}
-
-[data-theme="dark"] #log-refresh {
-  background: var(--card);
-  border-color: var(--border);
-  color: var(--text);
-}
-
-[data-theme="dark"] #log-refresh:hover {
-  background: var(--surface-active);
-}
-
-/* Active Filters */
-[data-theme="dark"] .active-filters-label {
-  color: var(--text-secondary);
-}
-
-[data-theme="dark"] .active-filters-tags .tag {
-  background: var(--info-bg);
-  color: var(--accent-light);
-  border-color: var(--info-border);
 }

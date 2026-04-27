@@ -8,7 +8,7 @@
 .rename-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.45);
+  background: var(--surface-overlay);
   display: none;
   align-items: center;
   justify-content: center;
@@ -28,10 +28,10 @@
 }
 
 .rename-dialog {
-  background: var(--card, #ffffff);
-  color: var(--muted, #64748b);
+  background: var(--card);
+  color: var(--muted);
   border-radius: 0.75rem;
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15), 0 0 0 1px rgba(0, 0, 0, 0.05);
+  box-shadow: var(--shadow-lg), 0 0 0 1px var(--border-light);
   width: 100%;
   max-width: 28rem;
   animation: modal-slide-up 0.2s ease-out;
@@ -50,7 +50,7 @@
 
 .rename-header {
   background: linear-gradient(to right, var(--accent-bg), var(--accent-bg));
-  border-bottom: 1px solid #bfdbfe;
+  border-bottom: 1px solid var(--details-header-border);
   padding: 1.25rem 1.5rem;
   display: flex;
   align-items: center;
@@ -78,13 +78,13 @@
 .rename-title {
   font-size: 1rem;
   font-weight: 600;
-  color: #111827;
+  color: var(--dialog-title);
   margin: 0;
 }
 
 .rename-subtitle {
   font-size: 0.75rem;
-  color: #6b7280;
+  color: var(--dialog-subtitle);
   margin-top: 0.25rem;
 }
 
@@ -96,18 +96,18 @@
   display: block;
   font-size: 0.875rem;
   font-weight: 500;
-  color: #374151;
+  color: var(--dialog-label);
   margin-bottom: 0.5rem;
 }
 
 .rename-form input[type="text"] {
   width: 100%;
   padding: 0.625rem 0.875rem;
-  border: 1px solid #e5e7eb;
+  border: 1px solid var(--input-border);
   border-radius: 0.5rem;
   font-size: 0.875rem;
-  background: #ffffff;
-  color: #111827;
+  background: var(--input-bg);
+  color: var(--input-text);
   transition: border-color 0.15s, box-shadow 0.15s;
 }
 
@@ -117,17 +117,21 @@
   box-shadow: 0 0 0 3px var(--accent);
 }
 
+.rename-form input[type="text"]::placeholder {
+  color: var(--input-placeholder);
+}
+
 .rename-form .form-hint {
   font-size: 0.75rem;
-  color: #6b7280;
+  color: var(--dialog-hint);
   margin-top: 0.5rem;
 }
 
 .rename-actions {
   display: flex;
   gap: 0.5rem;
-  border-top: 1px solid #f3f4f6;
-  background: #f9fafb;
+  border-top: 1px solid var(--actions-border);
+  background: var(--actions-bg);
   padding: 0.875rem 1.5rem;
   border-radius: 0 0 0.75rem 0.75rem;
 }
@@ -147,29 +151,29 @@
 }
 
 .rename-button.outline {
-  background: #ffffff;
-  border: 1px solid #e5e7eb;
-  color: #374151;
+  background: var(--btn-outline-bg);
+  border: 1px solid var(--btn-outline-border);
+  color: var(--btn-outline-text);
   padding: 0.375rem 0.75rem;
   outline: none;
 }
 
 .rename-button.outline:hover {
-  background: #f9fafb;
-  border-color: #e5e7eb;
+  background: var(--btn-outline-hover-bg);
+  border-color: var(--btn-outline-border);
 }
 
 .rename-button.outline:focus,
 .rename-button.outline:focus-visible {
   outline: none;
-  border-color: #e5e7eb;
+  border-color: var(--btn-outline-border);
   box-shadow: none;
 }
 
 .rename-button.primary {
   background: var(--accent);
   border: none;
-  color: #ffffff;
+  color: var(--btn-primary-text);
 }
 
 .rename-button.primary:hover {
@@ -179,83 +183,6 @@
 .rename-button.primary:focus {
   outline: none;
   box-shadow: 0 0 0 3px var(--accent-hover);
-}
-
-/* ============================================================================
-   DARK MODE
-   ============================================================================ */
-
-[data-theme="dark"] .rename-dialog {
-  background: var(--card, #1f2937);
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.05);
-}
-
-[data-theme="dark"] .rename-header {
-  background: linear-gradient(to right, var(--accent-hover), var(--accent));
-  border-bottom: 1px solid var(--accent);
-}
-
-[data-theme="dark"] .rename-icon {
-  background: var(--accent);
-  color: var(--accent-light);
-}
-
-[data-theme="dark"] .rename-title {
-  color: #f9fafb;
-}
-
-[data-theme="dark"] .rename-subtitle {
-  color: #9ca3af;
-}
-
-[data-theme="dark"] .rename-form label {
-  color: #d1d5db;
-}
-
-[data-theme="dark"] .rename-form input[type="text"] {
-  background: rgba(0, 0, 0, 0.2);
-  border-color: rgba(255, 255, 255, 0.1);
-  color: #f9fafb;
-}
-
-[data-theme="dark"] .rename-form input[type="text"]:focus {
-  border-color: var(--accent);
-  box-shadow: 0 0 0 3px var(--accent);
-}
-
-[data-theme="dark"] .rename-form input[type="text"]::placeholder {
-  color: #6b7280;
-}
-
-[data-theme="dark"] .rename-form .form-hint {
-  color: #9ca3af;
-}
-
-[data-theme="dark"] .rename-actions {
-  background: rgba(0, 0, 0, 0.2);
-  border-top: 1px solid rgba(255, 255, 255, 0.05);
-}
-
-[data-theme="dark"] .rename-button.outline {
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  color: #e5e7eb;
-}
-
-[data-theme="dark"] .rename-button.outline:hover {
-  background: rgba(255, 255, 255, 0.1);
-}
-
-[data-theme="dark"] .rename-button.outline:focus {
-  outline: none;
-}
-
-[data-theme="dark"] .rename-button.primary {
-  background: var(--accent);
-}
-
-[data-theme="dark"] .rename-button.primary:hover {
-  background: var(--accent);
 }
 
 /* Responsive */

@@ -8,7 +8,7 @@
 .unsaved-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.45);
+  background: var(--surface-overlay);
   display: none;
   align-items: center;
   justify-content: center;
@@ -41,7 +41,7 @@
 .unsaved-icon {
   width: 3rem;
   height: 3rem;
-  color: #ca8a04;
+  color: var(--warning);
   margin: 0 auto 0.75rem;
 }
 

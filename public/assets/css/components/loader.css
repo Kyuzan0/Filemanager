@@ -19,7 +19,7 @@
 }
 
 .loader-overlay .loader-inner {
-  background: #ffffff;
+  background: var(--card);
   padding: 0.5rem 0.75rem;
   border-radius: 0.375rem;
   box-shadow: 0 6px 18px rgba(2, 6, 23, 0.12);
@@ -132,7 +132,7 @@
   width: 2rem;
   height: 2rem;
   margin: 0 auto 0.5rem;
-  border: 3px solid #e5e7eb;
+  border: 3px solid var(--border);
   border-top-color: var(--accent);
   border-radius: 50%;
   animation: spin 1s linear infinite;

@@ -10,7 +10,7 @@
         </div>
         <div class="modal-footer">
             <button class="btn" id="modal-cancel">Batal</button>
-            <button class="btn btn-danger" id="modal-confirm" style="background: #ef4444; color: white; border: none; padding: 0.5rem 1rem; border-radius: 0.375rem; cursor: pointer;">Hapus</button>
+            <button class="btn btn-danger" id="modal-confirm" style="background: var(--danger); color: var(--btn-primary-text); border: none; padding: 0.5rem 1rem; border-radius: 0.375rem; cursor: pointer;">Hapus</button>
         </div>
     </div>
 </div>

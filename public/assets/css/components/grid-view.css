@@ -178,7 +178,7 @@ body.grid-view-active .card[role="region"] {
 
 .view-toggle-btn.active {
     background: var(--accent);
-    color: #fff;
+    color: var(--btn-primary-text);
     border-color: var(--accent);
     z-index: 1;
 }

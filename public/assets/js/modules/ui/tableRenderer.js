@@ -30,132 +30,150 @@ let virtualScrollManager = null;
 // Global scroll tracking cleanup function
 let scrollTrackingCleanup = null;
 
+// CSS variable cache with theme awareness
+let _cachedStyle = null;
+let _cachedTheme = null;
+
+/**
+ * Get CSS custom property value with theme-aware caching
+ * @param {string} name - CSS variable name (e.g., '--icon-folder-bg')
+ * @returns {string} - CSS variable value
+ */
+export function getCSSVar(name) {
+    const currentTheme = document.documentElement.getAttribute('data-theme') || 'light';
+    if (!_cachedStyle || _cachedTheme !== currentTheme) {
+        _cachedStyle = getComputedStyle(document.documentElement);
+        _cachedTheme = currentTheme;
+    }
+    return _cachedStyle.getPropertyValue(name).trim();
+}
+
 /**
  * Get icon colors based on file type
  * Returns { backgroundColor, color } for colorful icons
  */
 export function getIconColors(item) {
     if (!item || !item.type) {
-        return { backgroundColor: '#e0e7ff', color: '#4f46e5' }; // Indigo for unknown files
+        return { backgroundColor: getCSSVar('--icon-default-bg'), color: getCSSVar('--icon-default-text') };
     }
 
     if (item.type === 'folder') {
-        return { backgroundColor: '#fef3c7', color: '#f59e0b' }; // Amber for folders
+        return { backgroundColor: getCSSVar('--icon-folder-bg'), color: getCSSVar('--icon-folder-text') };
     }
 
     // Get file extension for file type detection
     const ext = getFileExtension(item.name);
 
-    // Images - Red
+    // Images
     const images = new Set(['png','jpg','jpeg','gif','webp','svg','bmp','ico','tiff','tif','avif']);
     if (images.has(ext)) {
-        return { backgroundColor: '#fee2e2', color: '#dc2626' };
+        return { backgroundColor: getCSSVar('--icon-image-bg'), color: getCSSVar('--icon-image-text') };
     }
 
-    // PDF - Red/Orange
+    // PDF
     if (ext === 'pdf') {
-        return { backgroundColor: '#fecaca', color: '#ea580c' };
+        return { backgroundColor: getCSSVar('--icon-pdf-bg'), color: getCSSVar('--icon-pdf-text') };
     }
 
-    // Documents - Blue
+    // Documents
     const docs = new Set(['doc','docx','odt','rtf']);
     if (docs.has(ext)) {
-        return { backgroundColor: '#dbeafe', color: '#0284c7' };
+        return { backgroundColor: getCSSVar('--icon-doc-bg'), color: getCSSVar('--icon-doc-text') };
     }
 
-    // Presentations - Orange
+    // Presentations
     const ppts = new Set(['ppt','pptx','odp']);
     if (ppts.has(ext)) {
-        return { backgroundColor: '#fed7aa', color: '#d97706' };
+        return { backgroundColor: getCSSVar('--icon-presentation-bg'), color: getCSSVar('--icon-presentation-text') };
     }
 
-    // Spreadsheets - Green
+    // Spreadsheets
     const sheets = new Set(['xls','xlsx','ods','csv']);
     if (sheets.has(ext)) {
-        return { backgroundColor: '#dcfce7', color: '#16a34a' };
+        return { backgroundColor: getCSSVar('--icon-spreadsheet-bg'), color: getCSSVar('--icon-spreadsheet-text') };
     }
 
-    // Archives - Purple
+    // Archives
     const archives = new Set(['zip','rar','7z','tar','gz','bz2','tgz','xz']);
     if (archives.has(ext)) {
-        return { backgroundColor: '#e9d5ff', color: '#a855f7' };
+        return { backgroundColor: getCSSVar('--icon-archive-bg'), color: getCSSVar('--icon-archive-text') };
     }
 
-    // Audio - Violet
+    // Audio
     const audio = new Set(['mp3','wav','flac','ogg','m4a','aac']);
     if (audio.has(ext)) {
-        return { backgroundColor: '#ede9fe', color: '#7c3aed' };
+        return { backgroundColor: getCSSVar('--icon-audio-bg'), color: getCSSVar('--icon-audio-text') };
     }
 
-    // Video - Rose
+    // Video
     const video = new Set(['mp4','webm','mkv','mov','avi','m4v']);
     if (video.has(ext)) {
-        return { backgroundColor: '#ffe4e6', color: '#be123c' };
+        return { backgroundColor: getCSSVar('--icon-video-bg'), color: getCSSVar('--icon-video-text') };
     }
 
-    // JavaScript/TypeScript - Yellow
+    // JavaScript
     const javascript = new Set(['js','jsx']);
     if (javascript.has(ext)) {
-        return { backgroundColor: '#fef08a', color: '#ca8a04' };
+        return { backgroundColor: getCSSVar('--icon-js-bg'), color: getCSSVar('--icon-js-text') };
     }
 
-    // TypeScript - Blue
+    // TypeScript
     const typescript = new Set(['ts','tsx']);
     if (typescript.has(ext)) {
-        return { backgroundColor: '#dbeafe', color: '#0369a1' };
+        return { backgroundColor: getCSSVar('--icon-ts-bg'), color: getCSSVar('--icon-ts-text') };
     }
 
-    // Python - Blue/Yellow
+    // Python
     if (ext === 'py') {
-        return { backgroundColor: '#dbeafe', color: '#1e40af' };
+        return { backgroundColor: getCSSVar('--icon-python-bg'), color: getCSSVar('--icon-python-text') };
     }
 
-    // PHP - Violet
+    // PHP
     if (ext === 'php') {
-        return { backgroundColor: '#ede9fe', color: '#6d28d9' };
+        return { backgroundColor: getCSSVar('--icon-php-bg'), color: getCSSVar('--icon-php-text') };
     }
 
-    // HTML - Orange/Red
+    // HTML
     const html = new Set(['html','htm']);
     if (html.has(ext)) {
-        return { backgroundColor: '#fed7aa', color: '#ea580c' };
+        return { backgroundColor: getCSSVar('--icon-html-bg'), color: getCSSVar('--icon-html-text') };
     }
 
-    // CSS - Blue
+    // CSS
     if (ext === 'css') {
-        return { backgroundColor: '#bfdbfe', color: '#1e40af' };
+        return { backgroundColor: getCSSVar('--icon-css-bg'), color: getCSSVar('--icon-css-text') };
     }
 
-    // SCSS/LESS - Pink
+    // SCSS/LESS
     const scss = new Set(['scss','less']);
     if (scss.has(ext)) {
-        return { backgroundColor: '#fbcfe8', color: '#be185d' };
+        return { backgroundColor: getCSSVar('--icon-scss-bg'), color: getCSSVar('--icon-scss-text') };
     }
 
-    // JSON - Green
+    // JSON
     if (ext === 'json') {
-        return { backgroundColor: '#dcfce7', color: '#16a34a' };
+        return { backgroundColor: getCSSVar('--icon-json-bg'), color: getCSSVar('--icon-json-text') };
     }
 
-    // XML - Emerald
+    // XML
     if (ext === 'xml') {
-        return { backgroundColor: '#d1fae5', color: '#059669' };
+        return { backgroundColor: getCSSVar('--icon-xml-bg'), color: getCSSVar('--icon-xml-text') };
     }
 
-    // YAML - Cyan
+    // YAML
     const yaml = new Set(['yml','yaml']);
     if (yaml.has(ext)) {
-        return { backgroundColor: '#cffafe', color: '#0891b2' };
+        return { backgroundColor: getCSSVar('--icon-yaml-bg'), color: getCSSVar('--icon-yaml-text') };
     }
 
-    // Text - Gray
+    // Text
     const text = new Set(['txt','md','markdown','log','ini','conf','cfg','env']);
     if (text.has(ext)) {
-        return { backgroundColor: '#f3f4f6', color: '#6b7280' };
+        return { backgroundColor: getCSSVar('--icon-text-bg'), color: getCSSVar('--icon-text-text') };
     }
 
-    // Default - Indigo
-    return { backgroundColor: '#e0e7ff', color: '#4f46e5' };
+    // Default
+    return { backgroundColor: getCSSVar('--icon-default-bg'), color: getCSSVar('--icon-default-text') };
 }
 
 /**

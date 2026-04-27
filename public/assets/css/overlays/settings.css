@@ -8,7 +8,7 @@
 .settings-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.45);
+  background: var(--surface-overlay);
   display: none;
   align-items: center;
   justify-content: center;
@@ -101,7 +101,7 @@
   display: inline-block;
   width: 3rem;
   height: 1.5rem;
-  background: #d1d5db;
+  background: var(--gray-300);
   border-radius: 9999px;
   position: relative;
   transition: background-color 0.2s;
@@ -446,36 +446,11 @@
   color: var(--danger);
 }
 
-/* Dark Mode Overrides */
-[data-theme="dark"] .req-status--ok {
-  background: rgba(46, 213, 115, 0.15);
-}
-
-[data-theme="dark"] .req-status--warning {
-  background: rgba(255, 165, 2, 0.15);
-}
-
-[data-theme="dark"] .req-status--error {
-  background: rgba(255, 71, 87, 0.15);
-}
-
-[data-theme="dark"] .req-icon--ok {
-  background: rgba(46, 213, 115, 0.15);
-}
-
-[data-theme="dark"] .req-icon--warning {
-  background: rgba(255, 165, 2, 0.15);
-}
-
-[data-theme="dark"] .req-icon--error {
-  background: rgba(255, 71, 87, 0.15);
-}
-
 /* Search modal styling */
 .search-modal {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.45);
+  background: var(--surface-overlay);
   display: none;
   align-items: center;
   justify-content: center;

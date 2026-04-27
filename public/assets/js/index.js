@@ -81,7 +81,7 @@ document.addEventListener('DOMContentLoaded', () => {
         
         // style the errorContent built above
         errorContent.style.cssText = `
-            background: #333;
+            background: var(--card, #333);
             padding: 30px;
             border-radius: 8px;
             text-align: center;
@@ -91,12 +91,12 @@ document.addEventListener('DOMContentLoaded', () => {
         // style heading and refresh button created above
         heading.style.cssText = `
             margin-top: 0;
-            color: #ff6b6b;
+            color: var(--danger, #ff6b6b);
         `;
         
         refreshBtn.style.cssText = `
-            background: #4CAF50;
-            color: white;
+            background: var(--success, #4CAF50);
+            color: var(--btn-primary-text, white);
             border: none;
             padding: 10px 20px;
             border-radius: 4px;
@@ -841,7 +841,7 @@ try {
     try { ; } catch(_) {}
 } catch (_) {}
 
-// Wait helper for automated tests — ensures app is ready before attempting overlays
+// Wait helper for automated tests ï¿½ ensures app is ready before attempting overlays
 const _waitForAppInit = async (timeout = 2000) => {
     try {
         const start = Date.now();

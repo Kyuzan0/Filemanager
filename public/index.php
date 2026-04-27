@@ -19,19 +19,19 @@ require_once dirname(__DIR__) . '/bootstrap.php';
             const theme = localStorage.getItem('theme') || 'dark';
             document.documentElement.setAttribute('data-theme', theme);
             if (theme === 'dark') {
-                document.documentElement.style.backgroundColor = '#0f1419';
+                document.documentElement.style.backgroundColor = '#2d2b38';
                 document.documentElement.style.colorScheme = 'dark';
             }
         })();
     </script>
     <style>
-        /* Prevent flash of white background */
+        /* Prevent flash of white background — uses hardcoded dark bg as fallback before variables.css loads */
         html[data-theme="dark"] {
-            background-color: #0f1419;
+            background-color: #2d2b38;
         }
 
         html[data-theme="dark"] body {
-            background-color: #0f1419;
+            background-color: #2d2b38;
         }
 
         /* Safe area insets for mobile devices with notch */
@@ -81,7 +81,7 @@ require_once dirname(__DIR__) . '/bootstrap.php';
         }
         .search-bar:focus-within {
             border-color: var(--accent);
-            box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.15);
+            box-shadow: var(--focus-ring);
         }
         .search-bar input {
             transition: width 0.2s ease;
@@ -99,7 +99,7 @@ require_once dirname(__DIR__) . '/bootstrap.php';
             gap: 6px;
             padding: 6px 12px;
             background: var(--accent);
-            color: #fff;
+            color: var(--btn-primary-text);
             border-radius: 6px;
             transition: background-color var(--transition);
             box-shadow: var(--shadow-sm);

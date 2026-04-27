@@ -7,7 +7,7 @@
 .trash-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.45);
+  background: var(--surface-overlay);
   display: none;
   align-items: center;
   justify-content: center;
@@ -52,7 +52,7 @@
 }
 
 .trash-header {
-  background: linear-gradient(to right, #fef2f2, #fef2f2);
+  background: var(--delete-header-from);
   border-bottom: 1px solid var(--card-border);
   padding: 1rem 1.5rem;
   display: flex;
@@ -60,25 +60,16 @@
   gap: 1rem;
 }
 
-[data-theme="dark"] .trash-header {
-  background: linear-gradient(to right, rgba(220, 38, 38, 0.15), rgba(220, 38, 38, 0.1));
-}
-
 .trash-icon {
   width: 3rem;
   height: 3rem;
   border-radius: 9999px;
-  background: #fee2e2;
-  color: #dc2626;
+  background: var(--danger-bg);
+  color: var(--danger);
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-}
-
-[data-theme="dark"] .trash-icon {
-  background: rgba(220, 38, 38, 0.2);
-  color: #f87171;
 }
 
 .trash-title-group {

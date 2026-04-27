@@ -19,11 +19,7 @@
 }
 
 .icon:hover {
-  background: rgba(0, 0, 0, 0.08);
-}
-
-[data-theme="dark"] .icon:hover {
-  background: rgba(255, 255, 255, 0.15);
+  background: var(--surface-hover);
 }
 
 .icon-sm {
@@ -149,14 +145,14 @@
 
 /* Visual for card drag over */
 .card-drag-over {
-  outline: 2px dashed rgba(var(--accent-light-rgb, 205, 216, 235), );
-  background: rgba(var(--accent-light-rgb, 205, 216, 235), );
+  outline: 2px dashed rgba(var(--accent-light-rgb), 0.5);
+  background: rgba(var(--accent-light-rgb), 0.1);
   transition: background-color 120ms ease, outline-color 120ms ease;
 }
 
 /* Folder - Kuning */
 .file-icon.folder {
-  color: #f59e0b;
+  color: var(--icon-folder-text);
 }
 
 /* Code files - Biru */
@@ -166,27 +162,27 @@
 
 /* Image files - Merah/Pink */
 .file-icon.image {
-  color: #ef4444;
+  color: var(--icon-image-text);
 }
 
 /* PDF - Merah */
 .file-icon.pdf {
-  color: #dc2626;
+  color: var(--icon-pdf-text);
 }
 
 /* Text files - Abu-abu */
 .file-icon.text {
-  color: #6b7280;
+  color: var(--gray-500);
 }
 
 /* Archive - Ungu */
 .file-icon.archive {
-  color: #8b5cf6;
+  color: var(--icon-archive-text);
 }
 
 /* Spreadsheet - Hijau */
 .file-icon.sheet {
-  color: #22c55e;
+  color: var(--icon-spreadsheet-text);
 }
 
 /* Document - Biru */
@@ -196,27 +192,22 @@
 
 /* Presentation - Orange */
 .file-icon.ppt {
-  color: #f97316;
+  color: var(--icon-presentation-text);
 }
 
 /* Audio - Pink */
 .file-icon.audio {
-  color: #ec4899;
+  color: var(--icon-audio-text);
 }
 
 /* Video - Ungu */
 .file-icon.video {
-  color: #a855f7;
+  color: var(--icon-video-text);
 }
 
 /* Markdown - Ungu muda */
 .file-icon.markdown {
-  color: #8b5cf6;
-}
-
-/* Dark mode - background lebih gelap */
-[data-theme="dark"] .file-icon {
-  filter: brightness(0.85);
+  color: var(--icon-archive-text);
 }
 
 /* Language badge for code files */

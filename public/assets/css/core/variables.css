@@ -94,6 +94,388 @@
   --accent-hover: #96724f; /* Deeper brown on hover */
   --accent-hover-rgb: 150, 114, 79;
   --accent-bg: rgba(var(--accent-rgb), 0.15); /* Warm brown background */
+
+  /* ========================================================================
+     ACTION ICON HOVER COLORS — Semantic hover states for action buttons
+     ======================================================================== */
+  --action-green: #16a34a;
+  --action-amber: #d97706;
+  --action-purple: #9333ea;
+  --action-red: #dc2626;
+  --action-yellow: #eab308;
+  --action-indigo: #4f46e5;
+  --action-teal: #0d9488;
+
+  /* ========================================================================
+     ACTION BAR BUTTON COLORS — Mobile & desktop action buttons
+     ======================================================================== */
+  --action-btn-select: #6366f1;
+  --action-btn-select-hover: #4f46e5;
+  --action-btn-folder: #06b6d4;
+  --action-btn-folder-hover: #0891b2;
+  --action-btn-new-folder: #10b981;
+  --action-btn-new-folder-hover: #059669;
+  --action-btn-search: #a855f7;
+  --action-btn-search-hover: #9333ea;
+  --action-btn-delete-hover: #dc2626;
+  --action-btn-settings: #6b7280;
+  --action-btn-settings-hover: #4b5563;
+
+  /* ========================================================================
+     TOOLTIP COLORS — Shared tooltip styling
+     ======================================================================== */
+  --tooltip-bg: #1f2937;
+  --tooltip-text: #ffffff;
+
+  /* ========================================================================
+     SUMMARY STATUS COLORS — Upload modal summary states
+     ======================================================================== */
+  --summary-success-bg: #dcfce7;
+  --summary-success-text: #166534;
+  --summary-warning-bg: #fef3c7;
+  --summary-warning-text: #92400e;
+  --summary-danger-bg: #fee2e2;
+  --summary-danger-text: #991b1b;
+
+  /* ========================================================================
+     BADGE NEW — New item badge
+     ======================================================================== */
+  --badge-new-bg: #dcfce7;
+  --badge-new-text: #16a34a;
+
+  /* ========================================================================
+     UPLOAD PROGRESS COLORS
+     ======================================================================== */
+  --upload-progress-success: #22c55e;
+  --upload-progress-error: #ef4444;
+
+  /* ========================================================================
+     ICON BG COLORS — Upload modal file type icon backgrounds
+     ======================================================================== */
+  --icon-bg-red: #fee2e2;
+  --icon-bg-yellow: #fef3c7;
+  --icon-bg-purple: #f3e8ff;
+  --icon-bg-orange: #ffedd5;
+  --icon-bg-sky: #e0f2fe;
+  --icon-bg-green: #dcfce7;
+  --icon-bg-amber: #fef3c7;
+  --icon-bg-gray: #f3f4f6;
+  --icon-stroke-red: #dc2626;
+  --icon-stroke-yellow: #eab308;
+  --icon-stroke-purple: #9333ea;
+  --icon-stroke-orange: #ea580c;
+  --icon-stroke-sky: #0ea5e9;
+  --icon-stroke-green: #16a34a;
+  --icon-stroke-amber: #d97706;
+  --icon-stroke-gray: #6b7280;
+
+  /* ========================================================================
+     SIDEBAR — Sidebar-specific tokens
+     ======================================================================== */
+  --sidebar-active-text: #ffffff;
+  --sidebar-active-shadow: rgba(74, 63, 53, 0.1);
+  --sidebar-sun-color: #c8956c;
+  --sidebar-sun-glow: rgba(200, 149, 108, 0.5);
+  --sidebar-overlay-bg: rgba(74, 63, 53, 0.4);
+  --sidebar-mobile-shadow: 4px 0 25px rgba(74, 63, 53, 0.2);
+
+  /* ========================================================================
+     LOGS PAGE — Action badge colors for standalone logs page
+     ======================================================================== */
+  --logs-badge-upload-bg: rgba(34, 197, 94, 0.15);
+  --logs-badge-upload-text: #16a34a;
+  --logs-badge-delete-bg: rgba(239, 68, 68, 0.15);
+  --logs-badge-delete-text: #dc2626;
+  --logs-badge-create-bg: rgba(168, 85, 247, 0.15);
+  --logs-badge-create-text: #9333ea;
+  --logs-badge-rename-bg: rgba(245, 158, 11, 0.15);
+  --logs-badge-rename-text: #d97706;
+  --logs-badge-move-bg: rgba(6, 182, 212, 0.15);
+  --logs-badge-move-text: #0891b2;
+  --logs-badge-view-bg: rgba(100, 116, 139, 0.15);
+  --logs-badge-view-text: #475569;
+  --logs-badge-bulk-upload-bg: rgba(34, 197, 94, 0.25);
+  --logs-badge-bulk-upload-text: #16a34a;
+  --logs-badge-bulk-trash-bg: rgba(239, 68, 68, 0.25);
+  --logs-badge-bulk-trash-text: #dc2626;
+  --logs-badge-trash-bg: rgba(239, 68, 68, 0.15);
+  --logs-badge-trash-text: #dc2626;
+  --logs-badge-permanent-delete-bg: rgba(127, 29, 29, 0.15);
+  --logs-badge-permanent-delete-text: #991b1b;
+  --logs-badge-save-bg: rgba(16, 185, 129, 0.15);
+  --logs-badge-save-text: #047857;
+  --logs-badge-download-bg: rgba(99, 102, 241, 0.15);
+  --logs-badge-download-text: #4f46e5;
+  --logs-badge-restore-bg: rgba(16, 185, 129, 0.15);
+  --logs-badge-restore-text: #047857;
+  --logs-badge-empty-trash-bg: rgba(127, 29, 29, 0.2);
+  --logs-badge-empty-trash-text: #991b1b;
+  --logs-btn-danger-border: rgba(239, 68, 68, 0.3);
+  --logs-btn-danger-hover-bg: rgba(239, 68, 68, 0.1);
+  --logs-row-hover: #f8fafc;
+  --logs-modal-overlay-bg: rgba(0, 0, 0, 0.4);
+
+  /* ========================================================================
+     PAGINATION — Desktop & mobile pagination component colors
+     ======================================================================== */
+  --pagination-container-border: #e5e7eb;
+  --pagination-container-bg: white;
+  --pagination-mobile-top-bg: #f9fafb;
+  --pagination-mobile-top-border: #e5e7eb;
+  --pagination-mobile-info: #6b7280;
+  --pagination-mobile-select-border: #d1d5db;
+  --pagination-mobile-select-bg: white;
+  --pagination-mobile-select-text: #374151;
+  --pagination-mobile-bottom-bg: white;
+  --pagination-mobile-arrow-border: #d1d5db;
+  --pagination-mobile-arrow-bg: white;
+  --pagination-mobile-arrow-text: #374151;
+  --pagination-mobile-arrow-hover-bg: #f3f4f6;
+
+  /* ========================================================================
+     NEUTRAL GRAY SCALE — Utility grays shared across overlays & components
+     ======================================================================== */
+  --gray-50: #f9fafb;
+  --gray-100: #f3f4f6;
+  --gray-200: #e5e7eb;
+  --gray-300: #d1d5db;
+  --gray-400: #9ca3af;
+  --gray-500: #6b7280;
+  --gray-600: #4b5563;
+  --gray-700: #374151;
+  --gray-800: #1f2937;
+  --gray-900: #111827;
+  --gray-950: #0f172a;
+
+  /* Slate scale — used in move/preview overlays */
+  --slate-100: #f1f5f9;
+  --slate-200: #e2e8f0;
+  --slate-300: #cbd5e1;
+  --slate-400: #94a3b8;
+  --slate-500: #64748b;
+  --slate-600: #475569;
+  --slate-700: #334155;
+  --slate-800: #1e293b;
+  --slate-900: #0f172a;
+  --slate-50: #f8fafc;
+
+  /* ========================================================================
+     OVERLAY / DIALOG — Semantic tokens for overlay components
+     ======================================================================== */
+  --overlay-backdrop: rgba(15, 23, 42, 0.6);
+  --dialog-bg: #ffffff;
+  --dialog-title: #111827;
+  --dialog-subtitle: #6b7280;
+  --dialog-label: #374151;
+  --dialog-hint: #6b7280;
+
+  /* Input fields */
+  --input-bg: #ffffff;
+  --input-border: #e5e7eb;
+  --input-text: #111827;
+  --input-placeholder: #94a3b8;
+
+  /* Actions footer */
+  --actions-bg: #f9fafb;
+  --actions-border: #f3f4f6;
+
+  /* Outline button */
+  --btn-outline-bg: #ffffff;
+  --btn-outline-border: #e5e7eb;
+  --btn-outline-text: #374151;
+  --btn-outline-hover-bg: #f9fafb;
+  --btn-outline-hover-border: #d1d5db;
+  --btn-outline-hover-text: #111827;
+
+  /* Primary button on-color */
+  --btn-primary-text: #ffffff;
+
+  /* ========================================================================
+     LOG BADGE COLORS — 9 action types
+     ======================================================================== */
+  --badge-create-bg: rgb(220, 252, 231);
+  --badge-create-text: rgb(21, 128, 61);
+  --badge-delete-bg: rgb(254, 226, 226);
+  --badge-delete-text: rgb(185, 28, 28);
+  --badge-move-bg: rgb(219, 234, 254);
+  --badge-move-text: rgb(29, 78, 216);
+  --badge-rename-bg: rgb(254, 249, 195);
+  --badge-rename-text: rgb(161, 98, 7);
+  --badge-upload-bg: rgb(243, 232, 255);
+  --badge-upload-text: rgb(107, 33, 168);
+  --badge-download-bg: rgb(224, 231, 255);
+  --badge-download-text: rgb(67, 56, 202);
+  --badge-save-bg: rgb(207, 250, 254);
+  --badge-save-text: rgb(14, 116, 144);
+  --badge-cleanup-bg: rgb(255, 237, 213);
+  --badge-cleanup-text: rgb(194, 65, 12);
+  --badge-default-bg: rgb(243, 244, 246);
+  --badge-default-text: var(--muted);
+
+  /* ========================================================================
+     CODEMIRROR — Syntax highlighting tokens
+     ======================================================================== */
+  --cm-keyword: #af00db;
+  --cm-string: #a31515;
+  --cm-number: #098658;
+  --cm-comment: #008000;
+  --cm-variable: #001080;
+  --cm-function: #795e26;
+  --cm-type: #267f99;
+  --cm-operator: #000000;
+  --cm-tag: #800000;
+  --cm-attribute: #ff0000;
+  --cm-property: #001080;
+  --cm-constant: #0000ff;
+  --cm-regexp: #811f3f;
+  --cm-punctuation: #000000;
+  --cm-definition: #795e26;
+
+  /* CodeMirror editor chrome */
+  --cm-bg: #ffffff;
+  --cm-text: #1f2937;
+  --cm-caret: #2563eb;
+  --cm-selection: #dbeafe;
+  --cm-active-line: #f1f5f9;
+  --cm-gutter-bg: #f8fafc;
+  --cm-gutter-text: #94a3b8;
+  --cm-gutter-border: #e2e8f0;
+  --cm-active-line-gutter: #f1f5f9;
+
+  /* ========================================================================
+     FILE-TYPE ICON COLORS — Static decorative (no dark override needed)
+     ======================================================================== */
+  --icon-folder-bg: #fef3c7;
+  --icon-folder-text: #f59e0b;
+  --icon-image-bg: #fee2e2;
+  --icon-image-text: #dc2626;
+  --icon-pdf-bg: #fecaca;
+  --icon-pdf-text: #ea580c;
+  --icon-doc-bg: #dbeafe;
+  --icon-doc-text: #0284c7;
+  --icon-presentation-bg: #fed7aa;
+  --icon-presentation-text: #d97706;
+  --icon-spreadsheet-bg: #dcfce7;
+  --icon-spreadsheet-text: #16a34a;
+  --icon-archive-bg: #e9d5ff;
+  --icon-archive-text: #a855f7;
+  --icon-audio-bg: #ede9fe;
+  --icon-audio-text: #7c3aed;
+  --icon-video-bg: #ffe4e6;
+  --icon-video-text: #be123c;
+  --icon-js-bg: #fef08a;
+  --icon-js-text: #ca8a04;
+  --icon-ts-bg: #dbeafe;
+  --icon-ts-text: #0369a1;
+  --icon-python-bg: #dbeafe;
+  --icon-python-text: #1e40af;
+  --icon-php-bg: #ede9fe;
+  --icon-php-text: #6d28d9;
+  --icon-html-bg: #fed7aa;
+  --icon-html-text: #ea580c;
+  --icon-css-bg: #bfdbfe;
+  --icon-css-text: #1e40af;
+  --icon-scss-bg: #fbcfe8;
+  --icon-scss-text: #be185d;
+  --icon-json-bg: #dcfce7;
+  --icon-json-text: #16a34a;
+  --icon-xml-bg: #d1fae5;
+  --icon-xml-text: #059669;
+  --icon-yaml-bg: #cffafe;
+  --icon-yaml-text: #0891b2;
+  --icon-text-bg: #f3f4f6;
+  --icon-text-text: #6b7280;
+  --icon-default-bg: #e0e7ff;
+  --icon-default-text: #4f46e5;
+  --icon-code-bg: #ede9fe;
+  --icon-code-text: #7c3aed;
+
+  /* ========================================================================
+     DOWNLOAD OVERLAY — Success-themed header
+     ======================================================================== */
+  --download-header-from: #f0fdf4;
+  --download-header-to: #dcfce7;
+  --download-header-border: #bbf7d0;
+  --download-icon-bg: #dcfce7;
+  --download-icon-text: #16a34a;
+  --download-primary-bg: #16a34a;
+  --download-primary-hover: #15803d;
+  --download-focus-ring: rgba(22, 163, 74, 0.3);
+
+  /* ========================================================================
+     DELETE OVERLAY — Danger-themed header
+     ======================================================================== */
+  --delete-header-from: #fef2f2;
+  --delete-header-to: #fee2e2;
+  --delete-icon-bg: #fee2e2;
+  --delete-icon-text: #dc2626;
+  --delete-danger-bg: #dc2626;
+  --delete-danger-hover: #b91c1c;
+  --delete-danger-outline-bg: #fecaca;
+  --delete-danger-outline-hover-bg: #fef2f2;
+  --delete-danger-outline-hover-border: #fca5a5;
+  --delete-danger-outline-hover-text: #b91c1c;
+
+  /* ========================================================================
+     PREVIEW OVERLAY — Editor & media
+     ======================================================================== */
+  --preview-bg: #ffffff;
+  --preview-editor-bg: #ffffff;
+  --preview-editor-text: #1f2937;
+  --preview-line-number-bg: #f8f9fa;
+  --preview-line-number-text: #9ca3af;
+  --preview-line-number-border: var(--border);
+  --preview-footer-from: #f8fafc;
+  --preview-footer-to: #f1f5f9;
+  --preview-footer-border: rgba(0, 0, 0, 0.06);
+  --preview-action-btn-bg: white;
+  --preview-action-btn-text: #475569;
+  --preview-action-btn-shadow: 0 1px 3px rgba(0, 0, 0, 0.08), 0 1px 2px rgba(0, 0, 0, 0.06);
+  --preview-action-btn-hover-shadow: 0 4px 12px rgba(0, 0, 0, 0.1), 0 2px 4px rgba(0, 0, 0, 0.06);
+  --preview-action-success-from: #10b981;
+  --preview-action-success-to: #059669;
+  --preview-action-success-hover-from: #059669;
+  --preview-action-success-hover-to: #047857;
+  --preview-action-save-from: #8b5cf6;
+  --preview-action-save-to: #7c3aed;
+  --preview-action-save-hover-from: #7c3aed;
+  --preview-action-save-hover-to: #6d28d9;
+  --preview-action-save-disabled-bg: #94a3b8;
+  --preview-action-save-disabled-text: #cbd5e1;
+  --preview-action-close-bg: #f1f5f9;
+  --preview-action-close-text: #64748b;
+  --preview-action-close-border: #e2e8f0;
+  --preview-action-close-hover-bg: #fee2e2;
+  --preview-action-close-hover-border: #fecaca;
+  --preview-action-close-hover-text: #dc2626;
+  --preview-secondary-bg: white;
+  --preview-secondary-text: #475569;
+  --preview-secondary-border: #e2e8f0;
+  --preview-secondary-hover-bg: #f8fafc;
+  --preview-secondary-hover-border: #cbd5e1;
+  --preview-secondary-hover-text: #334155;
+  --preview-tooltip-bg: #1e293b;
+  --preview-tooltip-text: white;
+  --preview-tooltip-arrow: #1e293b;
+  --preview-audio-gradient-from: #667eea;
+  --preview-audio-gradient-to: #764ba2;
+  --preview-image-checker: #f0f0f0;
+  --preview-image-checker-bg: transparent;
+  --preview-image-controls-bg: rgba(255, 255, 255, 0.95);
+  --preview-image-controls-border: rgba(0, 0, 0, 0.1);
+  --preview-zoom-btn-bg: white;
+  --preview-zoom-btn-border: rgba(0, 0, 0, 0.15);
+  --preview-zoom-btn-text: #374151;
+  --preview-zoom-btn-hover-bg: #f3f4f6;
+  --preview-zoom-level-text: #374151;
+  --preview-editor-wrapper-border: var(--border);
+  --preview-fallback-bg: var(--card);
+  --preview-fallback-text: var(--text);
+  --preview-details-border: var(--card-border);
+  --preview-details-label: var(--muted);
+  --preview-details-value: var(--text);
+  --preview-code-text: var(--text);
+  --preview-line-numbers-overlay-bg: var(--bg-secondary);
 }
 
 /* ============================================================================
@@ -179,4 +561,422 @@
   --accent-hover: #c9c3e6;
   --accent-hover-rgb: 201, 195, 230;
   --accent-bg: rgba(var(--accent-rgb), 0.15);
+
+  /* ========================================================================
+     ACTION ICON HOVER COLORS — Dark mode
+     ======================================================================== */
+  --action-green: #4ade80;
+  --action-amber: #fbbf24;
+  --action-purple: #c084fc;
+  --action-red: #f87171;
+  --action-yellow: #fde047;
+  --action-indigo: #818cf8;
+  --action-teal: #2dd4bf;
+
+  /* ========================================================================
+     ACTION BAR BUTTON COLORS — Dark mode (same hues, slightly adjusted)
+     ======================================================================== */
+  --action-btn-select: #6366f1;
+  --action-btn-select-hover: #818cf8;
+  --action-btn-folder: #06b6d4;
+  --action-btn-folder-hover: #22d3ee;
+  --action-btn-new-folder: #10b981;
+  --action-btn-new-folder-hover: #34d399;
+  --action-btn-search: #a855f7;
+  --action-btn-search-hover: #c084fc;
+  --action-btn-delete-hover: #f87171;
+  --action-btn-settings: #6b7280;
+  --action-btn-settings-hover: #9ca3af;
+
+  /* ========================================================================
+     TOOLTIP COLORS — Dark mode (inverted)
+     ======================================================================== */
+  --tooltip-bg: #e5e7eb;
+  --tooltip-text: #1f2937;
+
+  /* ========================================================================
+     SUMMARY STATUS COLORS — Dark mode
+     ======================================================================== */
+  --summary-success-bg: rgba(34, 197, 94, 0.2);
+  --summary-success-text: #86efac;
+  --summary-warning-bg: rgba(251, 191, 36, 0.2);
+  --summary-warning-text: #fde047;
+  --summary-danger-bg: rgba(239, 68, 68, 0.2);
+  --summary-danger-text: #fca5a5;
+
+  /* ========================================================================
+     BADGE NEW — Dark mode
+     ======================================================================== */
+  --badge-new-bg: rgba(22, 163, 74, 0.2);
+  --badge-new-text: #4ade80;
+
+  /* ========================================================================
+     UPLOAD PROGRESS COLORS — Dark mode (same)
+     ======================================================================== */
+  --upload-progress-success: #22c55e;
+  --upload-progress-error: #ef4444;
+
+  /* ========================================================================
+     ICON BG COLORS — Dark mode (translucent)
+     ======================================================================== */
+  --icon-bg-red: rgba(239, 68, 68, 0.3);
+  --icon-bg-yellow: rgba(251, 191, 36, 0.3);
+  --icon-bg-purple: rgba(168, 85, 247, 0.3);
+  --icon-bg-orange: rgba(249, 115, 22, 0.3);
+  --icon-bg-sky: rgba(14, 165, 233, 0.3);
+  --icon-bg-green: rgba(34, 197, 94, 0.3);
+  --icon-bg-amber: rgba(245, 158, 11, 0.3);
+  --icon-bg-gray: rgba(107, 114, 128, 0.3);
+  --icon-stroke-red: #f87171;
+  --icon-stroke-yellow: #fde047;
+  --icon-stroke-purple: #c084fc;
+  --icon-stroke-orange: #fb923c;
+  --icon-stroke-sky: #38bdf8;
+  --icon-stroke-green: #4ade80;
+  --icon-stroke-amber: #fbbf24;
+  --icon-stroke-gray: #9ca3af;
+
+  /* ========================================================================
+     SIDEBAR — Dark mode
+     ======================================================================== */
+  --sidebar-active-text: #ffffff;
+  --sidebar-active-shadow: rgba(0, 0, 0, 0.2);
+  --sidebar-sun-color: #c8956c;
+  --sidebar-sun-glow: rgba(200, 149, 108, 0.5);
+  --sidebar-overlay-bg: rgba(0, 0, 0, 0.5);
+  --sidebar-mobile-shadow: 4px 0 25px rgba(0, 0, 0, 0.4);
+
+  /* ========================================================================
+     LOGS PAGE — Dark mode action badge colors
+     ======================================================================== */
+  --logs-badge-upload-bg: rgba(34, 197, 94, 0.25);
+  --logs-badge-upload-text: #4ade80;
+  --logs-badge-delete-bg: rgba(239, 68, 68, 0.25);
+  --logs-badge-delete-text: #f87171;
+  --logs-badge-create-bg: rgba(168, 85, 247, 0.25);
+  --logs-badge-create-text: #c084fc;
+  --logs-badge-rename-bg: rgba(245, 158, 11, 0.25);
+  --logs-badge-rename-text: #fbbf24;
+  --logs-badge-move-bg: rgba(6, 182, 212, 0.25);
+  --logs-badge-move-text: #22d3ee;
+  --logs-badge-view-bg: rgba(100, 116, 139, 0.25);
+  --logs-badge-view-text: #94a3b8;
+  --logs-badge-bulk-upload-bg: rgba(34, 197, 94, 0.35);
+  --logs-badge-bulk-upload-text: #4ade80;
+  --logs-badge-bulk-trash-bg: rgba(239, 68, 68, 0.35);
+  --logs-badge-bulk-trash-text: #f87171;
+  --logs-badge-trash-bg: rgba(239, 68, 68, 0.25);
+  --logs-badge-trash-text: #f87171;
+  --logs-badge-permanent-delete-bg: rgba(127, 29, 29, 0.25);
+  --logs-badge-permanent-delete-text: #fca5a5;
+  --logs-badge-save-bg: rgba(16, 185, 129, 0.25);
+  --logs-badge-save-text: #34d399;
+  --logs-badge-download-bg: rgba(99, 102, 241, 0.25);
+  --logs-badge-download-text: #818cf8;
+  --logs-badge-restore-bg: rgba(16, 185, 129, 0.25);
+  --logs-badge-restore-text: #34d399;
+  --logs-badge-empty-trash-bg: rgba(127, 29, 29, 0.3);
+  --logs-badge-empty-trash-text: #fca5a5;
+  --logs-btn-danger-border: rgba(239, 68, 68, 0.4);
+  --logs-btn-danger-hover-bg: rgba(239, 68, 68, 0.2);
+  --logs-row-hover: #1e293b;
+  --logs-modal-overlay-bg: rgba(0, 0, 0, 0.6);
+
+  /* ========================================================================
+     PAGINATION — Dark mode
+     ======================================================================== */
+  --pagination-container-border: rgba(255, 255, 255, 0.1);
+  --pagination-container-bg: var(--card, #1e293b);
+  --pagination-mobile-top-bg: rgba(0, 0, 0, 0.2);
+  --pagination-mobile-top-border: rgba(255, 255, 255, 0.1);
+  --pagination-mobile-info: #9ca3af;
+  --pagination-mobile-select-border: rgba(255, 255, 255, 0.1);
+  --pagination-mobile-select-bg: rgba(255, 255, 255, 0.05);
+  --pagination-mobile-select-text: #e5e7eb;
+  --pagination-mobile-bottom-bg: rgba(0, 0, 0, 0.1);
+  --pagination-mobile-arrow-border: rgba(255, 255, 255, 0.1);
+  --pagination-mobile-arrow-bg: rgba(255, 255, 255, 0.05);
+  --pagination-mobile-arrow-text: #e5e7eb;
+  --pagination-mobile-arrow-hover-bg: rgba(255, 255, 255, 0.1);
+
+  /* ========================================================================
+     NEUTRAL GRAY SCALE — Dark mode equivalents
+     ======================================================================== */
+  --gray-50: rgba(255, 255, 255, 0.03);
+  --gray-100: rgba(255, 255, 255, 0.06);
+  --gray-200: rgba(255, 255, 255, 0.1);
+  --gray-300: rgba(255, 255, 255, 0.15);
+  --gray-400: rgb(100, 116, 139);
+  --gray-500: rgb(148, 163, 184);
+  --gray-600: rgb(203, 213, 225);
+  --gray-700: rgb(226, 232, 240);
+  --gray-800: #f1f5f9;
+  --gray-900: #f9fafb;
+  --gray-950: #ffffff;
+
+  /* Slate scale */
+  --slate-50: rgba(255, 255, 255, 0.03);
+  --slate-100: rgba(255, 255, 255, 0.06);
+  --slate-200: rgba(255, 255, 255, 0.1);
+  --slate-300: rgba(255, 255, 255, 0.15);
+  --slate-400: rgb(100, 116, 139);
+  --slate-500: rgb(148, 163, 184);
+  --slate-600: #94a3b8;
+  --slate-700: #cbd5e1;
+  --slate-800: #e2e8f0;
+  --slate-900: #f1f5f9;
+
+  /* ========================================================================
+     OVERLAY / DIALOG — Dark mode
+     ======================================================================== */
+  --overlay-backdrop: rgba(0, 0, 0, 0.7);
+  --dialog-bg: #1e293b;
+  --dialog-title: #f1f5f9;
+  --dialog-subtitle: #94a3b8;
+  --dialog-label: #d1d5db;
+  --dialog-hint: #9ca3af;
+
+  /* Input fields */
+  --input-bg: rgba(255, 255, 255, 0.05);
+  --input-border: rgba(255, 255, 255, 0.1);
+  --input-text: #f1f5f9;
+  --input-placeholder: #64748b;
+
+  /* Actions footer */
+  --actions-bg: rgba(0, 0, 0, 0.15);
+  --actions-border: rgba(255, 255, 255, 0.05);
+
+  /* Outline button */
+  --btn-outline-bg: rgba(255, 255, 255, 0.05);
+  --btn-outline-border: rgba(255, 255, 255, 0.1);
+  --btn-outline-text: #e5e7eb;
+  --btn-outline-hover-bg: rgba(255, 255, 255, 0.1);
+  --btn-outline-hover-border: rgba(255, 255, 255, 0.15);
+  --btn-outline-hover-text: #f1f5f9;
+
+  /* Primary button on-color */
+  --btn-primary-text: #ffffff;
+
+  /* ========================================================================
+     LOG BADGE COLORS — Dark mode
+     ======================================================================== */
+  --badge-create-bg: rgba(34, 197, 94, 0.3);
+  --badge-create-text: rgb(74, 222, 128);
+  --badge-delete-bg: rgba(239, 68, 68, 0.3);
+  --badge-delete-text: rgb(248, 113, 113);
+  --badge-move-bg: var(--accent);
+  --badge-move-text: rgb(96, 165, 250);
+  --badge-rename-bg: rgba(234, 179, 8, 0.3);
+  --badge-rename-text: rgb(250, 204, 21);
+  --badge-upload-bg: rgba(168, 85, 247, 0.3);
+  --badge-upload-text: rgb(192, 132, 252);
+  --badge-download-bg: rgba(99, 102, 241, 0.3);
+  --badge-download-text: rgb(129, 140, 248);
+  --badge-save-bg: rgba(6, 182, 212, 0.3);
+  --badge-save-text: rgb(34, 211, 238);
+  --badge-cleanup-bg: rgba(249, 115, 22, 0.3);
+  --badge-cleanup-text: rgb(251, 146, 60);
+  --badge-default-bg: rgba(255, 255, 255, 0.1);
+  --badge-default-text: rgb(203, 213, 225);
+
+  /* ========================================================================
+     CODEMIRROR — Dark mode syntax highlighting
+     ======================================================================== */
+  --cm-keyword: #c586c0;
+  --cm-string: #ce9178;
+  --cm-number: #b5cea8;
+  --cm-comment: #6a9955;
+  --cm-variable: #9cdcfe;
+  --cm-function: #dcdcaa;
+  --cm-type: #4ec9b0;
+  --cm-operator: #d4d4d4;
+  --cm-tag: #569cd6;
+  --cm-attribute: #9cdcfe;
+  --cm-property: #9cdcfe;
+  --cm-constant: #4fc1ff;
+  --cm-regexp: #d16969;
+  --cm-punctuation: #d4d4d4;
+  --cm-definition: #dcdcaa;
+
+  /* CodeMirror editor chrome */
+  --cm-bg: #1a2332;
+  --cm-text: #e2e8f0;
+  --cm-caret: #60a5fa;
+  --cm-selection: #334155;
+  --cm-active-line: #1e293b;
+  --cm-gutter-bg: #0f172a;
+  --cm-gutter-text: #64748b;
+  --cm-gutter-border: #334155;
+  --cm-active-line-gutter: #1e293b;
+
+  /* ========================================================================
+     FILE-TYPE ICON COLORS — Dark mode (softer/translucent backgrounds)
+     ======================================================================== */
+  --icon-folder-bg: rgba(251, 191, 36, 0.15);
+  --icon-folder-text: #fbbf24;
+  --icon-image-bg: rgba(239, 68, 68, 0.15);
+  --icon-image-text: #f87171;
+  --icon-pdf-bg: rgba(234, 88, 12, 0.15);
+  --icon-pdf-text: #fb923c;
+  --icon-doc-bg: rgba(2, 132, 199, 0.15);
+  --icon-doc-text: #38bdf8;
+  --icon-presentation-bg: rgba(217, 119, 6, 0.15);
+  --icon-presentation-text: #fbbf24;
+  --icon-spreadsheet-bg: rgba(22, 163, 74, 0.15);
+  --icon-spreadsheet-text: #4ade80;
+  --icon-archive-bg: rgba(168, 85, 247, 0.15);
+  --icon-archive-text: #c084fc;
+  --icon-audio-bg: rgba(124, 58, 237, 0.15);
+  --icon-audio-text: #a78bfa;
+  --icon-video-bg: rgba(190, 18, 60, 0.15);
+  --icon-video-text: #fb7185;
+  --icon-js-bg: rgba(202, 138, 4, 0.15);
+  --icon-js-text: #facc15;
+  --icon-ts-bg: rgba(3, 105, 161, 0.15);
+  --icon-ts-text: #38bdf8;
+  --icon-python-bg: rgba(30, 64, 175, 0.15);
+  --icon-python-text: #60a5fa;
+  --icon-php-bg: rgba(109, 40, 217, 0.15);
+  --icon-php-text: #a78bfa;
+  --icon-html-bg: rgba(234, 88, 12, 0.15);
+  --icon-html-text: #fb923c;
+  --icon-css-bg: rgba(30, 64, 175, 0.15);
+  --icon-css-text: #60a5fa;
+  --icon-scss-bg: rgba(190, 24, 93, 0.15);
+  --icon-scss-text: #f472b6;
+  --icon-json-bg: rgba(22, 163, 74, 0.15);
+  --icon-json-text: #4ade80;
+  --icon-xml-bg: rgba(5, 150, 105, 0.15);
+  --icon-xml-text: #34d399;
+  --icon-yaml-bg: rgba(8, 145, 178, 0.15);
+  --icon-yaml-text: #22d3ee;
+  --icon-text-bg: rgba(255, 255, 255, 0.08);
+  --icon-text-text: #94a3b8;
+  --icon-default-bg: rgba(79, 70, 229, 0.15);
+  --icon-default-text: #818cf8;
+  --icon-code-bg: rgba(124, 58, 237, 0.15);
+  --icon-code-text: #a78bfa;
+
+  /* ========================================================================
+     DOWNLOAD OVERLAY — Dark mode
+     ======================================================================== */
+  --download-header-from: rgba(22, 101, 52, 0.2);
+  --download-header-to: rgba(21, 128, 61, 0.15);
+  --download-header-border: rgba(34, 197, 94, 0.2);
+  --download-icon-bg: rgba(34, 197, 94, 0.15);
+  --download-icon-text: #4ade80;
+  --download-primary-bg: #16a34a;
+  --download-primary-hover: #22c55e;
+  --download-focus-ring: rgba(34, 197, 94, 0.3);
+
+  /* ========================================================================
+     DELETE OVERLAY — Dark mode
+     ======================================================================== */
+  --delete-header-from: rgba(220, 38, 38, 0.15);
+  --delete-header-to: rgba(239, 68, 68, 0.1);
+  --delete-icon-bg: rgba(239, 68, 68, 0.15);
+  --delete-icon-text: #f87171;
+  --delete-danger-bg: #dc2626;
+  --delete-danger-hover: #ef4444;
+  --delete-danger-outline-bg: rgba(248, 113, 113, 0.3);
+  --delete-danger-outline-hover-bg: rgba(239, 68, 68, 0.1);
+  --delete-danger-outline-hover-border: rgba(248, 113, 113, 0.5);
+  --delete-danger-outline-hover-text: #fca5a5;
+
+  /* ========================================================================
+     PREVIEW OVERLAY — Dark mode
+     ======================================================================== */
+  --preview-bg: #1a2332;
+  --preview-editor-bg: #1e1e1e;
+  --preview-editor-text: #d4d4d4;
+  --preview-line-number-bg: #252526;
+  --preview-line-number-text: #858585;
+  --preview-line-number-border: #3c3c3c;
+  --preview-footer-from: #1e293b;
+  --preview-footer-to: #0f172a;
+  --preview-footer-border: rgba(255, 255, 255, 0.08);
+  --preview-action-btn-bg: #334155;
+  --preview-action-btn-text: #e2e8f0;
+  --preview-action-btn-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+  --preview-action-btn-hover-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  --preview-action-success-from: #10b981;
+  --preview-action-success-to: #059669;
+  --preview-action-success-hover-from: #059669;
+  --preview-action-success-hover-to: #047857;
+  --preview-action-save-from: #8b5cf6;
+  --preview-action-save-to: #7c3aed;
+  --preview-action-save-hover-from: #7c3aed;
+  --preview-action-save-hover-to: #6d28d9;
+  --preview-action-save-disabled-bg: #475569;
+  --preview-action-save-disabled-text: #64748b;
+  --preview-action-close-bg: #334155;
+  --preview-action-close-text: #94a3b8;
+  --preview-action-close-border: #475569;
+  --preview-action-close-hover-bg: #450a0a;
+  --preview-action-close-hover-border: #7f1d1d;
+  --preview-action-close-hover-text: #fca5a5;
+  --preview-secondary-bg: #334155;
+  --preview-secondary-text: #e2e8f0;
+  --preview-secondary-border: #475569;
+  --preview-secondary-hover-bg: #475569;
+  --preview-secondary-hover-border: #64748b;
+  --preview-secondary-hover-text: #f1f5f9;
+  --preview-tooltip-bg: #f1f5f9;
+  --preview-tooltip-text: #1e293b;
+  --preview-tooltip-arrow: #f1f5f9;
+  --preview-audio-gradient-from: #434190;
+  --preview-audio-gradient-to: #5b2c6f;
+  --preview-image-checker: #2d2d2d;
+  --preview-image-checker-bg: #1a1a1a;
+  --preview-image-controls-bg: rgba(30, 41, 59, 0.95);
+  --preview-image-controls-border: rgba(255, 255, 255, 0.1);
+  --preview-zoom-btn-bg: #374151;
+  --preview-zoom-btn-border: rgba(255, 255, 255, 0.15);
+  --preview-zoom-btn-text: #e5e7eb;
+  --preview-zoom-btn-hover-bg: #4b5563;
+  --preview-zoom-level-text: #e5e7eb;
+  --preview-editor-wrapper-border: #3c3c3c;
+  --preview-fallback-bg: #1a2332;
+  --preview-fallback-text: #e2e8f0;
+  --preview-details-border: #374151;
+  --preview-details-label: #9ca3af;
+  --preview-details-value: #ffffff;
+  --preview-code-text: #e5e7eb;
+  --preview-line-numbers-overlay-bg: #1f2937;
+
+  /* ========================================================================
+     MOVE OVERLAY — Dark mode
+     ======================================================================== */
+  --move-breadcrumb-bg: rgba(255, 255, 255, 0.05);
+  --move-breadcrumb-text: #94a3b8;
+  --move-breadcrumb-separator: #475569;
+  --move-folder-name: #e2e8f0;
+  --move-scrollbar: rgba(255, 255, 255, 0.1);
+  --move-scrollbar-hover: rgba(255, 255, 255, 0.15);
+
+  /* ========================================================================
+     DETAILS OVERLAY — Dark mode
+     ======================================================================== */
+  --details-header-border: rgba(96, 165, 250, 0.2);
+  --details-close-bg: rgba(255, 255, 255, 0.05);
+  --details-close-text: #94a3b8;
+  --details-close-hover-bg: rgba(255, 255, 255, 0.1);
+  --details-close-hover-text: #f1f5f9;
+  --details-label: #64748b;
+  --details-value: #e2e8f0;
+  --details-path-bg: rgba(0, 0, 0, 0.2);
+  --details-path-text: #94a3b8;
+
+  /* ========================================================================
+     LOG OVERLAY — Dark mode
+     ======================================================================== */
+  --log-row-border: rgba(255, 255, 255, 0.05);
+  --log-filter-tag-bg: var(--accent);
+  --log-filter-tag-text: rgb(96, 165, 250);
+  --log-filter-tag-hover: var(--accent);
+  --log-page-info-bg: var(--accent);
+  --log-page-ellipsis: rgb(100, 116, 139);
+  --log-active-page-text: #ffffff;
+  --log-error: #f87171;
+  --log-loading: rgb(148, 163, 184);
 }

@@ -8,7 +8,7 @@
 .log-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.45);
+  background: var(--surface-overlay);
   display: none;
   align-items: center;
   justify-content: center;
@@ -40,7 +40,7 @@
 
 .log-header {
   background: linear-gradient(to right, var(--accent-bg), var(--accent-bg));
-  border-bottom: 1px solid #f3f4f6;
+  border-bottom: 1px solid var(--gray-100);
   padding: 1.5rem;
   display: flex;
   align-items: center;
@@ -77,7 +77,7 @@
   flex: 1;
   overflow-y: auto;
   overflow-x: hidden;
-  border: 1px solid #e5e7eb;
+  border: 1px solid var(--input-border);
   border-radius: 0.375rem;
 }
 
@@ -101,7 +101,7 @@
 /* Prevent horizontal scrollbar on row hover */
 .log-table tbody tr:hover,
 .log-table-row:hover {
-  background: #f9fafb;
+  background: var(--gray-50);
   box-sizing: border-box;
 }
 
@@ -176,7 +176,7 @@
 }
 
 .log-table thead {
-  background: #f9fafb;
+  background: var(--gray-50);
   position: sticky;
   top: 0;
 }
@@ -196,21 +196,21 @@
 }
 
 .log-button.outline {
-  background: #ffffff;
-  border: 1px solid #e5e7eb;
-  color: #374151;
+  background: var(--btn-outline-bg);
+  border: 1px solid var(--btn-outline-border);
+  color: var(--btn-outline-text);
   outline: none;
 }
 
 .log-button.outline:hover {
-  background: #f9fafb;
-  border-color: #e5e7eb;
+  background: var(--btn-outline-hover-bg);
+  border-color: var(--btn-outline-border);
 }
 
 .log-button.outline:focus,
 .log-button.outline:focus-visible {
   outline: none;
-  border-color: #e5e7eb;
+  border-color: var(--btn-outline-border);
   box-shadow: none;
 }
 
@@ -225,55 +225,20 @@
 }
 
 .log-pagination-btn {
-  background: #ffffff;
-  border: 1px solid #e5e7eb;
-  color: #374151;
+  background: var(--btn-outline-bg);
+  border: 1px solid var(--btn-outline-border);
+  color: var(--btn-outline-text);
   outline: none;
 }
 
 .log-pagination-btn:hover:not(:disabled) {
-  background: #f9fafb;
+  background: var(--btn-outline-hover-bg);
 }
 
 .log-pagination-btn:focus,
 .log-pagination-btn:focus-visible {
   outline: none;
-  border-color: #e5e7eb;
-  box-shadow: none;
-}
-
-[data-theme="dark"] .log-button.outline {
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  color: #e5e7eb;
-}
-
-[data-theme="dark"] .log-button.outline:hover {
-  background: rgba(255, 255, 255, 0.1);
-  border-color: rgba(255, 255, 255, 0.1);
-}
-
-[data-theme="dark"] .log-button.outline:focus,
-[data-theme="dark"] .log-button.outline:focus-visible {
-  outline: none;
-  border-color: rgba(255, 255, 255, 0.1);
-  box-shadow: none;
-}
-
-[data-theme="dark"] .log-pagination-btn {
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  color: #e5e7eb;
-}
-
-[data-theme="dark"] .log-pagination-btn:hover:not(:disabled) {
-  background: rgba(255, 255, 255, 0.1);
-}
-
-[data-theme="dark"] .log-pagination-btn:focus,
-[data-theme="dark"] .log-pagination-btn:focus-visible {
-  outline: none;
-  border-color: rgba(255, 255, 255, 0.1);
+  border-color: var(--btn-outline-border);
   box-shadow: none;
 }
 
@@ -319,22 +284,14 @@
 .log-loading {
   padding: 0.75rem 1rem;
   text-align: center;
-  color: var(--text-secondary);
-}
-
-[data-theme="dark"] .log-loading {
-  color: rgb(148, 163, 184);
+  color: var(--log-loading);
 }
 
 /* Error State */
 .log-error-cell {
   padding: 0.75rem 1rem;
   text-align: center;
-  color: var(--danger);
-}
-
-[data-theme="dark"] .log-error-cell {
-  color: rgb(248, 113, 113);
+  color: var(--log-error);
 }
 
 /* Empty State */
@@ -344,17 +301,9 @@
   color: var(--text-secondary);
 }
 
-[data-theme="dark"] .log-empty-cell {
-  color: rgb(148, 163, 184);
-}
-
 /* Table Row */
 .log-table-row {
-  border-bottom: 1px solid rgb(243, 244, 246);
-}
-
-[data-theme="dark"] .log-table-row {
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  border-bottom: 1px solid var(--log-row-border);
 }
 
 /* Table Cells */
@@ -365,10 +314,6 @@
   color: var(--text);
 }
 
-[data-theme="dark"] .log-table-cell {
-  color: rgb(226, 232, 240);
-}
-
 .log-table-cell--secondary {
   padding: 0.5rem 0.75rem;
   font-size: 0.75rem;
@@ -376,19 +321,11 @@
   color: var(--text-secondary);
 }
 
-[data-theme="dark"] .log-table-cell--secondary {
-  color: rgb(148, 163, 184);
-}
-
 .log-table-cell--muted {
   padding: 0.5rem 0.75rem;
   font-size: 0.75rem;
   line-height: 1rem;
   color: var(--muted);
-}
-
-[data-theme="dark"] .log-table-cell--muted {
-  color: rgb(100, 116, 139);
 }
 
 /* Responsive table cells */
@@ -424,93 +361,48 @@
 
 /* Action Badge Colors */
 .log-badge--create {
-  background-color: rgb(220, 252, 231);
-  color: rgb(21, 128, 61);
-}
-
-[data-theme="dark"] .log-badge--create {
-  background-color: rgba(34, 197, 94, 0.3);
-  color: rgb(74, 222, 128);
+  background-color: var(--badge-create-bg);
+  color: var(--badge-create-text);
 }
 
 .log-badge--delete {
-  background-color: rgb(254, 226, 226);
-  color: rgb(185, 28, 28);
-}
-
-[data-theme="dark"] .log-badge--delete {
-  background-color: rgba(239, 68, 68, 0.3);
-  color: rgb(248, 113, 113);
+  background-color: var(--badge-delete-bg);
+  color: var(--badge-delete-text);
 }
 
 .log-badge--move {
-  background-color: rgb(219, 234, 254);
-  color: rgb(29, 78, 216);
-}
-
-[data-theme="dark"] .log-badge--move {
-  background-color: var(--accent);
-  color: rgb(96, 165, 250);
+  background-color: var(--badge-move-bg);
+  color: var(--badge-move-text);
 }
 
 .log-badge--rename {
-  background-color: rgb(254, 249, 195);
-  color: rgb(161, 98, 7);
-}
-
-[data-theme="dark"] .log-badge--rename {
-  background-color: rgba(234, 179, 8, 0.3);
-  color: rgb(250, 204, 21);
+  background-color: var(--badge-rename-bg);
+  color: var(--badge-rename-text);
 }
 
 .log-badge--upload {
-  background-color: rgb(243, 232, 255);
-  color: rgb(107, 33, 168);
-}
-
-[data-theme="dark"] .log-badge--upload {
-  background-color: rgba(168, 85, 247, 0.3);
-  color: rgb(192, 132, 252);
+  background-color: var(--badge-upload-bg);
+  color: var(--badge-upload-text);
 }
 
 .log-badge--download {
-  background-color: rgb(224, 231, 255);
-  color: rgb(67, 56, 202);
-}
-
-[data-theme="dark"] .log-badge--download {
-  background-color: rgba(99, 102, 241, 0.3);
-  color: rgb(129, 140, 248);
+  background-color: var(--badge-download-bg);
+  color: var(--badge-download-text);
 }
 
 .log-badge--save {
-  background-color: rgb(207, 250, 254);
-  color: rgb(14, 116, 144);
-}
-
-[data-theme="dark"] .log-badge--save {
-  background-color: rgba(6, 182, 212, 0.3);
-  color: rgb(34, 211, 238);
+  background-color: var(--badge-save-bg);
+  color: var(--badge-save-text);
 }
 
 .log-badge--cleanup {
-  background-color: rgb(255, 237, 213);
-  color: rgb(194, 65, 12);
-}
-
-[data-theme="dark"] .log-badge--cleanup {
-  background-color: rgba(249, 115, 22, 0.3);
-  color: rgb(251, 146, 60);
+  background-color: var(--badge-cleanup-bg);
+  color: var(--badge-cleanup-text);
 }
 
 .log-badge--default {
-  background-color: rgb(243, 244, 246);
-  color: var(--muted);
-}
-
-[data-theme="dark"] .log-badge--default {
-  background-color: rgba(255, 255, 255, 0.1);
-  color: rgb(203, 213, 225);
+  background-color: var(--badge-default-bg);
+  color: var(--badge-default-text);
 }
 
 /* Pagination Page Info */
@@ -520,13 +412,8 @@
   line-height: 1rem;
   font-weight: 500;
   color: var(--muted);
-  background-color: rgb(219, 234, 254);
+  background-color: var(--log-page-info-bg);
   border-radius: 0.375rem;
-}
-
-[data-theme="dark"] .log-page-info {
-  color: rgb(203, 213, 225);
-  background-color: var(--accent);
 }
 
 /* Page Number Button Base */
@@ -547,28 +434,18 @@
 /* Active Page Number */
 .log-page-number--active {
   background-color: var(--accent-hover);
-  color: #ffffff;
+  color: var(--log-active-page-text);
 }
 
 /* Inactive Page Number */
 .log-page-number--inactive {
-  background-color: #ffffff;
+  background-color: var(--btn-outline-bg);
   color: var(--muted);
-  border: 1px solid rgb(229, 231, 235);
+  border: 1px solid var(--btn-outline-border);
 }
 
 .log-page-number--inactive:hover {
-  background-color: rgb(249, 250, 251);
-}
-
-[data-theme="dark"] .log-page-number--inactive {
-  background-color: rgba(255, 255, 255, 0.05);
-  color: rgb(203, 213, 225);
-  border-color: rgba(255, 255, 255, 0.1);
-}
-
-[data-theme="dark"] .log-page-number--inactive:hover {
-  background-color: rgba(255, 255, 255, 0.1);
+  background-color: var(--btn-outline-hover-bg);
 }
 
 /* Page Ellipsis */
@@ -576,11 +453,7 @@
   padding: 0.25rem 0.5rem;
   font-size: 0.75rem;
   line-height: 1rem;
-  color: rgb(156, 163, 175);
-}
-
-[data-theme="dark"] .log-page-ellipsis {
-  color: rgb(100, 116, 139);
+  color: var(--log-page-ellipsis);
 }
 
 /* Filter Tags */
@@ -589,8 +462,8 @@
   align-items: center;
   gap: 0.25rem;
   padding: 0.25rem 0.5rem;
-  background-color: rgb(219, 234, 254);
-  color: rgb(29, 78, 216);
+  background-color: var(--log-filter-tag-bg);
+  color: var(--log-filter-tag-text);
   border-radius: 0.25rem;
   font-size: 0.75rem;
   line-height: 1rem;
@@ -598,16 +471,7 @@
 }
 
 .log-filter-tag:hover {
-  background-color: rgb(191, 219, 254);
-}
-
-[data-theme="dark"] .log-filter-tag {
-  background-color: var(--accent);
-  color: rgb(96, 165, 250);
-}
-
-[data-theme="dark"] .log-filter-tag:hover {
-  background-color: var(--accent);
+  background-color: var(--log-filter-tag-hover);
 }
 
 .log-filter-tag__close {
@@ -683,9 +547,9 @@
   width: 100%;
   padding: 0.375rem 0.75rem 0.375rem 2rem;
   font-size: 0.75rem;
-  border: 1px solid #e5e7eb;
+  border: 1px solid var(--input-border);
   border-radius: 0.375rem;
-  background: #ffffff;
+  background: var(--input-bg);
   color: var(--text, #1f2937);
   outline: none;
   transition: border-color 0.15s ease;
@@ -694,12 +558,6 @@
 .filter-search-input:focus {
   border-color: var(--accent-light);
   box-shadow: 0 0 0 2px var(--accent);
-}
-
-[data-theme="dark"] .filter-search-input {
-  background: rgba(0, 0, 0, 0.2);
-  border-color: rgba(255, 255, 255, 0.1);
-  color: var(--text, #e5e7eb);
 }
 
 [data-theme="dark"] .filter-search-input:focus {
@@ -720,9 +578,9 @@
 .filter-select-compact {
   padding: 0.375rem 1.75rem 0.375rem 0.5rem;
   font-size: 0.75rem;
-  border: 1px solid #e5e7eb;
+  border: 1px solid var(--input-border);
   border-radius: 0.375rem;
-  background: #ffffff;
+  background: var(--input-bg);
   color: var(--text, #374151);
   cursor: pointer;
   outline: none;
@@ -731,12 +589,6 @@
 
 .filter-select-compact:focus {
   border-color: var(--accent-light);
-}
-
-[data-theme="dark"] .filter-select-compact {
-  background: rgba(0, 0, 0, 0.2);
-  border-color: rgba(255, 255, 255, 0.1);
-  color: var(--text, #e5e7eb);
 }
 
 /* Active Filters */
@@ -823,8 +675,8 @@
   bottom: 100%;
   right: 0;
   margin-bottom: 0.25rem;
-  background: #ffffff;
-  border: 1px solid #e5e7eb;
+  background: var(--btn-outline-bg);
+  border: 1px solid var(--btn-outline-border);
   border-radius: 0.375rem;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
   min-width: 10rem;
@@ -847,18 +699,14 @@
 }
 
 .log-export-option:hover {
-  background: #f3f4f6;
+  background: var(--gray-100);
 }
 
 /* Log Error */
 .log-error {
   font-size: 0.75rem;
-  color: var(--danger, #dc2626);
+  color: var(--log-error);
   margin-top: 0.5rem;
-}
-
-[data-theme="dark"] .log-error {
-  color: #f87171;
 }
 
 /* Footer Actions */
@@ -867,8 +715,8 @@
   flex-direction: column;
   justify-content: space-between;
   gap: 0.75rem;
-  border-top: 1px solid #e5e7eb;
-  background: #f9fafb;
+  border-top: 1px solid var(--actions-border);
+  background: var(--actions-bg);
   padding: 0.75rem 1.5rem;
   border-radius: 0 0 0.5rem 0.5rem;
   flex-shrink: 0;
@@ -903,9 +751,9 @@
 .log-cleanup-select {
   padding: 0.375rem 0.5rem;
   font-size: 0.75rem;
-  border: 1px solid #e5e7eb;
+  border: 1px solid var(--input-border);
   border-radius: 0.375rem;
-  background: #ffffff;
+  background: var(--input-bg);
   color: var(--text, #374151);
   cursor: pointer;
   outline: none;
@@ -954,11 +802,6 @@
 .log-close-btn:hover {
   color: var(--text, #1f2937);
   background: var(--surface-hover, #f3f4f6);
-}
-
-[data-theme="dark"] .log-close-btn:hover {
-  color: #e5e7eb;
-  background: rgba(255, 255, 255, 0.1);
 }
 
 /* Log Page Numbers container */

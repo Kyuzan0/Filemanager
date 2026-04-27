@@ -342,9 +342,9 @@ const TrashHandler = (function() {
         toast.textContent = message;
         toast.style.cssText = 'position: fixed; bottom: 2rem; right: 2rem; padding: 1rem 1.5rem; border-radius: 0.5rem; color: white; z-index: 9999; animation: slideIn 0.3s ease;';
 
-        if (type === 'success') toast.style.background = '#10b981';
-        else if (type === 'error') toast.style.background = '#ef4444';
-        else toast.style.background = '#3b82f6';
+        if (type === 'success') toast.style.background = 'var(--success, #10b981)';
+        else if (type === 'error') toast.style.background = 'var(--danger, #ef4444)';
+        else toast.style.background = 'var(--accent, #3b82f6)';
 
         document.body.appendChild(toast);
         setTimeout(() => {

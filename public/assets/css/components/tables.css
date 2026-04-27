@@ -34,7 +34,7 @@ th,
 td {
   padding: 8px 12px;
   text-align: left;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.04);
+  border-bottom: 1px solid var(--border-light);
   color: var(--muted);
   transition: background-color 0.2s ease;
 }
@@ -112,7 +112,7 @@ td:nth-child(2) {
 
 [data-theme="dark"] th,
 [data-theme="dark"] td {
-  border-color: rgba(255, 255, 255, 0.08);
+  border-color: var(--border);
 }
 
 th {
@@ -251,8 +251,8 @@ tbody tr:hover {
   left: 50%;
   transform: translateX(-50%);
   padding: 4px 8px;
-  background: #1f2937;
-  color: #fff;
+  background: var(--tooltip-bg);
+  color: var(--tooltip-text);
   font-size: 11px;
   font-weight: 500;
   white-space: nowrap;
@@ -272,7 +272,7 @@ tbody tr:hover {
   left: 50%;
   transform: translateX(-50%);
   border: 4px solid transparent;
-  border-top-color: #1f2937;
+  border-top-color: var(--tooltip-bg);
   opacity: 0;
   visibility: hidden;
   transition: all 0.15s ease;
@@ -288,12 +288,12 @@ tbody tr:hover {
 
 /* Dark mode tooltip */
 [data-theme="dark"] .action-icon-btn::after {
-  background: #e5e7eb;
-  color: #1f2937;
+  background: var(--tooltip-bg);
+  color: var(--tooltip-text);
 }
 
 [data-theme="dark"] .action-icon-btn::before {
-  border-top-color: #e5e7eb;
+  border-top-color: var(--tooltip-bg);
 }
 
 .row-actions {
@@ -336,27 +336,14 @@ tbody tr:hover .file-icon {
   box-shadow: 0 4px 12px var(--accent);
 }
 
-[data-theme="dark"] tbody tr:hover .file-icon {
-  box-shadow: 0 4px 12px var(--accent);
-}
-
 /* Dragging state */
 tbody tr.dragging {
   opacity: 0.6;
-  background: rgba(0, 0, 0, 0.05);
-}
-
-[data-theme="dark"] tbody tr.dragging {
-  background: rgba(255, 255, 255, 0.05);
+  background: var(--surface-hover);
 }
 
 /* Drop active state */
 tbody tr.drop-active {
-  background: var(--accent);
-  box-shadow: inset 0 0 8px var(--accent);
-}
-
-[data-theme="dark"] tbody tr.drop-active {
   background: var(--accent);
   box-shadow: inset 0 0 8px var(--accent);
 }
@@ -376,11 +363,11 @@ tbody tr.drop-active {
 }
 
 .mobile-more-btn:hover {
-  background: rgba(0, 0, 0, 0.05);
+  background: var(--surface-hover);
 }
 
 [data-theme="dark"] .mobile-more-btn:hover {
-  background: rgba(255, 255, 255, 0.1);
+  background: var(--surface-active);
 }
 
 .mobile-more-btn:active {
@@ -418,11 +405,7 @@ tbody tr.drop-active {
 }
 
 .mobile-context-item:active {
-  background: rgba(0, 0, 0, 0.1);
-}
-
-[data-theme="dark"] .mobile-context-item:active {
-  background: rgba(255, 255, 255, 0.15);
+  background: var(--surface-active);
 }
 
 /* ============================================
@@ -435,15 +418,6 @@ tbody tr.selected {
 }
 
 tbody tr.selected:hover {
-  background-color: var(--accent) !important;
-}
-
-/* Dark mode selected row */
-[data-theme="dark"] tbody tr.selected {
-  background-color: var(--accent) !important;
-}
-
-[data-theme="dark"] tbody tr.selected:hover {
   background-color: var(--accent) !important;
 }
 
@@ -479,15 +453,6 @@ tbody tr.selected.first-selected .action-icon-btn:hover {
   background-color: rgba(255, 255, 255, 0.2);
 }
 
-/* Dark mode first selected */
-[data-theme="dark"] tbody tr.selected.first-selected {
-  background-color: var(--accent) !important;
-}
-
-[data-theme="dark"] tbody tr.selected.first-selected:hover {
-  background-color: var(--accent) !important;
-}
-
 /* Selected row checkbox styling */
 tbody tr.selected input[type="checkbox"] {
   box-shadow: 0 0 0 2px var(--accent);
@@ -506,14 +471,6 @@ div[data-item-path].selected:hover {
   background-color: var(--accent) !important;
 }
 
-[data-theme="dark"] div[data-item-path].selected {
-  background-color: var(--accent) !important;
-}
-
-[data-theme="dark"] div[data-item-path].selected:hover {
-  background-color: var(--accent) !important;
-}
-
 /* Mobile first selected item - Blue highlight */
 div[data-item-path].selected.first-selected {
   background-color: var(--accent) !important;
@@ -528,10 +485,6 @@ div[data-item-path].selected.first-selected .text-xs {
 }
 
 div[data-item-path].selected.first-selected:hover {
-  background-color: var(--accent) !important;
-}
-
-[data-theme="dark"] div[data-item-path].selected.first-selected {
   background-color: var(--accent) !important;
 }
 
@@ -605,11 +558,7 @@ div[data-item-path].selected {
 }
 
 .tw-row:hover {
-  background-color: rgba(0, 0, 0, 0.02);
-}
-
-[data-theme="dark"] .tw-row:hover {
-  background-color: rgba(255, 255, 255, 0.05);
+  background-color: var(--surface-hover);
 }
 
 /* Selection cell */
@@ -652,10 +601,6 @@ div[data-item-path].selected {
   color: var(--accent);
 }
 
-[data-theme="dark"] .item-link {
-  color: var(--text);
-}
-
 /* Badge for new items */
 .badge-new {
   display: inline-flex;
@@ -663,15 +608,10 @@ div[data-item-path].selected {
   padding: 2px 8px;
   font-size: 12px;
   font-weight: 600;
-  background-color: #dcfce7;
-  color: #16a34a;
+  background-color: var(--badge-new-bg);
+  color: var(--badge-new-text);
   border-radius: 9999px;
   margin-left: 8px;
-}
-
-[data-theme="dark"] .badge-new {
-  background-color: rgba(22, 163, 74, 0.2);
-  color: #4ade80;
 }
 
 /* Modified date cell */
@@ -733,16 +673,12 @@ div[data-item-path].selected {
 }
 
 .action-icon-btn.action-edit:hover { color: var(--accent); }
-.action-icon-btn.action-download:hover { color: #16a34a; }
-.action-icon-btn.action-rename:hover { color: #d97706; }
-.action-icon-btn.action-archive:hover { color: #9333ea; }
-.action-icon-btn.action-delete:hover { color: #dc2626; }
+.action-icon-btn.action-download:hover { color: var(--action-green); }
+.action-icon-btn.action-rename:hover { color: var(--action-amber); }
+.action-icon-btn.action-archive:hover { color: var(--action-purple); }
+.action-icon-btn.action-delete:hover { color: var(--action-red); }
 
 [data-theme="dark"] .action-icon-btn.action-edit:hover { color: var(--accent-light); }
-[data-theme="dark"] .action-icon-btn.action-download:hover { color: #4ade80; }
-[data-theme="dark"] .action-icon-btn.action-rename:hover { color: #fbbf24; }
-[data-theme="dark"] .action-icon-btn.action-archive:hover { color: #c084fc; }
-[data-theme="dark"] .action-icon-btn.action-delete:hover { color: #f87171; }
 
 /* Mobile more button (already defined above, adding responsive hide) */
 .mobile-more-btn {
@@ -764,11 +700,11 @@ div[data-item-path].selected {
   align-items: center;
   justify-content: space-between;
   padding: 12px;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.04);
+  border-bottom: 1px solid var(--border-light);
 }
 
 [data-theme="dark"] .mobile-item {
-  border-bottom-color: rgba(255, 255, 255, 0.08);
+  border-bottom-color: var(--border);
 }
 
 .mobile-item-checkbox {
@@ -789,10 +725,6 @@ div[data-item-path].selected {
   color: var(--text);
 }
 
-[data-theme="dark"] .mobile-item-name {
-  color: var(--text);
-}
-
 .mobile-item-date {
   font-size: 12px;
   color: var(--muted);
@@ -809,15 +741,11 @@ div[data-item-path].selected {
 }
 
 .mobile-action-btn:hover {
-  background-color: rgba(0, 0, 0, 0.05);
-}
-
-[data-theme="dark"] .mobile-action-btn {
-  color: var(--text-secondary);
+  background-color: var(--surface-hover);
 }
 
 [data-theme="dark"] .mobile-action-btn:hover {
-  background-color: rgba(255, 255, 255, 0.1);
+  background-color: var(--surface-active);
 }
 
 /* Mobile item layout */

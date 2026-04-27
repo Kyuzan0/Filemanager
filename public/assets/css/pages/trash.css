@@ -19,28 +19,28 @@
 }
 
 .action-btn.restore {
-    background: #10b981;
-    color: white;
+    background: var(--success);
+    color: var(--btn-primary-text);
 }
 
 .action-btn.restore:hover {
-    background: #059669;
+    background: var(--action-btn-new-folder-hover);
 }
 
 .action-btn.delete {
-    background: #ef4444;
-    color: white;
+    background: var(--danger);
+    color: var(--btn-primary-text);
 }
 
 .action-btn.delete:hover {
-    background: #dc2626;
+    background: var(--delete-danger-hover);
 }
 
 /* Trash Empty State */
 .trash-empty {
     text-align: center;
     padding: 3rem 1rem;
-    color: #94a3b8;
+    color: var(--muted);
 }
 
 .trash-empty i {
@@ -51,13 +51,13 @@
 
 /* Warning Button */
 .btn-warning {
-    background: #f59e0b;
-    color: white;
+    background: var(--warning);
+    color: var(--btn-primary-text);
     border: none;
 }
 
 .btn-warning:hover {
-    background: #d97706;
+    background: var(--action-amber);
 }
 
 /* Toast Animations */

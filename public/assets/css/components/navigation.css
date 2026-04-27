@@ -232,7 +232,7 @@
 
 .pagination-page-btn.active {
   background: var(--accent);
-  color: #fff;
+  color: var(--btn-primary-text);
   font-weight: 500;
   border-color: var(--accent);
 }
@@ -267,7 +267,7 @@
 
 [data-theme="dark"] .pagination-page-btn.active {
   background: var(--accent);
-  color: #fff;
+  color: var(--btn-primary-text);
 }
 
 /* Breadcrumb Renderer Styles */

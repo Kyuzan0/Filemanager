@@ -123,45 +123,45 @@
 /* Success */
 .toast.toast-success {
   background: rgba(34, 197, 94, 0.95);
-  color: #ffffff;
+  color: var(--btn-primary-text);
   border: 1px solid rgba(34, 197, 94, 0.2);
 }
 
 .toast.toast-success .toast-icon {
-  color: #ffffff;
+  color: var(--btn-primary-text);
 }
 
 /* Error */
 .toast.toast-error {
   background: rgba(239, 68, 68, 0.95);
-  color: #ffffff;
+  color: var(--btn-primary-text);
   border: 1px solid rgba(239, 68, 68, 0.2);
 }
 
 .toast.toast-error .toast-icon {
-  color: #ffffff;
+  color: var(--btn-primary-text);
 }
 
 /* Warning */
 .toast.toast-warning {
   background: rgba(245, 158, 11, 0.95);
-  color: #ffffff;
+  color: var(--btn-primary-text);
   border: 1px solid rgba(245, 158, 11, 0.2);
 }
 
 .toast.toast-warning .toast-icon {
-  color: #ffffff;
+  color: var(--btn-primary-text);
 }
 
 /* Info */
 .toast.toast-info {
   background: var(--accent);
-  color: #ffffff;
+  color: var(--btn-primary-text);
   border: 1px solid var(--accent);
 }
 
 .toast.toast-info .toast-icon {
-  color: #ffffff;
+  color: var(--btn-primary-text);
 }
 
 /* Dark Mode */

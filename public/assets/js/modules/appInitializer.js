@@ -2195,7 +2195,7 @@ function showError(message) {
         position: fixed;
         top: 20px;
         right: 20px;
-        background: #f44336;
+        background: var(--danger, #f44336);
         color: white;
         padding: 12px 20px;
         border-radius: 4px;
@@ -2253,13 +2253,13 @@ function setupPWA() {
             position: fixed;
             bottom: 20px;
             right: 20px;
-            background: #2196F3;
+            background: var(--accent, #2196F3);
             color: white;
             border: none;
             padding: 12px 20px;
             border-radius: 4px;
             cursor: pointer;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            box-shadow: var(--shadow-md, 0 2px 5px rgba(0,0,0,0.2));
             z-index: 10000;
         `;
 

@@ -35,11 +35,11 @@ body {
 }
 
 html[data-theme="dark"] {
-    background-color: #0f172a;
+    background-color: var(--gray-950);
 }
 
 html[data-theme="dark"] body {
-    background-color: #0f172a;
+    background-color: var(--gray-950);
 }
 
 body {
@@ -231,11 +231,11 @@ body {
 
 .btn-danger {
     color: var(--danger);
-    border-color: rgba(239, 68, 68, 0.3);
+    border-color: var(--logs-btn-danger-border);
 }
 
 .btn-danger:hover {
-    background: rgba(239, 68, 68, 0.1);
+    background: var(--logs-btn-danger-hover-bg);
 }
 
 /* Table Card */
@@ -294,7 +294,7 @@ body {
 }
 
 .log-table tbody tr:hover {
-    background: var(--row-hover);
+    background: var(--logs-row-hover);
 }
 
 .log-table tbody tr:hover td {
@@ -353,143 +353,145 @@ body {
 }
 
 .action-badge.upload {
-    background: rgba(34, 197, 94, 0.15);
-    color: #16a34a;
+    background: var(--logs-badge-upload-bg);
+    color: var(--logs-badge-upload-text);
 }
 
 .action-badge.download {
-    background: var(--accent);
-    color: var(--accent);
+    background: var(--logs-badge-download-bg);
+    color: var(--logs-badge-download-text);
 }
 
 .action-badge.delete {
-    background: rgba(239, 68, 68, 0.15);
-    color: #dc2626;
+    background: var(--logs-badge-delete-bg);
+    color: var(--logs-badge-delete-text);
 }
 
 .action-badge.create {
-    background: rgba(168, 85, 247, 0.15);
-    color: #9333ea;
+    background: var(--logs-badge-create-bg);
+    color: var(--logs-badge-create-text);
 }
 
 .action-badge.rename {
-    background: rgba(245, 158, 11, 0.15);
-    color: #d97706;
+    background: var(--logs-badge-rename-bg);
+    color: var(--logs-badge-rename-text);
 }
 
 .action-badge.move {
-    background: rgba(6, 182, 212, 0.15);
-    color: #0891b2;
+    background: var(--logs-badge-move-bg);
+    color: var(--logs-badge-move-text);
 }
 
 .action-badge.view {
-    background: rgba(100, 116, 139, 0.15);
-    color: #475569;
+    background: var(--logs-badge-view-bg);
+    color: var(--logs-badge-view-text);
 }
 
 .action-badge.bulk_upload {
-    background: rgba(34, 197, 94, 0.25);
-    color: #16a34a;
+    background: var(--logs-badge-bulk-upload-bg);
+    color: var(--logs-badge-bulk-upload-text);
 }
 
 .action-badge.bulk_trash {
-    background: rgba(239, 68, 68, 0.25);
-    color: #dc2626;
+    background: var(--logs-badge-bulk-trash-bg);
+    color: var(--logs-badge-bulk-trash-text);
 }
 
 .action-badge.trash {
-    background: rgba(239, 68, 68, 0.15);
-    color: #dc2626;
+    background: var(--logs-badge-trash-bg);
+    color: var(--logs-badge-trash-text);
 }
 
 .action-badge.restore {
+    /* TODO: Add --logs-badge-restore-bg/text to variables.css */
     background: var(--accent);
     color: var(--accent);
 }
 
 .action-badge.permanent_delete {
-    background: rgba(127, 29, 29, 0.15);
-    color: #991b1b;
+    background: var(--logs-badge-permanent-delete-bg);
+    color: var(--logs-badge-permanent-delete-text);
 }
 
 .action-badge.save {
-    background: rgba(16, 185, 129, 0.15);
-    color: #047857;
+    background: var(--logs-badge-save-bg);
+    color: var(--logs-badge-save-text);
 }
 
 .action-badge.empty_trash {
-    background: rgba(127, 29, 29, 0.2);
-    color: #991b1b;
+    background: var(--logs-badge-empty-trash-bg);
+    color: var(--logs-badge-empty-trash-text);
 }
 
 [data-theme="dark"] .action-badge.upload {
-    background: rgba(34, 197, 94, 0.25);
-    color: #4ade80;
+    background: var(--logs-badge-upload-bg);
+    color: var(--logs-badge-upload-text);
 }
 
 [data-theme="dark"] .action-badge.download {
+    /* TODO: Add dark mode --logs-badge-download-bg/text to variables.css */
     background: var(--accent);
     color: var(--accent-light);
 }
 
 [data-theme="dark"] .action-badge.delete {
-    background: rgba(239, 68, 68, 0.25);
-    color: #f87171;
+    background: var(--logs-badge-delete-bg);
+    color: var(--logs-badge-delete-text);
 }
 
 [data-theme="dark"] .action-badge.create {
-    background: rgba(168, 85, 247, 0.25);
-    color: #c084fc;
+    background: var(--logs-badge-create-bg);
+    color: var(--logs-badge-create-text);
 }
 
 [data-theme="dark"] .action-badge.rename {
-    background: rgba(245, 158, 11, 0.25);
-    color: #fbbf24;
+    background: var(--logs-badge-rename-bg);
+    color: var(--logs-badge-rename-text);
 }
 
 [data-theme="dark"] .action-badge.move {
-    background: rgba(6, 182, 212, 0.25);
-    color: #22d3ee;
+    background: var(--logs-badge-move-bg);
+    color: var(--logs-badge-move-text);
 }
 
 [data-theme="dark"] .action-badge.view {
-    background: rgba(100, 116, 139, 0.25);
-    color: #94a3b8;
+    background: var(--logs-badge-view-bg);
+    color: var(--logs-badge-view-text);
 }
 
 [data-theme="dark"] .action-badge.bulk_upload {
-    background: rgba(34, 197, 94, 0.35);
-    color: #4ade80;
+    background: var(--logs-badge-bulk-upload-bg);
+    color: var(--logs-badge-bulk-upload-text);
 }
 
 [data-theme="dark"] .action-badge.bulk_trash {
-    background: rgba(239, 68, 68, 0.35);
-    color: #f87171;
+    background: var(--logs-badge-bulk-trash-bg);
+    color: var(--logs-badge-bulk-trash-text);
 }
 
 [data-theme="dark"] .action-badge.trash {
-    background: rgba(239, 68, 68, 0.25);
-    color: #f87171;
+    background: var(--logs-badge-trash-bg);
+    color: var(--logs-badge-trash-text);
 }
 
 [data-theme="dark"] .action-badge.restore {
-    background: var(--accent);
-    color: var(--accent-light);
+    background: var(--logs-badge-restore-bg);
+    color: var(--logs-badge-restore-text);
 }
 
 [data-theme="dark"] .action-badge.permanent_delete {
-    background: rgba(127, 29, 29, 0.25);
-    color: #fca5a5;
+    background: var(--logs-badge-permanent-delete-bg);
+    color: var(--logs-badge-permanent-delete-text);
 }
 
 [data-theme="dark"] .action-badge.save {
-    background: rgba(16, 185, 129, 0.25);
-    color: #34d399;
+    background: var(--logs-badge-save-bg);
+    color: var(--logs-badge-save-text);
 }
 
 [data-theme="dark"] .action-badge.empty_trash {
-    background: rgba(127, 29, 29, 0.3);
-    color: #fca5a5;
+    background: var(--logs-badge-empty-trash-bg);
+    color: var(--logs-badge-empty-trash-text);
 }
 
 .file-cell {
@@ -559,7 +561,7 @@ body {
 .page-btn.active {
     background: var(--accent);
     border-color: var(--accent);
-    color: white;
+    color: var(--btn-primary-text);
 }
 
 /* Empty & Loading */
@@ -593,7 +595,7 @@ body {
 .modal-overlay {
     position: fixed;
     inset: 0;
-    background: rgba(0, 0, 0, 0.4);
+    background: var(--logs-modal-overlay-bg);
     display: none;
     align-items: center;
     justify-content: center;
@@ -701,7 +703,7 @@ body {
 .btn-primary {
     background: var(--accent);
     border-color: var(--accent);
-    color: white;
+    color: var(--btn-primary-text);
 }
 
 .btn-primary:hover {

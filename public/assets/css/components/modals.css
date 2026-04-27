@@ -17,10 +17,6 @@
   transition: background-color 0.3s ease;
 }
 
-[data-theme="dark"] .modal-backdrop {
-  background: rgba(0, 0, 0, 0.7);
-}
-
 .modal-backdrop.visible {
   display: flex;
 }
@@ -34,11 +30,6 @@
   transition: background-color 0.3s ease, box-shadow 0.3s ease;
   box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
   color: var(--muted);
-}
-
-[data-theme="dark"] .modal {
-  background: var(--card);
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
 }
 
 .modal-header {
@@ -108,7 +99,7 @@
   align-items: center;
   justify-content: center;
   z-index: 1200;
-  background: rgba(0, 0, 0, 0.45);
+  background: var(--surface-overlay);
 }
 
 .card-upload-modal {

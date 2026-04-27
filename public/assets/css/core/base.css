@@ -12,7 +12,7 @@ html {
 }
 
 html[data-theme="dark"] {
-  background: #0f1419;
+  background: var(--bg);
   color-scheme: dark;
 }
 
@@ -25,7 +25,7 @@ body {
 }
 
 [data-theme="dark"] body {
-  background: #0f1419;
+  background: var(--bg);
 }
 
 h1,
