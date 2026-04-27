@@ -51,6 +51,55 @@
   gap: 0.5rem;
 }
 
+.unsaved-button {
+  flex: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.625rem 1rem;
+  border-radius: 0.5rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.unsaved-button.outline {
+  background: var(--btn-outline-bg);
+  border: 1px solid var(--btn-outline-border);
+  color: var(--btn-outline-text);
+  padding: 0.5rem 0.75rem;
+  outline: none;
+}
+
+.unsaved-button.outline:hover {
+  background: var(--btn-outline-hover-bg);
+  border-color: var(--btn-outline-border);
+}
+
+.unsaved-button.outline:focus,
+.unsaved-button.outline:focus-visible {
+  outline: none;
+  border-color: var(--btn-outline-border);
+  box-shadow: none;
+}
+
+.unsaved-button.primary {
+  background: var(--accent);
+  border: none;
+  color: var(--btn-primary-text, #fff);
+}
+
+.unsaved-button.primary:hover {
+  opacity: 0.9;
+}
+
+.unsaved-button.primary:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(var(--accent-rgb), 0.3);
+}
+
 @media (min-width: 640px) {
   .unsaved-actions {
     flex-direction: row;

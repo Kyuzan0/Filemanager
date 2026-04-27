@@ -391,13 +391,42 @@ function updateBreadcrumbs(path) {
   const breadcrumbEl = document.getElementById('breadcrumbs');
   if (!breadcrumbEl) return;
 
+  // Helper to create clickable Home element that navigates to dashboard (root)
+  function createHomeElement() {
+    const homeSpan = document.createElement('span');
+    homeSpan.style.cursor = 'pointer';
+    homeSpan.innerHTML = '<i class="ri-home-4-line" aria-hidden="true" style="margin-right: 4px; font-size: 14px;"></i>Home';
+    homeSpan.title = 'Go to Dashboard';
+    homeSpan.setAttribute('role', 'link');
+    homeSpan.setAttribute('tabindex', '0');
+    homeSpan.addEventListener('click', () => {
+      // Navigate to dashboard (root)
+      if (typeof window.SmoothNav !== 'undefined' && typeof window.SmoothNav.navigateTo === 'function') {
+        window.SmoothNav.navigateTo('dashboard');
+      } else if (typeof window.loadPath === 'function') {
+        window.loadPath('');
+      } else if (typeof loadFiles === 'function') {
+        loadFiles('');
+      }
+    });
+    homeSpan.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        homeSpan.click();
+      }
+    });
+    return homeSpan;
+  }
+
   if (!path) {
-    breadcrumbEl.innerHTML = '<i class="ri-home-4-line" aria-hidden="true" style="margin-right: 4px; font-size: 14px;"></i>Home';
+    breadcrumbEl.innerHTML = '';
+    breadcrumbEl.appendChild(createHomeElement());
     return;
 }
 
 const parts = path.split('/');
-breadcrumbEl.innerHTML = '<span style="cursor: pointer;"><i class="ri-home-4-line" aria-hidden="true" style="margin-right: 4px; font-size: 14px;"></i>Home</span>';
+breadcrumbEl.innerHTML = '';
+breadcrumbEl.appendChild(createHomeElement());
 
 let currentSegment = '';
 for (const part of parts) {
