@@ -1,32 +1,31 @@
 # File Manager — Modern Web-Based File Management System
 
-**Version:** 4.0 (Refactored Architecture)
-**Date:** December 9, 2025
-**Status:** ✅ Production Ready
-
-📚 **[Documentation](docs/README.md)** | 📖 **[API Reference](docs/API.md)** | 🏗️ **[Architecture](docs/ARCHITECTURE.md)** | 📋 **[Requirements](REQUIREMENTS.md)** | 🤝 **[Contributing](docs/CONTRIBUTING.md)**
+**License:** MIT
+**Author:** [Kyuzan0](https://github.com/Kyuzan0)
+**Repository:** [https://github.com/Kyuzan0/Filemanager](https://github.com/Kyuzan0/Filemanager)
 
 ---
 
 ## 🎯 Overview
 
-A modern, full-featured web-based file manager built with vanilla JavaScript and PHP. Features include file browsing, upload/download, drag & drop, virtual scrolling, dark mode, trash system, activity logging, analytics, security hardening, and comprehensive file operations.
+A modern, full-featured web-based file manager built with vanilla JavaScript (ES6+ modules) and PHP. Features include file browsing, upload/download, drag & drop, virtual scrolling, dark mode, trash system, activity logging, analytics, archive operations, code editing (CodeMirror 6), security hardening, and comprehensive file operations.
 
 ---
 
-## 🏗️ Arsitektur
+## 🏗️ Architecture
 
 ### Frontend
-- **Architecture:** Modular ES6+ JavaScript (Vanilla JS)
-- **CSS System:** 30-module modular CSS architecture (6-layer design)
+- **Architecture:** Modular ES6+ JavaScript (40 modules across 3 directories)
+- **CSS System:** 42-file modular CSS architecture (7-layer design)
 - **State Management:** Centralized state with pubsub pattern
 - **UI Framework:** Tailwind CSS (via CDN) + Custom modular CSS
-- **Icons:** RemixIcon CDN
+- **Code Editor:** CodeMirror 6 (bundled via esbuild, 15 language packages)
+- **Icons:** RemixIcon CDN + custom SVG icons module
 
 ### Backend
 - **Language:** PHP 7.4+
-- **Architecture:** Procedural with library abstraction
-- **API:** RESTful JSON endpoints
+- **Architecture:** Namespaced OOP with PSR-4 autoloading (`App\` → `app/`)
+- **API:** RESTful JSON endpoints via `api.php` router
 - **File Operations:** Chunked uploads, sanitized paths, security validation
 
 ### Communication
@@ -39,106 +38,144 @@ A modern, full-featured web-based file manager built with vanilla JavaScript and
 ## 💻 Tech Stack
 
 ### Core Technologies
-- **JavaScript:** ES6+ modules, async/await, Promises
-- **HTML5:** Semantic markup, accessibility features
-- **CSS3:** Modular architecture (30 files), CSS variables, dark mode
-- **PHP:** 7.4+ with modern file handling
-- **Tailwind CSS:** CDN-based for rapid development
+| Technology | Details |
+|---|---|
+| **JavaScript** | ES6+ modules, async/await, Promises |
+| **HTML5** | Semantic markup, accessibility features |
+| **CSS3** | 42-file modular architecture, CSS variables, dark mode |
+| **PHP** | 7.4+ with namespaced OOP (PSR-4) |
+| **Tailwind CSS** | CDN-based utility framework |
+| **CodeMirror 6** | Code editor with 15 language modes (bundled via esbuild) |
 
-### No External Dependencies
-- ✅ Zero JavaScript frameworks or libraries
-- ✅ Vanilla JS for maximum performance
-- ✅ Native browser APIs (Fetch, File, Clipboard, etc.)
-- ✅ Lightweight footprint (~100KB total JS)
+### Dev Tooling
+| Tool | Purpose |
+|---|---|
+| **ESLint 9** | JavaScript linting (flat config, ES2020) |
+| **PHP_CodeSniffer** | PHP linting (PSR-12) |
+| **Jest 29** | JavaScript unit testing (jsdom, babel-jest) |
+| **PHPUnit 9.6** | PHP unit testing |
+| **esbuild** | CodeMirror bundle builder |
+| **Babel** | ES6+ transpilation (for Jest compatibility) |
+| **.editorconfig** | UTF-8, LF line endings, 4-space indent |
+
+### CodeMirror 6 Language Support
+JavaScript, PHP, CSS, HTML, JSON, Markdown, Python, SQL, XML, YAML, C/C++ — plus autocomplete, search, and syntax highlighting via `@lezer/highlight`.
 
 ---
 
-## 📁 Struktur Proyek
+## 📁 Project Structure
 
 ```
 Filemanager/
-├── public/                    # 🌐 Web-accessible files (document root)
-│   ├── index.php              # Main HTML entry point
-│   ├── api.php                # RESTful API endpoint router
-│   ├── favicon.svg            # Site favicon
-│   ├── .htaccess              # Apache configuration
+├── public/                        # 🌐 Web-accessible files (document root)
+│   ├── index.php                  # Main HTML entry point
+│   ├── api.php                    # RESTful API endpoint router
+│   ├── .htaccess                  # Apache configuration
 │   │
 │   ├── assets/
-│   │   ├── css/               # 🎨 Modular CSS (30 files)
-│   │   │   ├── main.css       # CSS orchestration (31 imports)
-│   │   │   ├── core/          # Variables, reset, base (3 files)
-│   │   │   ├── layout/        # App shell, sidebar, topbar (4 files)
-│   │   │   ├── components/    # Buttons, cards, forms, tables (10 files)
-│   │   │   ├── overlays/      # Modal-specific styles (9 files)
-│   │   │   ├── themes/        # Dark mode system (1 file)
-│   │   │   └── utilities/     # Animations, helpers, responsive (3 files)
+│   │   ├── css/                   # 🎨 Modular CSS (42 files)
+│   │   │   ├── main.css           # CSS orchestration (77 lines, 41 @imports)
+│   │   │   ├── core/              # Variables, reset, base (3 files)
+│   │   │   ├── layout/            # App, sidebar, topbar, action-bar, footer (5 files)
+│   │   │   ├── components/        # Buttons, cards, tables, forms, modals, badges, icons,
+│   │   │   │                      #   context-menu, loader, navigation, toast, enhanced-ui (12 files)
+│   │   │   ├── overlays/          # Create, preview, confirm, rename, unsaved, move, delete,
+│   │   │   │                      #   download, details, log, settings, trash, context-menu,
+│   │   │   │                      #   shortcuts (14 files)
+│   │   │   ├── themes/            # Dark mode system (1 file)
+│   │   │   ├── pages/             # Trash, logs page styles (2 files)
+│   │   │   └── utilities/         # Animations, helpers, responsive, accessibility (4 files)
 │   │   │
-│   │   └── js/                # 📜 JavaScript modules
-│   │       ├── index.js       # Application entry point
-│   │       ├── modules/       # 15 modular components
-│   │       │   ├── appInitializer.js    # App initialization
-│   │       │   ├── apiService.js        # HTTP/API layer
-│   │       │   ├── fileOperations.js    # File business logic
-│   │       │   ├── uiRenderer.js        # DOM rendering + virtual scroll
-│   │       │   ├── state.js             # State management
-│   │       │   └── ...                  # Plus 10 more modules
-│   │       │
-│   │       ├── enhanced-ui.js    # Legacy compatibility layer
-│   │       ├── modals-handler.js # Legacy modal handler
-│   │       └── log-handler.js    # Legacy log handler
+│   │   └── js/                    # 📜 JavaScript
+│   │       ├── index.js           # Application entry point (1102 lines)
+│   │       ├── modules/           # 40 ES6 modules
+│   │       │   ├── ui/            # UI sub-modules (4 files)
+│   │       │   ├── handlers/      # Handler sub-modules (4 files)
+│   │       │   └── *.js           # 32 root modules
+│   │       ├── vendor/            # CodeMirror 6 bundle (codemirror.min.js)
+│   │       ├── sidebar.js         # Sidebar controller
+│   │       ├── trash.js           # Trash page controller
+│   │       ├── logs.js            # Logs page controller
+│   │       ├── enhanced-ui.js     # Legacy compatibility
+│   │       ├── modals-handler.js  # Legacy modal handler
+│   │       └── log-handler.js     # Legacy log handler
 │   │
-│   └── partials/              # 📄 HTML Partials
-│       ├── sidebar.php        # Sidebar navigation
-│       ├── table.php          # File table structure
-│       ├── overlays.php       # Modal dialogs
-│       └── ...                # Plus more partials
+│   └── partials/                  # 📄 PHP Partials (13 files)
+│       ├── sidebar.php            # Sidebar navigation
+│       ├── table.php              # File table structure
+│       ├── overlays.php           # Modal dialogs
+│       ├── action-bar.php         # Action toolbar
+│       ├── settings-modal.php     # Settings dialog
+│       ├── trash-overlay.php      # Trash overlay
+│       ├── logs/                  # Log partials
+│       │   ├── modal.php
+│       │   ├── toolbar.php
+│       │   └── table.php
+│       └── trash/                 # Trash partials
+│           ├── toolbar.php
+│           ├── table.php
+│           ├── detail-modal.php
+│           └── confirm-modal.php
 │
-├── app/                       # 🔧 Application Code (not web-accessible)
-│   ├── Core/                  # Core business logic classes
-│   │   ├── FileManager.php    # File operations + Security
-│   │   ├── TrashManager.php   # Trash system operations
-│   │   ├── ArchiveManager.php # ZIP/7z/RAR archive handling
-│   │   ├── LogManager.php     # Activity logging system
-│   │   └── Security.php       # Path sanitization & validation
+├── app/                           # 🔧 Application Code (not web-accessible)
+│   ├── Core/                      # Core business logic classes
+│   │   ├── FileManager.php        # File operations & security
+│   │   ├── TrashManager.php       # Trash system operations
+│   │   ├── ArchiveManager.php     # ZIP/7z/RAR archive handling
+│   │   ├── LogManager.php         # Activity logging system
+│   │   └── Security.php           # Path sanitization & validation
 │   │
-│   ├── Handlers/              # 📦 API Request Handlers
-│   │   ├── FileHandler.php    # File/folder CRUD operations
-│   │   ├── TrashHandler.php   # Trash bin operations
-│   │   ├── ArchiveHandler.php # Compression/extraction
-│   │   ├── LogHandler.php     # Activity logs operations
-│   │   ├── RawHandler.php     # Raw file streaming (media preview)
-│   │   └── SystemHandler.php  # System requirements & status
+│   ├── Handlers/                  # 📦 API Request Handlers
+│   │   ├── FileHandler.php        # File/folder CRUD operations
+│   │   ├── TrashHandler.php       # Trash bin operations
+│   │   ├── ArchiveHandler.php     # Compression/extraction
+│   │   ├── LogHandler.php         # Activity logs operations
+│   │   ├── RawHandler.php         # Raw file streaming (media preview)
+│   │   └── SystemHandler.php      # System requirements & status
 │   │
 │   ├── Helpers/
-│   │   └── helpers.php        # Common utility functions
+│   │   └── helpers.php            # Common utility functions
 │   │
 │   └── Config/
-│       └── paths.php          # Centralized path constants
+│       └── paths.php              # Centralized path constants
 │
-├── storage/                   # 📂 User Data Storage
-│   ├── files/                 # User file storage directory
-│   ├── trash/                 # 🗑️ Trash storage (soft delete)
-│   ├── logs/                  # 📊 Activity logs (JSON)
-│   └── temp/                  # Temporary files
+├── storage/                       # 📂 User Data Storage
+│   ├── files/                     # User file storage directory
+│   ├── trash/                     # 🗑️ Trash storage (soft delete)
+│   ├── logs/                      # 📊 Activity logs (JSON)
+│   └── temp/                      # Temporary files
 │
-├── bin/                       # 📦 Bundled Binaries
-│   ├── windows/               # Windows 7-Zip (7z.exe + 7z.dll)
-│   ├── linux/                 # Linux p7zip (7za)
-│   └── setup.php              # OS detection & binary setup
+├── bin/                           # 📦 Bundled Binaries & Setup
+│   ├── setup.php                  # OS detection & binary setup
+│   ├── setup-7zip.php             # 7-Zip configuration
+│   ├── windows/                   # Windows 7-Zip (7z.exe + 7z.dll)
+│   └── linux/                     # Linux p7zip (7za)
 │
-├── docs/                      # 📚 Comprehensive Documentation
-│   ├── PROJECT_STRUCTURE.md   # Structure documentation
-│   ├── README.md              # Quick start & feature overview
-│   ├── ARCHITECTURE.md        # System architecture guide
-│   ├── API.md                 # Complete API reference
-│   └── CONTRIBUTING.md        # Developer contribution guide
+├── build/                         # 🔨 Build Artifacts
+│   └── codemirror-bundle.js       # esbuild source for CodeMirror bundle
 │
-├── autoload.php               # Class & helper loader
-├── bootstrap.php              # Application initialization
-├── .gitignore                 # Git ignore configuration
-└── README.md                  # This file
+├── tests/                         # 🧪 Test Suite
+│   ├── state.test.js              # Jest: state module tests
+│   ├── setup.js                   # Jest setup configuration
+│   ├── bootstrap.php              # PHPUnit bootstrap
+│   └── Unit/
+│       ├── FileManagerTest.php    # PHPUnit: FileManager tests
+│       └── SecurityTest.php       # PHPUnit: Security tests
+│
+├── autoload.php                   # PSR-4 class autoloader
+├── bootstrap.php                  # Application initialization
+├── package.json                   # npm dependencies & scripts
+├── composer.json                  # PHP dependencies (php ^7.4)
+├── eslint.config.js               # ESLint 9 flat config
+├── phpunit.xml                    # PHPUnit configuration
+├── phpcs.xml                      # PHP_CodeSniffer (PSR-12)
+├── jest.config.js                 # Jest configuration
+├── babel.config.js                # Babel (for Jest)
+├── tailwind.config.js             # Tailwind CSS config (CDN marker)
+├── .editorconfig                  # Editor configuration
+├── .gitignore                     # Git ignore rules
+└── Readme.md                      # This file
 ```
-
 
 ---
 
@@ -147,7 +184,7 @@ Filemanager/
 ### Core File Operations
 | Feature | Description |
 |---------|-------------|
-| 📁 **Browse & Navigate** | Breadcrumb navigation, folder traversal |
+| 📁 **Browse & Navigate** | Breadcrumb navigation, folder traversal, router-based navigation |
 | ➕ **Create** | New files and folders with validation |
 | ✏️ **Rename** | In-place renaming with conflict detection |
 | 📦 **Move** | Drag & drop or dialog-based file moving |
@@ -156,7 +193,9 @@ Filemanager/
 | 📂 **Upload Folders** | Upload entire folder with subfolder structure |
 | 📥 **Download** | Direct file downloads |
 | 👁️ **Preview** | Text, image, video, audio, PDF preview |
-| ✏️ **Edit** | Built-in code editor with syntax highlighting |
+| ✏️ **Code Editor** | CodeMirror 6 with syntax highlighting for 11 languages |
+| 📦 **Archive Operations** | Create/extract ZIP, 7z, RAR archives |
+| ⭐ **Favorites** | Bookmark frequently accessed files/folders |
 
 ### UI/UX Features
 | Feature | Description |
@@ -170,6 +209,8 @@ Filemanager/
 | 📱 **Responsive Design** | Mobile, tablet, desktop optimized |
 | 👆 **Touch Support** | 44px minimum touch targets |
 | ♿ **Accessibility** | WCAG 2.1 AA compliant |
+| 🔔 **Toast Notifications** | Non-blocking user feedback |
+| 🔄 **Render Optimization** | Debounced rendering for smooth updates |
 
 ### Advanced Features
 | Feature | Description |
@@ -184,6 +225,8 @@ Filemanager/
 | 📦 **Batch Operations** | Multi-select with bulk actions |
 | 🔍 **Search & Filter** | Real-time file search |
 | 📊 **Sort** | By name, type, date, size |
+| 🔀 **Client-Side Router** | SPA-like navigation without page reloads |
+| 🐛 **Debug Utilities** | Built-in debug logging module |
 
 ### ⌨️ Keyboard Shortcuts
 
@@ -203,25 +246,24 @@ Filemanager/
 
 ---
 
-## 🎨 CSS Architecture (Modular System)
+## 🎨 CSS Architecture (7-Layer Modular System)
 
-### 6-Layer Architecture
-
-**Completed:** November 25, 2025 (Phase 1-10, 100%)
+### Layer Overview
 
 ```
-Layer 1: CORE (Foundation)
-├── variables.css - CSS custom properties (light/dark themes)
-├── reset.css     - CSS reset & normalization
-└── base.css      - Base element styling
+Layer 1: CORE (Foundation) — 3 files
+├── variables.css     - CSS custom properties (light/dark themes)
+├── reset.css         - CSS reset & normalization
+└── base.css          - Base element styling
 
-Layer 2: LAYOUT (Structure)
-├── app.css       - App container & main wrapper
-├── sidebar.css   - Sidebar navigation
-├── topbar.css    - Header/top navigation
-└── footer.css    - Footer area
+Layer 2: LAYOUT (Structure) — 5 files
+├── app.css           - App container & main wrapper
+├── sidebar.css       - Sidebar navigation
+├── topbar.css        - Header/top navigation
+├── action-bar.css    - Action toolbar
+└── footer.css        - Footer area
 
-Layer 3: COMPONENTS (UI Elements)
+Layer 3: COMPONENTS (UI Elements) — 12 files
 ├── buttons.css       - Button styles & variants
 ├── cards.css         - Card containers
 ├── tables.css        - Data table styling
@@ -231,87 +273,138 @@ Layer 3: COMPONENTS (UI Elements)
 ├── icons.css         - Icon styling
 ├── context-menu.css  - Right-click menu
 ├── loader.css        - Loading indicators
-└── navigation.css    - Breadcrumb navigation
+├── navigation.css    - Breadcrumb navigation
+├── toast.css         - Toast notifications
+└── enhanced-ui.css   - Enhanced UI components
 
-Layer 4: OVERLAYS (Modal Content)
+Layer 4: OVERLAYS (Modal Content) — 14 files
 ├── create.css        - Create file/folder modal
 ├── preview.css       - File preview modal
 ├── confirm.css       - Confirmation dialogs
 ├── rename.css        - Rename modal
 ├── unsaved.css       - Unsaved changes modal
 ├── move.css          - Move/relocate modal
+├── delete.css        - Delete confirmation
+├── download.css      - Download dialog
+├── details.css       - File details panel
 ├── log.css           - Activity log viewer
 ├── settings.css      - Settings dialog
-└── context-menu.css  - Context menu overlay
+├── trash.css         - Trash overlay
+├── context-menu.css  - Context menu overlay
+└── shortcuts.css     - Keyboard shortcuts overlay
 
-Layer 5: THEMES (Theming System)
-└── dark.css - Dark mode with 50+ overrides
+Layer 5: THEMES (Theming System) — 1 file
+└── dark.css          - Dark mode with CSS variable overrides
 
-Layer 6: UTILITIES (Helpers & Responsive)
-├── animations.css - 8 @keyframes + animation utilities
-├── helpers.css    - Utility classes (display, flex, spacing, etc.)
-└── responsive.css - All media queries & breakpoints
+Layer 6: PAGES (Page-Specific Styles) — 2 files
+├── trash.css         - Trash page styles
+└── logs.css          - Logs page styles
+
+Layer 7: UTILITIES (Helpers & Responsive) — 4 files
+├── animations.css    - @keyframes & animation utilities
+├── helpers.css       - Utility classes (display, flex, spacing, etc.)
+├── responsive.css    - All media queries & breakpoints
+└── accessibility.css - Accessibility-specific styles
 ```
 
 ### CSS Metrics
-- **Total Files:** 30 modular CSS files + 1 orchestration
-- **Main Entry:** `main.css` (69 lines, 31 @imports)
-- **Original:** 3,404 lines monolithic → Now organized into layers
-- **Inline CSS:** 0 (100% removed from PHP files)
-- **Dark Mode:** Consolidated theme system
-- **Visual Regressions:** 0 (100% backward compatible)
+- **Total Files:** 41 modular CSS files + 1 orchestration (`main.css`)
+- **Main Entry:** `main.css` (77 lines, 41 `@import` statements)
+- **Architecture:** 7-layer separation of concerns
+- **Dark Mode:** Consolidated theme system via CSS variables
+- **Naming:** BEM convention (block__element--modifier)
 
 ### Design System
 - **CSS Variables:** Light/dark theme with semantic naming
-- **Responsive:** Mobile-first (640px, 768px, 1024px, 1280px)
-- **Animations:** 8 keyframes (spin, pulse, fade, slide, bounce, shake)
-- **Naming:** BEM convention (block__element--modifier)
-
-**Documentation:** See `docs/CSS_ARCHITECTURE.md` for complete details
+- **Responsive:** Mobile-first breakpoints (640px, 768px, 1024px, 1280px)
+- **Animations:** Keyframes (spin, pulse, fade, slide, bounce, shake)
 
 ---
 
-## 📜 JavaScript Architecture (Modular ES6+)
+## 📜 JavaScript Architecture (40 ES6+ Modules)
 
-### Frontend Modules (15 Files)
+### Entry Point
+- `index.js` — Application initialization, error handling, module orchestration (1102 lines)
 
-**Main Entry Point:**
-- `index.js` - Application initialization and error handling
+### Module Organization
 
-**Core Modules:**
-- `appInitializer.js` - App setup, DOM binding, initial load
-- `state.js` - Centralized state management with pubsub
-- `apiService.js` - HTTP layer with AbortController
-- `fileOperations.js` - Business logic for all file operations
-- `uiRenderer.js` - DOM rendering, virtual scrolling, item display
+**UI Sub-Modules** (`modules/ui/`) — 4 files
+| Module | Purpose |
+|--------|---------|
+| `breadcrumbRenderer.js` | Breadcrumb navigation rendering |
+| `tableRenderer.js` | File table rendering |
+| `statusRenderer.js` | Status bar rendering |
+| `overlayRenderer.js` | Overlay/modal rendering |
 
-**UI Modules:**
-- `eventHandlers.js` - Event binding and delegation
-- `modals.js` - Modal lifecycle management
-- `dragDrop.js` - Drag & drop with visual feedback
-- `moveOverlay.js` - File move dialog
-- `logManager.js` - Activity log viewer with filters
+**Handler Sub-Modules** (`modules/handlers/`) — 4 files
+| Module | Purpose |
+|--------|---------|
+| `formHandlers.js` | Form submission handling |
+| `keyboardHandlers.js` | Keyboard event handling |
+| `fileHandlers.js` | File operation event handling |
+| `dragHandlers.js` | Drag & drop event handling |
 
-**Utility Modules:**
-- `utils.js` - Helper functions (format dates, sizes, etc.)
-- `storage.js` - LocalStorage abstraction
-- `constants.js` - Configuration and constants
-- `fileIcons.js` - File type to icon mapping
-- `debug.js` - Debug utilities and logging
+**Core Modules** (`modules/`) — 32 files
+| Module | Purpose |
+|--------|---------|
+| `appInitializer.js` | App setup, DOM binding, initial load |
+| `state.js` | Centralized state management with pubsub |
+| `apiService.js` | HTTP layer with AbortController |
+| `fileOperations.js` | Business logic for all file operations |
+| `uiRenderer.js` | DOM rendering, virtual scrolling, item display |
+| `constants.js` | Configuration and constants |
+| `utils.js` | Helper functions (format dates, sizes, etc.) |
+| `router.js` | Client-side routing |
+| `security.js` | Frontend security utilities |
+| `errorHandler.js` | Global error handling |
+| `eventHandlers.js` | Event binding and delegation |
+| `modals.js` | Modal lifecycle management |
+| `dragDrop.js` | Drag & drop with visual feedback |
+| `moveOverlay.js` | File move dialog |
+| `logManager.js` | Activity log viewer with filters |
+| `storage.js` | LocalStorage abstraction |
+| `fileIcons.js` | File type to icon mapping |
+| `svgIcons.js` | SVG icon definitions |
+| `debug.js` | Debug utilities and logging |
+| `batchOperations.js` | Multi-select bulk actions |
+| `analytics.js` | Privacy-respecting usage analytics |
+| `accessibility.js` | Accessibility features |
+| `codemirror-editor.js` | CodeMirror 6 integration |
+| `favorites-manager.js` | Favorites/bookmarks system |
+| `keyboardShortcuts.js` | Keyboard shortcut bindings |
+| `pagination.js` | Advanced pagination |
+| `pagination-simple.js` | Simple pagination variant |
+| `renderOptimizer.js` | Render performance optimization |
+| `systemRequirements.js` | System requirements checker |
+| `toast.js` | Toast notification system |
+| `virtualScroll.js` | Virtual scrolling engine |
+| `wordWrapToggle.js` | Code editor word wrap toggle |
 
-### JavaScript Metrics
-- **Total Modules:** 15 ES6 modules
-- **Total Lines:** ~4,500 lines of well-documented code
-- **Architecture:** Modular with clear separation of concerns
-- **Dependencies:** Zero external libraries
-- **Bundle Size:** ~100KB (unminified)
+**Standalone Controllers**
+| File | Purpose |
+|------|---------|
+| `sidebar.js` | Sidebar controller |
+| `trash.js` | Trash page controller |
+| `logs.js` | Logs page controller |
+
+**Legacy Files** (maintained for backward compatibility)
+| File | Purpose |
+|------|---------|
+| `enhanced-ui.js` | Legacy UI enhancements |
+| `modals-handler.js` | Legacy modal handler |
+| `log-handler.js` | Legacy log handler |
+
+**Vendor**
+| File | Purpose |
+|------|---------|
+| `vendor/codemirror.min.js` | CodeMirror 6 bundle (built via esbuild) |
 
 ### Key Patterns
 - **State Management:** Centralized with pubsub notifications
-- **API Communication:** Promise-based with proper error handling
+- **API Communication:** Promise-based with AbortController cancellation
 - **UI Updates:** Optimistic updates with server reconciliation
-- **Performance:** Virtual scrolling, debouncing, request cancellation
-- **Code Quality:** JSDoc comments, consistent naming, error handling
+- **Performance:** Virtual scrolling, debounced rendering, request cancellation
+- **Routing:** Client-side router for SPA-like navigation
 
 ---
 
@@ -319,32 +412,35 @@ Layer 6: UTILITIES (Helpers & Responsive)
 
 ### Architecture
 
-The backend uses a **modular handler architecture** where `public/api.php` acts as a lightweight router that delegates requests to specialized handler modules:
+The backend uses a **namespaced OOP architecture** with PSR-4 autoloading. `public/api.php` acts as a lightweight router that delegates requests to specialized handler classes:
 
 ```
 public/api.php (Router)
     ↓ (loads bootstrap.php & autoload.php)
     ↓
-app/Handlers/
+app/Handlers/                          (namespace: App\Handlers)
 ├── FileHandler.php     → File/folder CRUD operations
-├── TrashHandler.php    → Trash bin operations  
+├── TrashHandler.php    → Trash bin operations
 ├── LogHandler.php      → Activity log operations
 ├── ArchiveHandler.php  → Compress/extract operations
 ├── SystemHandler.php   → System info & requirements
 └── RawHandler.php      → Media streaming
     ↓ (uses)
-app/Core/
+app/Core/                              (namespace: App\Core)
 ├── FileManager.php     → Core file operations
 ├── TrashManager.php    → Trash management
 ├── ArchiveManager.php  → ZIP/7z operations
 ├── LogManager.php      → Activity logging
 └── Security.php        → Path & input validation
+    ↓ (supported by)
+app/Helpers/helpers.php → Common utility functions
+app/Config/paths.php    → Centralized path constants
 ```
 
 ### API Endpoints (`api.php`)
 
 **File Management:**
-```php
+```
 GET  api.php?action=list&path=...       # List directory
 POST api.php?action=create              # Create file/folder
 POST api.php?action=rename              # Rename item
@@ -357,14 +453,14 @@ GET  api.php?action=raw&path=...        # Stream raw file (media preview)
 ```
 
 **Archive Operations:**
-```php
+```
 POST api.php?action=compress            # Create ZIP archive
 POST api.php?action=extract             # Extract archive
 GET  api.php?action=zip-contents&path=...  # List archive contents
 ```
 
 **Trash Operations:**
-```php
+```
 GET  api.php?action=trash-list          # List trash items
 POST api.php?action=trash-restore       # Restore from trash
 POST api.php?action=trash-delete        # Permanently delete
@@ -373,7 +469,7 @@ POST api.php?action=trash-cleanup       # Cleanup old items
 ```
 
 **Logs & System:**
-```php
+```
 GET  api.php?action=logs                # Get activity logs
 POST api.php?action=logs-cleanup        # Cleanup old logs
 GET  api.php?action=logs-export         # Export logs (JSON/CSV)
@@ -381,106 +477,83 @@ GET  api.php?action=system-requirements # Check system requirements
 GET  api.php?action=7zip-status         # Check 7-Zip availability
 ```
 
-### Folder Upload Parameters
+### Core Classes
 
-When uploading folders, include these additional POST parameters:
-- `folderUpload=true` - Flag to indicate folder upload mode
-- `relativePaths` - JSON array of relative paths (from `webkitRelativePath`)
-- `files[]` - Array of files to upload
+**`App\Core\FileManager`** — File Operations
+- `list_directory()` — List files with metadata
+- `create_file()` / `create_folder()` — Create files/folders
+- `rename_item()` — Rename with validation
+- `move_items()` — Move files/folders
+- `delete_single_path()` / `delete_paths()` — Delete with recursion
+- `upload_files()` / `upload_chunk()` — Chunked upload processing
+- `upload_files_with_folders()` — Upload with folder structure preservation
+- `read_text_file()` / `write_text_file()` — Read/write editable files
+- `sanitize_relative_path()` — Path sanitization
+- `resolve_path()` — Prevent directory traversal
 
-The backend automatically creates subfolder structure based on relative paths.
+**`App\Core\Security`** — Security Utilities
+- `sanitizeRelativePath()` — Clean and validate paths
+- `isPathWithinRoot()` — Prevent directory traversal
+- `sanitizeFilename()` — Clean filename input
+- `isExtensionAllowed()` — Validate file extensions
+- `setSecurityHeaders()` — Set HTTP security headers
 
-### Core Libraries
+**`App\Core\TrashManager`** — Trash Operations
+- Soft delete with metadata preservation
+- Restore to original location
+- Permanent deletion
+- Auto-cleanup of old items
 
-**`app/Core/FileManager.php`** - File Operations
-- `list_directory()` - List files with metadata
-- `create_file()` / `create_folder()` - Create files/folders
-- `rename_item()` - Rename with validation
-- `move_items()` - Move files/folders
-- `delete_single_path()` / `delete_paths()` - Delete with recursion
-- `upload_files()` / `upload_chunk()` - Chunked upload processing
-- `upload_files_with_folders()` - Upload with folder structure preservation
-- `read_text_file()` / `write_text_file()` - Read/write editable files
-- `sanitize_relative_path()` - Path sanitization
-- `resolve_path()` - Prevent directory traversal
+**`App\Core\ArchiveManager`** — Archive Operations
+- ZIP creation and extraction
+- 7z/RAR support via bundled binaries
+- Archive content listing
 
-**`app/Core/Security.php`** - Security Utilities
-- `sanitizeRelativePath()` - Clean and validate paths
-- `isPathWithinRoot()` - Prevent directory traversal
-- `sanitizeFilename()` - Clean filename input
-- `isExtensionAllowed()` - Validate file extensions
-- `setSecurityHeaders()` - Set HTTP security headers
-
-**`lib/logger.php`** - Activity Logging
-- `log_activity()` - Write activity logs
-- `read_logs()` - Read logs with filtering
-- `filter_logs()` - Filter by action, date, user
-- `cleanup_old_logs()` - Remove logs older than X days
-- `rotate_logs()` - Log file rotation
-- `export_logs()` - Export as JSON/CSV
+**`App\Core\LogManager`** — Activity Logging
+- `log_activity()` — Write activity logs
+- `read_logs()` — Read logs with filtering
+- `cleanup_old_logs()` — Remove logs older than X days
+- `export_logs()` — Export as JSON/CSV
 
 ### Security Features
-- ✅ **Path Sanitization** - `sanitize_relative_path()` prevents traversal
-- ✅ **Root Restriction** - `resolve_path()` limits access to `file/` directory
-- ✅ **Extension Whitelist** - Only allowed extensions for editing
-- ✅ **Dangerous Extension Blocking** - Prevents upload of executable files
-- ✅ **File Size Limits** - Configurable max upload size by file type
-- ✅ **MIME Validation** - File type verification
-- ✅ **Input Validation** - All inputs sanitized and validated
-- ✅ **XSS Prevention** - HTML escaping and sanitization
-- ✅ **Rate Limiting** - Session-based rate limiting for API calls
-- ✅ **CSRF Protection** - Token-based request validation
-- ✅ **Security Audit Logging** - Track security events
-- ✅ **Error Handling** - Proper HTTP status codes and error messages
+- **Path Sanitization** — `sanitize_relative_path()` prevents traversal
+- **Root Restriction** — `resolve_path()` limits access to storage directory
+- **Extension Whitelist** — Only allowed extensions for editing
+- **Dangerous Extension Blocking** — Prevents upload of executable files
+- **File Size Limits** — Configurable max upload size
+- **MIME Validation** — File type verification
+- **Input Validation** — All inputs sanitized and validated
+- **XSS Prevention** — HTML escaping and sanitization
+- **Rate Limiting** — Session-based rate limiting for API calls
+- **CSRF Protection** — Token-based request validation
+- **Security Audit Logging** — Track security events
+- **Security Headers** — HTTP security headers set automatically
 
 ---
 
 ## 🚀 Performance & Optimization
 
 ### Frontend Optimizations
-- **Virtual Scrolling** - Renders only visible items (40px row height)
-- **Debounced Rendering** - 16ms debounce for smooth updates
-- **Request Cancellation** - AbortController cancels obsolete requests
-- **Lazy Loading** - Load files on-demand
-- **Event Delegation** - Efficient event handling
-- **LocalStorage Cache** - Persist state across sessions
+- **Virtual Scrolling** — Renders only visible items (40px row height)
+- **Render Optimizer** — Dedicated module for debounced rendering (16ms)
+- **Request Cancellation** — AbortController cancels obsolete requests
+- **Lazy Loading** — Load files on-demand
+- **Event Delegation** — Efficient event handling
+- **LocalStorage Cache** — Persist state across sessions
 
 ### Backend Optimizations
-- **Chunked Uploads** - 5MB chunks for large files
-- **Streaming Downloads** - Memory-efficient file delivery
-- **File Metadata Cache** - Avoid redundant stat() calls
-- **Log Rotation** - Prevent log file bloat
-- **Efficient Sorting** - Server-side sorting for large directories
+- **Chunked Uploads** — 5MB chunks for large files
+- **Streaming Downloads** — Memory-efficient file delivery
+- **Log Rotation** — Prevent log file bloat
+- **Efficient Sorting** — Server-side sorting for large directories
 
-### Load Performance
-- **First Paint:** < 1s
-- **Interactive:** < 1.5s
-- **Bundle Size:** ~100KB JS + ~20KB CSS (gzipped)
-- **HTTP Requests:** Minimal (CDN + local assets)
-
----
-
-## 🎯 Keamanan & Validasi
-
-### Path Security
-```php
-// Prevent directory traversal
-$sanitized = sanitize_relative_path($userInput);
-$resolved = resolve_path($root, $sanitized);
-// Result: Limited to $root directory only
+### PHP Configuration
+```ini
+upload_max_filesize = 100M
+post_max_size = 100M
+max_execution_time = 300
+memory_limit = 256M
 ```
-
-### File Validation
-- **Extension Whitelist:** Only `.txt`, `.md`, `.json`, `.csv`, `.html`, `.css`, `.js`, `.php` editable
-- **MIME Type Check:** Server-side MIME validation
-- **Size Limits:** Configurable max file size (default: 50MB)
-- **Filename Sanitization:** Remove dangerous characters
-
-### Input Sanitization
-- **Path Inputs:** `sanitize_relative_path()` + `resolve_path()`
-- **File Names:** Special character filtering
-- **JSON Payloads:** `json_decode()` with error handling
-- **SQL-Free:** No database = no SQL injection risk
 
 ---
 
@@ -492,12 +565,13 @@ $resolved = resolve_path($root, $sanitized);
 - **Desktop (1024px+):** Full layout with sidebar
 
 ### Accessibility Features
-- **Keyboard Navigation:** Full keyboard support
+- **Keyboard Navigation:** Full keyboard support with shortcuts overlay
 - **ARIA Labels:** Proper accessibility attributes
 - **Focus Management:** Visible focus states
 - **Screen Reader:** Semantic HTML and labels
 - **Color Contrast:** WCAG AA compliant
 - **Touch Targets:** 44px minimum on mobile
+- **Dedicated CSS:** `accessibility.css` for a11y-specific styles
 
 ### Dark Mode
 - **Activation:** `data-theme="dark"` attribute
@@ -507,43 +581,18 @@ $resolved = resolve_path($root, $sanitized);
 
 ---
 
-## 📚 Documentation
-
-### Quick Start
-| Document | Description |
-|----------|-------------|
-| 📚 **[docs/README.md](docs/README.md)** | Quick start guide and feature overview |
-| 🏗️ **[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)** | System architecture and design patterns |
-| 📖 **[docs/API.md](docs/API.md)** | Complete API reference with examples |
-| 📋 **[REQUIREMENTS.md](REQUIREMENTS.md)** | System requirements and dependencies |
-| 🤝 **[docs/CONTRIBUTING.md](docs/CONTRIBUTING.md)** | Developer contribution guidelines |
-| 📝 **[CHANGELOG.md](CHANGELOG.md)** | Version history and release notes |
-
-### Legacy Documentation
-| Document | Description |
-|----------|-------------|
-| [DOCUMENTATION_INDEX.md](docs/DOCUMENTATION_INDEX.md) | Navigation guide |
-| [CSS_ARCHITECTURE.md](docs/CSS_ARCHITECTURE.md) | 6-layer CSS system |
-| [BUILD_GUIDE.md](docs/BUILD_GUIDE.md) | Development workflow |
-| [NAMING_CONVENTIONS.md](docs/NAMING_CONVENTIONS.md) | BEM standards |
-| [COMPONENT_CATALOG.md](docs/COMPONENT_CATALOG.md) | Component reference |
-
----
-
 ## 🛠️ Setup & Installation
 
 ### Requirements
-
-> 📋 **See [REQUIREMENTS.md](REQUIREMENTS.md) for detailed system requirements**
-
 - **PHP:** 7.4 or higher
 - **Web Server:** Apache, Nginx, or PHP built-in server
-- **Browser:** Modern browser with ES6+ support
+- **Browser:** Modern browser with ES6+ module support
 - **Optional:** 7-Zip for multi-format archive extraction (.7z, .rar, .tar.gz)
+- **Optional (Dev):** Node.js for linting, testing, and CodeMirror bundle rebuilds
 
 ### Installation
 
-1. **Clone or download the repository**
+1. **Clone the repository**
    ```bash
    git clone https://github.com/Kyuzan0/Filemanager.git
    cd Filemanager
@@ -553,351 +602,128 @@ $resolved = resolve_path($root, $sanitized);
    ```bash
    # Using PHP built-in server (development)
    php -S localhost:8000 -t public
-   
+
    # Or configure Apache/Nginx virtual host with document root = public/
    ```
 
 3. **Verify storage directories exist**
    ```bash
    # Storage directories are auto-created, but you can verify:
-   ls -la storage/
+   ls storage/
    # Should contain: files/, trash/, logs/, temp/
    ```
 
-4. **Access the application**
+4. **Install dev dependencies** (optional, for linting/testing)
+   ```bash
+   npm install          # JS tooling (ESLint, Jest, esbuild)
+   composer install     # PHP tooling (PHPUnit, PHP_CodeSniffer)
+   ```
+
+5. **Access the application**
    ```
    Open browser: http://localhost:8000
    ```
 
-### Configuration
+---
 
-**File Permissions:**
+## 🧪 Testing & Quality
+
+### Automated Tests
+
+**JavaScript (Jest):**
 ```bash
-chmod 755 file/          # User file storage
-chmod 755 logs/          # Activity logs
-chmod 644 api.php        # API endpoint
-chmod 644 index.php      # Main page
+npx jest                    # Run JS tests
+npx jest --coverage         # With coverage report
 ```
 
-**PHP Settings** (optional optimization):
-```ini
-upload_max_filesize = 50M
-post_max_size = 50M
-max_execution_time = 300
-memory_limit = 256M
+**PHP (PHPUnit):**
+```bash
+./vendor/bin/phpunit        # Run PHP tests
+```
+
+### Linting
+
+**JavaScript (ESLint 9):**
+```bash
+npx eslint public/assets/js/
+```
+
+**PHP (PHP_CodeSniffer — PSR-12):**
+```bash
+./vendor/bin/phpcs app/
+```
+
+### Test Coverage
+- **Jest:** Configured with 10% coverage threshold (jsdom environment)
+- **PHPUnit:** Coverage on `app/Core/` classes
+
+### Build
+
+**Rebuild CodeMirror bundle:**
+```bash
+npx esbuild build/codemirror-bundle.js --bundle --minify --outfile=public/assets/js/vendor/codemirror.min.js
 ```
 
 ---
 
-## 🧪 Testing & Quality Assurance
+## 🌟 Roadmap
 
-### Automated Testing
-- ✅ HTTP 200 OK verification
-- ✅ All CSS files load correctly
-- ✅ No console errors
-- ✅ Dark mode toggle functional
-- ✅ Responsive breakpoints verified
+### Planned
+- [ ] **TypeScript Migration** — Type safety for JavaScript modules
+- [ ] **File Thumbnails** — Image previews in file list
+- [ ] **File Versioning** — Track file history and rollback
+- [ ] **Internationalization (i18n)** — Multi-language support
+- [ ] **User Authentication** — Login system and permissions
+- [ ] **File Sharing** — Generate shareable links
+- [ ] **Full-text Search** — Search file content
+- [ ] **Cloud Storage** — S3, Google Drive integration
+- [ ] **Service Worker** — Offline support and caching
+- [ ] **Docker Support** — Containerized deployment
+- [ ] **CI/CD Pipeline** — Automated testing and deployment
 
-### Manual Testing Checklist
-- [x] File upload (small & large files)
-- [x] File download
-- [x] Create files/folders
-- [x] Rename operations
-- [x] Move operations (drag & drop + dialog)
-- [x] Delete operations
-- [x] File preview (text & media)
-- [x] Context menu
-- [x] Keyboard navigation
-- [x] Mobile responsiveness
-- [x] Dark mode toggle
-- [x] Activity logging
-- [x] Virtual scrolling performance
-
-### Quality Metrics
-- **Visual Regressions:** 0
-- **Feature Loss:** 0
-- **Console Errors:** 0
-- **404 Errors:** 0
-- **Accessibility:** WCAG AA compliant
-- **Performance:** < 1.5s interactive time
-
----
-
-## 🔄 Development Workflow
-
-## Cara menggunakan README ini
-Dokumen ini dihasilkan otomatis sebagai ringkasan analisis. Untuk detail implementasi, buka file terkait di repo.
-
-## Styling workflow (current)
-Project saat ini menggunakan Tailwind via CDN. Untuk pengembangan cepat dan migrasi bertahap, utilitas Tailwind tersedia langsung di runtime tanpa langkah build lokal. Ini adalah konfigurasi default proyek saat ini — tidak ada langkah build yang dijalankan pada CI atau oleh developer kecuali Anda memilih untuk mengaktifkannya kembali.
-
-Audit dinamis & safelist
-- Saya telah menjalankan audit kelas Tailwind yang dibuat secara dinamis dan menyimpan hasilnya di [`docs/tailwind-dynamic-classes-audit.md`](docs/tailwind-dynamic-classes-audit.md:1).
-- Untuk meminimalkan risiko saat (jika) Anda mengaktifkan kembali build lokal, saya juga menambahkan safelist konservatif sementara di [`tailwind.config.js`](tailwind.config.js:1). Safelist ini melindungi kelas yang sering ditambahkan oleh JS (overlay, state flags, pagination, dll.).
-- Rekomendasi: pertahankan workflow CDN untuk pengembangan cepat. Bila butuh build lokal (produksi/optimasi), ikuti langkah di bawah dan perbarui safelist sesuai temuan audit.
-
-Cara re-enable build-based workflow (ringkas)
-1. Tambahkan/isi `package.json` devDependencies:
-   - tailwindcss, postcss, autoprefixer
-   - Tambahkan script:
-     - "build:css": "tailwindcss -i ./assets/css/tailwind.src.css -o ./assets/css/tailwind.css --minify"
-     - "watch:css": "tailwindcss -i ./assets/css/tailwind.src.css -o ./assets/css/tailwind.css --watch"
-
-2. Buat `assets/css/tailwind.src.css`:
-   @tailwind base;
-   @tailwind components;
-   @tailwind utilities;
-   (Opsional: tambahkan `@import "./style.css";` untuk mempertahankan aturan legacy selama migrasi.)
-
-3. Perbarui `tailwind.config.js`:
-   - Pastikan `content` mencakup semua .php dan .js yang menghasilkan markup/kelas.
-   - Tambahkan safelist (salin dari [`docs/tailwind-dynamic-classes-audit.md`](docs/tailwind-dynamic-classes-audit.md:1) atau gunakan file JSON yang dihasilkan).
-   - Pertimbangkan `safelistPatterns` untuk bracket/arbitrary classes (contoh: /^min-w-\[.*\]$/).
-
-4. Build & verifikasi:
-   npm install
-   npm run build:css
-   - Hasilnya akan berada di `assets/css/tailwind.css`.
-
-5. Ganti pemanggilan CDN di `index.php` menjadi:
-   <link rel="stylesheet" href="assets/css/tailwind.css">
-   (Pastikan script CDN dihapus untuk menghindari konflik.)
-
-6. Visual QA & cleanup:
-   - Lakukan pemeriksaan visual (desktop/mobile).
-   - Periksa class yang hilang (console/style) dan tambahkan ke safelist bila diperlukan.
-   - Kurangi `assets/css/style.css` langkah demi langkah saat komponen selesai dimigrasi.
-
-## 🔄 Development Workflow
-
-### CSS Development
-```bash
-# Edit any CSS module in assets/css/
-# Changes are automatically available via main.css
-# No build step required for development
-```
-
-### JavaScript Development
-```bash
-# Edit modules in assets/js/modules/
-# ES6 imports automatically resolve
-# Browser must support ES6 modules
-```
-
-### Testing
-```bash
-# Open in browser
-# Check console for errors
-# Test all features manually
-# Verify dark mode toggle
-# Test responsive breakpoints
-```
-
-### Deployment
-```bash
-# 1. Upload all files to server
-# 2. Set file/logs/ permissions (755)
-# 3. Verify PHP version (7.4+)
-# 4. Test access in browser
-# 5. Monitor logs/ directory
-```
-
----
-
-## 📖 Tailwind CSS Integration
-
-### Current Setup (CDN)
-```html
-<!-- In index.php -->
-<script src="https://cdn.tailwindcss.com"></script>
-```
-
-**Pros:**
-- Zero build step required
-- Instant development workflow
-- No dependencies to manage
-- Easy setup for beginners
-
-**Cons:**
-- Larger bundle size
-- No PurgeCSS optimization
-- Limited customization
-
-### Production Build (Recommended)
-
-**If you want optimized production build:**
-
-1. **Install Tailwind**
-   ```bash
-   npm install -D tailwindcss
-   npx tailwindcss init
-   ```
-
-2. **Configure `tailwind.config.js`**
-   ```javascript
-   module.exports = {
-     content: ["./**/*.{html,js,php}"],
-     theme: { extend: {} },
-     plugins: [],
-     darkMode: 'class',
-   }
-   ```
-
-3. **Create input CSS**
-   ```css
-   /* assets/css/tailwind-input.css */
-   @tailwind base;
-   @tailwind components;
-   @tailwind utilities;
-   ```
-
-4. **Build command**
-   ```bash
-   npx tailwindcss -i ./assets/css/tailwind-input.css \
-                   -o ./assets/css/tailwind.css \
-                   --minify --watch
-   ```
-
-5. **Update index.php**
-   ```html
-   <!-- Replace CDN with: -->
-   <link rel="stylesheet" href="assets/css/tailwind.css">
-   ```
-
-**Result:** Bundle size reduction from ~3MB (CDN) to ~50KB (purged)
-
----
-
-## 🎯 Project Structure Details
-
-### Main Files
-```
-Filemanager/
-├── index.php              # Main HTML page (uses main.css)
-├── api.php                # REST API router
-├── tailwind.config.js     # Tailwind configuration (optional)
-└── Readme.md              # This file
-```
-
-### Assets
-```
-assets/
-├── css/
-│   ├── main.css           # CSS entry point (69 lines, 31 imports)
-│   ├── core/              # Foundation (variables, reset, base)
-│   ├── layout/            # Structure (app, sidebar, topbar, footer)
-│   ├── components/        # UI elements (10 files)
-│   ├── overlays/          # Modals (9 files)
-│   ├── themes/            # Dark mode
-│   ├── utilities/         # Helpers & responsive
-│   ├── archive/           # Version backups (empty)
-│   └── style.css.backup   # Original monolithic CSS (preserved)
-│
-└── js/
-    ├── index.js           # Entry point
-    ├── modules/           # 15 ES6 modules
-    ├── enhanced-ui.js     # Legacy compatibility
-    ├── log-handler.js     # Legacy log viewer
-    └── modals-handler.js  # Legacy modal handler
-```
-
-### Backend
-```
-lib/
-├── file_manager.php       # File operations, sanitization, upload
-├── trash_manager.php      # Trash system operations
-├── archive_manager.php    # ZIP/7z/RAR archive handling
-├── log_manager.php        # Activity logging system
-│
-└── handlers/              # API Request Handlers (Modular)
-    ├── helpers.php        # Common utility functions (JSON parsing, responses)
-    ├── raw_handler.php    # Raw file streaming for media preview
-    ├── system_handler.php # System requirements & 7-zip status
-    ├── logs_handler.php   # Activity logs (list, cleanup, export)
-    ├── trash_handler.php  # Trash operations (list, restore, delete, empty)
-    ├── file_handler.php   # File/folder CRUD (create, upload, save, delete, rename, move, list)
-    └── archive_handler.php # Compression/extraction operations
-```
-
-### Data
-```
-file/                      # User file storage (uploaded files here)
-logs/                      # Activity logs (JSON format)
-partials/                  # HTML partials (no inline CSS)
-```
-
-### Documentation
-```
-docs/
-├── DOCUMENTATION_INDEX.md              # Start here
-├── PROJECT_COMPLETE_SUMMARY.md         # Executive summary
-├── CSS_ARCHITECTURE.md                 # CSS system details
-├── BUILD_GUIDE.md                      # Development guide
-├── NAMING_CONVENTIONS.md               # BEM standards
-├── COMPONENT_CATALOG.md                # Component reference
-├── MIGRATION_GUIDE.md                  # Migration steps
-├── CSS_MODULARIZATION_TRACKER.md       # Project history
-└── PHASE_9_VERIFICATION_REPORT.md      # Testing results
-```
-
----
-
-## 🌟 Future Enhancements (Roadmap)
-
-### Planned Features
-- [ ] **Unit Testing** - Add Jest/PHPUnit test coverage
-- [ ] **TypeScript Migration** - Type safety for JavaScript modules
-- [ ] **File Thumbnails** - Image previews in file list
-- [ ] **File Versioning** - Track file history and rollback
-- [ ] **Internationalization (i18n)** - Multi-language support
-- [ ] **User Authentication** - Login system and permissions
-- [ ] **File Sharing** - Generate shareable links
-- [ ] **Full-text Search** - Search file content
-- [ ] **Compression** - Zip/unzip files
-- [ ] **Cloud Storage** - S3, Google Drive integration
-
-### Performance Improvements
-- [ ] **Service Worker** - Offline support and caching
-- [ ] **Code Splitting** - Dynamic module imports
-- [ ] **Image Optimization** - WebP conversion
-- [ ] **CDN Integration** - Asset delivery optimization
-
-### DevOps
-- [ ] **Docker Support** - Containerized deployment
-- [ ] **CI/CD Pipeline** - Automated testing and deployment
-- [ ] **Monitoring** - Error tracking integration
-- [ ] **Backup System** - Automated file backups
-
-### Recently Completed ✅
-- [x] **Trash System** - Soft delete with restore (Phase 3)
-- [x] **Activity Logging** - Complete audit trail (Phase 3)
-- [x] **Batch Operations** - Multi-select actions (Phase 3)
-- [x] **Documentation** - Comprehensive docs (Phase 4)
-- [x] **Analytics Module** - Privacy-respecting tracking (Phase 4)
-- [x] **Security Module** - XSS prevention, validation (Phase 4)
-- [x] **Rate Limiting** - API abuse prevention (Phase 4)
+### Completed
+- [x] **Modular CSS Architecture** — 42-file, 7-layer system
+- [x] **Modular JS Architecture** — 40 ES6+ modules
+- [x] **Trash System** — Soft delete with restore
+- [x] **Activity Logging** — Complete audit trail with export
+- [x] **Batch Operations** — Multi-select actions
+- [x] **Analytics Module** — Privacy-respecting tracking
+- [x] **Security Hardening** — XSS prevention, rate limiting, CSRF
+- [x] **Archive Operations** — ZIP/7z/RAR create and extract
+- [x] **CodeMirror 6 Editor** — Syntax highlighting for 11 languages
+- [x] **Virtual Scrolling** — Performance with large directories
+- [x] **Toast Notifications** — Non-blocking user feedback
+- [x] **Favorites System** — Bookmark files and folders
+- [x] **Client-Side Router** — SPA-like navigation
+- [x] **Keyboard Shortcuts** — Full keyboard navigation
+- [x] **Dark Mode** — Complete theme system
+- [x] **Responsive Design** — Mobile, tablet, desktop
+- [x] **Accessibility** — WCAG 2.1 AA compliance
+- [x] **Test Suite** — Jest + PHPUnit
+- [x] **Linting** — ESLint 9 + PHP_CodeSniffer
 
 ---
 
 ## 🤝 Contributing
 
-Contributions are welcome! See **[docs/CONTRIBUTING.md](docs/CONTRIBUTING.md)** for detailed guidelines.
+Contributions are welcome!
 
 ### Quick Start
 1. **Fork the repository**
 2. **Create feature branch** (`git checkout -b feature/amazing-feature`)
-3. **Follow coding standards** (see CONTRIBUTING.md)
-4. **Test thoroughly** (manual testing checklist)
-5. **Commit changes** (`git commit -m 'feat: add amazing feature'`)
-6. **Push to branch** (`git push origin feature/amazing-feature`)
-7. **Open Pull Request**
+3. **Follow coding standards** (see below)
+4. **Run linters** (`npx eslint .` and `./vendor/bin/phpcs app/`)
+5. **Run tests** (`npx jest` and `./vendor/bin/phpunit`)
+6. **Commit changes** (`git commit -m 'feat: add amazing feature'`)
+7. **Push to branch** (`git push origin feature/amazing-feature`)
+8. **Open Pull Request**
 
 ### Code Style
 | Language | Standard |
 |----------|----------|
-| CSS | BEM convention, see `docs/NAMING_CONVENTIONS.md` |
-| JavaScript | ES6+ with JSDoc comments |
-| PHP | PSR-12 coding standards |
+| CSS | BEM convention (block__element--modifier) |
+| JavaScript | ES6+ modules, JSDoc comments, ESLint 9 |
+| PHP | PSR-12 (PHP_CodeSniffer), PSR-4 autoloading |
 
 ---
 
@@ -927,45 +753,4 @@ SOFTWARE.
 
 ---
 
-## 📞 Contact & Support
-
-- **Author:** Kyuzan0
-- **Repository:** [https://github.com/Kyuzan0/Filemanager](https://github.com/Kyuzan0/Filemanager)
-- **Issues:** Report bugs via GitHub Issues
-- **Documentation:** See `docs/DOCUMENTATION_INDEX.md`
-
----
-
-## 🎉 Credits & Acknowledgments
-
-### Technologies Used
-- **Tailwind CSS** - Utility-first CSS framework
-- **RemixIcon** - Open-source icon library
-- **PHP** - Server-side scripting
-- **Modern JavaScript (ES6+)** - Frontend architecture
-
-### Project History
-- **Version 1.0** - Monolithic CSS (3,404 lines)
-- **Version 2.0** - Modular CSS architecture (30 files, 6 layers)
-  - Completed: November 25, 2025
-  - 10-phase modularization project
-  - 100% backward compatible
-- **Version 2.1** - Folder upload support
-  - Completed: December 5, 2025
-  - Chunked uploads with folder structure preservation
-- **Version 3.0** - Phase 4 Complete (Current)
-  - Completed: December 6, 2025
-  - Trash system with restore
-  - Activity logging with export
-  - Comprehensive documentation
-  - Analytics module (privacy-respecting)
-  - Security hardening
-
-### Special Thanks
-- All contributors and testers
-- Open-source community for tools and libraries
-
----
-
-**Built with ❤️ using modern web technologies**
-
+**Built with modern web technologies — vanilla JS, PHP, and zero framework overhead.**
