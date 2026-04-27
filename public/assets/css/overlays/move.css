@@ -16,7 +16,7 @@
   align-items: center;
   justify-content: center;
   padding: 1rem;
-  z-index: 50;
+  z-index: var(--z-modal-backdrop);
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
 }

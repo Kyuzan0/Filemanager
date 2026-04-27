@@ -826,7 +826,6 @@ function render() {
           <span class="text-dark">Back</span>
         </span>
       </td>
-      <td class="table-cell table-cell--small table-cell--italic">Parent folder</td>
       <td class="table-cell table-cell--small">-</td>
       <td class="table-cell table-cell--right table-cell--small">-</td>
       <td class="table-cell table-cell--small"></td>
@@ -909,7 +908,6 @@ function render() {
     tr.innerHTML = `
       <td class="table-cell"><input type="checkbox" class="sel" data-path="${f.path}" ${checked ? 'checked' : ''}></td>
       <td class="table-cell"><span class="file-name file-icon-cell" title="${f.name}"><span class="file-icon ${iconData.type}" style="background-color: ${iconData.bg}; padding: 6px; border-radius: 6px;">${iconData.html}</span><span class="text-dark">${truncateFileName(f.name)}</span></span></td>
-      <td class="table-cell table-cell--small">${f.type}</td>
       <td class="table-cell table-cell--small">${f.date}</td>
       <td class="table-cell table-cell--right table-cell--small">${f.size}</td>
       <td class="table-cell table-cell--small">
@@ -1162,6 +1160,153 @@ function render() {
       showMobileContextMenu(e, fullFileData);
     });
   });
+
+  // Render grid view items
+  renderGridView(pageItems);
+}
+
+// ============= Grid View Rendering =============
+
+function renderGridView(items) {
+  const gridContainer = document.getElementById('grid-view-container');
+  if (!gridContainer) return;
+
+  gridContainer.innerHTML = '';
+
+  if (!items || items.length === 0) return;
+
+  for (const f of items) {
+    const iconData = f.type === 'folder'
+      ? { html: '<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="#f59e0b" d="M10 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2h-8l-2-2z"></path></svg>', type: 'folder', bg: '#fef3c7' }
+      : getFileIcon(f.name, f.type);
+
+    const isSelected = selected.has(f.path);
+
+    const gridItem = document.createElement('div');
+    gridItem.className = `grid-item${isSelected ? ' selected' : ''}`;
+    gridItem.dataset.path = f.path;
+    gridItem.dataset.type = f.type;
+    gridItem.tabIndex = 0;
+    gridItem.setAttribute('role', 'gridcell');
+    gridItem.setAttribute('aria-label', f.name);
+
+    gridItem.innerHTML = `
+      <input type="checkbox" class="sr-only-checkbox sel" data-path="${f.path}" ${isSelected ? 'checked' : ''} tabindex="-1">
+      <div class="grid-actions">
+        <button class="grid-action-btn" data-action="preview" data-path="${f.path}" title="Buka">
+          <i class="ri-folder-open-line"></i>
+        </button>
+        ${f.type !== 'folder' ? `
+        <button class="grid-action-btn" data-action="download" data-path="${f.path}" title="Unduh">
+          <i class="ri-download-line"></i>
+        </button>` : ''}
+        <button class="grid-action-btn" data-action="rename" data-path="${f.path}" title="Ganti Nama">
+          <i class="ri-edit-line"></i>
+        </button>
+        <button class="grid-action-btn danger" data-action="delete" data-path="${f.path}" title="Hapus">
+          <i class="ri-delete-bin-line"></i>
+        </button>
+      </div>
+      <div class="grid-icon" style="background-color: ${iconData.bg}; padding: 8px; border-radius: 8px;">
+        ${iconData.html}
+      </div>
+      <div class="grid-name" title="${f.name}">${f.name}</div>
+      <div class="grid-meta">${f.type === 'folder' ? 'Folder' : f.size} · ${f.date}</div>
+    `;
+
+    // Double-click to open folder / preview file
+    gridItem.addEventListener('dblclick', async (e) => {
+      e.preventDefault();
+      if (f.type === 'folder') {
+        await loadFiles(f.path);
+      } else if (window.openPreviewModal) {
+        window.openPreviewModal(f.path, f.name);
+      }
+    });
+
+    // Single click to select
+    gridItem.addEventListener('click', (e) => {
+      if (e.target.closest('.grid-action-btn') || e.target.closest('input[type="checkbox"]')) return;
+
+      const path = f.path;
+      const checkbox = gridItem.querySelector('.sel');
+
+      if (selected.has(path)) {
+        selected.delete(path);
+        gridItem.classList.remove('selected');
+        if (checkbox) checkbox.checked = false;
+      } else {
+        selected.add(path);
+        gridItem.classList.add('selected');
+        if (checkbox) checkbox.checked = true;
+        isSelectionModeActive = true;
+      }
+
+      if (selectedCount) selectedCount.textContent = `${selected.size} selected`;
+      if (selected.size === 0) isSelectionModeActive = false;
+
+      // Sync table view selection
+      const tableCheckbox = tbody?.querySelector(`.sel[data-path="${path}"]`);
+      if (tableCheckbox) {
+        tableCheckbox.checked = selected.has(path);
+        const row = tableCheckbox.closest('tr');
+        if (row) row.classList.toggle('selected', selected.has(path));
+      }
+    });
+
+    // Wire grid action buttons
+    gridItem.querySelectorAll('.grid-action-btn[data-action]').forEach(btn => {
+      btn.addEventListener('click', async (e) => {
+        e.stopPropagation();
+        const action = btn.dataset.action;
+        const path = btn.dataset.path;
+        const fileData = files.find(file => file.path === path);
+
+        if (action === 'preview') {
+          if (fileData?.type === 'folder') {
+            await loadFiles(path);
+          } else if (window.openPreviewModal) {
+            window.openPreviewModal(path, fileData?.name);
+          }
+        } else if (action === 'download') {
+          const a = document.createElement('a');
+          a.href = `api.php?action=raw&path=${encodeURIComponent(path)}`;
+          a.download = fileData?.name || 'download';
+          a.style.display = 'none';
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+        } else if (action === 'rename') {
+          if (window.openRenameModal) {
+            window.openRenameModal(path, fileData?.name);
+          } else if (window.openRenameOverlay) {
+            window.openRenameOverlay({ ...fileData, path });
+          }
+        } else if (action === 'delete') {
+          if (window.openDeleteOverlay) {
+            window.openDeleteOverlay(
+              [{ ...fileData, path }],
+              async (items) => {
+                const paths = items.map(item => item.path);
+                await deleteItems(paths);
+              }
+            );
+          } else if (confirm(`Hapus "${fileData?.name}"?`)) {
+            await deleteItems([path]);
+          }
+        }
+      });
+    });
+
+    // Context menu on right-click
+    gridItem.addEventListener('contextmenu', (e) => {
+      e.preventDefault();
+      const fileData = files.find(file => file.path === f.path) || f;
+      showMobileContextMenu(e, fileData);
+    });
+
+    gridContainer.appendChild(gridItem);
+  }
 }
 
 // ============= Mobile Context Menu =============
@@ -1780,57 +1925,68 @@ function initializeEventHandlers() {
   const uploadBtn = document.getElementById('uploadBtn');
   const folderInput = document.getElementById('folderInput');
 
+  // Helper to show/hide the upload context menu
+  function showUploadMenu() {
+    const rect = uploadBtn.getBoundingClientRect();
+    const menuWidth = 160;
+    const menuHeight = 100;
+
+    let top = rect.bottom + 4;
+    let left = rect.left;
+
+    if (left + menuWidth > window.innerWidth) {
+      left = window.innerWidth - menuWidth - 8;
+    }
+    if (top + menuHeight > window.innerHeight) {
+      top = rect.top - menuHeight - 4;
+    }
+
+    uploadContextMenu.style.top = `${top}px`;
+    uploadContextMenu.style.left = `${left}px`;
+    uploadContextMenu.style.display = 'block';
+    uploadContextMenu.setAttribute('aria-hidden', 'false');
+    uploadBtn.setAttribute('aria-expanded', 'true');
+  }
+
+  function hideUploadMenu() {
+    uploadContextMenu.style.display = 'none';
+    uploadContextMenu.setAttribute('aria-hidden', 'true');
+    uploadBtn.setAttribute('aria-expanded', 'false');
+  }
+
   // Show context menu when upload button is clicked
   uploadBtn?.addEventListener('click', (e) => {
     e.preventDefault();
     e.stopPropagation();
 
-    // Toggle context menu
-    const isVisible = !uploadContextMenu.classList.contains('hidden');
+    const isVisible = uploadContextMenu.style.display === 'block';
 
     if (isVisible) {
-      // Hide menu
-      uploadContextMenu.classList.add('hidden');
-      uploadBtn.setAttribute('aria-expanded', 'false');
+      hideUploadMenu();
     } else {
-      // Show menu
-      uploadContextMenu.classList.remove('hidden');
-      uploadBtn.setAttribute('aria-expanded', 'true');
-
-      // Position the menu
-      const rect = uploadBtn.getBoundingClientRect();
-      const menuHeight = 100; // Approximate height of the menu
-      const menuWidth = 160; // Width of the menu
-
-      let top = rect.bottom + 4;
-      let left = rect.left;
-
-      // Adjust if menu goes off screen
-      if (left + menuWidth > window.innerWidth) {
-        left = window.innerWidth - menuWidth - 8;
-      }
-      if (top + menuHeight > window.innerHeight) {
-        top = rect.top - menuHeight - 4;
-      }
-
-      uploadContextMenu.style.top = `${top}px`;
-      uploadContextMenu.style.left = `${left}px`;
+      showUploadMenu();
     }
   });
 
   // Handle upload files option click
   document.getElementById('uploadFilesOption')?.addEventListener('click', () => {
-    uploadContextMenu.classList.add('hidden');
-    uploadBtn.setAttribute('aria-expanded', 'false');
+    hideUploadMenu();
     modal?.classList.remove('hidden');
     modal?.classList.add('visible');
   });
 
   // Handle upload folder option click
   document.getElementById('uploadFolderOption')?.addEventListener('click', () => {
-    uploadContextMenu.classList.add('hidden');
-    uploadBtn.setAttribute('aria-expanded', 'false');
+    hideUploadMenu();
     folderInput?.click();
+  });
+
+  // Close upload menu when clicking outside
+  document.addEventListener('click', (e) => {
+    if (uploadContextMenu && uploadBtn &&
+        !uploadContextMenu.contains(e.target) && !uploadBtn.contains(e.target)) {
+      hideUploadMenu();
+    }
   });
 
   // Handle folder selection

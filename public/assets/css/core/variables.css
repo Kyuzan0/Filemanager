@@ -476,6 +476,25 @@
   --preview-details-value: var(--text);
   --preview-code-text: var(--text);
   --preview-line-numbers-overlay-bg: var(--bg-secondary);
+
+  /* ========================================================================
+     LOG OVERLAY — Light mode
+     ======================================================================== */
+  --log-row-border: rgba(0, 0, 0, 0.06);
+  --log-filter-tag-bg: rgba(176, 137, 104, 0.1);
+  --log-filter-tag-text: var(--accent);
+  --log-filter-tag-hover: rgba(176, 137, 104, 0.15);
+  --log-page-info-bg: rgba(176, 137, 104, 0.08);
+  --log-page-ellipsis: var(--muted);
+  --log-active-page-text: #ffffff;
+  --log-error: #dc2626;
+  --log-loading: var(--muted);
+  --log-btn-danger-bg: var(--danger);
+  --log-btn-danger-hover-bg: #b87a6a;
+  --log-btn-danger-text: #ffffff;
+  --log-btn-primary-bg: var(--accent);
+  --log-btn-primary-hover-bg: #9a7558;
+  --log-btn-primary-text: #ffffff;
 }
 
 /* ============================================================================
@@ -710,9 +729,9 @@
   --gray-500: rgb(148, 163, 184);
   --gray-600: rgb(203, 213, 225);
   --gray-700: rgb(226, 232, 240);
-  --gray-800: #f1f5f9;
-  --gray-900: #f9fafb;
-  --gray-950: #ffffff;
+  --gray-800: #1e1b2e;
+  --gray-900: #161323;
+  --gray-950: #0f0d1a;
 
   /* Slate scale */
   --slate-50: rgba(255, 255, 255, 0.03);
@@ -723,8 +742,8 @@
   --slate-500: rgb(148, 163, 184);
   --slate-600: #94a3b8;
   --slate-700: #cbd5e1;
-  --slate-800: #e2e8f0;
-  --slate-900: #f1f5f9;
+  --slate-800: #252236;
+  --slate-900: #1a1728;
 
   /* ========================================================================
      OVERLAY / DIALOG — Dark mode
@@ -979,4 +998,10 @@
   --log-active-page-text: #ffffff;
   --log-error: #f87171;
   --log-loading: rgb(148, 163, 184);
+  --log-btn-danger-bg: var(--danger);
+  --log-btn-danger-hover-bg: #d4a8a8;
+  --log-btn-danger-text: #1e1e2e;
+  --log-btn-primary-bg: var(--accent);
+  --log-btn-primary-hover-bg: #c4bce6;
+  --log-btn-primary-text: #1e1e2e;
 }

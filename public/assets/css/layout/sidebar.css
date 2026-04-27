@@ -217,17 +217,27 @@
 }
 
 .theme-switch:not(.is-dark) .theme-switch__icon--sun {
-  color: var(--sidebar-sun-color);
-  text-shadow: 0 0 8px var(--sidebar-sun-glow);
+  color: #ffffff;
+  text-shadow: none;
 }
 
 [data-theme="light"] .theme-switch {
-  background: var(--card);
-  color: var(--text-secondary);
+  background: #ffffff;
+  border-color: #c4b9a8;
+  color: #8a7d6b;
 }
 
-[data-theme="light"] .theme-switch.is-dark {
-  color: var(--text-secondary);
+[data-theme="light"] .theme-switch .theme-switch__icon--moon {
+  color: #8a7d6b;
+}
+
+[data-theme="light"] .theme-switch .theme-switch__icon--sun {
+  color: #ffffff;
+}
+
+[data-theme="light"] .theme-switch .theme-switch__indicator {
+  background: #b08968;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
 }
 
 /* ============= Sidebar Sections (Favorites & Recent) ============= */

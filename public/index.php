@@ -279,15 +279,6 @@ require_once dirname(__DIR__) . '/bootstrap.php';
                     </button>
                 </div>
 
-                <!-- Word Wrap Toggle (Mobile Only) -->
-                <div class="d-flex items-center gap-2 flex-shrink-0 md\:d-none">
-                    <button class="btn-word-wrap" id="wordWrapToggle" title="Toggle Word Wrap"
-                        aria-label="Toggle word wrap" aria-pressed="false">
-                        <i class="ri-text-wrap" aria-hidden="true"></i>
-                        <span class="d-none sm\:d-inline text-xs">Wrap</span>
-                    </button>
-                </div>
-
                 <!-- Right Group: Utilities -->
                 <div class="d-flex items-center gap-2 flex-shrink-0" role="group" aria-label="Utility actions">
                     <div class="items-center gap-2 px-2 py-1-5 rounded-md border d-none sm\:d-flex"
@@ -378,7 +369,7 @@ require_once dirname(__DIR__) . '/bootstrap.php';
     </div>
 
     <!-- MODAL UPLOAD -->
-    <div class="modal-overlay" id="modalBackdrop"
+    <div class="modal-backdrop" id="modalBackdrop"
         role="dialog" aria-modal="true" aria-labelledby="uploadModalTitle" aria-describedby="uploadModalDesc">
         <div class="modal" id="uploadModal">
             <h3 class="text-lg font-semibold mb-2" id="uploadModalTitle">Upload File</h3>

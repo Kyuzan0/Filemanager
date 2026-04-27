@@ -163,7 +163,7 @@
 
 .mobile-context-menu {
   position: fixed;
-  z-index: 50;
+  z-index: var(--z-modal-backdrop);
   background-color: var(--dialog-bg);
   border-radius: 8px;
   box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);

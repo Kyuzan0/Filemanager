@@ -41,10 +41,10 @@ td {
 
 /* Fixed column widths */
 th:nth-child(1), td:nth-child(1) { width: 40px; padding-left: 8px; padding-right: 4px; } /* Checkbox */
-th:nth-child(2), td:nth-child(2) { width: auto; padding-left: 4px; }  /* Name */
-th:nth-child(3), td:nth-child(3) { width: 80px; }  /* Date Modified */
-th:nth-child(4), td:nth-child(4) { width: 50px; }  /* Size */
-th:nth-child(5), td:nth-child(5) { width: 160px; }  /* Actions */
+th:nth-child(2), td:nth-child(2) { width: auto; padding-left: 4px; }  /* Name - takes remaining space */
+th:nth-child(3), td:nth-child(3) { width: 140px; }  /* Date Modified */
+th:nth-child(4), td:nth-child(4) { width: 100px; }  /* Size */
+th:nth-child(5), td:nth-child(5) { width: 200px; }  /* Actions */
 
 /* File name truncation */
 td:nth-child(2) {
@@ -107,7 +107,7 @@ td:nth-child(2) {
   position: sticky;
   top: 0;
   z-index: 10;
-  background-color: var(--card);
+  background-color: var(--bg-secondary);
 }
 
 [data-theme="dark"] th,
@@ -115,10 +115,22 @@ td:nth-child(2) {
   border-color: var(--border);
 }
 
+[data-theme="dark"] th {
+  background: var(--bg-secondary);
+  color: var(--text-secondary);
+  border-bottom-color: var(--card-border);
+}
+
 th {
-  font-weight: 600;
-  background: transparent;
-  color: var(--muted);
+  font-weight: 700;
+  background: var(--bg-secondary);
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  font-size: 11px;
+  letter-spacing: 0.05em;
+  border-bottom: 2px solid var(--card-border);
+  padding-top: 10px;
+  padding-bottom: 10px;
 }
 
 tbody tr {
@@ -180,7 +192,9 @@ tbody tr:hover {
   }
 
   th {
-    font-size: 13px;
+    font-size: 11px;
+    padding-top: 10px;
+    padding-bottom: 10px;
   }
 }
 
@@ -196,7 +210,9 @@ tbody tr:hover {
   }
 
   th {
-    font-size: 12px;
+    font-size: 10px;
+    padding-top: 8px;
+    padding-bottom: 8px;
   }
 }
 
@@ -618,7 +634,7 @@ div[data-item-path].selected {
 .modified-cell {
   font-size: 14px;
   color: var(--muted);
-  width: 144px;
+  width: 140px;
   text-align: right;
   white-space: nowrap;
 }
@@ -635,7 +651,7 @@ div[data-item-path].selected {
 
 /* Actions cell */
 .actions-cell {
-  width: auto;
+  width: 200px;
   padding-right: 8px;
   text-align: right;
 }
