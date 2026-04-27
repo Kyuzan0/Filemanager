@@ -537,6 +537,102 @@ function handle_move_action(string $root, string $method): void
 }
 
 /**
+ * Handle copy action
+ * 
+ * @param string $root Root directory path
+ * @param string $method HTTP request method
+ * @return void
+ */
+function handle_copy_action(string $root, string $method): void
+{
+    if (strtoupper($method) !== 'POST') {
+        throw new RuntimeException('Metode HTTP tidak diizinkan.');
+    }
+
+    $payload = get_json_payload();
+
+    $targetPath = isset($payload['targetPath']) && is_string($payload['targetPath']) ? trim($payload['targetPath']) : '';
+
+    // Support both single path and multiple paths
+    $sourcePaths = [];
+
+    if (isset($payload['sourcePaths']) && is_array($payload['sourcePaths'])) {
+        // Multiple paths
+        $sourcePaths = array_filter(array_map(function ($path) {
+            if (!is_string($path))
+                return '';
+            return sanitize_relative_path(rawurldecode(trim($path)));
+        }, $payload['sourcePaths']), function ($path) {
+            return $path !== '';
+        });
+    } elseif (isset($payload['sourcePath']) && is_string($payload['sourcePath'])) {
+        // Single path
+        $sanitizedPath = sanitize_relative_path(rawurldecode(trim($payload['sourcePath'])));
+        if ($sanitizedPath !== '') {
+            $sourcePaths = [$sanitizedPath];
+        }
+    }
+
+    if (empty($sourcePaths)) {
+        throw new RuntimeException('Path sumber wajib diisi.');
+    }
+
+    // Sanitize target path
+    $sanitizedTargetPath = sanitize_relative_path(rawurldecode($targetPath));
+
+    // Copy items
+    $result = copy_items($root, $sourcePaths, $sanitizedTargetPath);
+
+    $success = count($result['errors']) === 0;
+
+    if (!$success && count($result['copied']) > 0) {
+        http_response_code(207); // Multi-Status for partial success
+    } elseif (!$success) {
+        http_response_code(400);
+    }
+
+    echo json_encode([
+        'success' => $success,
+        'type' => 'copy',
+        'copied' => $result['copied'],
+        'errors' => $result['errors'],
+        'generated_at' => time(),
+    ], JSON_UNESCAPED_UNICODE);
+    exit;
+}
+
+/**
+ * Handle item details action — returns extended metadata for a file or folder.
+ *
+ * GET /api.php?action=details&path=relative/path
+ * Optional: ?calculate_size=1 to include recursive folder size (may be slow)
+ *
+ * @param string $root Root directory path
+ * @param string $sanitizedPath Relative path to the item
+ * @return void
+ */
+function handle_details_action(string $root, string $sanitizedPath): void
+{
+    $details = get_item_details($root, $sanitizedPath);
+
+    // Optional: calculate folder size if requested
+    if (
+        $details['type'] === 'folder'
+        && isset($_GET['calculate_size'])
+        && $_GET['calculate_size']
+    ) {
+        $sizeInfo = calculate_folder_size($root, $sanitizedPath);
+        $details['folderSize'] = $sizeInfo;
+    }
+
+    echo json_encode([
+        'success' => true,
+        'details' => $details,
+    ], JSON_UNESCAPED_UNICODE);
+    exit;
+}
+
+/**
  * Handle directory listing action
  * 
  * @param string $root Root directory path

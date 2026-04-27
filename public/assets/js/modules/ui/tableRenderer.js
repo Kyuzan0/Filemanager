@@ -414,27 +414,60 @@ export function renderItemRow(item, state, params) {
     icon.style.height = '25px';
     icon.style.borderRadius = '8px';
 
-    // Apply colorful icon styles based on file type
-    const iconColors = getIconColors(item);
-    icon.style.backgroundColor = iconColors.backgroundColor;
-    icon.style.color = iconColors.color;
+    // Use thumbnail for image files, SVG icon for others
+    if (item.has_thumbnail) {
+        icon.classList.add('item-icon-thumbnail');
+        icon.style.backgroundColor = 'transparent';
+        icon.style.overflow = 'hidden';
+        const thumbImg = document.createElement('img');
+        thumbImg.classList.add('item-thumbnail');
+        thumbImg.src = `api.php?action=thumbnail&path=${encodeURIComponent(item.path)}`;
+        thumbImg.alt = item.name;
+        thumbImg.loading = 'lazy';
+        thumbImg.decoding = 'async';
+        thumbImg.style.width = '100%';
+        thumbImg.style.height = '100%';
+        thumbImg.style.objectFit = 'cover';
+        thumbImg.addEventListener('error', () => {
+            // Fallback to SVG icon on thumbnail load failure
+            thumbImg.remove();
+            icon.classList.remove('item-icon-thumbnail');
+            const iconColors = getIconColors(item);
+            icon.style.backgroundColor = iconColors.backgroundColor;
+            icon.style.color = iconColors.color;
+            if (iconInfo && iconInfo.svg) {
+                if (typeof iconInfo.svg === 'object' && iconInfo.svg.nodeType === 1) {
+                    icon.appendChild(iconInfo.svg.cloneNode(true));
+                } else if (typeof iconInfo.svg === 'string') {
+                    icon.innerHTML = iconInfo.svg;
+                }
+            }
+        });
+        icon.appendChild(thumbImg);
+    } else {
+        // Apply colorful icon styles based on file type
+        const iconColors = getIconColors(item);
+        icon.style.backgroundColor = iconColors.backgroundColor;
+        icon.style.color = iconColors.color;
+
+        if (iconInfo && iconInfo.svg) {
+            try {
+                if (typeof iconInfo.svg === 'object' && iconInfo.svg.nodeType === 1) {
+                    const svgClone = iconInfo.svg.cloneNode(true);
+                    svgClone.style.width = '24px';
+                    svgClone.style.height = '24px';
+                    icon.appendChild(svgClone);
+                } else if (typeof iconInfo.svg === 'string') {
+                    icon.innerHTML = iconInfo.svg;
+                }
+            } catch (e) {
+                console.warn('[tableRenderer] Failed to render icon for', item && item.path, e);
+            }
+        }
+    }
 
     icon.style.flexShrink = '0';
     icon.style.marginTop = '2px';
-    if (iconInfo && iconInfo.svg) {
-        try {
-            if (typeof iconInfo.svg === 'object' && iconInfo.svg.nodeType === 1) {
-                const svgClone = iconInfo.svg.cloneNode(true);
-                svgClone.style.width = '24px';
-                svgClone.style.height = '24px';
-                icon.appendChild(svgClone);
-            } else if (typeof iconInfo.svg === 'string') {
-                icon.innerHTML = iconInfo.svg;
-            }
-        } catch (e) {
-            console.warn('[tableRenderer] Failed to render icon for', item && item.path, e);
-        }
-    }
     icon.style.cursor = 'pointer';
 
     // Add click handler to icon
@@ -934,42 +967,72 @@ export function createMobileItem(item, state, params) {
     const iconContainer = document.createElement('div');
     iconContainer.classList.add('mobile-item-icon');
 
-    const iconInfo = getItemIcon(item);
-    const icon = document.createElement('span');
-    icon.classList.add('item-icon');
-    if (iconInfo.className && iconInfo.className.trim()) {
-        iconInfo.className.trim().split(/\s+/).forEach(c => icon.classList.add(c));
+    const mobileIconInfo = getItemIcon(item);
+    const mobileIcon = document.createElement('span');
+    mobileIcon.classList.add('item-icon');
+    if (mobileIconInfo.className && mobileIconInfo.className.trim()) {
+        mobileIconInfo.className.trim().split(/\s+/).forEach(c => mobileIcon.classList.add(c));
     }
-    icon.style.display = 'inline-flex';
-    icon.style.alignItems = 'center';
-    icon.style.justifyContent = 'center';
-    icon.style.width = '32px';
-    icon.style.height = '32px';
-    icon.style.borderRadius = '6px';
+    mobileIcon.style.display = 'inline-flex';
+    mobileIcon.style.alignItems = 'center';
+    mobileIcon.style.justifyContent = 'center';
+    mobileIcon.style.width = '32px';
+    mobileIcon.style.height = '32px';
+    mobileIcon.style.borderRadius = '6px';
 
-    const mobileIconColors = getIconColors(item);
-    icon.style.backgroundColor = mobileIconColors.backgroundColor;
-    icon.style.color = mobileIconColors.color;
-
-    icon.style.flexShrink = '0';
-    icon.style.marginTop = '2px';
-
-    if (iconInfo && iconInfo.svg) {
-        try {
-            if (typeof iconInfo.svg === 'object' && iconInfo.svg.nodeType === 1) {
-                const svgClone = iconInfo.svg.cloneNode(true);
-                svgClone.style.width = '20px';
-                svgClone.style.height = '20px';
-                icon.appendChild(svgClone);
-            } else if (typeof iconInfo.svg === 'string') {
-                icon.innerHTML = iconInfo.svg;
+    if (item.has_thumbnail) {
+        mobileIcon.classList.add('item-icon-thumbnail');
+        mobileIcon.style.backgroundColor = 'transparent';
+        mobileIcon.style.overflow = 'hidden';
+        const mobileThumbImg = document.createElement('img');
+        mobileThumbImg.classList.add('item-thumbnail');
+        mobileThumbImg.src = `api.php?action=thumbnail&path=${encodeURIComponent(item.path)}`;
+        mobileThumbImg.alt = item.name;
+        mobileThumbImg.loading = 'lazy';
+        mobileThumbImg.decoding = 'async';
+        mobileThumbImg.style.width = '100%';
+        mobileThumbImg.style.height = '100%';
+        mobileThumbImg.style.objectFit = 'cover';
+        mobileThumbImg.addEventListener('error', () => {
+            mobileThumbImg.remove();
+            mobileIcon.classList.remove('item-icon-thumbnail');
+            const mobileIconColors = getIconColors(item);
+            mobileIcon.style.backgroundColor = mobileIconColors.backgroundColor;
+            mobileIcon.style.color = mobileIconColors.color;
+            if (mobileIconInfo && mobileIconInfo.svg) {
+                if (typeof mobileIconInfo.svg === 'object' && mobileIconInfo.svg.nodeType === 1) {
+                    mobileIcon.appendChild(mobileIconInfo.svg.cloneNode(true));
+                } else if (typeof mobileIconInfo.svg === 'string') {
+                    mobileIcon.innerHTML = mobileIconInfo.svg;
+                }
             }
-        } catch (e) {
-            console.warn('[tableRenderer] Failed to render icon for', item && item.path, e);
+        });
+        mobileIcon.appendChild(mobileThumbImg);
+    } else {
+        const mobileIconColors = getIconColors(item);
+        mobileIcon.style.backgroundColor = mobileIconColors.backgroundColor;
+        mobileIcon.style.color = mobileIconColors.color;
+
+        if (mobileIconInfo && mobileIconInfo.svg) {
+            try {
+                if (typeof mobileIconInfo.svg === 'object' && mobileIconInfo.svg.nodeType === 1) {
+                    const svgClone = mobileIconInfo.svg.cloneNode(true);
+                    svgClone.style.width = '20px';
+                    svgClone.style.height = '20px';
+                    mobileIcon.appendChild(svgClone);
+                } else if (typeof mobileIconInfo.svg === 'string') {
+                    mobileIcon.innerHTML = mobileIconInfo.svg;
+                }
+            } catch (e) {
+                console.warn('[tableRenderer] Failed to render icon for', item && item.path, e);
+            }
         }
     }
 
-    iconContainer.appendChild(icon);
+    mobileIcon.style.flexShrink = '0';
+    mobileIcon.style.marginTop = '2px';
+
+    iconContainer.appendChild(mobileIcon);
     leftSide.appendChild(iconContainer);
 
     // Name + date

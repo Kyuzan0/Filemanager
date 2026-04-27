@@ -492,6 +492,55 @@ export async function saveFileContent(path, content, options = {}) {
 }
 
 /**
+ * Menyalin item ke direktori tujuan
+ * @param {Array<string>} sourcePaths - Array path sumber
+ * @param {string} targetPath - Path direktori tujuan
+ * @param {Object} options - Opsi tambahan
+ * @param {boolean} options.silent - If true, suppress error notifications
+ * @param {number} options.timeout - Custom timeout in ms
+ * @returns {Promise<Object>} Promise yang resolve dengan hasil penyalinan
+ */
+export async function copyItems(sourcePaths, targetPath, options = {}) {
+    const { silent = false, timeout = DEFAULT_TIMEOUT } = options;
+
+    try {
+        const response = await fetchWithTimeout(
+            'api.php?action=copy',
+            {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    sourcePaths: sourcePaths,
+                    targetPath: targetPath,
+                }),
+            },
+            timeout
+        );
+
+        const data = await parseResponse(response, 'copyItems');
+
+        // Allow 207 Multi-Status for partial success
+        if (!response.ok && response.status !== 207) {
+            throw new FileManagerError(
+                data?.error || 'Gagal menyalin item',
+                ErrorCategory.OPERATION,
+                ErrorSeverity.ERROR,
+                { context: 'copyItems', response }
+            );
+        }
+
+        return data;
+    } catch (error) {
+        if (!silent) {
+            apiErrorHandler(error, { context: 'copyItems' });
+        }
+        throw error;
+    }
+}
+
+/**
  * Re-export error handling utilities for use by other modules
  */
 export {

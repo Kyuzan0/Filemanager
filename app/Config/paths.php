@@ -24,6 +24,7 @@ define('FILES_DIR', STORAGE_DIR . '/files');
 define('TRASH_DIR', STORAGE_DIR . '/trash');
 define('LOGS_DIR', STORAGE_DIR . '/logs');
 define('TEMP_DIR', STORAGE_DIR . '/temp');
+define('THUMBNAILS_DIR', STORAGE_DIR . '/thumbnails');
 
 // Binary tools directory
 define('BIN_DIR', PROJECT_ROOT . '/bin');
@@ -127,7 +128,7 @@ function get_temp_path(): string|false
  */
 function ensure_directories(): void
 {
-    $dirs = [STORAGE_DIR, FILES_DIR, TRASH_DIR, LOGS_DIR, TEMP_DIR];
+    $dirs = [STORAGE_DIR, FILES_DIR, TRASH_DIR, LOGS_DIR, TEMP_DIR, THUMBNAILS_DIR];
 
     foreach ($dirs as $dir) {
         if (!is_dir($dir)) {

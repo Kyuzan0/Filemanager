@@ -117,11 +117,18 @@ function route_request(
         'delete' => fn() => handle_delete_action($root, $sanitizedPath, $method),
         'rename' => fn() => handle_rename_action($root, $sanitizedPath, $method),
         'move' => fn() => handle_move_action($root, $method),
+        'copy' => fn() => handle_copy_action($root, $method),
 
         // Archive endpoints
         'compress' => fn() => handle_compress_action($root, $method),
         'extract' => fn() => handle_extract_action($root, $method),
         'zip-contents' => fn() => handle_zip_contents_action($root, $sanitizedPath),
+
+        // Thumbnail generation & serving
+        'thumbnail' => fn() => handle_thumbnail_action($root, $sanitizedPath),
+
+        // Item details (extended metadata)
+        'details' => fn() => handle_details_action($root, $sanitizedPath),
 
         // Default: directory listing
         'list' => fn() => handle_list_action($root, $sanitizedPath),

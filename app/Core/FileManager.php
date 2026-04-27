@@ -1240,13 +1240,20 @@ function list_directory(string $root, string $relativePath = ''): array
         $relativeItemPath = substr($fileInfo->getPathname(), strlen($normalizedRoot));
         $relativeItemPath = ltrim(str_replace(['\\'], '/', $relativeItemPath), '/');
 
-        $items[] = [
+        $itemData = [
             'name' => $fileInfo->getFilename(),
             'type' => $fileInfo->isDir() ? 'folder' : 'file',
             'modified' => $fileInfo->getMTime(),
             'path' => $relativeItemPath,
             'size' => $fileInfo->getSize(),
         ];
+
+        // Add thumbnail flag for supported image files
+        if (!$fileInfo->isDir() && is_thumbnailable($fileInfo->getFilename())) {
+            $itemData['has_thumbnail'] = true;
+        }
+
+        $items[] = $itemData;
     }
 
     usort($items, static function ($a, $b) {
@@ -1257,6 +1264,165 @@ function list_directory(string $root, string $relativePath = ''): array
     });
 
     return $items;
+}
+
+/**
+ * Get detailed metadata for a single file or folder.
+ *
+ * Returns extended information beyond what list_directory provides:
+ * MIME type, permissions, creation time, item count (for folders).
+ *
+ * @param string $root       Root directory path
+ * @param string $relativePath Relative path to the item
+ * @return array Associative array with item details
+ * @throws RuntimeException If item does not exist or is inaccessible
+ */
+function get_item_details(string $root, string $relativePath): array
+{
+    [$normalizedRoot, , $realPath] = resolve_path($root, $relativePath);
+
+    if (!file_exists($realPath)) {
+        throw new RuntimeException('Item tidak ditemukan.');
+    }
+
+    $isDir = is_dir($realPath);
+    $name = basename($realPath);
+
+    // Basic info
+    $details = [
+        'name'     => $name,
+        'type'     => $isDir ? 'folder' : 'file',
+        'path'     => $relativePath,
+        'size'     => $isDir ? 0 : filesize($realPath),
+        'modified' => filemtime($realPath),
+    ];
+
+    // Created time (ctime on Windows = creation, on Linux = inode change)
+    $ctime = filectime($realPath);
+    $details['created'] = $ctime !== false ? $ctime : null;
+
+    // MIME type (files only)
+    if (!$isDir) {
+        $mimeType = null;
+        if (function_exists('mime_content_type')) {
+            $mimeType = @mime_content_type($realPath);
+        }
+        if (!$mimeType || $mimeType === 'application/octet-stream') {
+            // Fallback: guess from extension
+            $ext = strtolower(pathinfo($name, PATHINFO_EXTENSION));
+            $mimeMap = [
+                'txt' => 'text/plain', 'html' => 'text/html', 'htm' => 'text/html',
+                'css' => 'text/css', 'js' => 'application/javascript',
+                'json' => 'application/json', 'xml' => 'application/xml',
+                'php' => 'application/x-php', 'py' => 'text/x-python',
+                'md' => 'text/markdown', 'csv' => 'text/csv',
+                'jpg' => 'image/jpeg', 'jpeg' => 'image/jpeg', 'png' => 'image/png',
+                'gif' => 'image/gif', 'svg' => 'image/svg+xml', 'webp' => 'image/webp',
+                'ico' => 'image/x-icon', 'bmp' => 'image/bmp',
+                'pdf' => 'application/pdf', 'doc' => 'application/msword',
+                'docx' => 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+                'xls' => 'application/vnd.ms-excel',
+                'xlsx' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+                'ppt' => 'application/vnd.ms-powerpoint',
+                'zip' => 'application/zip', 'rar' => 'application/x-rar-compressed',
+                'gz' => 'application/gzip', 'tar' => 'application/x-tar',
+                '7z' => 'application/x-7z-compressed',
+                'mp3' => 'audio/mpeg', 'wav' => 'audio/wav', 'ogg' => 'audio/ogg',
+                'mp4' => 'video/mp4', 'webm' => 'video/webm', 'avi' => 'video/x-msvideo',
+                'ts' => 'application/typescript', 'tsx' => 'application/typescript',
+                'jsx' => 'application/javascript', 'yaml' => 'text/yaml', 'yml' => 'text/yaml',
+                'sql' => 'application/sql', 'sh' => 'application/x-sh',
+                'bat' => 'application/x-bat', 'ini' => 'text/plain',
+                'log' => 'text/plain', 'env' => 'text/plain',
+            ];
+            $mimeType = $mimeMap[$ext] ?? 'application/octet-stream';
+        }
+        $details['mime'] = $mimeType;
+    } else {
+        $details['mime'] = 'inode/directory';
+    }
+
+    // Permissions
+    $perms = @fileperms($realPath);
+    if ($perms !== false) {
+        $details['permissions'] = [
+            'octal'    => substr(sprintf('%o', $perms), -4),
+            'readable' => is_readable($realPath),
+            'writable' => is_writable($realPath),
+        ];
+    }
+
+    // Folder: count direct children
+    if ($isDir && is_readable($realPath)) {
+        $childFiles = 0;
+        $childFolders = 0;
+        try {
+            $iter = new DirectoryIterator($realPath);
+            foreach ($iter as $child) {
+                if ($child->isDot()) continue;
+                if ($child->isDir()) {
+                    $childFolders++;
+                } else {
+                    $childFiles++;
+                }
+            }
+        } catch (Throwable $e) {
+            // Ignore errors counting children
+        }
+        $details['children'] = [
+            'files'   => $childFiles,
+            'folders' => $childFolders,
+            'total'   => $childFiles + $childFolders,
+        ];
+    }
+
+    // File extension (files only)
+    if (!$isDir) {
+        $details['extension'] = pathinfo($name, PATHINFO_EXTENSION);
+    }
+
+    return $details;
+}
+
+/**
+ * Calculate the total size of a directory recursively.
+ *
+ * @param string $root         Root directory path
+ * @param string $relativePath Relative path to the folder
+ * @return array ['size' => int, 'files' => int, 'folders' => int]
+ * @throws RuntimeException If path is not a directory
+ */
+function calculate_folder_size(string $root, string $relativePath): array
+{
+    [$normalizedRoot, , $realPath] = resolve_path($root, $relativePath);
+
+    if (!is_dir($realPath)) {
+        throw new RuntimeException('Path bukan folder.');
+    }
+
+    $totalSize = 0;
+    $fileCount = 0;
+    $folderCount = 0;
+
+    $iterator = new RecursiveIteratorIterator(
+        new RecursiveDirectoryIterator($realPath, RecursiveDirectoryIterator::SKIP_DOTS),
+        RecursiveIteratorIterator::SELF_FIRST
+    );
+
+    foreach ($iterator as $item) {
+        if ($item->isDir()) {
+            $folderCount++;
+        } else {
+            $fileCount++;
+            $totalSize += $item->getSize();
+        }
+    }
+
+    return [
+        'size'    => $totalSize,
+        'files'   => $fileCount,
+        'folders' => $folderCount,
+    ];
 }
 
 function rename_item(string $root, string $oldRelativePath, string $newRelativePath): array
@@ -1494,6 +1660,209 @@ function move_items(string $root, array $sourcePaths, string $targetPath): array
 
     return [
         'moved' => $moved,
+        'errors' => $errors,
+    ];
+}
+
+// ============================================================================
+// COPY FUNCTIONS
+// ============================================================================
+
+/**
+ * Recursively copy a file or directory
+ * @param string $source Absolute source path
+ * @param string $destination Absolute destination path
+ * @return void
+ * @throws RuntimeException on failure
+ */
+function copy_recursive(string $source, string $destination): void
+{
+    if (is_file($source)) {
+        if (!@copy($source, $destination)) {
+            $error = error_get_last();
+            throw new RuntimeException($error['message'] ?? 'Gagal menyalin file.');
+        }
+        return;
+    }
+
+    if (!is_dir($source)) {
+        throw new RuntimeException('Item sumber tidak ditemukan.');
+    }
+
+    if (!@mkdir($destination, 0755, true)) {
+        $error = error_get_last();
+        throw new RuntimeException($error['message'] ?? 'Gagal membuat direktori tujuan.');
+    }
+
+    $iterator = new DirectoryIterator($source);
+    foreach ($iterator as $entry) {
+        if ($entry->isDot()) {
+            continue;
+        }
+        $srcPath = $entry->getPathname();
+        $dstPath = $destination . DIRECTORY_SEPARATOR . $entry->getFilename();
+        copy_recursive($srcPath, $dstPath);
+    }
+}
+
+/**
+ * Copy a single item to a target directory
+ * @param string $root Root directory path
+ * @param string $sourceRelativePath Relative path of the source item
+ * @param string $targetRelativePath Relative path of the target directory
+ * @return array Item info array
+ * @throws RuntimeException on failure
+ */
+function copy_item(string $root, string $sourceRelativePath, string $targetRelativePath): array
+{
+    fm_debug_log('copy_item called with source: "' . $sourceRelativePath . '", target: "' . $targetRelativePath . '"');
+
+    $normalizedRoot = realpath($root);
+    if ($normalizedRoot === false) {
+        throw new RuntimeException('Root directory tidak ditemukan.');
+    }
+
+    // Sanitize source path
+    $sanitizedSourcePath = sanitize_relative_path($sourceRelativePath);
+    if ($sanitizedSourcePath === '') {
+        throw new RuntimeException('Path sumber wajib diisi.');
+    }
+
+    // Build source real path
+    $sourceRealPath = $normalizedRoot . DIRECTORY_SEPARATOR . str_replace('/', DIRECTORY_SEPARATOR, $sanitizedSourcePath);
+
+    if (!file_exists($sourceRealPath)) {
+        throw new RuntimeException('Item sumber tidak ditemukan.');
+    }
+
+    $isDir = is_dir($sourceRealPath);
+    $targetType = $isDir ? 'folder' : 'file';
+    $fileName = basename($sourceRealPath);
+
+    // Sanitize target path
+    $sanitizedTargetPath = sanitize_relative_path($targetRelativePath);
+
+    // Build target directory real path
+    $targetDirRealPath = $normalizedRoot;
+    if ($sanitizedTargetPath !== '') {
+        $targetDirRealPath = $normalizedRoot . DIRECTORY_SEPARATOR . str_replace('/', DIRECTORY_SEPARATOR, $sanitizedTargetPath);
+    }
+
+    if (!is_dir($targetDirRealPath)) {
+        throw new RuntimeException('Direktori tujuan tidak ditemukan.');
+    }
+
+    assert_writable_directory($targetDirRealPath);
+
+    // Build destination path
+    $destRealPath = $targetDirRealPath . DIRECTORY_SEPARATOR . $fileName;
+
+    // Handle name conflicts — append " - Copy", " - Copy (2)", etc.
+    if (file_exists($destRealPath)) {
+        $pathInfo = pathinfo($fileName);
+        $baseName = $pathInfo['filename'];
+        $extension = isset($pathInfo['extension']) ? '.' . $pathInfo['extension'] : '';
+
+        // For directories, no extension handling
+        if ($isDir) {
+            $baseName = $fileName;
+            $extension = '';
+        }
+
+        $copyName = $baseName . ' - Copy' . $extension;
+        $destRealPath = $targetDirRealPath . DIRECTORY_SEPARATOR . $copyName;
+
+        $counter = 2;
+        while (file_exists($destRealPath)) {
+            $copyName = $baseName . ' - Copy (' . $counter . ')' . $extension;
+            $destRealPath = $targetDirRealPath . DIRECTORY_SEPARATOR . $copyName;
+            $counter++;
+        }
+
+        $fileName = $copyName;
+    }
+
+    // Prevent copying a folder into itself
+    if ($isDir) {
+        $destNormalized = str_replace('\\', '/', $destRealPath);
+        $sourceNormalized = str_replace('\\', '/', $sourceRealPath);
+        if (strpos($destNormalized, $sourceNormalized . '/') === 0) {
+            throw new RuntimeException('Tidak dapat menyalin folder ke dalam dirinya sendiri.');
+        }
+    }
+
+    fm_debug_log('Copying from "' . $sourceRealPath . '" to "' . $destRealPath . '"');
+
+    try {
+        copy_recursive($sourceRealPath, $destRealPath);
+
+        clearstatcache(true, $destRealPath);
+        $modified = filemtime($destRealPath) ?: time();
+
+        $size = 0;
+        if ($targetType === 'file') {
+            $size = filesize($destRealPath) ?: 0;
+        }
+
+        // Build relative path for the copied item
+        $copiedRelativePath = str_replace(
+            [$normalizedRoot . DIRECTORY_SEPARATOR, '\\'],
+            ['', '/'],
+            $destRealPath
+        );
+
+        return [
+            'name' => $fileName,
+            'path' => $copiedRelativePath,
+            'type' => $targetType,
+            'modified' => $modified,
+            'size' => $size,
+        ];
+    } catch (Exception $e) {
+        // Clean up partial copy on failure
+        if (file_exists($destRealPath) && $isDir) {
+            @rmdir($destRealPath);
+        } elseif (file_exists($destRealPath)) {
+            @unlink($destRealPath);
+        }
+        throw $e;
+    }
+}
+
+/**
+ * Copy multiple items to a target directory
+ * @param string $root Root directory path
+ * @param array $sourcePaths Array of relative source paths
+ * @param string $targetPath Relative target directory path
+ * @return array Results with 'copied' and 'errors' arrays
+ */
+function copy_items(string $root, array $sourcePaths, string $targetPath): array
+{
+    $copied = [];
+    $errors = [];
+
+    foreach ($sourcePaths as $sourcePath) {
+        try {
+            $sanitizedSourcePath = sanitize_relative_path($sourcePath);
+
+            $result = copy_item($root, $sanitizedSourcePath, $targetPath);
+            $copied[] = $result;
+
+            // Log activity
+            write_activity_log('copy', $result['name'], $result['type'], $result['path'], [
+                'sourcePath' => $sourcePath,
+                'targetPath' => $targetPath
+            ]);
+        } catch (Throwable $e) {
+            $errors[] = [
+                'path' => $sourcePath,
+                'error' => $e->getMessage(),
+            ];
+        }
+    }
+
+    return [
+        'copied' => $copied,
         'errors' => $errors,
     ];
 }

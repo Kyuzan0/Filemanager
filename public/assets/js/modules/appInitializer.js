@@ -49,8 +49,12 @@ import {
     setupFileCardDropZone
 } from './dragDrop.js';
 import { fetchDirectory } from './apiService.js';
+import { pasteItems } from './fileOperations.js';
+import { copySelectedItems, cutSelectedItems, getClipboard, clearClipboard, hasClipboardItems, registerHandlers as registerShortcutHandlers } from './keyboardShortcuts.js';
 import { renderItems as renderItemsComplex, updateSortUI, syncRowSelection, syncMobileSelection } from './uiRenderer.js';
 import { updatePaginationState } from './pagination.js';
+import { showSkeletons } from './ui/skeletonRenderer.js';
+import { initUploadManager, showUploadModal } from './ui/uploadManager.js';
 
 // Lazy-loaded modules (loaded on-demand for better performance)
 let moveOverlayModule = null;
@@ -827,8 +831,266 @@ function toggleSelection(path, isSelected) {
 }
 
 function openContextMenu(x, y, item) {
+    // Close any existing context menu first
+    closeContextMenu();
 
-    // Context menu implementation would go here
+    // Update state with target item
+    updateState({
+        contextMenu: {
+            isOpen: true,
+            targetItem: item
+        }
+    });
+
+    // Get or create the context menu DOM element
+    let menu = document.getElementById('context-menu');
+    if (!menu) {
+        menu = document.createElement('div');
+        menu.id = 'context-menu';
+        menu.className = 'context-menu';
+        menu.setAttribute('role', 'menu');
+        menu.setAttribute('aria-label', 'Context menu');
+        document.body.appendChild(menu);
+    }
+
+    // Check clipboard state for paste availability
+    const clipboardHasItems = hasClipboardItems();
+    const clipboardState = getClipboard();
+    const isFolder = item.type === 'folder';
+
+    // Build menu items
+    const menuItems = [];
+
+    // Open
+    menuItems.push({
+        action: 'open',
+        label: isFolder ? 'Buka' : 'Buka File',
+        icon: isFolder ? '📂' : '📄',
+        className: ''
+    });
+
+    menuItems.push({ divider: true });
+
+    // Cut
+    menuItems.push({
+        action: 'cut',
+        label: 'Potong',
+        icon: '✂️',
+        shortcut: 'Ctrl+X',
+        className: ''
+    });
+
+    // Copy
+    menuItems.push({
+        action: 'copy',
+        label: 'Salin',
+        icon: '📋',
+        shortcut: 'Ctrl+C',
+        className: ''
+    });
+
+    // Paste (only enabled if clipboard has items)
+    menuItems.push({
+        action: 'paste',
+        label: 'Tempel',
+        icon: '📌',
+        shortcut: 'Ctrl+V',
+        className: '',
+        disabled: !clipboardHasItems
+    });
+
+    menuItems.push({ divider: true });
+
+    // Rename
+    menuItems.push({
+        action: 'rename',
+        label: 'Ubah Nama',
+        icon: '✏️',
+        shortcut: 'F2',
+        className: ''
+    });
+
+    // Move
+    menuItems.push({
+        action: 'move',
+        label: 'Pindahkan',
+        icon: '📦',
+        className: ''
+    });
+
+    // Download (files only)
+    if (!isFolder) {
+        menuItems.push({
+            action: 'download',
+            label: 'Unduh',
+            icon: '⬇️',
+            className: ''
+        });
+    }
+
+    // Copy Path
+    menuItems.push({
+        action: 'copy-path',
+        label: 'Salin Path',
+        icon: '🔗',
+        className: ''
+    });
+
+    // Details
+    menuItems.push({
+        action: 'details',
+        label: 'Detail',
+        icon: 'ℹ️',
+        className: ''
+    });
+
+    menuItems.push({ divider: true });
+
+    // Delete (danger)
+    menuItems.push({
+        action: 'delete',
+        label: 'Hapus',
+        icon: '🗑️',
+        className: 'context-menu-item-danger'
+    });
+
+    // Render menu HTML
+    const inner = document.createElement('div');
+    inner.className = 'context-menu-inner';
+
+    menuItems.forEach((menuItem, index) => {
+        if (menuItem.divider) {
+            const divider = document.createElement('div');
+            divider.className = 'context-menu-divider';
+            divider.setAttribute('role', 'separator');
+            inner.appendChild(divider);
+            return;
+        }
+
+        const btn = document.createElement('button');
+        btn.className = `context-menu-item ${menuItem.className}`.trim();
+        btn.setAttribute('role', 'menuitem');
+        btn.setAttribute('data-action', menuItem.action);
+        btn.tabIndex = 0;
+
+        if (menuItem.disabled) {
+            btn.disabled = true;
+            btn.style.opacity = '0.4';
+            btn.style.cursor = 'not-allowed';
+        }
+
+        // Icon
+        const iconSpan = document.createElement('span');
+        iconSpan.className = 'context-menu-icon';
+        iconSpan.textContent = menuItem.icon;
+        btn.appendChild(iconSpan);
+
+        // Label
+        const labelSpan = document.createElement('span');
+        labelSpan.textContent = menuItem.label;
+        labelSpan.style.flex = '1';
+        btn.appendChild(labelSpan);
+
+        // Shortcut hint
+        if (menuItem.shortcut) {
+            const shortcutSpan = document.createElement('span');
+            shortcutSpan.textContent = menuItem.shortcut;
+            shortcutSpan.style.fontSize = '11px';
+            shortcutSpan.style.opacity = '0.5';
+            shortcutSpan.style.marginLeft = '12px';
+            btn.appendChild(shortcutSpan);
+        }
+
+        // Click handler
+        btn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            if (!menuItem.disabled) {
+                handleContextMenuAction(menuItem.action);
+            }
+        });
+
+        inner.appendChild(btn);
+    });
+
+    menu.innerHTML = '';
+    menu.appendChild(inner);
+
+    // Position the menu
+    menu.style.display = 'block';
+    menu.classList.remove('hidden');
+    menu.setAttribute('aria-hidden', 'false');
+
+    // Calculate position to keep menu within viewport
+    const menuRect = menu.getBoundingClientRect();
+    const viewportWidth = window.innerWidth;
+    const viewportHeight = window.innerHeight;
+
+    let posX = x;
+    let posY = y;
+
+    if (x + menuRect.width > viewportWidth) {
+        posX = viewportWidth - menuRect.width - 8;
+    }
+    if (y + menuRect.height > viewportHeight) {
+        posY = viewportHeight - menuRect.height - 8;
+    }
+
+    // Ensure minimum position
+    posX = Math.max(8, posX);
+    posY = Math.max(8, posY);
+
+    menu.style.left = posX + 'px';
+    menu.style.top = posY + 'px';
+
+    // Focus first item for keyboard navigation
+    const firstItem = menu.querySelector('.context-menu-item:not([disabled])');
+    if (firstItem) {
+        firstItem.focus();
+    }
+
+    // Setup keyboard navigation within menu
+    const handleMenuKeydown = (e) => {
+        const items = Array.from(menu.querySelectorAll('.context-menu-item:not([disabled])'));
+        const currentIndex = items.indexOf(document.activeElement);
+
+        if (e.key === 'ArrowDown') {
+            e.preventDefault();
+            const next = currentIndex < items.length - 1 ? currentIndex + 1 : 0;
+            items[next]?.focus();
+        } else if (e.key === 'ArrowUp') {
+            e.preventDefault();
+            const prev = currentIndex > 0 ? currentIndex - 1 : items.length - 1;
+            items[prev]?.focus();
+        } else if (e.key === 'Escape') {
+            e.preventDefault();
+            closeContextMenu();
+        }
+    };
+
+    menu.addEventListener('keydown', handleMenuKeydown);
+    menu._keydownHandler = handleMenuKeydown;
+
+    // Close on click outside
+    const handleClickOutside = (e) => {
+        if (!menu.contains(e.target)) {
+            closeContextMenu();
+            document.removeEventListener('click', handleClickOutside, true);
+        }
+    };
+
+    // Use setTimeout to avoid the current right-click event from closing the menu
+    setTimeout(() => {
+        document.addEventListener('click', handleClickOutside, true);
+        menu._clickOutsideHandler = handleClickOutside;
+    }, 0);
+
+    // Close on scroll
+    const handleScroll = () => {
+        closeContextMenu();
+        window.removeEventListener('scroll', handleScroll, true);
+    };
+    window.addEventListener('scroll', handleScroll, true);
+    menu._scrollHandler = handleScroll;
 }
 
 function changeSort(key) {
@@ -871,9 +1133,21 @@ function navigateTo(path) {
 async function fetchDirectoryWrapper(path = '', options = {}) {
     try {
 
-
         // Update loading state
         updateState({ isLoading: true });
+
+        // Show skeleton placeholders instead of spinner overlay
+        if (!options.silent) {
+            // Hide empty state while loading
+            if (elements.emptyState) {
+                elements.emptyState.hidden = true;
+            }
+            showSkeletons({
+                tableBody: elements.tableBody || document.getElementById('tbody'),
+                gridContainer: document.getElementById('grid-view-container'),
+                mobileList: document.getElementById('mobile-file-list')
+            });
+        }
 
         // Call the API
         const data = await fetchDirectory(path, options);
@@ -947,18 +1221,26 @@ function startPolling() {
     }
     state.polling = setInterval(() => {
         if (!document.hidden) {
-            fetchDirectoryWrapper(state.currentPath);
+            fetchDirectoryWrapper(state.currentPath, { silent: true });
         }
     }, config.pollingInterval || 30000);
 }
 
 function handleContextMenuAction(action) {
     const { targetItem } = state.contextMenu;
-    if (!targetItem) {
+
+    closeContextMenu();
+
+    // Paste doesn't require a target item
+    if (action === 'paste') {
+        const clipboard = getClipboard();
+        pasteItems(clipboard, state, (path, opts) => fetchDirectoryWrapper(path, opts), clearClipboard);
         return;
     }
 
-    closeContextMenu();
+    if (!targetItem) {
+        return;
+    }
 
     switch (action) {
         case 'open':
@@ -968,6 +1250,28 @@ function handleContextMenuAction(action) {
                 window.open(buildFileUrl(targetItem.path), '_blank');
             }
             break;
+        case 'copy': {
+            // Select the target item if not already selected, then copy
+            if (!state.selected.has(targetItem.path)) {
+                state.selected.clear();
+                state.selected.add(targetItem.path);
+                updateSelectionUI();
+            }
+            copySelectedItems();
+            window.showInfo?.(`"${targetItem.name}" disalin ke clipboard.`);
+            break;
+        }
+        case 'cut': {
+            // Select the target item if not already selected, then cut
+            if (!state.selected.has(targetItem.path)) {
+                state.selected.clear();
+                state.selected.add(targetItem.path);
+                updateSelectionUI();
+            }
+            cutSelectedItems();
+            window.showInfo?.(`"${targetItem.name}" dipotong ke clipboard.`);
+            break;
+        }
         case 'rename':
             openRenameOverlayWrapper(targetItem);
             break;
@@ -989,10 +1293,25 @@ function handleContextMenuAction(action) {
             }
             break;
         case 'download':
-            downloadFile(targetItem);
+            if (targetItem && targetItem.type === 'file') {
+                const url = buildFileUrl(targetItem.path);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = targetItem.name;
+                a.style.display = 'none';
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+            }
             break;
         case 'move':
-            openMoveOverlayWrapper([targetItem.path]);
+            if (targetItem) {
+                loadMoveOverlay().then(module => {
+                    if (module && module.openMoveOverlay) {
+                        module.openMoveOverlay([targetItem.path], state, fetchDirectoryWrapper);
+                    }
+                });
+            }
             break;
     }
 }
@@ -1005,6 +1324,28 @@ function closeContextMenu() {
             targetItem: null
         }
     });
+
+    // Hide the DOM element
+    const menu = document.getElementById('context-menu');
+    if (menu) {
+        menu.style.display = 'none';
+        menu.classList.add('hidden');
+        menu.setAttribute('aria-hidden', 'true');
+
+        // Clean up event listeners
+        if (menu._keydownHandler) {
+            menu.removeEventListener('keydown', menu._keydownHandler);
+            menu._keydownHandler = null;
+        }
+        if (menu._clickOutsideHandler) {
+            document.removeEventListener('click', menu._clickOutsideHandler, true);
+            menu._clickOutsideHandler = null;
+        }
+        if (menu._scrollHandler) {
+            window.removeEventListener('scroll', menu._scrollHandler, true);
+            menu._scrollHandler = null;
+        }
+    }
 }
 
 function updatePreviewStatus() {
@@ -1399,16 +1740,8 @@ function closeConfirmOverlayWrapper() {
  * @param {FileList} files - Daftar file yang akan diunggah
  */
 async function uploadFilesWrapper(files) {
-
-    await uploadFiles(
-        files,
-        state,
-        setLoading,
-        setError,
-        fetchDirectoryWrapper,
-        flashStatus,
-        elements.btnUpload
-    );
+    // Use the new upload progress modal for visual feedback
+    showUploadModal(files);
 }
 
 /**
@@ -1416,16 +1749,8 @@ async function uploadFilesWrapper(files) {
  * @param {FileList} files - Daftar file dari folder yang akan diunggah
  */
 async function uploadFolderWrapper(files) {
-
-    await uploadFolder(
-        files,
-        state,
-        setLoading,
-        setError,
-        fetchDirectoryWrapper,
-        flashStatus,
-        elements.btnUploadFolder
-    );
+    // Use the new upload progress modal for visual feedback
+    showUploadModal(files);
 }
 
 /**
@@ -1754,6 +2079,13 @@ export async function initializeApp() {
         // Setup drag and drop - fileCard drop zone
         setupFileCardDropZone();
 
+        // Setup upload manager with drag-to-upload drop zone
+        const mainContent = document.getElementById('main-content');
+        initUploadManager({
+            dropTarget: mainContent,
+            onComplete: () => fetchDirectoryWrapper(state.currentPath, { silent: true })
+        });
+
         // Setup move overlay handlers (lazy-loaded on first move operation)
         // Will be loaded when user clicks move button
         logger.info('Move overlay will be loaded on demand');
@@ -2056,18 +2388,17 @@ function setupEventHandlers() {
     // Setup visibility handler
     setupVisibilityHandler(state, fetchDirectoryWrapper, startPolling);
 
-    // Setup context menu handler (ensure items nodeList exists)
-    if (elements.contextMenuItems && elements.contextMenu) {
-        setupContextMenuHandler(
-            elements.contextMenuItems,
-            elements.contextMenu,
-            state,
-            handleContextMenuAction,
-            closeContextMenu
-        );
-    } else {
-        logger.warn('Skipping context menu handler - elements.contextMenu or contextMenuItems missing');
-    }
+    // Context menu is now dynamically created in openContextMenu()
+    // No static DOM setup needed — the old setupContextMenuHandler is bypassed
+    logger.info('Context menu will be created dynamically on right-click');
+
+    // Register paste handler for keyboard shortcuts (Ctrl+V)
+    registerShortcutHandlers({
+        paste: () => {
+            const clipboard = getClipboard();
+            pasteItems(clipboard, state, (path, opts) => fetchDirectoryWrapper(path, opts), clearClipboard);
+        }
+    });
 
     // Setup split action handler (guard all related elements)
     if (elements.splitAction && elements.splitToggle && elements.splitMenu && elements.splitOptions && elements.splitMain) {
@@ -2762,4 +3093,6 @@ try {
     window.syncLineNumbersScroll = syncLineNumbersScroll;
     window.initializeScrollSync = initializeScrollSync;
     window.cleanupScrollSync = cleanupScrollSync;
+    // Expose state getter for modals-handler.js (gallery navigation needs items list)
+    window.getState = () => state;
 } catch (e) { /* silent */ }

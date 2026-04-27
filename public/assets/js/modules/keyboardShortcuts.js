@@ -462,12 +462,11 @@ export function cutSelectedItems() {
         operation: 'cut',
     };
 
-    // Add visual indicator for cut items
+    // Add visual indicator for cut items (table rows and grid/mobile items)
     selectedPaths.forEach(path => {
-        const row = document.querySelector(`tr[data-item-path="${CSS.escape(path)}"]`);
-        if (row) {
-            row.classList.add('item-cut');
-        }
+        const escapedPath = CSS.escape(path);
+        const elements = document.querySelectorAll(`tr[data-item-path="${escapedPath}"], div[data-item-path="${escapedPath}"]`);
+        elements.forEach(el => el.classList.add('item-cut'));
     });
 
     announce(`${selectedPaths.length} item dipotong ke clipboard`);
@@ -488,12 +487,11 @@ export function getClipboard() {
  * Clear clipboard
  */
 export function clearClipboard() {
-    // Remove cut visual indicator
+    // Remove cut visual indicator (table rows and grid/mobile items)
     clipboard.items.forEach(path => {
-        const row = document.querySelector(`tr[data-item-path="${CSS.escape(path)}"]`);
-        if (row) {
-            row.classList.remove('item-cut');
-        }
+        const escapedPath = CSS.escape(path);
+        const elements = document.querySelectorAll(`tr[data-item-path="${escapedPath}"], div[data-item-path="${escapedPath}"]`);
+        elements.forEach(el => el.classList.remove('item-cut'));
     });
 
     clipboard = {

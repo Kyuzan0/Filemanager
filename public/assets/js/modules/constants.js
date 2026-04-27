@@ -338,6 +338,8 @@ export const errorMessages = {
     uploadFailed: 'Gagal mengunggah file',
     saveFailed: 'Gagal menyimpan perubahan',
     copyFailed: 'Gagal menyalin path',
+    copyItemsFailed: 'Gagal menyalin item',
+    pasteFailed: 'Gagal menempelkan item',
 };
 
 // Success messages
@@ -349,6 +351,8 @@ export const successMessages = {
     fileUploaded: 'File diunggah',
     changesSaved: 'Perubahan tersimpan',
     pathCopied: 'Path tersalin ke clipboard',
+    itemsCopied: 'Item berhasil disalin',
+    itemsPasted: 'Item berhasil ditempelkan',
 };
 
 // Action labels for logs

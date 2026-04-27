@@ -48,6 +48,37 @@
                     <i class="ri-text-wrap" aria-hidden="true"></i>
                     <span class="d-none sm\:d-inline text-xs">Wrap</span>
                 </button>
+                <!-- Markdown render toggle (shown only for .md files) -->
+                <button class="btn-md-toggle" id="previewMdToggle" title="Toggle Markdown Preview"
+                    aria-label="Toggle between raw editor and rendered markdown" aria-pressed="false"
+                    style="display: none;">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                        stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/>
+                        <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>
+                    </svg>
+                    <span class="d-none sm\:d-inline text-xs">Preview</span>
+                </button>
+                <!-- Fullscreen toggle -->
+                <button class="btn-fullscreen" id="previewFullscreen" title="Toggle Fullscreen (F11)"
+                    aria-label="Toggle fullscreen mode" aria-pressed="false">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                        stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"
+                        id="fullscreen-icon-expand">
+                        <polyline points="15 3 21 3 21 9"/>
+                        <polyline points="9 21 3 21 3 15"/>
+                        <line x1="21" y1="3" x2="14" y2="10"/>
+                        <line x1="3" y1="21" x2="10" y2="14"/>
+                    </svg>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                        stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"
+                        id="fullscreen-icon-collapse" style="display: none;">
+                        <polyline points="4 14 10 14 10 20"/>
+                        <polyline points="20 10 14 10 14 4"/>
+                        <line x1="14" y1="10" x2="21" y2="3"/>
+                        <line x1="3" y1="21" x2="10" y2="14"/>
+                    </svg>
+                </button>
             </div>
             <p class="preview-meta text-sm text-muted" id="preview-meta"></p>
         </header>
@@ -62,9 +93,31 @@
             </div>
             <!-- Image Preview View -->
             <div class="preview-image-wrapper" id="preview-image-wrapper" style="display: none;">
+                <!-- Gallery navigation: prev button -->
+                <button type="button" class="gallery-nav gallery-nav-prev" id="gallery-prev"
+                    title="Previous image (←)" aria-label="Previous image" style="display: none;">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                        stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <polyline points="15 18 9 12 15 6"/>
+                    </svg>
+                </button>
                 <div class="preview-image-container" id="preview-image-container">
                     <img id="preview-image" src="" alt="Preview" />
                 </div>
+                <!-- Gallery navigation: next button -->
+                <button type="button" class="gallery-nav gallery-nav-next" id="gallery-next"
+                    title="Next image (→)" aria-label="Next image" style="display: none;">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                        stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <polyline points="9 18 15 12 9 6"/>
+                    </svg>
+                </button>
+                <!-- Gallery counter badge -->
+                <span class="gallery-counter" id="gallery-counter" aria-live="polite" style="display: none;"></span>
+            </div>
+            <!-- Markdown Rendered Preview (shown when toggle is active for .md files) -->
+            <div class="preview-markdown-wrapper" id="preview-markdown-wrapper" style="display: none;">
+                <div class="markdown-rendered" id="markdown-rendered"></div>
             </div>
             <!-- Video Preview View -->
             <div class="preview-video-wrapper" id="preview-video-wrapper" style="display: none;">
@@ -728,13 +781,41 @@
                     <span class="details-info-label">Tipe</span>
                     <span class="details-info-value" id="details-type">-</span>
                 </div>
-                <div class="details-info-item">
-                    <span class="details-info-label">Terakhir Diubah</span>
-                    <span class="details-info-value" id="details-modified">-</span>
+                <div class="details-info-item" id="details-mime-row">
+                    <span class="details-info-label">MIME Type</span>
+                    <span class="details-info-value details-mono" id="details-mime">-</span>
                 </div>
                 <div class="details-info-item">
                     <span class="details-info-label">Ukuran</span>
                     <span class="details-info-value" id="details-size">-</span>
+                </div>
+                <div class="details-info-item" id="details-children-row" style="display:none">
+                    <span class="details-info-label">Isi Folder</span>
+                    <span class="details-info-value" id="details-children">-</span>
+                </div>
+                <div class="details-info-item" id="details-folder-size-row" style="display:none">
+                    <span class="details-info-label">Ukuran Total</span>
+                    <span class="details-info-value" id="details-folder-size">
+                        <button type="button" class="details-calc-btn" id="details-calc-size-btn">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-3.5 h-3.5">
+                                <circle cx="12" cy="12" r="10"/>
+                                <path d="M12 6v6l4 2"/>
+                            </svg>
+                            Hitung Ukuran
+                        </button>
+                    </span>
+                </div>
+                <div class="details-info-item">
+                    <span class="details-info-label">Terakhir Diubah</span>
+                    <span class="details-info-value" id="details-modified">-</span>
+                </div>
+                <div class="details-info-item" id="details-created-row">
+                    <span class="details-info-label">Dibuat</span>
+                    <span class="details-info-value" id="details-created">-</span>
+                </div>
+                <div class="details-info-item" id="details-permissions-row">
+                    <span class="details-info-label">Izin Akses</span>
+                    <span class="details-info-value" id="details-permissions">-</span>
                 </div>
                 <div class="details-info-item">
                     <span class="details-info-label">Lokasi</span>

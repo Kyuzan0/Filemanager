@@ -4,7 +4,7 @@
  * Enhanced with centralized error handling
  */
 
-import { deleteItems as apiDeleteItems, moveItem as apiMoveItem, renameItem as apiRenameItem, createItem as apiCreateItem, uploadFiles as apiUploadFiles } from './apiService.js';
+import { deleteItems as apiDeleteItems, moveItem as apiMoveItem, renameItem as apiRenameItem, createItem as apiCreateItem, uploadFiles as apiUploadFiles, copyItems as apiCopyItems } from './apiService.js';
 import { errorMessages, successMessages } from './constants.js';
 import { getParentPath, isSubPath } from './utils.js';
 import { debugLog, debugError, debugPerf } from './debug.js';
@@ -23,6 +23,7 @@ const moveErrorHandler = createErrorHandler('FileOperations:Move');
 const renameErrorHandler = createErrorHandler('FileOperations:Rename');
 const createErrorHandler_internal = createErrorHandler('FileOperations:Create');
 const uploadErrorHandler = createErrorHandler('FileOperations:Upload');
+const copyErrorHandler = createErrorHandler('FileOperations:Copy');
 
 /**
  * Menghapus item-item yang dipilih
@@ -1202,5 +1203,108 @@ export async function performMove(
         }
     } catch (error) {
         flashStatus('Gagal memindahkan item.', 'error');
+    }
+}
+
+/**
+ * Paste items from clipboard (copy or cut operation)
+ * @param {Object} clipboard - Clipboard state { items: string[], operation: 'copy'|'cut' }
+ * @param {Object} state - Application state
+ * @param {Function} fetchDirectory - Fetch directory function
+ * @param {Function} clearClipboard - Clear clipboard function
+ * @returns {Promise<boolean>} Whether paste was successful
+ */
+export async function pasteItems(clipboard, state, fetchDirectory, clearClipboard) {
+    if (!clipboard || !clipboard.items || clipboard.items.length === 0) {
+        window.showWarning?.('Clipboard kosong.');
+        return false;
+    }
+
+    const { items: sourcePaths, operation } = clipboard;
+    const targetPath = state.currentPath || '';
+
+    debugLog('[FileOperations] pasteItems:', operation, sourcePaths, '->', targetPath);
+
+    try {
+        if (operation === 'copy') {
+            // Copy operation — call copy API
+            const data = await apiCopyItems(sourcePaths, targetPath);
+
+            if (data.success || (data.copied && data.copied.length > 0)) {
+                const copiedCount = data.copied?.length || 0;
+                const errorCount = data.errors?.length || 0;
+
+                if (copiedCount === 1) {
+                    window.showSuccess?.(`"${data.copied[0].name}" berhasil disalin.`);
+                } else if (copiedCount > 1) {
+                    window.showSuccess?.(`${copiedCount} item berhasil disalin${errorCount ? `, ${errorCount} gagal` : ''}.`);
+                }
+
+                if (errorCount > 0 && copiedCount === 0) {
+                    window.showError?.('Gagal menyalin item.');
+                    return false;
+                }
+            } else {
+                window.showError?.(data.error || 'Gagal menyalin item.');
+                return false;
+            }
+
+            // Clipboard persists after copy (can paste again)
+
+        } else if (operation === 'cut') {
+            // Cut operation — call move API for each item
+            const results = [];
+            for (const sp of sourcePaths) {
+                try {
+                    const data = await apiMoveItem(sp, targetPath);
+                    results.push({ path: sp, ok: true, data });
+                } catch (e) {
+                    results.push({ path: sp, ok: false, error: e.message || 'Gagal memindahkan.' });
+                }
+            }
+
+            const okCount = results.filter(r => r.ok).length;
+            const failCount = results.length - okCount;
+
+            if (okCount > 0) {
+                if (sourcePaths.length === 1) {
+                    const name = sourcePaths[0].split('/').pop() || sourcePaths[0];
+                    window.showSuccess?.(`"${name}" berhasil dipindahkan.`);
+                } else {
+                    window.showSuccess?.(`${okCount} item berhasil dipindahkan${failCount ? `, ${failCount} gagal` : ''}.`);
+                }
+            }
+
+            if (failCount > 0 && okCount === 0) {
+                window.showError?.('Gagal memindahkan item.');
+                return false;
+            }
+
+            // Clear clipboard after cut (one-time operation)
+            clearClipboard();
+
+        } else {
+            window.showWarning?.('Operasi clipboard tidak dikenali.');
+            return false;
+        }
+
+        // Refresh directory to show changes
+        await fetchDirectory(targetPath, { silent: true });
+        return true;
+
+    } catch (error) {
+        debugError('[FileOperations] pasteItems error:', error);
+
+        const processedError = copyErrorHandler(error, {
+            silent: true,
+            context: 'pasteItems'
+        });
+
+        const message = processedError instanceof FileManagerError
+            ? processedError.getUserMessage()
+            : (error instanceof Error ? error.message : 'Gagal menempelkan item.');
+
+        window.showError?.(message);
+        return false;
     }
 }

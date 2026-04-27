@@ -1,0 +1,200 @@
+/**
+ * Skeleton Loading UI
+ * ===================
+ * Placeholder shimmer styles for table rows, grid cards, and mobile items.
+ * Replaces the global spinner overlay during directory loading.
+ */
+
+/* ── Pulse animation ─────────────────────────────────────────────────── */
+@keyframes skeleton-pulse {
+  0%   { opacity: 1; }
+  50%  { opacity: 0.4; }
+  100% { opacity: 1; }
+}
+
+/* ── Base skeleton element ────────────────────────────────────────────── */
+.skeleton-bone {
+  background: var(--border-light, #e5e7eb);
+  border-radius: 4px;
+  animation: skeleton-pulse 1.5s ease-in-out infinite;
+}
+
+[data-theme="dark"] .skeleton-bone {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+/* ── Table skeleton row ───────────────────────────────────────────────── */
+.skeleton-row {
+  pointer-events: none;
+  user-select: none;
+}
+
+.skeleton-row td {
+  padding: 0.625rem 0.75rem;
+  vertical-align: middle;
+}
+
+/* Checkbox placeholder */
+.skeleton-row .skeleton-checkbox {
+  width: 16px;
+  height: 16px;
+  border-radius: 3px;
+}
+
+/* Icon placeholder */
+.skeleton-row .skeleton-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
+  flex-shrink: 0;
+}
+
+/* Name text placeholder */
+.skeleton-row .skeleton-name {
+  height: 14px;
+  border-radius: 3px;
+}
+
+/* Date text placeholder */
+.skeleton-row .skeleton-date {
+  height: 12px;
+  width: 100px;
+  border-radius: 3px;
+}
+
+/* Size text placeholder */
+.skeleton-row .skeleton-size {
+  height: 12px;
+  width: 60px;
+  border-radius: 3px;
+  margin-left: auto;
+}
+
+/* Action dots placeholder */
+.skeleton-row .skeleton-actions {
+  width: 20px;
+  height: 14px;
+  border-radius: 3px;
+}
+
+/* Stagger animation delay for each row */
+.skeleton-row:nth-child(2)  { animation-delay: 0.05s; }
+.skeleton-row:nth-child(3)  { animation-delay: 0.10s; }
+.skeleton-row:nth-child(4)  { animation-delay: 0.15s; }
+.skeleton-row:nth-child(5)  { animation-delay: 0.20s; }
+.skeleton-row:nth-child(6)  { animation-delay: 0.25s; }
+.skeleton-row:nth-child(7)  { animation-delay: 0.30s; }
+.skeleton-row:nth-child(8)  { animation-delay: 0.35s; }
+.skeleton-row:nth-child(9)  { animation-delay: 0.40s; }
+.skeleton-row:nth-child(10) { animation-delay: 0.45s; }
+
+/* Vary name widths for realism */
+.skeleton-row:nth-child(odd)  .skeleton-name { width: 55%; }
+.skeleton-row:nth-child(even) .skeleton-name { width: 40%; }
+.skeleton-row:nth-child(3n)   .skeleton-name { width: 65%; }
+.skeleton-row:nth-child(4n+1) .skeleton-name { width: 48%; }
+
+/* ── Grid skeleton card ───────────────────────────────────────────────── */
+.skeleton-card {
+  pointer-events: none;
+  user-select: none;
+  border-radius: var(--radius-sm, 8px);
+  border: 1px solid var(--border-light, #e5e7eb);
+  background: var(--card, #fff);
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+[data-theme="dark"] .skeleton-card {
+  border-color: rgba(255, 255, 255, 0.06);
+  background: var(--card);
+}
+
+.skeleton-card .skeleton-card-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 10px;
+}
+
+.skeleton-card .skeleton-card-name {
+  height: 13px;
+  width: 70%;
+  border-radius: 3px;
+}
+
+.skeleton-card .skeleton-card-meta {
+  height: 10px;
+  width: 50%;
+  border-radius: 3px;
+}
+
+/* Stagger grid cards */
+.skeleton-card:nth-child(2)  { animation-delay: 0.05s; }
+.skeleton-card:nth-child(3)  { animation-delay: 0.10s; }
+.skeleton-card:nth-child(4)  { animation-delay: 0.15s; }
+.skeleton-card:nth-child(5)  { animation-delay: 0.20s; }
+.skeleton-card:nth-child(6)  { animation-delay: 0.25s; }
+.skeleton-card:nth-child(7)  { animation-delay: 0.30s; }
+.skeleton-card:nth-child(8)  { animation-delay: 0.35s; }
+
+/* Vary card name widths */
+.skeleton-card:nth-child(odd)  .skeleton-card-name { width: 60%; }
+.skeleton-card:nth-child(even) .skeleton-card-name { width: 75%; }
+.skeleton-card:nth-child(3n)   .skeleton-card-name { width: 50%; }
+
+/* ── Mobile skeleton item ─────────────────────────────────────────────── */
+.skeleton-mobile-item {
+  pointer-events: none;
+  user-select: none;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid var(--border-light, #e5e7eb);
+}
+
+[data-theme="dark"] .skeleton-mobile-item {
+  border-bottom-color: rgba(255, 255, 255, 0.06);
+}
+
+.skeleton-mobile-item .skeleton-mobile-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  flex-shrink: 0;
+}
+
+.skeleton-mobile-item .skeleton-mobile-text {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.skeleton-mobile-item .skeleton-mobile-name {
+  height: 13px;
+  border-radius: 3px;
+}
+
+.skeleton-mobile-item .skeleton-mobile-meta {
+  height: 10px;
+  width: 40%;
+  border-radius: 3px;
+}
+
+/* Stagger mobile items */
+.skeleton-mobile-item:nth-child(2)  { animation-delay: 0.05s; }
+.skeleton-mobile-item:nth-child(3)  { animation-delay: 0.10s; }
+.skeleton-mobile-item:nth-child(4)  { animation-delay: 0.15s; }
+.skeleton-mobile-item:nth-child(5)  { animation-delay: 0.20s; }
+.skeleton-mobile-item:nth-child(6)  { animation-delay: 0.25s; }
+.skeleton-mobile-item:nth-child(7)  { animation-delay: 0.30s; }
+.skeleton-mobile-item:nth-child(8)  { animation-delay: 0.35s; }
+
+/* Vary mobile name widths */
+.skeleton-mobile-item:nth-child(odd)  .skeleton-mobile-name { width: 60%; }
+.skeleton-mobile-item:nth-child(even) .skeleton-mobile-name { width: 45%; }
+.skeleton-mobile-item:nth-child(3n)   .skeleton-mobile-name { width: 70%; }

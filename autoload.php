@@ -36,6 +36,7 @@ require_once PROJECT_ROOT . '/app/Handlers/TrashHandler.php';
 require_once PROJECT_ROOT . '/app/Handlers/ArchiveHandler.php';
 require_once PROJECT_ROOT . '/app/Handlers/LogHandler.php';
 require_once PROJECT_ROOT . '/app/Handlers/RawHandler.php';
+require_once PROJECT_ROOT . '/app/Handlers/ThumbnailHandler.php';
 require_once PROJECT_ROOT . '/app/Handlers/SystemHandler.php';
 
 // Load binary setup if needed

@@ -101,6 +101,19 @@ let imagePanState = {
   lastTranslateY: 0
 };
 
+// ============= Image Gallery Navigation State =============
+let galleryState = {
+  images: [],       // Array of { path, name } for all images in current directory
+  currentIndex: -1, // Index of currently viewed image
+  keyHandler: null   // Reference to keyboard handler for cleanup
+};
+
+// ============= Markdown Preview State =============
+let markdownState = {
+  isRendered: false, // true = showing rendered HTML, false = showing CodeMirror
+  rawContent: ''     // Cached raw markdown content
+};
+
 function updateZoomLevel() {
   const zoomLabel = document.getElementById('preview-zoom-level');
   if (zoomLabel) {
@@ -543,8 +556,356 @@ function updateImageCursor() {
   }
 }
 
+// ============= Gallery Navigation Functions =============
+
+/**
+ * Build gallery list from current directory items (accessed via window.getState)
+ * Filters only image files from the current directory listing
+ */
+function buildGalleryList(currentFilePath) {
+  galleryState.images = [];
+  galleryState.currentIndex = -1;
+
+  // Access state.items via window — set by appInitializer.js
+  const items = (typeof window.getState === 'function')
+    ? (window.getState().items || [])
+    : [];
+
+  // Filter image files only
+  const imageExts = PREVIEW_TYPES.image;
+  galleryState.images = items
+    .filter(item => {
+      if (item.type === 'folder' || item.type === 'directory') return false;
+      const ext = getFileExtension(item.name);
+      return imageExts.includes(ext);
+    })
+    .map(item => ({ path: item.path, name: item.name }));
+
+  // Find current image index
+  galleryState.currentIndex = galleryState.images.findIndex(
+    img => img.path === currentFilePath
+  );
+}
+
+/**
+ * Update gallery UI: show/hide nav buttons, update counter
+ */
+function updateGalleryUI() {
+  const prevBtn = document.getElementById('gallery-prev');
+  const nextBtn = document.getElementById('gallery-next');
+  const counter = document.getElementById('gallery-counter');
+
+  const hasMultiple = galleryState.images.length > 1;
+
+  if (prevBtn) {
+    prevBtn.style.display = hasMultiple ? '' : 'none';
+    prevBtn.disabled = galleryState.currentIndex <= 0;
+  }
+  if (nextBtn) {
+    nextBtn.style.display = hasMultiple ? '' : 'none';
+    nextBtn.disabled = galleryState.currentIndex >= galleryState.images.length - 1;
+  }
+  if (counter) {
+    counter.style.display = hasMultiple ? '' : 'none';
+    counter.textContent = `${galleryState.currentIndex + 1} / ${galleryState.images.length}`;
+  }
+}
+
+/**
+ * Navigate to a specific image in the gallery by index
+ */
+function navigateGallery(newIndex) {
+  if (newIndex < 0 || newIndex >= galleryState.images.length) return;
+
+  const target = galleryState.images[newIndex];
+  galleryState.currentIndex = newIndex;
+
+  // Update image source
+  const img = document.getElementById('preview-image');
+  const title = document.getElementById('preview-title');
+  const meta = document.getElementById('preview-meta');
+  const loader = document.getElementById('preview-loader');
+  const openRaw = document.getElementById('preview-open-raw');
+  const downloadBtn = document.getElementById('preview-download');
+  const container = document.getElementById('preview-image-container');
+
+  const rawUrl = `api.php?action=raw&path=${encodeURIComponent(target.path)}`;
+
+  // Update modal state
+  modalState.preview.currentFile = target.path;
+  modalState.preview.previewUrl = rawUrl;
+  modalState.preview.previewName = target.name;
+
+  // Update title
+  if (title) {
+    title.textContent = truncateFilename(target.name, 35);
+    title.title = target.name;
+  }
+  if (meta) meta.textContent = 'Memuat...';
+  if (loader) loader.hidden = false;
+
+  // Update links
+  if (openRaw) openRaw.href = rawUrl;
+  if (downloadBtn) {
+    downloadBtn.href = rawUrl;
+    downloadBtn.download = target.name;
+  }
+
+  // Reset zoom state
+  currentZoom = 100;
+  baseScale = 1;
+  imagePanState = {
+    isPanning: false, startX: 0, startY: 0,
+    translateX: 0, translateY: 0,
+    lastTranslateX: 0, lastTranslateY: 0
+  };
+
+  // Load new image
+  if (img) {
+    img.onload = function () {
+      if (meta) meta.textContent = `${this.naturalWidth} × ${this.naturalHeight} piksel`;
+      if (loader) loader.hidden = true;
+      baseScale = calculateBaseScale(container, this);
+      applyImageTransform(this);
+      updateZoomLevel();
+    };
+    img.onerror = function () {
+      if (meta) meta.textContent = 'Error: Gagal memuat gambar';
+      if (loader) loader.hidden = true;
+    };
+    img.src = rawUrl;
+  }
+
+  updateGalleryUI();
+}
+
+function galleryPrev() {
+  navigateGallery(galleryState.currentIndex - 1);
+}
+
+function galleryNext() {
+  navigateGallery(galleryState.currentIndex + 1);
+}
+
+/**
+ * Setup gallery keyboard navigation (arrow keys)
+ */
+function setupGalleryKeyboard() {
+  // Remove previous handler if exists
+  cleanupGalleryKeyboard();
+
+  galleryState.keyHandler = function (e) {
+    // Only handle when preview overlay is visible and showing an image
+    const overlay = document.getElementById('preview-overlay');
+    if (!overlay || overlay.classList.contains('hidden')) return;
+    if (galleryState.images.length <= 1) return;
+
+    // Don't intercept if user is typing in an input/textarea
+    if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+
+    if (e.key === 'ArrowLeft') {
+      e.preventDefault();
+      galleryPrev();
+    } else if (e.key === 'ArrowRight') {
+      e.preventDefault();
+      galleryNext();
+    }
+  };
+
+  document.addEventListener('keydown', galleryState.keyHandler);
+}
+
+function cleanupGalleryKeyboard() {
+  if (galleryState.keyHandler) {
+    document.removeEventListener('keydown', galleryState.keyHandler);
+    galleryState.keyHandler = null;
+  }
+}
+
+// ============= Markdown Preview Functions =============
+
+/**
+ * Simple markdown to HTML converter (no external dependencies)
+ * Handles: headings, bold, italic, code blocks, inline code, links, images,
+ * lists (ordered/unordered), blockquotes, horizontal rules, tables
+ */
+function renderMarkdownToHtml(md) {
+  let html = md;
+
+  // Escape HTML entities first (but preserve code blocks)
+  const codeBlocks = [];
+  // Extract fenced code blocks
+  html = html.replace(/```(\w*)\n([\s\S]*?)```/g, (match, lang, code) => {
+    const idx = codeBlocks.length;
+    codeBlocks.push(`<pre class="md-code-block"><code class="md-lang-${lang || 'text'}">${escapeHtml(code.trimEnd())}</code></pre>`);
+    return `%%CODEBLOCK_${idx}%%`;
+  });
+
+  // Extract inline code
+  const inlineCodes = [];
+  html = html.replace(/`([^`]+)`/g, (match, code) => {
+    const idx = inlineCodes.length;
+    inlineCodes.push(`<code class="md-inline-code">${escapeHtml(code)}</code>`);
+    return `%%INLINECODE_${idx}%%`;
+  });
+
+  // Now escape remaining HTML
+  html = escapeHtml(html);
+
+  // Restore code blocks and inline codes (they were already escaped)
+  codeBlocks.forEach((block, i) => {
+    html = html.replace(`%%CODEBLOCK_${i}%%`, block);
+  });
+  inlineCodes.forEach((code, i) => {
+    html = html.replace(`%%INLINECODE_${i}%%`, code);
+  });
+
+  // Headings (must be at start of line)
+  html = html.replace(/^######\s+(.+)$/gm, '<h6>$1</h6>');
+  html = html.replace(/^#####\s+(.+)$/gm, '<h5>$1</h5>');
+  html = html.replace(/^####\s+(.+)$/gm, '<h4>$1</h4>');
+  html = html.replace(/^###\s+(.+)$/gm, '<h3>$1</h3>');
+  html = html.replace(/^##\s+(.+)$/gm, '<h2>$1</h2>');
+  html = html.replace(/^#\s+(.+)$/gm, '<h1>$1</h1>');
+
+  // Horizontal rules
+  html = html.replace(/^(---|\*\*\*|___)\s*$/gm, '<hr>');
+
+  // Bold and italic
+  html = html.replace(/\*\*\*(.+?)\*\*\*/g, '<strong><em>$1</em></strong>');
+  html = html.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+  html = html.replace(/\*(.+?)\*/g, '<em>$1</em>');
+  html = html.replace(/~~(.+?)~~/g, '<del>$1</del>');
+
+  // Images (before links to avoid conflict)
+  html = html.replace(/!\[([^\]]*)\]\(([^)]+)\)/g, '<img src="$2" alt="$1" class="md-image">');
+
+  // Links
+  html = html.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>');
+
+  // Blockquotes
+  html = html.replace(/^&gt;\s+(.+)$/gm, '<blockquote>$1</blockquote>');
+  // Merge consecutive blockquotes
+  html = html.replace(/<\/blockquote>\n<blockquote>/g, '\n');
+
+  // Unordered lists
+  html = html.replace(/^[\s]*[-*+]\s+(.+)$/gm, '<li>$1</li>');
+  html = html.replace(/((?:<li>.*<\/li>\n?)+)/g, '<ul>$1</ul>');
+
+  // Ordered lists
+  html = html.replace(/^[\s]*\d+\.\s+(.+)$/gm, '<oli>$1</oli>');
+  html = html.replace(/((?:<oli>.*<\/oli>\n?)+)/g, (match) => {
+    return '<ol>' + match.replace(/<\/?oli>/g, (tag) => tag.replace('oli', 'li')) + '</ol>';
+  });
+
+  // Tables
+  html = html.replace(/^(\|.+\|)\n(\|[-:\s|]+\|)\n((?:\|.+\|\n?)*)/gm, (match, header, separator, body) => {
+    const headers = header.split('|').filter(c => c.trim()).map(c => `<th>${c.trim()}</th>`).join('');
+    const rows = body.trim().split('\n').map(row => {
+      const cells = row.split('|').filter(c => c.trim()).map(c => `<td>${c.trim()}</td>`).join('');
+      return `<tr>${cells}</tr>`;
+    }).join('');
+    return `<table class="md-table"><thead><tr>${headers}</tr></thead><tbody>${rows}</tbody></table>`;
+  });
+
+  // Paragraphs: wrap remaining text blocks
+  html = html.replace(/^(?!<[a-z/])((?:.+\n?)+)/gm, (match) => {
+    const trimmed = match.trim();
+    if (!trimmed) return '';
+    return `<p>${trimmed}</p>`;
+  });
+
+  // Clean up extra newlines
+  html = html.replace(/\n/g, '<br>');
+  html = html.replace(/<br><\/p>/g, '</p>');
+  html = html.replace(/<p><br>/g, '<p>');
+  html = html.replace(/<br><h/g, '<h');
+  html = html.replace(/<\/h([1-6])><br>/g, '</h$1>');
+  html = html.replace(/<br><ul>/g, '<ul>');
+  html = html.replace(/<\/ul><br>/g, '</ul>');
+  html = html.replace(/<br><ol>/g, '<ol>');
+  html = html.replace(/<\/ol><br>/g, '</ol>');
+  html = html.replace(/<br><hr>/g, '<hr>');
+  html = html.replace(/<hr><br>/g, '<hr>');
+  html = html.replace(/<br><table/g, '<table');
+  html = html.replace(/<\/table><br>/g, '</table>');
+  html = html.replace(/<br><blockquote>/g, '<blockquote>');
+  html = html.replace(/<\/blockquote><br>/g, '</blockquote>');
+  html = html.replace(/<br><pre/g, '<pre');
+  html = html.replace(/<\/pre><br>/g, '</pre>');
+
+  return html;
+}
+
+/**
+ * Toggle between CodeMirror raw editor and rendered markdown preview
+ */
+function toggleMarkdownPreview() {
+  const editorWrapper = document.getElementById('preview-editor-wrapper');
+  const mdWrapper = document.getElementById('preview-markdown-wrapper');
+  const mdRendered = document.getElementById('markdown-rendered');
+  const toggleBtn = document.getElementById('previewMdToggle');
+  const toggleLabel = toggleBtn?.querySelector('.text-xs');
+
+  if (!editorWrapper || !mdWrapper || !mdRendered) return;
+
+  markdownState.isRendered = !markdownState.isRendered;
+
+  if (markdownState.isRendered) {
+    // Switch to rendered view
+    let content = '';
+    if (window.CodeMirrorEditor && window.CodeMirrorEditor.isInitialized()) {
+      content = window.CodeMirrorEditor.getContent();
+    } else {
+      const editor = document.getElementById('preview-editor');
+      content = editor ? editor.value : '';
+    }
+
+    mdRendered.innerHTML = renderMarkdownToHtml(content);
+    editorWrapper.style.display = 'none';
+    mdWrapper.style.display = 'flex';
+
+    if (toggleBtn) toggleBtn.setAttribute('aria-pressed', 'true');
+    if (toggleLabel) toggleLabel.textContent = 'Editor';
+  } else {
+    // Switch back to editor
+    mdWrapper.style.display = 'none';
+    editorWrapper.style.display = 'flex';
+
+    if (toggleBtn) toggleBtn.setAttribute('aria-pressed', 'false');
+    if (toggleLabel) toggleLabel.textContent = 'Preview';
+  }
+}
+
+// ============= Enhanced Fullscreen =============
+
+function togglePreviewFullscreenEnhanced() {
+  const overlay = document.getElementById('preview-overlay');
+  const expandIcon = document.getElementById('fullscreen-icon-expand');
+  const collapseIcon = document.getElementById('fullscreen-icon-collapse');
+  const btn = document.getElementById('previewFullscreen');
+
+  if (!overlay) return;
+
+  if (document.fullscreenElement) {
+    document.exitFullscreen();
+    if (expandIcon) expandIcon.style.display = '';
+    if (collapseIcon) collapseIcon.style.display = 'none';
+    if (btn) btn.setAttribute('aria-pressed', 'false');
+    return;
+  }
+
+  if (overlay.requestFullscreen) {
+    overlay.requestFullscreen().then(() => {
+      if (expandIcon) expandIcon.style.display = 'none';
+      if (collapseIcon) collapseIcon.style.display = '';
+      if (btn) btn.setAttribute('aria-pressed', 'true');
+    }).catch(() => showError('Tidak bisa masuk ke mode layar penuh'));
+  }
+}
+
 function hideAllPreviewWrappers() {
-  const wrappers = ['preview-editor-wrapper', 'preview-image-wrapper', 'preview-video-wrapper', 'preview-audio-wrapper', 'preview-pdf-wrapper'];
+  const wrappers = ['preview-editor-wrapper', 'preview-image-wrapper', 'preview-video-wrapper', 'preview-audio-wrapper', 'preview-pdf-wrapper', 'preview-markdown-wrapper'];
   wrappers.forEach(id => {
     const el = document.getElementById(id);
     if (el) {
@@ -583,6 +944,20 @@ function showPreviewWrapper(type) {
   const wordWrapBtn = document.getElementById('previewWordWrapToggle');
   if (wordWrapBtn) {
     wordWrapBtn.style.display = type === 'text' ? '' : 'none';
+  }
+
+  // Show markdown toggle only for .md files
+  const mdToggle = document.getElementById('previewMdToggle');
+  if (mdToggle) {
+    const fileName = modalState.preview.previewName || '';
+    const isMd = getFileExtension(fileName) === 'md';
+    mdToggle.style.display = (type === 'text' && isMd) ? '' : 'none';
+  }
+
+  // Show fullscreen button for all types
+  const fullscreenBtn = document.getElementById('previewFullscreen');
+  if (fullscreenBtn) {
+    fullscreenBtn.style.display = '';
   }
 
   // Toggle audio mode class on dialog for compact size
@@ -722,6 +1097,11 @@ function openPreviewModal(filePath, fileName) {
       lastTranslateY: 0
     };
 
+    // Build gallery list and setup navigation
+    buildGalleryList(filePath);
+    updateGalleryUI();
+    setupGalleryKeyboard();
+
     img.onload = function () {
       meta.textContent = `${this.naturalWidth} × ${this.naturalHeight} piksel`;
       loader.hidden = true;
@@ -841,6 +1221,33 @@ function closePreviewModal() {
 
   // Hide all wrappers
   hideAllPreviewWrappers();
+
+  // Cleanup gallery state
+  cleanupGalleryKeyboard();
+  galleryState.images = [];
+  galleryState.currentIndex = -1;
+
+  // Reset gallery nav UI
+  const galleryPrevBtn = document.getElementById('gallery-prev');
+  const galleryNextBtn = document.getElementById('gallery-next');
+  const galleryCounter = document.getElementById('gallery-counter');
+  if (galleryPrevBtn) galleryPrevBtn.style.display = 'none';
+  if (galleryNextBtn) galleryNextBtn.style.display = 'none';
+  if (galleryCounter) galleryCounter.style.display = 'none';
+
+  // Reset markdown state
+  markdownState.isRendered = false;
+  markdownState.rawContent = '';
+  const mdToggle = document.getElementById('previewMdToggle');
+  const mdLabel = mdToggle?.querySelector('.text-xs');
+  if (mdToggle) mdToggle.setAttribute('aria-pressed', 'false');
+  if (mdLabel) mdLabel.textContent = 'Preview';
+
+  // Reset fullscreen icons
+  const expandIcon = document.getElementById('fullscreen-icon-expand');
+  const collapseIcon = document.getElementById('fullscreen-icon-collapse');
+  if (expandIcon) expandIcon.style.display = '';
+  if (collapseIcon) collapseIcon.style.display = 'none';
 
   modalState.preview.currentFile = null;
   modalState.preview.isDirty = false;
@@ -1264,8 +1671,32 @@ document.addEventListener('DOMContentLoaded', () => {
     showSuccess('Konten disalin ke clipboard');
   });
   document.getElementById('preview-share')?.addEventListener('click', sharePreviewLink);
-  document.getElementById('preview-fullscreen')?.addEventListener('click', togglePreviewFullscreen);
+  document.getElementById('previewFullscreen')?.addEventListener('click', togglePreviewFullscreenEnhanced);
+  document.getElementById('preview-fullscreen')?.addEventListener('click', togglePreviewFullscreenEnhanced);
   document.getElementById('preview-more')?.addEventListener('click', handlePreviewMore);
+
+  // Markdown toggle button
+  document.getElementById('previewMdToggle')?.addEventListener('click', toggleMarkdownPreview);
+
+  // Gallery navigation buttons
+  document.getElementById('gallery-prev')?.addEventListener('click', galleryPrev);
+  document.getElementById('gallery-next')?.addEventListener('click', galleryNext);
+
+  // Listen for fullscreen change to update icons
+  document.addEventListener('fullscreenchange', () => {
+    const expandIcon = document.getElementById('fullscreen-icon-expand');
+    const collapseIcon = document.getElementById('fullscreen-icon-collapse');
+    const btn = document.getElementById('previewFullscreen');
+    if (document.fullscreenElement) {
+      if (expandIcon) expandIcon.style.display = 'none';
+      if (collapseIcon) collapseIcon.style.display = '';
+      if (btn) btn.setAttribute('aria-pressed', 'true');
+    } else {
+      if (expandIcon) expandIcon.style.display = '';
+      if (collapseIcon) collapseIcon.style.display = 'none';
+      if (btn) btn.setAttribute('aria-pressed', 'false');
+    }
+  });
   attachOverlayBackdropDismiss('preview-overlay', closePreviewModal);
 
   // Fallback textarea input handler (when CodeMirror fails to load)
@@ -1565,6 +1996,139 @@ let detailsState = {
   actionCallback: null
 };
 
+/**
+ * Format a unix timestamp to a readable Indonesian date string.
+ * @param {number|string|null} timestamp
+ * @returns {string}
+ */
+function formatTimestamp(timestamp) {
+  if (!timestamp) return '-';
+  const ts = typeof timestamp === 'string' ? parseInt(timestamp, 10) : timestamp;
+  if (isNaN(ts)) return '-';
+  const date = new Date(ts * 1000);
+  return date.toLocaleDateString('id-ID', {
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit'
+  });
+}
+
+/**
+ * Populate the details overlay with extended metadata from the API.
+ * @param {Object} details - Extended details from the API
+ */
+function populateExtendedDetails(details) {
+  // MIME type
+  const mimeEl = document.getElementById('details-mime');
+  const mimeRow = document.getElementById('details-mime-row');
+  if (mimeEl && details.mime) {
+    mimeEl.textContent = details.mime;
+  }
+  if (mimeRow) {
+    mimeRow.style.display = '';
+  }
+
+  // Created date
+  const createdEl = document.getElementById('details-created');
+  const createdRow = document.getElementById('details-created-row');
+  if (createdEl) {
+    createdEl.textContent = formatTimestamp(details.created);
+  }
+  if (createdRow) {
+    createdRow.style.display = details.created ? '' : 'none';
+  }
+
+  // Permissions
+  const permsEl = document.getElementById('details-permissions');
+  const permsRow = document.getElementById('details-permissions-row');
+  if (permsEl && details.permissions) {
+    const p = details.permissions;
+    const readBadge = p.readable
+      ? '<span class="details-perm-badge details-perm-badge-ok">✓ Baca</span>'
+      : '<span class="details-perm-badge details-perm-badge-no">✗ Baca</span>';
+    const writeBadge = p.writable
+      ? '<span class="details-perm-badge details-perm-badge-ok">✓ Tulis</span>'
+      : '<span class="details-perm-badge details-perm-badge-no">✗ Tulis</span>';
+    const octal = p.octal ? `<span class="details-perm-octal">(${p.octal})</span>` : '';
+    permsEl.innerHTML = `<span class="details-permissions-badges">${readBadge}${writeBadge} ${octal}</span>`;
+  }
+  if (permsRow) {
+    permsRow.style.display = details.permissions ? '' : 'none';
+  }
+
+  // Folder children count
+  const childrenEl = document.getElementById('details-children');
+  const childrenRow = document.getElementById('details-children-row');
+  const folderSizeRow = document.getElementById('details-folder-size-row');
+  if (details.type === 'folder' && details.children) {
+    const c = details.children;
+    if (childrenEl) {
+      const parts = [];
+      if (c.folders > 0) parts.push(`${c.folders} folder`);
+      if (c.files > 0) parts.push(`${c.files} file`);
+      childrenEl.textContent = parts.length > 0 ? parts.join(', ') : 'Kosong';
+    }
+    if (childrenRow) childrenRow.style.display = '';
+    if (folderSizeRow) folderSizeRow.style.display = '';
+
+    // Setup calculate size button
+    setupCalcSizeButton(details.path);
+  } else {
+    if (childrenRow) childrenRow.style.display = 'none';
+    if (folderSizeRow) folderSizeRow.style.display = 'none';
+  }
+}
+
+/**
+ * Setup the "Calculate Size" button for folders.
+ * @param {string} folderPath
+ */
+function setupCalcSizeButton(folderPath) {
+  const btn = document.getElementById('details-calc-size-btn');
+  const sizeEl = document.getElementById('details-folder-size');
+  if (!btn || !sizeEl) return;
+
+  // Reset button state
+  btn.disabled = false;
+  btn.innerHTML = `
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-3.5 h-3.5">
+      <circle cx="12" cy="12" r="10"/>
+      <path d="M12 6v6l4 2"/>
+    </svg>
+    Hitung Ukuran`;
+
+  // Remove old listener by cloning
+  const newBtn = btn.cloneNode(true);
+  btn.parentNode.replaceChild(newBtn, btn);
+  newBtn.id = 'details-calc-size-btn';
+
+  newBtn.addEventListener('click', async () => {
+    newBtn.disabled = true;
+    newBtn.innerHTML = `
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-3.5 h-3.5 details-calc-spinner">
+        <circle cx="12" cy="12" r="10"/>
+        <path d="M12 6v6l4 2"/>
+      </svg>
+      Menghitung...`;
+
+    try {
+      const response = await fetch(`api.php?action=details&path=${encodeURIComponent(folderPath)}&calculate_size=1`);
+      const data = await response.json();
+      if (data.success && data.details.folderSize) {
+        const fs = data.details.folderSize;
+        sizeEl.innerHTML = `<span class="details-folder-summary">${formatFileSize(fs.size)} <span class="details-perm-octal">(${fs.files} file, ${fs.folders} folder)</span></span>`;
+      } else {
+        sizeEl.innerHTML = '<span class="details-perm-octal">Gagal menghitung</span>';
+      }
+    } catch (err) {
+      console.error('[details] Failed to calculate folder size:', err);
+      sizeEl.innerHTML = '<span class="details-perm-octal">Error</span>';
+    }
+  });
+}
+
 function openDetailsOverlay(item, onAction = null) {
 
   const overlay = document.getElementById('details-overlay');
@@ -1578,7 +2142,7 @@ function openDetailsOverlay(item, onAction = null) {
   detailsState.item = item;
   detailsState.actionCallback = onAction;
 
-  // Update details info
+  // Update details info with basic data first (instant)
   const nameEl = document.getElementById('details-name');
   const typeEl = document.getElementById('details-type');
   const modifiedEl = document.getElementById('details-modified');
@@ -1599,36 +2163,18 @@ function openDetailsOverlay(item, onAction = null) {
   }
 
   if (modifiedEl) {
-    // Format timestamp to readable date
-    let dateValue = item.modified || item.date || item.mtime;
-    if (dateValue) {
-      // Check if it's a unix timestamp (number or numeric string)
-      if (typeof dateValue === 'number' || /^\d+$/.test(dateValue)) {
-        const timestamp = parseInt(dateValue, 10);
-        // Unix timestamp is in seconds, JS Date expects milliseconds
-        const date = new Date(timestamp * 1000);
-        dateValue = date.toLocaleDateString('id-ID', {
-          day: 'numeric',
-          month: 'long',
-          year: 'numeric',
-          hour: '2-digit',
-          minute: '2-digit'
-        });
-      }
-    }
-    modifiedEl.textContent = dateValue || '-';
+    modifiedEl.textContent = formatTimestamp(item.modified || item.date || item.mtime);
   }
 
   if (sizeEl) {
     if (item.type === 'folder') {
       sizeEl.textContent = '-';
     } else {
-      // item.size from API is in bytes (number), format it properly
       const sizeValue = item.size || item.sizeBytes || 0;
       if (typeof sizeValue === 'number') {
         sizeEl.textContent = formatFileSize(sizeValue);
       } else {
-        sizeEl.textContent = sizeValue; // Already formatted string
+        sizeEl.textContent = sizeValue;
       }
     }
   }
@@ -1661,7 +2207,19 @@ function openDetailsOverlay(item, onAction = null) {
     }
   }
 
-  // Show overlay
+  // Reset extended fields to loading state
+  const mimeEl = document.getElementById('details-mime');
+  const createdEl = document.getElementById('details-created');
+  const permsEl = document.getElementById('details-permissions');
+  const childrenRow = document.getElementById('details-children-row');
+  const folderSizeRow = document.getElementById('details-folder-size-row');
+  if (mimeEl) mimeEl.textContent = '...';
+  if (createdEl) createdEl.textContent = '...';
+  if (permsEl) permsEl.textContent = '...';
+  if (childrenRow) childrenRow.style.display = 'none';
+  if (folderSizeRow) folderSizeRow.style.display = 'none';
+
+  // Show overlay immediately with basic data
   overlay.hidden = false;
   overlay.classList.remove('hidden');
   overlay.classList.add('visible');
@@ -1672,6 +2230,23 @@ function openDetailsOverlay(item, onAction = null) {
   setTimeout(() => {
     document.getElementById('details-close-btn')?.focus();
   }, 100);
+
+  // Fetch extended details from API (async, fills in after overlay is visible)
+  if (item.path) {
+    fetch(`api.php?action=details&path=${encodeURIComponent(item.path)}`)
+      .then(res => res.json())
+      .then(data => {
+        if (data.success && data.details) {
+          populateExtendedDetails(data.details);
+        }
+      })
+      .catch(err => {
+        console.warn('[details] Failed to fetch extended details:', err);
+        if (mimeEl) mimeEl.textContent = '-';
+        if (createdEl) createdEl.textContent = '-';
+        if (permsEl) permsEl.textContent = '-';
+      });
+  }
 }
 
 function closeDetailsOverlay() {
@@ -1818,3 +2393,7 @@ window.closeDownloadOverlay = closeDownloadOverlay;
 window.confirmDownload = confirmDownload;
 window.openDetailsOverlay = openDetailsOverlay;
 window.closeDetailsOverlay = closeDetailsOverlay;
+window.galleryPrev = galleryPrev;
+window.galleryNext = galleryNext;
+window.toggleMarkdownPreview = toggleMarkdownPreview;
+window.togglePreviewFullscreen = togglePreviewFullscreenEnhanced;

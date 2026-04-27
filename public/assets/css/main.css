@@ -42,6 +42,9 @@
 @import 'components/icons.css';
 @import 'components/context-menu.css';
 @import 'components/loader.css';
+@import 'components/skeleton.css';
+@import 'components/thumbnails.css';
+@import 'components/upload-modal.css';
 @import 'components/navigation.css';
 @import 'components/toast.css';
 @import 'components/enhanced-ui.css';

@@ -90,17 +90,44 @@ function createGridItem(item, state, params) {
 
     const iconEl = document.createElement('div');
     iconEl.classList.add('grid-icon');
-    iconEl.style.backgroundColor = iconColors.backgroundColor;
-    iconEl.style.color = iconColors.color;
 
-    if (iconInfo && iconInfo.svg) {
-        if (typeof iconInfo.svg === 'object' && iconInfo.svg.nodeType === 1) {
-            const svgClone = iconInfo.svg.cloneNode(true);
-            svgClone.style.width = '28px';
-            svgClone.style.height = '28px';
-            iconEl.appendChild(svgClone);
-        } else if (typeof iconInfo.svg === 'string') {
-            iconEl.innerHTML = iconInfo.svg;
+    if (item.has_thumbnail) {
+        iconEl.classList.add('grid-icon-thumbnail');
+        iconEl.style.backgroundColor = 'transparent';
+        iconEl.style.overflow = 'hidden';
+        const thumbImg = document.createElement('img');
+        thumbImg.classList.add('grid-thumbnail');
+        thumbImg.src = `api.php?action=thumbnail&path=${encodeURIComponent(item.path)}`;
+        thumbImg.alt = item.name;
+        thumbImg.loading = 'lazy';
+        thumbImg.decoding = 'async';
+        thumbImg.addEventListener('error', () => {
+            thumbImg.remove();
+            iconEl.classList.remove('grid-icon-thumbnail');
+            iconEl.style.backgroundColor = iconColors.backgroundColor;
+            iconEl.style.color = iconColors.color;
+            if (iconInfo && iconInfo.svg) {
+                if (typeof iconInfo.svg === 'object' && iconInfo.svg.nodeType === 1) {
+                    iconEl.appendChild(iconInfo.svg.cloneNode(true));
+                } else if (typeof iconInfo.svg === 'string') {
+                    iconEl.innerHTML = iconInfo.svg;
+                }
+            }
+        });
+        iconEl.appendChild(thumbImg);
+    } else {
+        iconEl.style.backgroundColor = iconColors.backgroundColor;
+        iconEl.style.color = iconColors.color;
+
+        if (iconInfo && iconInfo.svg) {
+            if (typeof iconInfo.svg === 'object' && iconInfo.svg.nodeType === 1) {
+                const svgClone = iconInfo.svg.cloneNode(true);
+                svgClone.style.width = '28px';
+                svgClone.style.height = '28px';
+                iconEl.appendChild(svgClone);
+            } else if (typeof iconInfo.svg === 'string') {
+                iconEl.innerHTML = iconInfo.svg;
+            }
         }
     }
     div.appendChild(iconEl);
