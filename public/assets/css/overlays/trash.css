@@ -135,6 +135,36 @@
 .trash-table {
   width: 100%;
   font-size: 0.75rem;
+  table-layout: fixed;
+}
+
+/* Fixed column widths for trash table */
+.trash-table th:nth-child(1),
+.trash-table td:nth-child(1) { width: 25%; } /* Item */
+
+.trash-table th:nth-child(2),
+.trash-table td:nth-child(2) { width: 10%; } /* Type */
+
+.trash-table th:nth-child(3),
+.trash-table td:nth-child(3) { width: 18%; } /* Deleted */
+
+.trash-table th:nth-child(4),
+.trash-table td:nth-child(4) { width: 30%; } /* Original Path */
+
+.trash-table th:nth-child(5),
+.trash-table td:nth-child(5) { width: 17%; } /* Actions */
+
+/* Truncate text in trash table cells */
+.trash-table td {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 0;
+  box-sizing: border-box;
+}
+
+.trash-table th {
+  white-space: nowrap;
 }
 
 .trash-table-head {
@@ -189,13 +219,16 @@
   border-radius: 0 0 0.5rem 0.5rem;
 }
 
+.trash-actions-left,
+.trash-actions-right {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 0.5rem;
+}
+
 @media (min-width: 640px) {
   .trash-actions {
-    flex-direction: row;
-  }
-
-  .trash-actions-left,
-  .trash-actions-right {
     flex-direction: row;
   }
 }

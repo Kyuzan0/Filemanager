@@ -1817,4 +1817,4 @@ window.openDownloadOverlay = openDownloadOverlay;
 window.closeDownloadOverlay = closeDownloadOverlay;
 window.confirmDownload = confirmDownload;
 window.openDetailsOverlay = openDetailsOverlay;
-window.closeDetailsOverlay = c                                                                        
+window.closeDetailsOverlay = closeDetailsOverlay;

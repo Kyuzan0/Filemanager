@@ -13,6 +13,12 @@ table {
   table-layout: fixed;
 }
 
+/* Make file table fill available card space so 10 items have no empty gap */
+#fileTable {
+  flex: 1;
+  height: 100%;
+}
+
 th,
 td {
   padding: 12px;

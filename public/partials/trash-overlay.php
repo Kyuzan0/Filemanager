@@ -66,7 +66,7 @@
         </div>
         <footer
             class="trash-actions flex-shrink-0">
-            <div class="trash-actions-left d-flex flex-col gap-2">
+            <div class="trash-actions-left">
                 <button type="button"
                     class="trash-button danger"
                     id="trash-empty-btn">
@@ -86,7 +86,7 @@
                     <span>Cleanup Old</span>
                 </button>
             </div>
-            <div class="trash-actions-right d-flex flex-col gap-2">
+            <div class="trash-actions-right">
                 <button type="button"
                     class="trash-button outline"
                     id="trash-refresh">

@@ -126,3 +126,19 @@
 [data-theme="dark"] .spinner-text {
   color: var(--text-secondary);
 }
+
+/* Generic spinner (used by modals.js for inline loading states) */
+.spinner {
+  width: 2rem;
+  height: 2rem;
+  margin: 0 auto 0.5rem;
+  border: 3px solid #e5e7eb;
+  border-top-color: var(--accent, #2563eb);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+[data-theme="dark"] .spinner {
+  border-color: rgba(255, 255, 255, 0.1);
+  border-top-color: var(--accent, #60a5fa);
+}

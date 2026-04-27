@@ -46,7 +46,7 @@ require_once dirname(__DIR__) . '/bootstrap.php';
         }
     </style>
     <!-- Modular CSS - Main entry point -->
-    <link rel="stylesheet" href="assets/css/main.css">
+    <link rel="stylesheet" href="assets/css/main.css?v=<?php echo time(); ?>">
     <!-- RemixIcon CDN -->
     <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
     <!-- Component-specific styles -->
@@ -293,7 +293,6 @@ require_once dirname(__DIR__) . '/bootstrap.php';
                         </button>
                     </div>
                 </div>
-                </div>
             </section>
 
             <!-- TABLE CARD -->
@@ -442,9 +441,9 @@ require_once dirname(__DIR__) . '/bootstrap.php';
     <script src="assets/js/vendor/codemirror.min.js"></script>
     <!-- CodeMirror Editor Integration -->
     <script src="assets/js/modules/codemirror-editor.js"></script>
-    <script src="assets/js/enhanced-ui.js"></script>
-    <script src="assets/js/modals-handler.js"></script>
-    <script src="assets/js/log-handler.js"></script>
+    <script src="assets/js/enhanced-ui.js?v=<?php echo time(); ?>"></script>
+    <script src="assets/js/modals-handler.js?v=<?php echo time(); ?>"></script>
+    <script src="assets/js/log-handler.js?v=<?php echo time(); ?>"></script>
     <!-- Word Wrap Toggle Module -->
     <script type="module" src="assets/js/modules/wordWrapToggle.js"></script>
     <!-- SPA Router -->
