@@ -499,3 +499,76 @@
     justify-content: flex-end;
   }
 }
+
+/* ============================================================================
+   Language Settings
+   ============================================================================ */
+
+.language-option {
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--border-light, #e2e8f0);
+  border-radius: 0.5rem;
+  transition: border-color 0.15s, background-color 0.15s;
+}
+
+.language-option:hover {
+  border-color: var(--accent, #3b82f6);
+  background-color: var(--bg-hover, #f8fafc);
+}
+
+.language-option--active {
+  border-color: var(--accent, #3b82f6);
+  background-color: var(--accent-light, #eff6ff);
+}
+
+.language-radio {
+  accent-color: var(--accent, #3b82f6);
+  width: 1rem;
+  height: 1rem;
+  flex-shrink: 0;
+}
+
+.language-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+  flex: 1;
+}
+
+.language-native {
+  font-size: 0.9375rem;
+  color: var(--text-primary, #1e293b);
+}
+
+.language-name {
+  font-size: 0.8125rem;
+  color: var(--text-muted, #94a3b8);
+}
+
+.language-check {
+  color: var(--accent, #3b82f6);
+  font-weight: 600;
+  font-size: 1rem;
+  flex-shrink: 0;
+}
+
+/* Dark mode */
+[data-theme="dark"] .language-option {
+  border-color: var(--border-dark, #334155);
+}
+
+[data-theme="dark"] .language-option:hover {
+  background-color: var(--bg-hover-dark, #1e293b);
+}
+
+[data-theme="dark"] .language-option--active {
+  background-color: rgba(59, 130, 246, 0.1);
+}
+
+[data-theme="dark"] .language-native {
+  color: var(--text-primary-dark, #f1f5f9);
+}
+
+[data-theme="dark"] .language-name {
+  color: var(--text-muted-dark, #64748b);
+}

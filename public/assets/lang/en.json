@@ -1,0 +1,377 @@
+{
+    "app": {
+        "title": "File Manager",
+        "loading": "Loading data...",
+        "initializing": "Initializing..."
+    },
+
+    "errors": {
+        "fetchFailed": "Failed to fetch data",
+        "deleteFailed": "Failed to delete item",
+        "moveFailed": "Failed to move item",
+        "renameFailed": "Failed to rename item",
+        "createFailed": "Failed to create item",
+        "uploadFailed": "Failed to upload file",
+        "saveFailed": "Failed to save changes",
+        "copyFailed": "Failed to copy path",
+        "copyItemsFailed": "Failed to copy items",
+        "pasteFailed": "Failed to paste items",
+        "bulkRenameFailed": "Failed to perform bulk rename",
+        "searchFailed": "Failed to perform search",
+        "shareFailed": "Failed to create share link",
+        "undoFailed": "Failed to undo operation",
+        "generic": "An error occurred"
+    },
+
+    "success": {
+        "itemDeleted": "Item deleted successfully",
+        "itemMoved": "Item moved successfully",
+        "itemRenamed": "Item renamed successfully",
+        "itemCreated": "Item created successfully",
+        "fileUploaded": "File uploaded",
+        "changesSaved": "Changes saved",
+        "pathCopied": "Path copied to clipboard",
+        "itemsCopied": "Items copied successfully",
+        "itemsPasted": "Items pasted successfully",
+        "itemsBulkRenamed": "Items renamed successfully",
+        "shareCreated": "Share link created successfully",
+        "shareDeleted": "Share link deleted successfully",
+        "undoSuccess": "Operation undone",
+        "languageChanged": "Language changed successfully"
+    },
+
+    "actions": {
+        "create": "Create",
+        "delete": "Delete",
+        "move": "Move",
+        "rename": "Rename",
+        "upload": "Upload",
+        "download": "Download",
+        "read": "Read",
+        "copy": "Copy",
+        "cut": "Cut",
+        "paste": "Paste",
+        "open": "Open",
+        "close": "Close",
+        "cancel": "Cancel",
+        "save": "Save",
+        "apply": "Apply",
+        "confirm": "Confirm",
+        "refresh": "Refresh",
+        "search": "Search",
+        "share": "Share",
+        "undo": "Undo",
+        "selectAll": "Select All",
+        "deselectAll": "Deselect All",
+        "unknown": "Unknown"
+    },
+
+    "types": {
+        "file": "File",
+        "folder": "Folder",
+        "unknown": "Unknown"
+    },
+
+    "contextMenu": {
+        "open": "Open",
+        "cut": "Cut",
+        "copy": "Copy",
+        "paste": "Paste",
+        "rename": "Rename",
+        "bulkRename": "Bulk Rename",
+        "move": "Move to...",
+        "download": "Download",
+        "copyPath": "Copy Path",
+        "share": "Share",
+        "details": "Details",
+        "delete": "Delete"
+    },
+
+    "shortcuts": {
+        "copyItems": "Copy selected items",
+        "cutItems": "Cut selected items",
+        "pasteItems": "Paste items",
+        "deleteItems": "Delete selected items",
+        "renameItem": "Rename item",
+        "selectAll": "Select all items",
+        "deselectAll": "Deselect all",
+        "downloadItem": "Download selected item",
+        "goUp": "Go to parent folder",
+        "goBack": "Go back",
+        "openItem": "Open item",
+        "newFile": "Create new file",
+        "newFolder": "Create new folder",
+        "search": "Search / filter",
+        "refresh": "Refresh",
+        "showHelp": "Show keyboard shortcuts",
+        "undo": "Undo last operation",
+        "contentSearch": "Search in file contents",
+        "splitPane": "Toggle split pane",
+        "commandPalette": "Open command palette"
+    },
+
+    "commandPalette": {
+        "placeholder": "Type a command or file name...",
+        "noResults": "No results found",
+        "fileMode": "File Mode",
+        "commandMode": "Command Mode",
+        "categories": {
+            "fileOperations": "File Operations",
+            "create": "Create",
+            "navigation": "Navigation",
+            "views": "Views",
+            "upload": "Upload",
+            "settings": "Settings",
+            "layout": "Layout",
+            "account": "Account"
+        },
+        "commands": {
+            "copy": "Copy selected items",
+            "cut": "Cut selected items",
+            "paste": "Paste items from clipboard",
+            "rename": "Rename selected item",
+            "delete": "Delete selected items",
+            "download": "Download selected item",
+            "details": "View item details",
+            "selectAll": "Select all items",
+            "undo": "Undo last operation",
+            "bulkRename": "Rename multiple items at once",
+            "contentSearch": "Search text in file contents",
+            "share": "Create shareable link for item",
+            "newFile": "Create a new file",
+            "newFolder": "Create a new folder",
+            "goUp": "Go to parent folder",
+            "goBack": "Go to previous page",
+            "refresh": "Refresh file list",
+            "viewLogs": "View activity logs",
+            "viewTrash": "View trash",
+            "viewDashboard": "View dashboard",
+            "uploadFiles": "Upload files",
+            "uploadFolder": "Upload folder",
+            "toggleTheme": "Toggle light/dark theme",
+            "showShortcuts": "Show keyboard shortcuts",
+            "splitPane": "Toggle dual pane mode",
+            "logout": "Sign out of account"
+        }
+    },
+
+    "upload": {
+        "title": "Upload Files",
+        "dropHere": "Drop files here to upload",
+        "dragHint": "Drag files here or click to select",
+        "uploading": "Uploading...",
+        "complete": "Complete",
+        "failed": "Failed",
+        "cancelled": "Cancelled",
+        "cancelAll": "Cancel All",
+        "startUpload": "Start Upload",
+        "retryFailed": "Retry",
+        "fileCount": "{count} files",
+        "progress": "{percent}%"
+    },
+
+    "preview": {
+        "title": "Preview",
+        "openRaw": "Open Raw",
+        "download": "Download",
+        "copyPath": "Copy Path",
+        "save": "Save",
+        "close": "Close",
+        "fullscreen": "Fullscreen",
+        "exitFullscreen": "Exit Fullscreen",
+        "markdownPreview": "Preview",
+        "markdownEditor": "Editor",
+        "galleryPrev": "Previous",
+        "galleryNext": "Next",
+        "galleryCounter": "{current} / {total}",
+        "wordWrap": "Word Wrap",
+        "unsavedChanges": "You have unsaved changes"
+    },
+
+    "details": {
+        "title": "Details",
+        "name": "Name",
+        "type": "Type",
+        "size": "Size",
+        "modified": "Modified",
+        "created": "Created",
+        "path": "Path",
+        "mime": "MIME Type",
+        "permissions": "Permissions",
+        "children": "Contents",
+        "folderSize": "Folder Size",
+        "calculateSize": "Calculate Size",
+        "calculating": "Calculating...",
+        "readable": "Read",
+        "writable": "Write",
+        "filesCount": "{files} files",
+        "foldersCount": "{folders} folders"
+    },
+
+    "rename": {
+        "title": "Rename",
+        "placeholder": "Enter new name",
+        "hint": "Press Enter to save, Escape to cancel"
+    },
+
+    "bulkRename": {
+        "title": "Bulk Rename",
+        "subtitle": "{count} items selected",
+        "findReplace": "Find & Replace",
+        "numbering": "Numbering",
+        "prefixSuffix": "Prefix/Suffix",
+        "find": "Find",
+        "replace": "Replace with",
+        "caseSensitive": "Case sensitive",
+        "useRegex": "Regex",
+        "pattern": "Pattern",
+        "startNumber": "Start from",
+        "step": "Step",
+        "keepExtension": "Keep extension",
+        "prefix": "Prefix",
+        "suffix": "Suffix",
+        "preview": "Preview",
+        "apply": "Apply ({count})",
+        "noChanges": "No changes"
+    },
+
+    "search": {
+        "title": "Search in Files",
+        "placeholder": "Enter search text...",
+        "searchButton": "Search",
+        "regex": "Regex",
+        "caseSensitive": "Aa",
+        "extensionFilter": "Extensions (e.g. js,php)",
+        "searching": "Searching...",
+        "results": "{count} results found",
+        "noResults": "No results found",
+        "truncated": "Results truncated at {max}",
+        "matchesInFile": "{count} matches"
+    },
+
+    "share": {
+        "title": "Share",
+        "subtitle": "Create shareable link for",
+        "password": "Password (optional)",
+        "expiry": "Expiry",
+        "expiryOptions": {
+            "1h": "1 hour",
+            "6h": "6 hours",
+            "24h": "24 hours",
+            "7d": "7 days",
+            "30d": "30 days",
+            "never": "Never"
+        },
+        "maxDownloads": "Max downloads (0 = unlimited)",
+        "canDownload": "Allow download",
+        "canPreview": "Allow preview",
+        "createLink": "Create Link",
+        "copyLink": "Copy Link",
+        "copied": "Copied!",
+        "newLink": "Create New Link",
+        "existingLinks": "Existing Links",
+        "active": "Active",
+        "expired": "Expired",
+        "hasPassword": "Password",
+        "deleteLink": "Delete"
+    },
+
+    "dualPane": {
+        "title": "Right Panel",
+        "close": "Close panel",
+        "empty": "Folder is empty",
+        "items": "{count} items",
+        "dropHere": "Drop here to move"
+    },
+
+    "settings": {
+        "title": "Settings",
+        "general": "General",
+        "system": "System Requirements",
+        "language": "Language",
+        "debugLogging": "Enable debug logging (console)",
+        "debugHint": "Disable to remove debug messages from console.",
+        "save": "Save",
+        "close": "Close",
+        "languageHint": "Choose the application display language.",
+        "languageChanged": "Language changed successfully. Page will reload.",
+        "currentLanguage": "Current language"
+    },
+
+    "auth": {
+        "login": "Login",
+        "logout": "Logout",
+        "username": "Username",
+        "password": "Password",
+        "loginButton": "Sign In",
+        "loginFailed": "Login failed",
+        "invalidCredentials": "Invalid username or password",
+        "manageUsers": "Manage Users",
+        "changePassword": "Change Password",
+        "role": {
+            "admin": "Admin",
+            "editor": "Editor",
+            "viewer": "Viewer"
+        }
+    },
+
+    "table": {
+        "name": "Name",
+        "modified": "Modified",
+        "size": "Size",
+        "actions": "Actions",
+        "empty": "This folder is empty",
+        "parentFolder": "Parent Folder",
+        "selectAll": "Select All"
+    },
+
+    "actionBar": {
+        "upload": "Upload File",
+        "uploadFolder": "Upload Folder",
+        "newFolder": "New Folder",
+        "deleteSelected": "Delete Selected",
+        "move": "Move",
+        "settings": "Settings",
+        "splitPane": "Split Pane"
+    },
+
+    "confirm": {
+        "deleteTitle": "Confirm Delete",
+        "deleteMessage": "Are you sure you want to delete {count} items?",
+        "deleteButton": "Delete",
+        "cancelButton": "Cancel"
+    },
+
+    "create": {
+        "fileTitle": "Create New File",
+        "folderTitle": "Create New Folder",
+        "namePlaceholder": "Enter name",
+        "createButton": "Create"
+    },
+
+    "trash": {
+        "title": "Trash",
+        "empty": "Trash is empty",
+        "restore": "Restore",
+        "deletePermanent": "Delete Permanently",
+        "emptyTrash": "Empty Trash",
+        "confirmEmpty": "Are you sure you want to empty the trash?"
+    },
+
+    "logs": {
+        "title": "Activity Log",
+        "empty": "No activity yet",
+        "export": "Export",
+        "cleanup": "Cleanup"
+    },
+
+    "pagination": {
+        "page": "Page {current} of {total}",
+        "itemsPerPage": "Items per page",
+        "showing": "Showing {start}-{end} of {total}"
+    },
+
+    "skeleton": {
+        "loading": "Loading..."
+    }
+}

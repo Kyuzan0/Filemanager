@@ -328,8 +328,26 @@ export const config = {
     }
 })();
 
-// Error messages
-export const errorMessages = {
+// i18n-aware message helpers
+// These use lazy import to avoid circular dependency issues.
+// When i18n is loaded, messages come from translation files.
+// Before i18n loads, fallback to hardcoded Indonesian strings.
+
+let _t = null;
+function getT() {
+    if (!_t) {
+        try {
+            // Dynamic lazy reference — i18n.js must be loaded by the time these are called
+            _t = window.__i18n_t || ((key) => key);
+        } catch {
+            _t = (key) => key;
+        }
+    }
+    return _t;
+}
+
+// Error messages (i18n-aware with fallbacks)
+const errorFallbacks = {
     fetchFailed: 'Gagal mengambil data',
     deleteFailed: 'Gagal menghapus item',
     moveFailed: 'Gagal memindahkan item',
@@ -345,8 +363,7 @@ export const errorMessages = {
     shareFailed: 'Gagal membuat link berbagi',
 };
 
-// Success messages
-export const successMessages = {
+const successFallbacks = {
     itemDeleted: 'Item berhasil dihapus',
     itemMoved: 'Item berhasil dipindahkan',
     itemRenamed: 'Item berhasil diubah namanya',
@@ -361,22 +378,32 @@ export const successMessages = {
     shareDeleted: 'Link berbagi berhasil dihapus',
 };
 
-// Action labels for logs
-export const actionLabels = {
-    'create': 'Buat',
-    'delete': 'Hapus',
-    'move': 'Pindah',
-    'rename': 'Ubah Nama',
-    'upload': 'Unggah',
-    'download': 'Unduh',
-    'read': 'Baca',
-    'copy': 'Salin',
+const actionFallbacks = {
+    'create': 'Buat', 'delete': 'Hapus', 'move': 'Pindah', 'rename': 'Ubah Nama',
+    'upload': 'Unggah', 'download': 'Unduh', 'read': 'Baca', 'copy': 'Salin',
     'unknown': 'Tidak Diketahui'
 };
 
-// Type labels for logs
-export const typeLabels = {
-    'file': 'File',
-    'folder': 'Folder',
-    'unknown': 'Tidak Diketahui'
+const typeFallbacks = {
+    'file': 'File', 'folder': 'Folder', 'unknown': 'Tidak Diketahui'
 };
+
+function createProxy(fallbacks, i18nPrefix) {
+    return new Proxy(fallbacks, {
+        get(target, prop) {
+            if (typeof prop !== 'string') return target[prop];
+            const t = getT();
+            const translated = t(`${i18nPrefix}.${prop}`);
+            // If t() returns the key itself (not found), use fallback
+            if (translated === `${i18nPrefix}.${prop}`) {
+                return target[prop] || prop;
+            }
+            return translated;
+        }
+    });
+}
+
+export const errorMessages = createProxy(errorFallbacks, 'errors');
+export const successMessages = createProxy(successFallbacks, 'success');
+export const actionLabels = createProxy(actionFallbacks, 'actions');
+export const typeLabels = createProxy(typeFallbacks, 'types');

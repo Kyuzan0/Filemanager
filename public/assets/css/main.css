@@ -53,6 +53,7 @@
 @import 'components/navigation.css';
 @import 'components/toast.css';
 @import 'components/user-menu.css';
+@import 'components/error-boundary.css';
 @import 'components/enhanced-ui.css';
 
 /* ============================================================================

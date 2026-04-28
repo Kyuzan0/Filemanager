@@ -14,7 +14,8 @@ const STORAGE_KEYS = {
     VIEW_MODE: 'filemanager_view_mode',
     EDITOR_PREFS: 'filemanager_editor_prefs',
     MOVE_RECENTS: 'filemanager_move_recents',
-    PAGE_SIZE: 'filemanager_page_size'
+    PAGE_SIZE: 'filemanager_page_size',
+    LANGUAGE: 'filemanager_language'
 };
 
 /**

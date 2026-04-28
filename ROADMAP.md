@@ -1,8 +1,8 @@
 # Roadmap — Filemanager
 
 > **Created**: 28 April 2026
-> **Last Updated**: 28 April 2026
-> **Status**: Approved
+> **Last Updated**: 29 April 2026
+> **Status**: Approved — Phase 1-3 & 5 Complete
 
 ---
 
@@ -22,7 +22,7 @@
 > Estimasi: 1-3 hari per item. Bisa dikerjakan tanpa perubahan arsitektur.
 
 ### 1.1 Context Menu: Cut, Copy, Paste
-- **Status**: `[ ]`
+- **Status**: `[x]`
 - **Effort**: Low-Medium (1-2 hari)
 - **Impact**: High
 - **Description**: Tambahkan opsi **Cut**, **Copy**, dan **Paste** di context menu (klik kanan). Tidak perlu module clipboard terpisah — gunakan context menu dan state management yang sudah ada. Visual indicator untuk item yang di-cut (dimmed/striped). Keyboard shortcut `Ctrl+C` / `Ctrl+X` / `Ctrl+V` sebagai bonus.
@@ -30,7 +30,7 @@
 - **Files**: Update context menu handler, `batchOperations.js`, `keyboardShortcuts.js`, `tables.css` (cut indicator style)
 
 ### 1.2 File/Folder Properties Panel
-- **Status**: `[ ]`
+- **Status**: `[x]`
 - **Effort**: Low (< 1 hari)
 - **Impact**: Medium
 - **Description**: Modal seperti "Properties" di Windows Explorer. Muncul saat klik kanan file/folder lalu pilih "Properties". Menampilkan:
@@ -43,7 +43,7 @@
 - **Files**: `overlays/details.css` (update), `modules/ui/detailsRenderer.js` (baru)
 
 ### 1.3 Folder Size Calculator
-- **Status**: `[ ]`
+- **Status**: `[x]`
 - **Effort**: Low (< 1 hari)
 - **Impact**: Medium
 - **Description**: Hitung ukuran folder secara rekursif. Tampilkan di **Properties Panel** (1.2). Bisa juga diakses via context menu "Calculate Size".
@@ -52,7 +52,7 @@
 - **Files**: Backend endpoint baru di `FileHandler.php`, frontend di properties panel
 
 ### 1.4 Loading Skeleton UI
-- **Status**: `[ ]`
+- **Status**: `[x]`
 - **Effort**: Low (< 1 hari)
 - **Impact**: Medium
 - **Description**: Ganti spinner dengan skeleton placeholder saat loading directory. Perceived performance lebih baik.
@@ -66,7 +66,7 @@
 > Estimasi: 3-7 hari per item. Fitur-fitur yang secara signifikan meningkatkan kapabilitas.
 
 ### 2.1 Rich File Preview System
-- **Status**: `[ ]`
+- **Status**: `[x]`
 - **Effort**: Medium (3-5 hari)
 - **Impact**: Very High
 - **Description**: Preview untuk berbagai tipe file:
@@ -79,7 +79,7 @@
 - **Files**: `modules/previewManager.js` (baru), `overlays/preview.css` (update), backend endpoint `raw` sudah ada
 
 ### 2.2 File Thumbnails
-- **Status**: `[ ]`
+- **Status**: `[x]`
 - **Effort**: Medium (3-5 hari)
 - **Impact**: High
 - **Description**: Generate dan cache thumbnail untuk image files. Tampilkan di table view (kolom icon) dan grid view. Thumbnail di-generate server-side (PHP GD) dan di-cache agar tidak berat — hanya generate sekali per file, setelah itu serve dari cache.
@@ -89,7 +89,7 @@
 - **Files**: Backend `ThumbnailManager.php` (baru), cache di `storage/thumbnails/`, frontend update di `tableRenderer.js` dan `gridRenderer.js`
 
 ### 2.3 Upload Progress UI + Drag-to-Upload
-- **Status**: `[ ]`
+- **Status**: `[x]`
 - **Effort**: Medium (2-3 hari)
 - **Impact**: High
 - **Description**:
@@ -101,7 +101,7 @@
 - **Files**: `modules/uploadManager.js` (baru), `components/upload-progress.css` (baru), update `dragDrop.js`
 
 ### 2.4 Command Palette (Ctrl+K)
-- **Status**: `[ ]`
+- **Status**: `[x]`
 - **Effort**: Medium (2-3 hari)
 - **Impact**: High
 - **Description**: Quick-access command palette seperti di VS Code. Tekan `Ctrl+K` → muncul search bar di tengah layar:
@@ -114,7 +114,7 @@
 - **Files**: `modules/commandPalette.js` (baru), `overlays/command-palette.css` (baru)
 
 ### 2.5 Undo/Redo System
-- **Status**: `[ ]`
+- **Status**: `[x]`
 - **Effort**: Medium (2-3 hari)
 - **Impact**: High
 - **Description**: Undo stack untuk operasi file:
@@ -126,7 +126,7 @@
 - **Files**: `modules/undoManager.js` (baru), update `state.js`, `toast.js`, `fileOperations.js`
 
 ### 2.6 Bulk Rename Tool
-- **Status**: `[ ]`
+- **Status**: `[x]`
 - **Effort**: Medium (2-3 hari)
 - **Impact**: Medium
 - **Description**: Diakses dari **context menu** saat multi-select file → klik kanan → "Bulk Rename". Muncul overlay/modal dengan opsi:
@@ -138,7 +138,7 @@
 - **Files**: `modules/bulkRename.js` (baru), `overlays/bulk-rename.css` (baru), update context menu
 
 ### 2.7 Full-text Search
-- **Status**: `[ ]`
+- **Status**: `[x]`
 - **Effort**: Medium (3-5 hari)
 - **Impact**: Medium-High
 - **Description**: Search konten file (bukan hanya nama). Grep-like search dengan:
@@ -156,7 +156,7 @@
 > Estimasi: 1-3 minggu per item. Membutuhkan perubahan arsitektur atau dependency baru.
 
 ### 3.1 User Authentication
-- **Status**: `[ ]`
+- **Status**: `[x]`
 - **Effort**: High (1-2 minggu)
 - **Impact**: Very High
 - **Description**: Sistem login dan permission:
@@ -170,7 +170,7 @@
 - **Files**: `app/Core/AuthManager.php`, `app/Core/UserManager.php`, migration scripts, login page
 
 ### 3.2 File Sharing
-- **Status**: `[ ]`
+- **Status**: `[x]`
 - **Effort**: High (1 minggu)
 - **Impact**: High
 - **Description**: Generate shareable links untuk file/folder:
@@ -183,7 +183,7 @@
 - **Files**: `app/Core/ShareManager.php`, `app/Handlers/ShareHandler.php`, share page
 
 ### 3.3 Dual-Pane Mode
-- **Status**: `[ ]`
+- **Status**: `[x]`
 - **Effort**: High (1-2 minggu)
 - **Impact**: High
 - **Description**: Split view menampilkan dua direktori side-by-side (ala Total Commander):
@@ -195,7 +195,7 @@
 - **Files**: Layout restructuring, `modules/paneManager.js` (baru), CSS layout updates
 
 ### 3.4 Internationalization (i18n)
-- **Status**: `[ ]`
+- **Status**: `[x]`
 - **Effort**: High (1-2 minggu)
 - **Impact**: Medium
 - **Description**: Multi-language support:
@@ -246,7 +246,7 @@
 > Ongoing improvements, bisa dikerjakan paralel dengan fitur lain.
 
 ### 5.1 Expand Test Coverage
-- **Status**: `[ ]`
+- **Status**: `[x]`
 - **Effort**: Medium (ongoing)
 - **Impact**: High
 - **Description**: Tambah unit test untuk module-module yang belum ada test-nya. Saat ini hanya 3 test files (`state.test.js`, `FileManagerTest.php`, `SecurityTest.php`) untuk 40+ JS modules dan 11 PHP files. Target:
@@ -259,7 +259,7 @@
 - **Target**: 60%+ code coverage
 
 ### 5.2 API Documentation (OpenAPI)
-- **Status**: `[ ]`
+- **Status**: `[x]`
 - **Effort**: Low-Medium (2-3 hari)
 - **Impact**: Medium
 - **Description**: OpenAPI/Swagger spec untuk 20+ API endpoints di `api.php`. Auto-generate documentation.
@@ -267,21 +267,21 @@
 - **Files**: `docs/api/openapi.yaml`, optional Swagger UI page
 
 ### 5.3 CHANGELOG.md
-- **Status**: `[ ]`
+- **Status**: `[x]`
 - **Effort**: Low (< 1 hari)
 - **Impact**: Low-Medium
 - **Description**: Changelog mengikuti [Keep a Changelog](https://keepachangelog.com/) format. Track semua perubahan per versi.
 - **Files**: `CHANGELOG.md`
 
 ### 5.4 CONTRIBUTING.md
-- **Status**: `[ ]`
+- **Status**: `[x]`
 - **Effort**: Low (< 1 hari)
 - **Impact**: Low-Medium
 - **Description**: Panduan kontribusi: setup development environment, coding standards, PR process, testing requirements.
 - **Files**: `CONTRIBUTING.md`
 
 ### 5.5 Error Boundary / Global Error UI
-- **Status**: `[ ]`
+- **Status**: `[x]`
 - **Effort**: Low-Medium (1-2 hari)
 - **Impact**: Medium
 - **Description**: Graceful error state saat terjadi error fatal. `errorHandler.js` sudah ada dengan categories dan severity, tapi perlu UI yang proper untuk user-facing errors.
@@ -328,6 +328,26 @@
 - [x] Linting (ESLint 9 + PHP_CodeSniffer PSR-12)
 - [x] Grid/Thumbnail View Toggle (grid view + toggle UI)
 - [x] UI/UX Improvements (row density, hover actions, breadcrumb, empty states, pagination)
+- [x] Context Menu Cut/Copy/Paste (Phase 1.1)
+- [x] File/Folder Properties Panel (Phase 1.2)
+- [x] Folder Size Calculator (Phase 1.3)
+- [x] Loading Skeleton UI (Phase 1.4)
+- [x] Rich File Preview — Gallery Nav + Markdown + Fullscreen (Phase 2.1)
+- [x] File Thumbnails — PHP GD + lazy load + cache (Phase 2.2)
+- [x] Upload Progress UI + Drag-to-Upload (Phase 2.3)
+- [x] Command Palette — Ctrl+K (Phase 2.4)
+- [x] Undo/Redo System (Phase 2.5)
+- [x] Bulk Rename Tool (Phase 2.6)
+- [x] Full-text Content Search — Ctrl+Shift+F (Phase 2.7)
+- [x] User Authentication — RBAC + SQLite (Phase 3.1)
+- [x] File Sharing — Shareable links + password + expiry (Phase 3.2)
+- [x] Dual-Pane Mode — Ctrl+\ (Phase 3.3)
+- [x] Internationalization — i18n with ID/EN (Phase 3.4)
+- [x] Expanded Test Coverage — 334 tests (Phase 5.1)
+- [x] API Documentation — OpenAPI 3.1 spec (Phase 5.2)
+- [x] CHANGELOG.md (Phase 5.3)
+- [x] CONTRIBUTING.md (Phase 5.4)
+- [x] Error Boundary / Global Error UI (Phase 5.5)
 
 ---
 

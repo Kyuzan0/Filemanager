@@ -1,0 +1,377 @@
+{
+    "app": {
+        "title": "File Manager",
+        "loading": "Memuat data...",
+        "initializing": "Menginisialisasi..."
+    },
+
+    "errors": {
+        "fetchFailed": "Gagal mengambil data",
+        "deleteFailed": "Gagal menghapus item",
+        "moveFailed": "Gagal memindahkan item",
+        "renameFailed": "Gagal mengubah nama item",
+        "createFailed": "Gagal membuat item baru",
+        "uploadFailed": "Gagal mengunggah file",
+        "saveFailed": "Gagal menyimpan perubahan",
+        "copyFailed": "Gagal menyalin path",
+        "copyItemsFailed": "Gagal menyalin item",
+        "pasteFailed": "Gagal menempelkan item",
+        "bulkRenameFailed": "Gagal melakukan bulk rename",
+        "searchFailed": "Gagal melakukan pencarian",
+        "shareFailed": "Gagal membuat link berbagi",
+        "undoFailed": "Gagal membatalkan operasi",
+        "generic": "Terjadi kesalahan"
+    },
+
+    "success": {
+        "itemDeleted": "Item berhasil dihapus",
+        "itemMoved": "Item berhasil dipindahkan",
+        "itemRenamed": "Item berhasil diubah namanya",
+        "itemCreated": "Item berhasil dibuat",
+        "fileUploaded": "File diunggah",
+        "changesSaved": "Perubahan tersimpan",
+        "pathCopied": "Path tersalin ke clipboard",
+        "itemsCopied": "Item berhasil disalin",
+        "itemsPasted": "Item berhasil ditempelkan",
+        "itemsBulkRenamed": "Item berhasil di-rename",
+        "shareCreated": "Link berbagi berhasil dibuat",
+        "shareDeleted": "Link berbagi berhasil dihapus",
+        "undoSuccess": "Operasi dibatalkan",
+        "languageChanged": "Bahasa berhasil diubah"
+    },
+
+    "actions": {
+        "create": "Buat",
+        "delete": "Hapus",
+        "move": "Pindah",
+        "rename": "Ubah Nama",
+        "upload": "Unggah",
+        "download": "Unduh",
+        "read": "Baca",
+        "copy": "Salin",
+        "cut": "Potong",
+        "paste": "Tempel",
+        "open": "Buka",
+        "close": "Tutup",
+        "cancel": "Batal",
+        "save": "Simpan",
+        "apply": "Terapkan",
+        "confirm": "Konfirmasi",
+        "refresh": "Segarkan",
+        "search": "Cari",
+        "share": "Bagikan",
+        "undo": "Batalkan",
+        "selectAll": "Pilih Semua",
+        "deselectAll": "Batal Pilih",
+        "unknown": "Tidak Diketahui"
+    },
+
+    "types": {
+        "file": "File",
+        "folder": "Folder",
+        "unknown": "Tidak Diketahui"
+    },
+
+    "contextMenu": {
+        "open": "Buka",
+        "cut": "Potong",
+        "copy": "Salin",
+        "paste": "Tempel",
+        "rename": "Ubah Nama",
+        "bulkRename": "Bulk Rename",
+        "move": "Pindahkan...",
+        "download": "Unduh",
+        "copyPath": "Salin Path",
+        "share": "Bagikan",
+        "details": "Detail",
+        "delete": "Hapus"
+    },
+
+    "shortcuts": {
+        "copyItems": "Salin item terpilih",
+        "cutItems": "Potong item terpilih",
+        "pasteItems": "Tempel item",
+        "deleteItems": "Hapus item terpilih",
+        "renameItem": "Ubah nama item",
+        "selectAll": "Pilih semua item",
+        "deselectAll": "Batal pilih semua",
+        "downloadItem": "Unduh item terpilih",
+        "goUp": "Ke folder induk",
+        "goBack": "Kembali",
+        "openItem": "Buka item",
+        "newFile": "Buat file baru",
+        "newFolder": "Buat folder baru",
+        "search": "Cari / filter",
+        "refresh": "Segarkan",
+        "showHelp": "Tampilkan pintasan keyboard",
+        "undo": "Batalkan operasi terakhir",
+        "contentSearch": "Cari dalam isi file",
+        "splitPane": "Buka/tutup split pane",
+        "commandPalette": "Buka command palette"
+    },
+
+    "commandPalette": {
+        "placeholder": "Ketik perintah atau nama file...",
+        "noResults": "Tidak ada hasil",
+        "fileMode": "Mode File",
+        "commandMode": "Mode Perintah",
+        "categories": {
+            "fileOperations": "Operasi File",
+            "create": "Buat",
+            "navigation": "Navigasi",
+            "views": "Tampilan",
+            "upload": "Unggah",
+            "settings": "Pengaturan",
+            "layout": "Tata Letak",
+            "account": "Akun"
+        },
+        "commands": {
+            "copy": "Salin item terpilih",
+            "cut": "Potong item terpilih",
+            "paste": "Tempel item dari clipboard",
+            "rename": "Ubah nama item terpilih",
+            "delete": "Hapus item terpilih",
+            "download": "Unduh item terpilih",
+            "details": "Lihat detail item",
+            "selectAll": "Pilih semua item",
+            "undo": "Batalkan operasi terakhir",
+            "bulkRename": "Rename beberapa item sekaligus",
+            "contentSearch": "Cari teks dalam isi file",
+            "share": "Buat link berbagi untuk item",
+            "newFile": "Buat file baru",
+            "newFolder": "Buat folder baru",
+            "goUp": "Ke folder induk",
+            "goBack": "Kembali ke halaman sebelumnya",
+            "refresh": "Segarkan daftar file",
+            "viewLogs": "Lihat log aktivitas",
+            "viewTrash": "Lihat tempat sampah",
+            "viewDashboard": "Lihat dashboard",
+            "uploadFiles": "Unggah file",
+            "uploadFolder": "Unggah folder",
+            "toggleTheme": "Ganti tema terang/gelap",
+            "showShortcuts": "Tampilkan pintasan keyboard",
+            "splitPane": "Buka/tutup panel ganda",
+            "logout": "Keluar dari akun"
+        }
+    },
+
+    "upload": {
+        "title": "Unggah File",
+        "dropHere": "Lepaskan file di sini untuk mengunggah",
+        "dragHint": "Seret file ke sini atau klik untuk memilih",
+        "uploading": "Mengunggah...",
+        "complete": "Selesai",
+        "failed": "Gagal",
+        "cancelled": "Dibatalkan",
+        "cancelAll": "Batalkan Semua",
+        "startUpload": "Mulai Unggah",
+        "retryFailed": "Coba Lagi",
+        "fileCount": "{count} file",
+        "progress": "{percent}%"
+    },
+
+    "preview": {
+        "title": "Pratinjau",
+        "openRaw": "Buka Raw",
+        "download": "Unduh",
+        "copyPath": "Salin Path",
+        "save": "Simpan",
+        "close": "Tutup",
+        "fullscreen": "Layar Penuh",
+        "exitFullscreen": "Keluar Layar Penuh",
+        "markdownPreview": "Pratinjau",
+        "markdownEditor": "Editor",
+        "galleryPrev": "Sebelumnya",
+        "galleryNext": "Berikutnya",
+        "galleryCounter": "{current} / {total}",
+        "wordWrap": "Bungkus Kata",
+        "unsavedChanges": "Ada perubahan yang belum disimpan"
+    },
+
+    "details": {
+        "title": "Detail",
+        "name": "Nama",
+        "type": "Tipe",
+        "size": "Ukuran",
+        "modified": "Diubah",
+        "created": "Dibuat",
+        "path": "Path",
+        "mime": "MIME Type",
+        "permissions": "Izin",
+        "children": "Isi",
+        "folderSize": "Ukuran Folder",
+        "calculateSize": "Hitung Ukuran",
+        "calculating": "Menghitung...",
+        "readable": "Baca",
+        "writable": "Tulis",
+        "filesCount": "{files} file",
+        "foldersCount": "{folders} folder"
+    },
+
+    "rename": {
+        "title": "Ubah Nama",
+        "placeholder": "Masukkan nama baru",
+        "hint": "Tekan Enter untuk menyimpan, Escape untuk membatalkan"
+    },
+
+    "bulkRename": {
+        "title": "Bulk Rename",
+        "subtitle": "{count} item terpilih",
+        "findReplace": "Cari & Ganti",
+        "numbering": "Penomoran",
+        "prefixSuffix": "Awalan/Akhiran",
+        "find": "Cari",
+        "replace": "Ganti dengan",
+        "caseSensitive": "Huruf besar/kecil",
+        "useRegex": "Regex",
+        "pattern": "Pola",
+        "startNumber": "Mulai dari",
+        "step": "Langkah",
+        "keepExtension": "Pertahankan ekstensi",
+        "prefix": "Awalan",
+        "suffix": "Akhiran",
+        "preview": "Pratinjau",
+        "apply": "Terapkan ({count})",
+        "noChanges": "Tidak ada perubahan"
+    },
+
+    "search": {
+        "title": "Cari dalam File",
+        "placeholder": "Masukkan teks pencarian...",
+        "searchButton": "Cari",
+        "regex": "Regex",
+        "caseSensitive": "Aa",
+        "extensionFilter": "Ekstensi (mis: js,php)",
+        "searching": "Mencari...",
+        "results": "{count} hasil ditemukan",
+        "noResults": "Tidak ada hasil",
+        "truncated": "Hasil dipotong pada {max}",
+        "matchesInFile": "{count} kecocokan"
+    },
+
+    "share": {
+        "title": "Bagikan",
+        "subtitle": "Buat link berbagi untuk",
+        "password": "Kata sandi (opsional)",
+        "expiry": "Kedaluwarsa",
+        "expiryOptions": {
+            "1h": "1 jam",
+            "6h": "6 jam",
+            "24h": "24 jam",
+            "7d": "7 hari",
+            "30d": "30 hari",
+            "never": "Tidak pernah"
+        },
+        "maxDownloads": "Maks unduhan (0 = tak terbatas)",
+        "canDownload": "Izinkan unduh",
+        "canPreview": "Izinkan pratinjau",
+        "createLink": "Buat Link",
+        "copyLink": "Salin Link",
+        "copied": "Tersalin!",
+        "newLink": "Buat Link Baru",
+        "existingLinks": "Link yang Ada",
+        "active": "Aktif",
+        "expired": "Kedaluwarsa",
+        "hasPassword": "Kata sandi",
+        "deleteLink": "Hapus"
+    },
+
+    "dualPane": {
+        "title": "Panel Kanan",
+        "close": "Tutup panel",
+        "empty": "Folder kosong",
+        "items": "{count} item",
+        "dropHere": "Lepaskan di sini untuk memindahkan"
+    },
+
+    "settings": {
+        "title": "Pengaturan",
+        "general": "Umum",
+        "system": "System Requirements",
+        "language": "Bahasa",
+        "debugLogging": "Aktifkan debug logging (console)",
+        "debugHint": "Matikan untuk menghilangkan pesan debug dari konsol.",
+        "save": "Simpan",
+        "close": "Tutup",
+        "languageHint": "Pilih bahasa tampilan aplikasi.",
+        "languageChanged": "Bahasa berhasil diubah. Halaman akan dimuat ulang.",
+        "currentLanguage": "Bahasa saat ini"
+    },
+
+    "auth": {
+        "login": "Masuk",
+        "logout": "Keluar",
+        "username": "Nama pengguna",
+        "password": "Kata sandi",
+        "loginButton": "Masuk",
+        "loginFailed": "Login gagal",
+        "invalidCredentials": "Nama pengguna atau kata sandi salah",
+        "manageUsers": "Kelola Pengguna",
+        "changePassword": "Ubah Kata Sandi",
+        "role": {
+            "admin": "Admin",
+            "editor": "Editor",
+            "viewer": "Viewer"
+        }
+    },
+
+    "table": {
+        "name": "Nama",
+        "modified": "Diubah",
+        "size": "Ukuran",
+        "actions": "Aksi",
+        "empty": "Folder ini kosong",
+        "parentFolder": "Folder Induk",
+        "selectAll": "Pilih Semua"
+    },
+
+    "actionBar": {
+        "upload": "Upload File",
+        "uploadFolder": "Upload Folder",
+        "newFolder": "Folder Baru",
+        "deleteSelected": "Hapus Terpilih",
+        "move": "Pindah",
+        "settings": "Pengaturan",
+        "splitPane": "Split Pane"
+    },
+
+    "confirm": {
+        "deleteTitle": "Konfirmasi Hapus",
+        "deleteMessage": "Apakah Anda yakin ingin menghapus {count} item?",
+        "deleteButton": "Hapus",
+        "cancelButton": "Batal"
+    },
+
+    "create": {
+        "fileTitle": "Buat File Baru",
+        "folderTitle": "Buat Folder Baru",
+        "namePlaceholder": "Masukkan nama",
+        "createButton": "Buat"
+    },
+
+    "trash": {
+        "title": "Tempat Sampah",
+        "empty": "Tempat sampah kosong",
+        "restore": "Pulihkan",
+        "deletePermanent": "Hapus Permanen",
+        "emptyTrash": "Kosongkan Sampah",
+        "confirmEmpty": "Apakah Anda yakin ingin mengosongkan tempat sampah?"
+    },
+
+    "logs": {
+        "title": "Log Aktivitas",
+        "empty": "Belum ada aktivitas",
+        "export": "Ekspor",
+        "cleanup": "Bersihkan"
+    },
+
+    "pagination": {
+        "page": "Halaman {current} dari {total}",
+        "itemsPerPage": "Item per halaman",
+        "showing": "Menampilkan {start}-{end} dari {total}"
+    },
+
+    "skeleton": {
+        "loading": "Memuat..."
+    }
+}

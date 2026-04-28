@@ -62,6 +62,8 @@ import { initContentSearch, open as openContentSearch } from './ui/contentSearch
 import { initAuth, isAdmin, canWrite } from './auth.js';
 import { openShareModal } from './ui/shareModal.js';
 import { initDualPane, toggleDualPane, isDualPaneActive } from './ui/dualPane.js';
+import { initI18n, t, setLanguage, getCurrentLanguage, getSupportedLanguages } from './i18n.js';
+import { initErrorBoundary } from './ui/errorBoundary.js';
 
 // Lazy-loaded modules (loaded on-demand for better performance)
 let moveOverlayModule = null;
@@ -2108,6 +2110,12 @@ export async function initializeApp() {
             }
         });
 
+        // Initialize error boundary (must be very early to catch init errors)
+        initErrorBoundary();
+
+        // Initialize i18n (must be early, before any t() calls)
+        await initI18n();
+
         // Initialize auth (user menu, 401 interceptor)
         if (window.__currentUser) {
             initAuth({ user: window.__currentUser });
@@ -2258,6 +2266,16 @@ export async function initializeApp() {
                     window.showHelpModal();
                 }
             },
+            'change-language': () => {
+                // Open settings overlay and switch to language tab
+                const overlay = document.getElementById('settings-overlay');
+                const langTab = document.getElementById('settings-tab-language');
+                if (overlay && langTab) {
+                    overlay.classList.remove('hidden');
+                    overlay.setAttribute('aria-hidden', 'false');
+                    langTab.click();
+                }
+            },
             'split-pane': () => {
                 toggleDualPane(state.currentPath);
             },
@@ -2316,6 +2334,9 @@ export async function initializeApp() {
         if (btnSplitPaneDesktop) {
             btnSplitPaneDesktop.addEventListener('click', () => toggleDualPane(state.currentPath));
         }
+
+        // Setup language settings panel
+        setupLanguageSettings();
 
         // Setup move overlay handlers (lazy-loaded on first move operation)
         // Will be loaded when user clicks move button
@@ -3307,6 +3328,49 @@ function cleanupScrollSync() {
     scrollSyncState.cleanupListeners = null;
     scrollSyncState.cancelSmoothAnim = null;
 
+}
+
+/**
+ * Setup language settings panel in the settings overlay.
+ * Populates language options and handles language switching.
+ */
+function setupLanguageSettings() {
+    const container = document.getElementById('language-options');
+    if (!container) return;
+
+    const langs = getSupportedLanguages();
+    const current = getCurrentLanguage();
+
+    container.innerHTML = '';
+    langs.forEach(lang => {
+        const isActive = lang.code === current;
+        const option = document.createElement('label');
+        option.className = `language-option d-flex items-center gap-3 cursor-pointer${isActive ? ' language-option--active' : ''}`;
+        option.innerHTML = `
+            <input type="radio" name="app-language" value="${lang.code}"
+                   class="language-radio" ${isActive ? 'checked' : ''}>
+            <span class="language-info">
+                <span class="language-native font-medium">${lang.nativeName}</span>
+                <span class="language-name text-sm text-muted">${lang.name}</span>
+            </span>
+            ${isActive ? '<span class="language-check">✓</span>' : ''}
+        `;
+        container.appendChild(option);
+    });
+
+    // Handle language change
+    container.addEventListener('change', async (e) => {
+        if (e.target.name !== 'app-language') return;
+        const newLang = e.target.value;
+        if (newLang === getCurrentLanguage()) return;
+
+        const ok = await setLanguage(newLang);
+        if (ok) {
+            window.showSuccess?.(t('success.languageChanged'));
+            // Reload page after short delay to apply all translations
+            setTimeout(() => window.location.reload(), 800);
+        }
+    });
 }
 
 // Export fungsi utama

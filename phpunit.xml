@@ -13,6 +13,7 @@
     <coverage processUncoveredFiles="true">
         <include>
             <directory suffix=".php">app/Core</directory>
+            <directory suffix=".php">app/Handlers</directory>
         </include>
     </coverage>
 </phpunit>

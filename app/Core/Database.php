@@ -77,7 +77,7 @@ class Database
             CREATE TABLE IF NOT EXISTS migrations (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 name TEXT NOT NULL UNIQUE,
-                executed_at TEXT NOT NULL DEFAULT (datetime("now"))
+                executed_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
             )
         ');
 
@@ -116,8 +116,8 @@ class Database
                     role TEXT NOT NULL DEFAULT "viewer" CHECK(role IN ("admin", "editor", "viewer")),
                     is_active INTEGER NOT NULL DEFAULT 1,
                     last_login TEXT,
-                    created_at TEXT NOT NULL DEFAULT (datetime("now")),
-                    updated_at TEXT NOT NULL DEFAULT (datetime("now"))
+                    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                    updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
                 )
             ',
 
@@ -127,8 +127,8 @@ class Database
                     user_id INTEGER NOT NULL,
                     ip_address TEXT,
                     user_agent TEXT,
-                    last_activity TEXT NOT NULL DEFAULT (datetime("now")),
-                    created_at TEXT NOT NULL DEFAULT (datetime("now")),
+                    last_activity TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
                     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
                 )
             ',
@@ -141,7 +141,7 @@ class Database
                     can_read INTEGER NOT NULL DEFAULT 1,
                     can_write INTEGER NOT NULL DEFAULT 0,
                     can_delete INTEGER NOT NULL DEFAULT 0,
-                    created_at TEXT NOT NULL DEFAULT (datetime("now")),
+                    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
                     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
                     UNIQUE(user_id, folder_path)
                 )
@@ -153,7 +153,7 @@ class Database
                     ip_address TEXT NOT NULL,
                     username TEXT,
                     success INTEGER NOT NULL DEFAULT 0,
-                    attempted_at TEXT NOT NULL DEFAULT (datetime("now"))
+                    attempted_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
                 )
             ',
 
@@ -181,7 +181,7 @@ class Database
                     can_download INTEGER NOT NULL DEFAULT 1,
                     can_preview INTEGER NOT NULL DEFAULT 1,
                     is_active INTEGER NOT NULL DEFAULT 1,
-                    created_at TEXT NOT NULL DEFAULT (datetime("now")),
+                    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
                     FOREIGN KEY (created_by) REFERENCES users(id) ON DELETE CASCADE
                 )
             ',

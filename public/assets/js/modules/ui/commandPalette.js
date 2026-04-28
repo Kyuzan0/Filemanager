@@ -57,6 +57,7 @@ const COMMANDS = [
 
     // Settings
     { id: 'toggle-theme', label: 'Toggle Dark Mode', desc: 'Switch between light and dark theme', icon: '🌓', category: 'Settings' },
+    { id: 'change-language', label: 'Change Language', desc: 'Switch application language', icon: '🌐', category: 'Settings' },
     { id: 'show-shortcuts', label: 'Keyboard Shortcuts', desc: 'Show all keyboard shortcuts', icon: '⌨️', category: 'Settings', shortcut: 'Ctrl+/' },
 
     // Layout
