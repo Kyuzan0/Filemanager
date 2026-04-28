@@ -8,6 +8,7 @@ import { deleteItems as apiDeleteItems, moveItem as apiMoveItem, renameItem as a
 import { errorMessages, successMessages } from './constants.js';
 import { getParentPath, isSubPath } from './utils.js';
 import { debugLog, debugError, debugPerf } from './debug.js';
+import { pushUndo, showUndoToast } from './ui/undoManager.js';
 import {
     handleError,
     createErrorHandler,
@@ -112,6 +113,34 @@ export async function deleteItems(
         } else {
             state.selected.clear();
             setError('');
+        }
+
+        // Push undo for successfully deleted items (they're in trash)
+        if (deletedList.length > 0) {
+            const trashIds = deletedList
+                .filter(entry => entry && typeof entry === 'object' && entry.id)
+                .map(entry => entry.id);
+
+            if (trashIds.length > 0) {
+                const itemNames = deletedList
+                    .filter(entry => entry && typeof entry === 'object' && entry.name)
+                    .map(entry => entry.name);
+                const desc = itemNames.length === 1
+                    ? `Hapus "${itemNames[0]}"`
+                    : `Hapus ${itemNames.length} item`;
+
+                pushUndo({
+                    type: 'delete',
+                    description: desc,
+                    data: { trashIds }
+                });
+
+                showUndoToast(
+                    itemNames.length === 1
+                        ? `"${itemNames[0]}" dihapus.`
+                        : `${itemNames.length} item dihapus.`
+                );
+            }
         }
 
         await fetchDirectory(state.currentPath, { silent: true });
@@ -226,10 +255,22 @@ export async function moveItem(
             commitOptimisticUpdate();
         }
 
-        // Show success message
-        if (flashStatus) {
-            flashStatus(`"${data.item.name}" berhasil dipindahkan.`);
-        }
+        // Push undo for move operation
+        const movedName = data.item?.name || sourcePath.split('/').pop();
+        pushUndo({
+            type: 'move',
+            description: `Pindah "${movedName}"`,
+            data: {
+                moves: [{
+                    sourcePath,
+                    targetPath,
+                    movedName
+                }]
+            }
+        });
+
+        // Show success message with undo
+        showUndoToast(`"${movedName}" berhasil dipindahkan.`);
 
         // Only refresh if needed (viewing target directory or moved a folder)
         const movedItem = state.itemMap.get(sourcePath);
@@ -377,7 +418,19 @@ export async function renameItem(
 
         const data = await apiRenameItem(oldPath, newName, newPath);
 
-        flashStatus(`${item.name} berhasil diubah namanya menjadi ${newName}.`);
+        // Push undo for rename
+        pushUndo({
+            type: 'rename',
+            description: `Rename "${item.name}" → "${newName}"`,
+            data: {
+                oldPath,
+                newPath,
+                oldName: item.name,
+                newName
+            }
+        });
+
+        showUndoToast(`"${item.name}" diubah menjadi "${newName}".`);
         closeRenameOverlay();
 
         // If renamed item is currently open in preview, update the preview
@@ -1234,15 +1287,30 @@ export async function pasteItems(clipboard, state, fetchDirectory, clearClipboar
                 const copiedCount = data.copied?.length || 0;
                 const errorCount = data.errors?.length || 0;
 
-                if (copiedCount === 1) {
-                    window.showSuccess?.(`"${data.copied[0].name}" berhasil disalin.`);
-                } else if (copiedCount > 1) {
-                    window.showSuccess?.(`${copiedCount} item berhasil disalin${errorCount ? `, ${errorCount} gagal` : ''}.`);
-                }
-
                 if (errorCount > 0 && copiedCount === 0) {
                     window.showError?.('Gagal menyalin item.');
                     return false;
+                }
+
+                // Build list of copied paths for undo (delete them to reverse)
+                const copiedPaths = (data.copied || [])
+                    .filter(c => c && c.path)
+                    .map(c => c.path);
+
+                if (copiedPaths.length > 0) {
+                    pushUndo({
+                        type: 'copy',
+                        description: copiedCount === 1
+                            ? `Salin "${data.copied[0].name}"`
+                            : `Salin ${copiedCount} item`,
+                        data: { copiedPaths }
+                    });
+
+                    showUndoToast(
+                        copiedCount === 1
+                            ? `"${data.copied[0].name}" berhasil disalin.`
+                            : `${copiedCount} item berhasil disalin${errorCount ? `, ${errorCount} gagal` : ''}.`
+                    );
                 }
             } else {
                 window.showError?.(data.error || 'Gagal menyalin item.');
@@ -1266,18 +1334,34 @@ export async function pasteItems(clipboard, state, fetchDirectory, clearClipboar
             const okCount = results.filter(r => r.ok).length;
             const failCount = results.length - okCount;
 
-            if (okCount > 0) {
-                if (sourcePaths.length === 1) {
-                    const name = sourcePaths[0].split('/').pop() || sourcePaths[0];
-                    window.showSuccess?.(`"${name}" berhasil dipindahkan.`);
-                } else {
-                    window.showSuccess?.(`${okCount} item berhasil dipindahkan${failCount ? `, ${failCount} gagal` : ''}.`);
-                }
-            }
-
             if (failCount > 0 && okCount === 0) {
                 window.showError?.('Gagal memindahkan item.');
                 return false;
+            }
+
+            // Push undo for successful moves
+            if (okCount > 0) {
+                const successMoves = results
+                    .filter(r => r.ok)
+                    .map(r => ({
+                        sourcePath: r.path,
+                        targetPath,
+                        movedName: r.data?.item?.name || r.path.split('/').pop()
+                    }));
+
+                pushUndo({
+                    type: 'move',
+                    description: okCount === 1
+                        ? `Pindah "${successMoves[0].movedName}"`
+                        : `Pindah ${okCount} item`,
+                    data: { moves: successMoves }
+                });
+
+                if (sourcePaths.length === 1) {
+                    showUndoToast(`"${successMoves[0].movedName}" berhasil dipindahkan.`);
+                } else {
+                    showUndoToast(`${okCount} item berhasil dipindahkan${failCount ? `, ${failCount} gagal` : ''}.`);
+                }
             }
 
             // Clear clipboard after cut (one-time operation)

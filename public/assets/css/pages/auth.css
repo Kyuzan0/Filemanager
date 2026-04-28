@@ -1,0 +1,282 @@
+/**
+ * Auth Page Styles
+ * ================
+ * Login/register page styling.
+ * Uses CSS variables from core/variables.css.
+ */
+
+/* ============================================================================
+   BODY & CONTAINER
+   ============================================================================ */
+
+.auth-body {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--bg);
+    padding: 24px;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    color: var(--text);
+}
+
+.auth-container {
+    width: 100%;
+    max-width: 400px;
+    animation: auth-slide-in 0.4s ease-out;
+}
+
+@keyframes auth-slide-in {
+    from {
+        opacity: 0;
+        transform: translateY(16px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* ============================================================================
+   BRANDING
+   ============================================================================ */
+
+.auth-brand {
+    text-align: center;
+    margin-bottom: 32px;
+}
+
+.auth-brand__icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 64px;
+    height: 64px;
+    border-radius: var(--radius-lg);
+    background: var(--accent);
+    color: #fff;
+    margin-bottom: 16px;
+    box-shadow: var(--shadow);
+}
+
+.auth-brand__title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--text);
+    margin: 0 0 4px;
+    letter-spacing: -0.02em;
+}
+
+.auth-brand__subtitle {
+    font-size: 0.875rem;
+    color: var(--muted);
+    margin: 0;
+}
+
+/* ============================================================================
+   FORM
+   ============================================================================ */
+
+.auth-form {
+    background: var(--card);
+    border: 1px solid var(--card-border);
+    border-radius: var(--radius);
+    padding: 28px;
+    box-shadow: var(--shadow);
+}
+
+.auth-form.shake {
+    animation: auth-shake 0.4s ease-in-out;
+}
+
+@keyframes auth-shake {
+    0%, 100% { transform: translateX(0); }
+    20% { transform: translateX(-8px); }
+    40% { transform: translateX(8px); }
+    60% { transform: translateX(-4px); }
+    80% { transform: translateX(4px); }
+}
+
+.auth-field {
+    margin-bottom: 20px;
+}
+
+.auth-label {
+    display: block;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    margin-bottom: 6px;
+}
+
+.auth-input-wrap {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.auth-input-icon {
+    position: absolute;
+    left: 12px;
+    color: var(--muted);
+    pointer-events: none;
+    flex-shrink: 0;
+}
+
+.auth-input {
+    width: 100%;
+    padding: 10px 12px 10px 40px;
+    font-size: 0.9375rem;
+    color: var(--text);
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    outline: none;
+    transition: border-color var(--transition), box-shadow var(--transition);
+    font-family: inherit;
+}
+
+.auth-input:focus {
+    border-color: var(--accent);
+    box-shadow: var(--focus-ring);
+}
+
+.auth-input::placeholder {
+    color: var(--muted);
+}
+
+.auth-input:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+/* Password toggle */
+.auth-toggle-pw {
+    position: absolute;
+    right: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border: none;
+    background: none;
+    color: var(--muted);
+    cursor: pointer;
+    border-radius: var(--radius-sm);
+    transition: color var(--transition), background var(--transition);
+}
+
+.auth-toggle-pw:hover {
+    color: var(--text-secondary);
+    background: var(--surface-hover);
+}
+
+/* ============================================================================
+   ERROR MESSAGE
+   ============================================================================ */
+
+.auth-error {
+    padding: 10px 14px;
+    font-size: 0.8125rem;
+    color: var(--danger);
+    background: rgba(var(--accent-rgb), 0.08);
+    border: 1px solid rgba(var(--accent-rgb), 0.2);
+    border-radius: var(--radius-sm);
+    margin-bottom: 16px;
+    line-height: 1.4;
+}
+
+/* ============================================================================
+   SUBMIT BUTTON
+   ============================================================================ */
+
+.auth-submit {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 12px 20px;
+    font-size: 0.9375rem;
+    font-weight: 600;
+    color: #fff;
+    background: var(--accent);
+    border: none;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    transition: background var(--transition), transform 0.1s ease;
+    font-family: inherit;
+}
+
+.auth-submit:hover:not(:disabled) {
+    background: var(--accent-hover, var(--accent));
+    transform: translateY(-1px);
+}
+
+.auth-submit:active:not(:disabled) {
+    transform: translateY(0);
+}
+
+.auth-submit:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+}
+
+.auth-submit__spinner {
+    animation: auth-spin 0.8s linear infinite;
+}
+
+@keyframes auth-spin {
+    to { transform: rotate(360deg); }
+}
+
+/* ============================================================================
+   FOOTER
+   ============================================================================ */
+
+.auth-footer {
+    text-align: center;
+    margin-top: 20px;
+    font-size: 0.75rem;
+    color: var(--muted);
+}
+
+.auth-footer code {
+    font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', monospace;
+    font-size: 0.75rem;
+    padding: 2px 6px;
+    background: var(--surface-hover);
+    border-radius: 4px;
+    color: var(--text-secondary);
+}
+
+/* ============================================================================
+   RESPONSIVE
+   ============================================================================ */
+
+@media (max-width: 480px) {
+    .auth-body {
+        padding: 16px;
+        align-items: flex-start;
+        padding-top: 15vh;
+    }
+
+    .auth-form {
+        padding: 20px;
+    }
+
+    .auth-brand__icon {
+        width: 56px;
+        height: 56px;
+    }
+
+    .auth-brand__icon svg {
+        width: 32px;
+        height: 32px;
+    }
+
+    .auth-input {
+        font-size: 16px; /* Prevent iOS zoom */
+    }
+}

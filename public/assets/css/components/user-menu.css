@@ -1,0 +1,200 @@
+/**
+ * User Menu Styles
+ * ================
+ * Dropdown menu for authenticated user in the action bar.
+ */
+
+/* ============================================================================
+   WRAPPER
+   ============================================================================ */
+
+.user-menu {
+    position: relative;
+    margin-left: auto;
+    flex-shrink: 0;
+}
+
+/* ============================================================================
+   TRIGGER BUTTON
+   ============================================================================ */
+
+.user-menu__trigger {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 4px 10px 4px 4px;
+    background: var(--bg-secondary);
+    border: 1px solid var(--card-border);
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    color: var(--text);
+    font-family: inherit;
+    font-size: 0.8125rem;
+    transition: background var(--transition), border-color var(--transition);
+}
+
+.user-menu__trigger:hover {
+    background: var(--surface-hover);
+    border-color: var(--border);
+}
+
+.user-menu__avatar {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    border-radius: 6px;
+    background: var(--accent);
+    color: #fff;
+    font-size: 0.6875rem;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    flex-shrink: 0;
+}
+
+.user-menu__name {
+    max-width: 120px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-weight: 500;
+}
+
+.user-menu__chevron {
+    color: var(--muted);
+    transition: transform var(--transition);
+    flex-shrink: 0;
+}
+
+.user-menu__trigger[aria-expanded="true"] .user-menu__chevron {
+    transform: rotate(180deg);
+}
+
+/* ============================================================================
+   DROPDOWN
+   ============================================================================ */
+
+.user-menu__dropdown {
+    position: absolute;
+    top: calc(100% + 6px);
+    right: 0;
+    min-width: 200px;
+    background: var(--card);
+    border: 1px solid var(--card-border);
+    border-radius: var(--radius-sm);
+    box-shadow: var(--shadow-lg);
+    z-index: var(--z-dropdown);
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-4px) scale(0.98);
+    transition: opacity 0.15s ease, transform 0.15s ease, visibility 0.15s;
+    padding: 4px;
+}
+
+.user-menu__dropdown.open {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0) scale(1);
+}
+
+/* ============================================================================
+   DROPDOWN HEADER
+   ============================================================================ */
+
+.user-menu__header {
+    padding: 10px 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.user-menu__header-name {
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: var(--text);
+}
+
+.user-menu__header-role {
+    font-size: 0.6875rem;
+    font-weight: 500;
+    color: var(--accent);
+    text-transform: capitalize;
+}
+
+.user-menu__divider {
+    height: 1px;
+    background: var(--border-light);
+    margin: 4px 8px;
+}
+
+/* ============================================================================
+   DROPDOWN ITEMS
+   ============================================================================ */
+
+.user-menu__item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    padding: 8px 12px;
+    font-size: 0.8125rem;
+    font-family: inherit;
+    color: var(--text-secondary);
+    background: none;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background var(--transition), color var(--transition);
+    text-align: left;
+}
+
+.user-menu__item:hover {
+    background: var(--surface-hover);
+    color: var(--text);
+}
+
+.user-menu__item svg {
+    flex-shrink: 0;
+    color: var(--muted);
+}
+
+.user-menu__item:hover svg {
+    color: var(--text-secondary);
+}
+
+/* Danger variant (logout) */
+.user-menu__item--danger {
+    color: var(--danger);
+}
+
+.user-menu__item--danger:hover {
+    background: rgba(201, 138, 122, 0.1);
+    color: var(--danger);
+}
+
+.user-menu__item--danger svg {
+    color: var(--danger);
+}
+
+/* ============================================================================
+   RESPONSIVE
+   ============================================================================ */
+
+@media (max-width: 639px) {
+    .user-menu__name {
+        display: none;
+    }
+
+    .user-menu__chevron {
+        display: none;
+    }
+
+    .user-menu__trigger {
+        padding: 4px;
+    }
+
+    .user-menu__dropdown {
+        right: -8px;
+    }
+}

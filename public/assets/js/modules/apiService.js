@@ -541,6 +541,119 @@ export async function copyItems(sourcePaths, targetPath, options = {}) {
 }
 
 /**
+ * Bulk rename multiple items
+ * @param {Array<{oldPath: string, newName: string}>} renames - Array of rename pairs
+ * @param {Object} options - Opsi tambahan
+ * @param {boolean} options.silent - If true, suppress error notifications
+ * @param {number} options.timeout - Custom timeout in ms
+ * @returns {Promise<Object>} Promise yang resolve dengan hasil bulk rename
+ */
+export async function bulkRenameItems(renames, options = {}) {
+    const { silent = false, timeout = DEFAULT_TIMEOUT } = options;
+
+    try {
+        const response = await fetchWithTimeout(
+            'api.php?action=bulk-rename',
+            {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    renames: renames,
+                }),
+            },
+            timeout
+        );
+
+        const data = await parseResponse(response, 'bulkRenameItems');
+
+        // Allow 207 Multi-Status for partial success
+        if (!response.ok && response.status !== 207) {
+            throw new FileManagerError(
+                data?.error || 'Gagal bulk rename',
+                ErrorCategory.OPERATION,
+                ErrorSeverity.ERROR,
+                { context: 'bulkRenameItems', response }
+            );
+        }
+
+        return data;
+    } catch (error) {
+        if (!silent) {
+            apiErrorHandler(error, { context: 'bulkRenameItems' });
+        }
+        throw error;
+    }
+}
+
+/**
+ * Search file contents recursively (grep-like)
+ * @param {string} query - Search query (plain text or regex)
+ * @param {Object} options - Search options
+ * @param {string} options.path - Starting directory path
+ * @param {boolean} options.regex - Treat query as regex
+ * @param {boolean} options.caseSensitive - Case-sensitive matching
+ * @param {string} options.extensions - Comma-separated extension filter (e.g. 'js,php,css')
+ * @param {number} options.maxResults - Maximum results (default 100, max 500)
+ * @param {number} options.timeout - Custom timeout in ms
+ * @param {AbortSignal} options.signal - AbortController signal
+ * @returns {Promise<Object>} Search results
+ */
+export async function searchFiles(query, options = {}) {
+    const {
+        path = '',
+        regex = false,
+        caseSensitive = false,
+        extensions = '',
+        maxResults = 100,
+        timeout = 60000,
+        signal = null,
+    } = options;
+
+    const params = new URLSearchParams({
+        action: 'search',
+        q: query,
+        path: path,
+        regex: regex ? '1' : '0',
+        case: caseSensitive ? '1' : '0',
+        maxResults: String(maxResults),
+    });
+
+    if (extensions) {
+        params.set('ext', extensions);
+    }
+
+    try {
+        const fetchOptions = { signal };
+        const response = await fetchWithTimeout(
+            `api.php?${params.toString()}`,
+            fetchOptions,
+            timeout
+        );
+
+        const data = await parseResponse(response, 'searchFiles');
+
+        if (!response.ok) {
+            throw new FileManagerError(
+                data?.error || 'Gagal melakukan pencarian',
+                ErrorCategory.OPERATION,
+                ErrorSeverity.ERROR,
+                { context: 'searchFiles', response }
+            );
+        }
+
+        return data;
+    } catch (error) {
+        if (error.name === 'AbortError') {
+            throw error; // Don't wrap abort errors
+        }
+        apiErrorHandler(error, { context: 'searchFiles' });
+        throw error;
+    }
+}
+
+/**
  * Re-export error handling utilities for use by other modules
  */
 export {

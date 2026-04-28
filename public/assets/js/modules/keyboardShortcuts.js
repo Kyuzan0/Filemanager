@@ -32,6 +32,7 @@ const DEFAULT_SHORTCUTS = [
     { key: 'a', ctrl: true, shift: false, alt: false, action: 'selectAll', description: 'Pilih semua file', category: 'File Operations' },
     { key: 'Escape', ctrl: false, shift: false, alt: false, action: 'deselect', description: 'Batalkan pilihan / Tutup overlay', category: 'File Operations' },
     { key: 'd', ctrl: true, shift: false, alt: false, action: 'download', description: 'Unduh file terpilih', category: 'File Operations' },
+    { key: 'z', ctrl: true, shift: false, alt: false, action: 'undo', description: 'Undo operasi terakhir', category: 'File Operations' },
 
     // Navigation
     { key: 'Backspace', ctrl: false, shift: false, alt: false, action: 'goUp', description: 'Ke folder induk', category: 'Navigation' },
@@ -45,8 +46,12 @@ const DEFAULT_SHORTCUTS = [
     // Search & Refresh
     { key: 'f', ctrl: true, shift: false, alt: false, action: 'search', description: 'Fokus ke pencarian', category: 'Search' },
     { key: '/', ctrl: false, shift: false, alt: false, action: 'search', description: 'Fokus ke pencarian', category: 'Search' },
+    { key: 'F', ctrl: true, shift: true, alt: false, action: 'contentSearch', description: 'Cari dalam isi file', category: 'Search' },
     { key: 'r', ctrl: true, shift: false, alt: false, action: 'refresh', description: 'Refresh daftar file', category: 'Refresh' },
     { key: 'F5', ctrl: false, shift: false, alt: false, action: 'refresh', description: 'Refresh daftar file', category: 'Refresh' },
+
+    // Layout
+    { key: '\\', ctrl: true, shift: false, alt: false, action: 'splitPane', description: 'Buka/tutup split pane', category: 'Layout' },
 
     // Help
     { key: '/', ctrl: true, shift: false, alt: false, action: 'showHelp', description: 'Tampilkan bantuan pintasan', category: 'Help' },

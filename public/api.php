@@ -53,6 +53,35 @@ $method = $_SERVER['REQUEST_METHOD'] ?? 'GET';
 $editableExtensions = get_editable_extensions();
 
 // =============================================================================
+// AUTH INITIALIZATION
+// =============================================================================
+
+// Initialize database on first request (auto-migrate)
+if (!\App\Core\Database::isInitialized()) {
+    \App\Core\Database::migrate();
+}
+
+// Auth-free endpoints (login, logout, setup)
+$publicActions = ['auth-login', 'auth-logout', 'auth-setup', 'share-access', 'share-download'];
+
+// Require authentication for all other endpoints
+if (!in_array($action, $publicActions)) {
+    \App\Core\Auth::requireAuth();
+
+    // Write-protection for viewers on state-changing actions
+    $writeActions = [
+        'create', 'upload', 'save', 'delete', 'rename', 'move', 'copy',
+        'bulk-rename', 'compress', 'extract',
+        'trash-restore', 'trash-delete', 'trash-empty', 'trash-cleanup',
+        'logs-cleanup',
+        'share-create', 'share-delete',
+    ];
+    if (in_array($action, $writeActions)) {
+        \App\Core\Auth::requireWrite();
+    }
+}
+
+// =============================================================================
 // REQUEST ROUTING
 // =============================================================================
 
@@ -90,6 +119,24 @@ function route_request(
 ): void {
     // Action routing map
     $actionRoutes = [
+        // Auth endpoints
+        'auth-login' => fn() => handle_auth_login_action($method),
+        'auth-logout' => fn() => handle_auth_logout_action($method),
+        'auth-me' => fn() => handle_auth_me_action(),
+        'auth-register' => fn() => handle_auth_register_action($method),
+        'auth-users' => fn() => handle_auth_users_action($method),
+        'auth-update-user' => fn() => handle_auth_update_user_action($method),
+        'auth-delete-user' => fn() => handle_auth_delete_user_action($method),
+        'auth-permissions' => fn() => handle_auth_permissions_action($method),
+        'auth-setup' => fn() => handle_auth_setup_action($method),
+
+        // Share endpoints
+        'share-create' => fn() => handle_share_create_action($root, $method),
+        'share-list' => fn() => handle_share_list_action($root, $method),
+        'share-delete' => fn() => handle_share_delete_action($method),
+        'share-access' => fn() => handle_share_access_action($root),
+        'share-download' => fn() => handle_share_download_action($root),
+
         // Raw file streaming
         'raw' => fn() => handle_raw_action($root, $sanitizedPath),
 
@@ -118,11 +165,15 @@ function route_request(
         'rename' => fn() => handle_rename_action($root, $sanitizedPath, $method),
         'move' => fn() => handle_move_action($root, $method),
         'copy' => fn() => handle_copy_action($root, $method),
+        'bulk-rename' => fn() => handle_bulk_rename_action($root, $method),
 
         // Archive endpoints
         'compress' => fn() => handle_compress_action($root, $method),
         'extract' => fn() => handle_extract_action($root, $method),
         'zip-contents' => fn() => handle_zip_contents_action($root, $sanitizedPath),
+
+        // Full-text content search
+        'search' => fn() => handle_search_action($root, $sanitizedPath),
 
         // Thumbnail generation & serving
         'thumbnail' => fn() => handle_thumbnail_action($root, $sanitizedPath),

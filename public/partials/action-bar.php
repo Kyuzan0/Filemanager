@@ -37,6 +37,10 @@
             <i class="ri-delete-bin-line text-base"></i>
         </button>
 
+        <button id="btn-split-pane" type="button" class="action-btn-mobile action-btn-split-pane" title="Split Pane" aria-pressed="false">
+            <svg viewBox="0 0 24 24" aria-hidden="true" class="w-4 h-4"><path fill="currentColor" d="M3 3h8v18H3V3zm10 0h8v18h-8V3zM5 5v14h4V5H5zm10 0v14h4V5h-4z"/></svg>
+        </button>
+
         <button id="btn-settings-mobile" type="button" data-action="settings" class="action-btn-mobile action-btn-settings" title="Pengaturan">
             <i class="ri-settings-line text-base"></i>
         </button>
@@ -88,6 +92,11 @@
         <button id="btn-move-selected" data-action="move-selected" type="button" class="action-btn-desktop action-btn-move" disabled title="Pindahkan item terpilih">
             <svg viewBox="0 0 24 24" aria-hidden="true" class="w-5 h-5 flex-shrink-0"><path d="M5 9h2v6H5zm12-4h2v14h-2zm-6 8h2v6h-2z"/></svg>
             <span>Pindah</span>
+        </button>
+
+        <button id="btn-split-pane-desktop" type="button" class="action-btn-desktop action-btn-split-pane" title="Split Pane (Ctrl+\)" aria-pressed="false">
+            <svg viewBox="0 0 24 24" aria-hidden="true" class="w-5 h-5 flex-shrink-0"><path fill="currentColor" d="M3 3h8v18H3V3zm10 0h8v18h-8V3zM5 5v14h4V5H5zm10 0v14h4V5h-4z"/></svg>
+            <span>Split Pane</span>
         </button>
     </div>
 </section>

@@ -340,6 +340,9 @@ export const errorMessages = {
     copyFailed: 'Gagal menyalin path',
     copyItemsFailed: 'Gagal menyalin item',
     pasteFailed: 'Gagal menempelkan item',
+    bulkRenameFailed: 'Gagal melakukan bulk rename',
+    searchFailed: 'Gagal melakukan pencarian',
+    shareFailed: 'Gagal membuat link berbagi',
 };
 
 // Success messages
@@ -353,6 +356,9 @@ export const successMessages = {
     pathCopied: 'Path tersalin ke clipboard',
     itemsCopied: 'Item berhasil disalin',
     itemsPasted: 'Item berhasil ditempelkan',
+    itemsBulkRenamed: 'Item berhasil di-rename',
+    shareCreated: 'Link berbagi berhasil dibuat',
+    shareDeleted: 'Link berbagi berhasil dihapus',
 };
 
 // Action labels for logs

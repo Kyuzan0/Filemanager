@@ -43,19 +43,34 @@ function ensureToastContainer() {
  * @param {string} message - Message to display
  * @param {string} title - Optional title (defaults based on type)
  * @param {number} duration - Optional duration in ms (defaults based on type)
+ * @param {Array<{label: string, callback: Function}>} actions - Optional action buttons
  */
-function showToast(type, message, title = null, duration = null) {
+function showToast(type, message, title = null, duration = null, actions = null) {
     const container = ensureToastContainer();
     const config = toastConfig[type] || toastConfig.info;
 
     const toastTitle = title || config.title;
-    const toastDuration = duration || config.duration;
+    // If actions are present, give more time to click them
+    const toastDuration = duration || (actions && actions.length > 0 ? 6000 : config.duration);
 
     // Create toast element
     const toast = document.createElement('div');
     toast.className = `toast toast-${type}`;
+    if (actions && actions.length > 0) {
+        toast.classList.add('toast-has-actions');
+    }
     toast.setAttribute('role', 'alert');
     toast.setAttribute('aria-live', 'polite');
+
+    // Build actions HTML
+    let actionsHtml = '';
+    if (actions && actions.length > 0) {
+        actionsHtml = '<div class="toast-actions">' +
+            actions.map((action, i) =>
+                `<button class="toast-action-btn" data-action-index="${i}" type="button">${escapeHtml(action.label)}</button>`
+            ).join('') +
+            '</div>';
+    }
 
     // Build HTML
     toast.innerHTML = `
@@ -65,6 +80,7 @@ function showToast(type, message, title = null, duration = null) {
     <div class="toast-content">
       <div class="toast-title">${escapeHtml(toastTitle)}</div>
       <div class="toast-message">${escapeHtml(message)}</div>
+      ${actionsHtml}
     </div>
     <button class="toast-close" aria-label="Tutup notifikasi" type="button">
       ${toastIcons.close}
@@ -76,7 +92,10 @@ function showToast(type, message, title = null, duration = null) {
 
     // Close button handler
     const closeBtn = toast.querySelector('.toast-close');
+    let dismissed = false;
     const removeToast = () => {
+        if (dismissed) return;
+        dismissed = true;
         toast.classList.add('removing');
         setTimeout(() => {
             if (toast.parentNode) {
@@ -87,14 +106,36 @@ function showToast(type, message, title = null, duration = null) {
 
     closeBtn?.addEventListener('click', removeToast);
 
+    // Wire up action button handlers
+    if (actions && actions.length > 0) {
+        const actionBtns = toast.querySelectorAll('.toast-action-btn');
+        actionBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                const index = parseInt(btn.getAttribute('data-action-index'), 10);
+                const action = actions[index];
+                if (action && typeof action.callback === 'function') {
+                    // Disable button to prevent double-click
+                    btn.disabled = true;
+                    btn.textContent = '...';
+                    try {
+                        action.callback();
+                    } catch (e) {
+                        console.error('[Toast] Action callback error:', e);
+                    }
+                }
+                // Dismiss toast after action
+                removeToast();
+            });
+        });
+    }
+
     // Auto-dismiss
-    const dismissTimer = setTimeout(removeToast, toastDuration);
+    let dismissTimer = setTimeout(removeToast, toastDuration);
 
     // Cancel auto-dismiss on hover
     toast.addEventListener('mouseenter', () => clearTimeout(dismissTimer));
     toast.addEventListener('mouseleave', () => {
-        const remainingTime = toastDuration;
-        setTimeout(removeToast, remainingTime);
+        dismissTimer = setTimeout(removeToast, toastDuration);
     });
 
     return toast;

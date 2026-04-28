@@ -45,8 +45,14 @@
 @import 'components/skeleton.css';
 @import 'components/thumbnails.css';
 @import 'components/upload-modal.css';
+@import 'components/command-palette.css';
+@import 'components/bulk-rename.css';
+@import 'components/content-search.css';
+@import 'components/share-modal.css';
+@import 'components/dual-pane.css';
 @import 'components/navigation.css';
 @import 'components/toast.css';
+@import 'components/user-menu.css';
 @import 'components/enhanced-ui.css';
 
 /* ============================================================================

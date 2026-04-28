@@ -55,6 +55,13 @@ import { renderItems as renderItemsComplex, updateSortUI, syncRowSelection, sync
 import { updatePaginationState } from './pagination.js';
 import { showSkeletons } from './ui/skeletonRenderer.js';
 import { initUploadManager, showUploadModal } from './ui/uploadManager.js';
+import { initCommandPalette, open as openCommandPalette } from './ui/commandPalette.js';
+import { initUndoManager, undo as undoLastAction, canUndo } from './ui/undoManager.js';
+import { openBulkRename } from './ui/bulkRenameModal.js';
+import { initContentSearch, open as openContentSearch } from './ui/contentSearch.js';
+import { initAuth, isAdmin, canWrite } from './auth.js';
+import { openShareModal } from './ui/shareModal.js';
+import { initDualPane, toggleDualPane, isDualPaneActive } from './ui/dualPane.js';
 
 // Lazy-loaded modules (loaded on-demand for better performance)
 let moveOverlayModule = null;
@@ -910,6 +917,16 @@ function openContextMenu(x, y, item) {
         className: ''
     });
 
+    // Bulk Rename (only when multiple items selected)
+    if (state.selected.size > 1) {
+        menuItems.push({
+            action: 'bulk-rename',
+            label: 'Bulk Rename',
+            icon: '📝',
+            className: ''
+        });
+    }
+
     // Move
     menuItems.push({
         action: 'move',
@@ -932,6 +949,14 @@ function openContextMenu(x, y, item) {
     menuItems.push({
         action: 'copy-path',
         label: 'Salin Path',
+        icon: '🔗',
+        className: ''
+    });
+
+    // Share
+    menuItems.push({
+        action: 'share',
+        label: 'Bagikan',
         icon: '🔗',
         className: ''
     });
@@ -1275,6 +1300,13 @@ function handleContextMenuAction(action) {
         case 'rename':
             openRenameOverlayWrapper(targetItem);
             break;
+        case 'bulk-rename': {
+            const selectedItems = state.items.filter(i => state.selected.has(i.path));
+            if (selectedItems.length >= 2) {
+                openBulkRename(selectedItems, () => fetchDirectoryWrapper(state.currentPath, { silent: true }));
+            }
+            break;
+        }
         case 'delete':
             openConfirmOverlayWrapper({
                 message: `Hapus "${targetItem.name}"?`,
@@ -1286,6 +1318,9 @@ function handleContextMenuAction(action) {
             break;
         case 'copy-path':
             copyPathToClipboard(targetItem.path);
+            break;
+        case 'share':
+            openShareModal(targetItem);
             break;
         case 'details':
             if (typeof window.openDetailsOverlay === 'function') {
@@ -2073,6 +2108,11 @@ export async function initializeApp() {
             }
         });
 
+        // Initialize auth (user menu, 401 interceptor)
+        if (window.__currentUser) {
+            initAuth({ user: window.__currentUser });
+        }
+
         // Setup event handlers
         setupEventHandlers();
 
@@ -2085,6 +2125,197 @@ export async function initializeApp() {
             dropTarget: mainContent,
             onComplete: () => fetchDirectoryWrapper(state.currentPath, { silent: true })
         });
+
+        // Setup command palette (Ctrl+K)
+        initCommandPalette({
+            // File Operations
+            'copy': () => copySelectedItems(),
+            'cut': () => cutSelectedItems(),
+            'paste': () => {
+                const clipboard = getClipboard();
+                if (clipboard && clipboard.items.length > 0) {
+                    pasteItems(clipboard, state, (path, opts) => fetchDirectoryWrapper(path, opts), clearClipboard);
+                }
+            },
+            'rename': () => {
+                const selected = Array.from(state.selected);
+                if (selected.length === 1) {
+                    const item = state.items.find(i => i.path === selected[0]);
+                    if (item) openRenameOverlayWrapper(item);
+                }
+            },
+            'delete': () => {
+                const paths = Array.from(state.selected);
+                if (paths.length > 0) {
+                    deleteItemsWrapper(paths);
+                }
+            },
+            'download': () => {
+                const selected = Array.from(state.selected);
+                if (selected.length === 1) {
+                    const item = state.items.find(i => i.path === selected[0]);
+                    if (item && item.type === 'file') {
+                        const url = buildFileUrl(item.path);
+                        const a = document.createElement('a');
+                        a.href = url;
+                        a.download = item.name;
+                        a.click();
+                    }
+                }
+            },
+            'details': () => {
+                const selected = Array.from(state.selected);
+                if (selected.length === 1) {
+                    const item = state.items.find(i => i.path === selected[0]);
+                    if (item && typeof window.openDetailsOverlay === 'function') {
+                        window.openDetailsOverlay(item);
+                    }
+                }
+            },
+            'select-all': () => {
+                if (elements.selectAllCheckbox) {
+                    elements.selectAllCheckbox.checked = true;
+                    elements.selectAllCheckbox.dispatchEvent(new Event('change'));
+                }
+            },
+            'undo': () => {
+                undoLastAction();
+            },
+            'bulk-rename': () => {
+                const selectedItems = state.items.filter(i => state.selected.has(i.path));
+                if (selectedItems.length >= 2) {
+                    openBulkRename(selectedItems, () => fetchDirectoryWrapper(state.currentPath, { silent: true }));
+                } else {
+                    window.showWarning?.('Pilih minimal 2 item untuk bulk rename.');
+                }
+            },
+            'content-search': () => {
+                openContentSearch();
+            },
+            'share': () => {
+                const selected = Array.from(state.selected);
+                if (selected.length === 1) {
+                    const item = state.items.find(i => i.path === selected[0]);
+                    if (item) openShareModal(item);
+                } else {
+                    window.showWarning?.('Pilih 1 item untuk dibagikan.');
+                }
+            },
+
+            // Create
+            'new-file': () => openCreateOverlayWrapper('file'),
+            'new-folder': () => openCreateOverlayWrapper('folder'),
+
+            // Navigation
+            'go-up': () => {
+                if (state.parentPath !== null) {
+                    navigateTo(state.parentPath);
+                }
+            },
+            'go-back': () => {
+                window.history.back();
+            },
+            'refresh': () => {
+                fetchDirectoryWrapper(state.currentPath);
+            },
+
+            // Views
+            'view-logs': () => {
+                if (typeof window.SmoothNav?.navigateTo === 'function') {
+                    window.SmoothNav.navigateTo('logs');
+                }
+            },
+            'view-trash': () => {
+                if (typeof window.SmoothNav?.navigateTo === 'function') {
+                    window.SmoothNav.navigateTo('trash');
+                }
+            },
+            'view-dashboard': () => {
+                if (typeof window.SmoothNav?.navigateTo === 'function') {
+                    window.SmoothNav.navigateTo('dashboard');
+                }
+            },
+
+            // Upload
+            'upload-files': () => {
+                const input = elements.uploadInput || elements.uploadInputDesktop;
+                if (input) input.click();
+            },
+            'upload-folder': () => {
+                const input = elements.uploadFolderInput || elements.uploadFolderInputDesktop;
+                if (input) input.click();
+            },
+
+            // Settings
+            'toggle-theme': () => {
+                const html = document.documentElement;
+                const current = html.getAttribute('data-theme');
+                html.setAttribute('data-theme', current === 'dark' ? 'light' : 'dark');
+                try { localStorage.setItem('theme', current === 'dark' ? 'light' : 'dark'); } catch (e) { /* ignore */ }
+            },
+            'show-shortcuts': () => {
+                if (typeof window.showHelpModal === 'function') {
+                    window.showHelpModal();
+                }
+            },
+            'split-pane': () => {
+                toggleDualPane(state.currentPath);
+            },
+            'logout': async () => {
+                try {
+                    await fetch('api.php?action=auth-logout', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: '{}',
+                    });
+                } catch { /* ignore */ }
+                window.location.href = 'login.php';
+            },
+
+            // File navigation (from file search mode)
+            'navigateTo': (path) => navigateTo(path),
+            'openFile': (path, name) => {
+                if (typeof window.openPreviewModal === 'function') {
+                    window.openPreviewModal(path, name);
+                }
+            },
+        });
+
+        // Setup undo manager
+        initUndoManager({
+            fetchDirectory: (path, opts) => fetchDirectoryWrapper(path, opts),
+            getCurrentPath: () => state.currentPath
+        });
+
+        // Setup content search (Ctrl+Shift+F)
+        initContentSearch({
+            openFile: (path, name) => {
+                if (typeof window.openPreviewModal === 'function') {
+                    window.openPreviewModal(path, name);
+                }
+            },
+            navigateTo: (path) => navigateTo(path),
+            getCurrentPath: () => state.currentPath,
+        });
+
+        // Setup dual pane mode (Ctrl+\)
+        initDualPane({
+            fetchDirectory: (path, opts) => fetchDirectoryWrapper(path, opts),
+            getCurrentPath: () => state.currentPath,
+        });
+
+        // Expose openContextMenu for dual pane's context menu delegation
+        window.openContextMenuForItem = (x, y, item) => openContextMenu(x, y, item);
+
+        // Wire split pane toggle buttons
+        const btnSplitPane = document.getElementById('btn-split-pane');
+        const btnSplitPaneDesktop = document.getElementById('btn-split-pane-desktop');
+        if (btnSplitPane) {
+            btnSplitPane.addEventListener('click', () => toggleDualPane(state.currentPath));
+        }
+        if (btnSplitPaneDesktop) {
+            btnSplitPaneDesktop.addEventListener('click', () => toggleDualPane(state.currentPath));
+        }
 
         // Setup move overlay handlers (lazy-loaded on first move operation)
         // Will be loaded when user clicks move button
@@ -2392,11 +2623,17 @@ function setupEventHandlers() {
     // No static DOM setup needed — the old setupContextMenuHandler is bypassed
     logger.info('Context menu will be created dynamically on right-click');
 
-    // Register paste handler for keyboard shortcuts (Ctrl+V)
+    // Register paste and undo handlers for keyboard shortcuts (Ctrl+V, Ctrl+Z)
     registerShortcutHandlers({
         paste: () => {
             const clipboard = getClipboard();
             pasteItems(clipboard, state, (path, opts) => fetchDirectoryWrapper(path, opts), clearClipboard);
+        },
+        undo: () => {
+            undoLastAction();
+        },
+        splitPane: () => {
+            toggleDualPane(state.currentPath);
         }
     });
 
@@ -2679,11 +2916,7 @@ function setupNotifications() {
  */
 function setupKeyboardShortcuts() {
     document.addEventListener('keydown', (event) => {
-        // Ctrl/Cmd + K for search
-        if ((event.ctrlKey || event.metaKey) && event.key === 'k') {
-            event.preventDefault();
-            elements.filterInput.focus();
-        }
+        // Ctrl/Cmd + K is now handled by Command Palette module
 
         // Ctrl/Cmd + N for new file
         if ((event.ctrlKey || event.metaKey) && event.key === 'n') {

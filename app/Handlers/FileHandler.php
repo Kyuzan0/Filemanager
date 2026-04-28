@@ -602,6 +602,107 @@ function handle_copy_action(string $root, string $method): void
 }
 
 /**
+ * Handle bulk rename action — renames multiple items at once.
+ *
+ * POST /api.php?action=bulk-rename
+ * Body: { "renames": [ { "oldPath": "...", "newName": "..." }, ... ] }
+ *
+ * @param string $root Root directory path
+ * @param string $method HTTP request method
+ * @return void
+ */
+function handle_bulk_rename_action(string $root, string $method): void
+{
+    if (strtoupper($method) !== 'POST') {
+        throw new RuntimeException('Metode HTTP tidak diizinkan.');
+    }
+
+    $payload = get_json_payload();
+
+    if (!isset($payload['renames']) || !is_array($payload['renames'])) {
+        throw new RuntimeException('Data rename wajib diisi.');
+    }
+
+    $renames = $payload['renames'];
+    if (empty($renames)) {
+        throw new RuntimeException('Tidak ada item untuk di-rename.');
+    }
+
+    $renamed = [];
+    $errors = [];
+
+    foreach ($renames as $entry) {
+        if (
+            !is_array($entry)
+            || !isset($entry['oldPath'])
+            || !is_string($entry['oldPath'])
+            || !isset($entry['newName'])
+            || !is_string($entry['newName'])
+        ) {
+            $errors[] = [
+                'path' => $entry['oldPath'] ?? '(unknown)',
+                'error' => 'Format data tidak valid.',
+            ];
+            continue;
+        }
+
+        $oldPath = sanitize_relative_path(rawurldecode(trim($entry['oldPath'])));
+        $newName = trim($entry['newName']);
+
+        if ($oldPath === '' || $newName === '') {
+            $errors[] = [
+                'path' => $entry['oldPath'],
+                'error' => 'Path atau nama baru kosong.',
+            ];
+            continue;
+        }
+
+        // Build new path: same parent directory + new name
+        $segments = explode('/', $oldPath);
+        array_pop($segments);
+        $parentDir = implode('/', $segments);
+        $newPath = $parentDir !== '' ? $parentDir . '/' . $newName : $newName;
+
+        try {
+            $result = rename_item($root, $oldPath, $newPath);
+            $renamed[] = [
+                'oldPath' => $oldPath,
+                'newPath' => $result['path'],
+                'newName' => $result['name'],
+            ];
+        } catch (Throwable $e) {
+            $errors[] = [
+                'path' => $oldPath,
+                'error' => $e->getMessage(),
+            ];
+        }
+    }
+
+    // Log activity
+    if (!empty($renamed)) {
+        $count = count($renamed);
+        log_activity('rename', "Bulk rename: {$count} item(s) renamed");
+    }
+
+    $success = count($errors) === 0;
+
+    if (!$success && !empty($renamed)) {
+        http_response_code(207); // Multi-Status for partial success
+    } elseif (!$success) {
+        http_response_code(400);
+    }
+
+    echo json_encode([
+        'success' => $success,
+        'type' => 'bulk-rename',
+        'renamed' => $renamed,
+        'errors' => $errors,
+        'generated_at' => time(),
+    ], JSON_UNESCAPED_UNICODE);
+    exit;
+}
+
+/**
  * Handle item details action — returns extended metadata for a file or folder.
  *
  * GET /api.php?action=details&path=relative/path

@@ -189,6 +189,44 @@
   border-color: var(--accent);
 }
 
+/* Toast Action Buttons */
+.toast-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 6px;
+}
+
+.toast-action-btn {
+  padding: 3px 10px;
+  border-radius: 4px;
+  border: 1.5px solid rgba(255, 255, 255, 0.6);
+  background: rgba(255, 255, 255, 0.15);
+  color: inherit;
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease;
+  line-height: 1.4;
+}
+
+.toast-action-btn:hover {
+  background: rgba(255, 255, 255, 0.3);
+  border-color: rgba(255, 255, 255, 0.9);
+}
+
+.toast-action-btn:active {
+  background: rgba(255, 255, 255, 0.4);
+}
+
+.toast-action-btn:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.toast.toast-has-actions {
+  min-width: 320px;
+}
+
 /* Responsive */
 @media (max-width: 640px) {
   .toast-container {

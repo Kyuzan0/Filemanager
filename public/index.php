@@ -8,6 +8,17 @@
 
 // Load bootstrap (which loads autoload.php and initializes everything)
 require_once dirname(__DIR__) . '/bootstrap.php';
+
+// Initialize database if needed
+if (!\App\Core\Database::isInitialized()) {
+    \App\Core\Database::migrate();
+}
+
+// Require authentication — redirects to login.php if not logged in
+\App\Core\Auth::requireAuth();
+
+// Get current user for template use
+$currentUser = \App\Core\Auth::getCurrentUser();
 ?>
 <!DOCTYPE html>
 <html lang="id">
@@ -450,6 +461,17 @@ require_once dirname(__DIR__) . '/bootstrap.php';
 
     <?php include __DIR__ . '/partials/overlays.php'; ?>
     <?php include __DIR__ . '/partials/trash-overlay.php'; ?>
+
+    <!-- Auth: pass current user data to JS -->
+    <script>
+        window.__currentUser = <?php echo json_encode([
+            'id' => $currentUser['id'],
+            'username' => $currentUser['username'],
+            'email' => $currentUser['email'] ?? '',
+            'display_name' => $currentUser['display_name'] ?? $currentUser['username'],
+            'role' => $currentUser['role'],
+        ], JSON_UNESCAPED_UNICODE); ?>;
+    </script>
 
     <script src="assets/js/modules/toast.js"></script>
     <!-- CodeMirror 6 Local Bundle (pre-built for instant loading) -->
