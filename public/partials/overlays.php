@@ -608,10 +608,10 @@
                             <th class="log-table-th">Aksi
                             </th>
                             <th
-                                class="log-table-th d-none sm\:table-cell">
+                                class="log-table-th log-table-cell--sm-hidden">
                                 IP Address</th>
                             <th
-                                class="log-table-th d-none md\:table-cell">
+                                class="log-table-th log-table-cell--md-hidden">
                                 User Agent</th>
                         </tr>
                     </thead>

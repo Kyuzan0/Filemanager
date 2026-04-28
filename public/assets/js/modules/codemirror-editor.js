@@ -119,21 +119,21 @@ function createSyntaxHighlightingTheme() {
     const tags = CM.tags;
 
     const colors = {
-        keyword: getCSSVar('--syntax-keyword'),
-        string: getCSSVar('--syntax-string'),
-        number: getCSSVar('--syntax-number'),
-        comment: getCSSVar('--syntax-comment'),
-        variable: getCSSVar('--syntax-variable'),
-        functionName: getCSSVar('--syntax-function'),
-        type: getCSSVar('--syntax-type'),
-        operator: getCSSVar('--syntax-operator'),
-        tag: getCSSVar('--syntax-tag'),
-        attribute: getCSSVar('--syntax-attribute'),
-        property: getCSSVar('--syntax-property'),
-        constant: getCSSVar('--syntax-constant'),
-        regexp: getCSSVar('--syntax-regexp'),
-        punctuation: getCSSVar('--syntax-punctuation'),
-        definition: getCSSVar('--syntax-definition')
+        keyword: getCSSVar('--cm-keyword'),
+        string: getCSSVar('--cm-string'),
+        number: getCSSVar('--cm-number'),
+        comment: getCSSVar('--cm-comment'),
+        variable: getCSSVar('--cm-variable'),
+        functionName: getCSSVar('--cm-function'),
+        type: getCSSVar('--cm-type'),
+        operator: getCSSVar('--cm-operator'),
+        tag: getCSSVar('--cm-tag'),
+        attribute: getCSSVar('--cm-attribute'),
+        property: getCSSVar('--cm-property'),
+        constant: getCSSVar('--cm-constant'),
+        regexp: getCSSVar('--cm-regexp'),
+        punctuation: getCSSVar('--cm-punctuation'),
+        definition: getCSSVar('--cm-definition')
     };
 
     const highlightStyles = HighlightStyle.define([

@@ -48,7 +48,7 @@ export function buildFileUrl(path) {
     if (!path) {
         return '#';
     }
-    return 'file/' + path.split('/').map(encodeURIComponent).join('/');
+    return 'api.php?action=raw&path=' + encodeURIComponent(path);
 }
 
 /**
