@@ -134,20 +134,21 @@ th {
 }
 
 tbody tr {
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: background-color 0.15s ease, border-left-color 0.15s ease;
   border-left: 2px solid transparent;
   height: 40px; /* Force rows to be compact */
 }
 
 tbody tr:hover {
-  background: var(--glass);
-  box-shadow: inset 0 0 12px var(--accent);
+  background: var(--surface-hover);
+  border-left-color: var(--accent);
 }
 
 [data-theme="dark"] tbody tr:hover {
-  background: var(--accent);
-  box-shadow: inset 0 0 12px var(--accent);
+  background: rgba(var(--accent-rgb), 0.08);
+  border-left-color: var(--accent);
 }
+
 
 .actions-cell {
   display: flex;
@@ -344,13 +345,13 @@ tbody tr:hover .file-name {
 
 /* File Icon Hover Scale */
 .file-icon {
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  transition: transform 0.2s ease;
 }
 
 tbody tr:hover .file-icon {
   transform: scale(1.08);
-  box-shadow: 0 4px 12px var(--accent);
 }
+
 
 /* Dragging state */
 tbody tr.dragging {
@@ -430,31 +431,34 @@ tbody tr.drop-active {
 
 /* Selected row styling for desktop table */
 tbody tr.selected {
-  background-color: var(--accent) !important;
+  background-color: rgba(var(--accent-rgb), 0.12) !important;
+  border-left-color: var(--accent) !important;
 }
 
 tbody tr.selected:hover {
-  background-color: var(--accent) !important;
+  background-color: rgba(var(--accent-rgb), 0.18) !important;
+  border-left-color: var(--accent) !important;
 }
 
-/* First selected item - Blue highlight (triggered by checkbox) */
+/* First selected item — slightly stronger tint */
 tbody tr.selected.first-selected {
-  background-color: var(--accent) !important;
+  background-color: rgba(var(--accent-rgb), 0.22) !important;
+  border-left-color: var(--accent) !important;
 }
 
 tbody tr.selected.first-selected td {
-  color: white !important;
+  color: var(--text) !important;
 }
 
 tbody tr.selected.first-selected .file-name,
 tbody tr.selected.first-selected .item-link,
 tbody tr.selected.first-selected .text-gray-800,
 tbody tr.selected.first-selected .text-gray-500 {
-  color: white !important;
+  color: var(--accent) !important;
 }
 
 tbody tr.selected.first-selected:hover {
-  background-color: var(--accent) !important;
+  background-color: rgba(var(--accent-rgb), 0.28) !important;
 }
 
 tbody tr.selected.first-selected .row-actions {
@@ -462,11 +466,11 @@ tbody tr.selected.first-selected .row-actions {
 }
 
 tbody tr.selected.first-selected .action-icon-btn {
-  color: white !important;
+  color: var(--accent) !important;
 }
 
 tbody tr.selected.first-selected .action-icon-btn:hover {
-  background-color: rgba(255, 255, 255, 0.2);
+  background-color: rgba(var(--accent-rgb), 0.15);
 }
 
 /* Selected row checkbox styling */
@@ -480,16 +484,16 @@ tbody tr.selected.first-selected input[type="checkbox"] {
 
 /* Mobile item selected state */
 div[data-item-path].selected {
-  background-color: var(--accent) !important;
+  background-color: rgba(var(--accent-rgb), 0.12) !important;
 }
 
 div[data-item-path].selected:hover {
-  background-color: var(--accent) !important;
+  background-color: rgba(var(--accent-rgb), 0.18) !important;
 }
 
-/* Mobile first selected item - Blue highlight */
+/* Mobile first selected item */
 div[data-item-path].selected.first-selected {
-  background-color: var(--accent) !important;
+  background-color: rgba(var(--accent-rgb), 0.22) !important;
 }
 
 div[data-item-path].selected.first-selected,
@@ -497,11 +501,11 @@ div[data-item-path].selected.first-selected .font-medium,
 div[data-item-path].selected.first-selected .text-gray-800,
 div[data-item-path].selected.first-selected .text-gray-500,
 div[data-item-path].selected.first-selected .text-xs {
-  color: white !important;
+  color: var(--text) !important;
 }
 
 div[data-item-path].selected.first-selected:hover {
-  background-color: var(--accent) !important;
+  background-color: rgba(var(--accent-rgb), 0.28) !important;
 }
 
 /* Selection visual feedback on name cell */
@@ -516,10 +520,11 @@ div[data-item-path].selected .font-medium {
   color: var(--accent-light);
 }
 
-/* Override for first-selected */
+/* Override for first-selected name */
 tbody tr.selected.first-selected .file-name,
 div[data-item-path].selected.first-selected .font-medium {
-  color: white !important;
+  color: var(--accent) !important;
+  font-weight: 700;
 }
 
 /* Ensure clickable cursor on row */
@@ -534,33 +539,15 @@ tbody tr[data-item-path] .action-icon-btn {
   cursor: pointer;
 }
 
-/* Selection animation */
+/* Selection entrance animation — subtle fade-in of tint */
 tbody tr.selected,
 div[data-item-path].selected {
-  animation: selectPulse 0.3s ease-out;
+  animation: selectFadeIn 0.2s ease-out;
 }
 
-@keyframes selectPulse {
-  0% {
-    background-color: var(--accent);
-  }
-  100% {
-    background-color: var(--accent);
-  }
-}
-
-[data-theme="dark"] tbody tr.selected,
-[data-theme="dark"] div[data-item-path].selected {
-  animation: selectPulseDark 0.3s ease-out;
-}
-
-@keyframes selectPulseDark {
-  0% {
-    background-color: var(--accent);
-  }
-  100% {
-    background-color: var(--accent);
-  }
+@keyframes selectFadeIn {
+  from { background-color: transparent; }
+  to   { background-color: rgba(var(--accent-rgb), 0.12); }
 }
 
 /* ============================================

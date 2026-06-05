@@ -122,23 +122,23 @@ describe('Utils Module', () => {
         });
 
         test('builds URL for simple path', () => {
-            expect(buildFileUrl('test.txt')).toBe('file/test.txt');
+            expect(buildFileUrl('test.txt')).toBe('api.php?action=raw&path=test.txt');
         });
 
         test('builds URL for nested path', () => {
-            expect(buildFileUrl('folder/sub/file.txt')).toBe('file/folder/sub/file.txt');
+            expect(buildFileUrl('folder/sub/file.txt')).toBe('api.php?action=raw&path=folder%2Fsub%2Ffile.txt');
         });
 
         test('encodes special characters in path segments', () => {
             const result = buildFileUrl('folder/my file.txt');
-            expect(result).toBe('file/folder/my%20file.txt');
+            expect(result).toBe('api.php?action=raw&path=folder%2Fmy%20file.txt');
         });
     });
 
     describe('buildAbsoluteFileUrl()', () => {
         test('returns absolute URL', () => {
             const result = buildAbsoluteFileUrl('test.txt');
-            expect(result).toContain('file/test.txt');
+            expect(result).toContain('api.php?action=raw&path=test.txt');
             expect(result).toMatch(/^https?:\/\//);
         });
     });

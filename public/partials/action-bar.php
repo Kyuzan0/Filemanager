@@ -3,7 +3,7 @@
 ?>
 <section class="action-bar container px-4 py-2 d-flex flex-wrap items-center justify-between gap-4">
     <!-- MOBILE VERSION -->
-    <div class="action-bar-mobile d-flex gap-1-5 p-1-5 items-center justify-center md\:d-none">
+    <div class="action-bar-mobile d-flex gap-1-5 p-1-5 items-center justify-center md:d-none">
         <!-- Hidden checkbox untuk track select-all state -->
         <input type="checkbox" id="select-all-mobile" class="d-none" aria-label="Pilih semua item">
         
@@ -56,7 +56,7 @@
     </div>
 
     <!-- DESKTOP VERSION -->
-    <div class="d-none md\:d-flex gap-3 p-3">
+    <div class="d-none md:d-flex gap-3 p-3">
         <div class="pos-relative">
             <button id="btn-upload-desktop" data-action="upload" type="button" class="action-btn-desktop action-btn-upload" title="Unggah file">
                 <i class="ri-upload-cloud-line"></i>

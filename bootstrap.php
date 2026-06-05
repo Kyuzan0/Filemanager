@@ -102,14 +102,17 @@ function check_origin(): bool
     $referer = $_SERVER['HTTP_REFERER'] ?? '';
     $host = $_SERVER['HTTP_HOST'] ?? '';
 
+    // Strip port from host for comparison (parse_url returns host without port)
+    $hostName = parse_url('http://' . $host, PHP_URL_HOST) ?: $host;
+
     if (!empty($origin)) {
         $originHost = parse_url($origin, PHP_URL_HOST);
-        return $originHost === $host;
+        return $originHost === $hostName;
     }
 
     if (!empty($referer)) {
         $refererHost = parse_url($referer, PHP_URL_HOST);
-        return $refererHost === $host;
+        return $refererHost === $hostName;
     }
 
     return false; // Reject requests with no origin/referer for CSRF safety

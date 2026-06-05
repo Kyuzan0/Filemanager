@@ -201,9 +201,89 @@ function createGridItem(item, state, params) {
     checkbox.setAttribute('aria-label', `Pilih ${item.name}`);
     div.appendChild(checkbox);
 
-    // --- Click: toggle selection (Shift/Ctrl support) ---
+    // Helper: open the item (folder/file/preview)
+    const openGridItem = () => {
+        if (item.type === 'folder') {
+            navigateTo(item.path);
+        } else if (isPreviewable) {
+            openTextPreview(item);
+        } else if (isMediaPreviewable) {
+            openMediaPreview(item);
+        } else {
+            const ext = getFileExtension(item.name);
+            if (isWordDocument(ext)) {
+                openInWord(item);
+            } else {
+                const url = buildFileUrl(item.path);
+                const w = window.open(url, '_blank');
+                if (w) w.opener = null;
+            }
+        }
+    };
+
+    // Helper: toggle selection on this grid item
+    const toggleGridItemSelection = () => {
+        const allCards = Array.from(div.parentElement.querySelectorAll('.grid-item'));
+        const currentIndex = allCards.indexOf(div);
+        const newState = !checkbox.checked;
+        checkbox.checked = newState;
+        toggleSelection(key, newState);
+        div.classList.toggle('selected', newState);
+        div.setAttribute('aria-selected', String(newState));
+        lastSelectedGridIndex = currentIndex;
+    };
+
+    // --- Touch events: single tap = open, long press = select ---
+    let gridLongPressTimer = null;
+    let gridIsLongPress = false;
+    let gridTouchMoved = false;
+
+    div.addEventListener('touchstart', (e) => {
+        if (e.target.closest('.grid-actions')) return;
+        gridTouchMoved = false;
+        gridIsLongPress = false;
+        gridLongPressTimer = setTimeout(() => {
+            gridIsLongPress = true;
+            if (navigator.vibrate) navigator.vibrate(30);
+            toggleGridItemSelection();
+        }, 500);
+    }, { passive: true });
+
+    div.addEventListener('touchmove', () => {
+        gridTouchMoved = true;
+        if (gridLongPressTimer) {
+            clearTimeout(gridLongPressTimer);
+            gridLongPressTimer = null;
+        }
+    }, { passive: true });
+
+    div.addEventListener('touchend', (e) => {
+        if (gridLongPressTimer) {
+            clearTimeout(gridLongPressTimer);
+            gridLongPressTimer = null;
+        }
+        if (gridIsLongPress || gridTouchMoved) {
+            gridIsLongPress = false;
+            return;
+        }
+        if (e.target.closest('.grid-actions')) return;
+        e.preventDefault();
+        openGridItem();
+    });
+
+    div.addEventListener('touchcancel', () => {
+        if (gridLongPressTimer) {
+            clearTimeout(gridLongPressTimer);
+            gridLongPressTimer = null;
+        }
+        gridIsLongPress = false;
+    });
+
+    // --- Desktop: Click for selection (Shift/Ctrl support) ---
     div.addEventListener('click', (e) => {
         if (e.target.closest('.grid-actions')) return;
+        // Skip touch-generated clicks (already handled by touch events)
+        if (e.sourceCapabilities && e.sourceCapabilities.firesTouchEvents) return;
 
         const allCards = Array.from(div.parentElement.querySelectorAll('.grid-item'));
         const currentIndex = allCards.indexOf(div);
@@ -241,24 +321,9 @@ function createGridItem(item, state, params) {
         }
     });
 
-    // --- Double-click: open/navigate/preview ---
+    // --- Desktop: Double-click to open ---
     div.addEventListener('dblclick', () => {
-        if (item.type === 'folder') {
-            navigateTo(item.path);
-        } else if (isPreviewable) {
-            openTextPreview(item);
-        } else if (isMediaPreviewable) {
-            openMediaPreview(item);
-        } else {
-            const ext = getFileExtension(item.name);
-            if (isWordDocument(ext)) {
-                openInWord(item);
-            } else {
-                const url = buildFileUrl(item.path);
-                const w = window.open(url, '_blank');
-                if (w) w.opener = null;
-            }
-        }
+        openGridItem();
     });
 
     // --- Context menu ---

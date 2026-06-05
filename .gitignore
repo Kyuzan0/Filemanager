@@ -45,3 +45,7 @@ php_errors.log
 
 # Documentation
 docs/
+
+.kilo/
+.playwright-mcp/
+.sisyphus/

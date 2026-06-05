@@ -61,5 +61,11 @@ module.exports = {
     restoreMocks: true,
     
     // Test timeout
-    testTimeout: 10000
+    testTimeout: 10000,
+    
+    // Exclude Playwright E2E tests from Jest
+    testPathIgnorePatterns: [
+        '/node_modules/',
+        '/tests/e2e/',
+    ],
 };

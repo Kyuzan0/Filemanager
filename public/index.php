@@ -252,14 +252,14 @@ $currentUser = \App\Core\Auth::getCurrentUser();
                 <div class="d-flex items-center gap-2 flex-1 min-w-0">
                     <!-- Mobile Menu Toggle -->
                     <button
-                        class="btn btn-icon md\:d-none p-1 rounded flex-shrink-0"
+                        class="btn btn-icon md:d-none p-1 rounded flex-shrink-0"
                         id="mobile-menu-toggle" title="Menu" aria-label="Open navigation menu" aria-expanded="false"
                         aria-controls="sidebar">
                         <i class="ri-menu-line text-base text-muted" aria-hidden="true"></i>
                     </button>
 
                     <!-- Breadcrumbs - Hidden on mobile, visible on desktop -->
-                    <nav class="breadcrumbs d-none md\:d-flex text-sm text-muted min-w-0 flex-shrink-0"
+                    <nav class="breadcrumbs d-none md:d-flex text-sm text-muted min-w-0 flex-shrink-0"
                         id="breadcrumbs" aria-label="Breadcrumb navigation">Home</nav>
 
                     <!-- Search - Compact version for desktop -->
@@ -279,20 +279,20 @@ $currentUser = \App\Core\Auth::getCurrentUser();
                         class="btn-primary"
                         id="newBtn" aria-label="Create new file or folder (Ctrl+N)">
                         <i class="ri-add-line text-lg" aria-hidden="true"></i>
-                        <span class="text-sm font-medium d-none sm\:d-inline">New</span>
+                        <span class="text-sm font-medium d-none sm:d-inline">New</span>
                     </button>
                     <button
                         class="btn-secondary"
                         id="uploadBtn" aria-label="Upload files or folder" aria-haspopup="true" aria-expanded="false">
                         <i class="ri-upload-cloud-2-line text-lg" aria-hidden="true"></i>
-                        <span class="text-sm font-medium d-none sm\:d-inline">Upload</span>
+                        <span class="text-sm font-medium d-none sm:d-inline">Upload</span>
                         <i class="ri-arrow-down-s-line text-sm" style="margin-left: 2px;" aria-hidden="true"></i>
                     </button>
                 </div>
 
                 <!-- Right Group: Utilities -->
                 <div class="d-flex items-center gap-2 flex-shrink-0" role="group" aria-label="Utility actions">
-                    <div class="items-center gap-2 px-2 py-1-5 rounded-md border d-none sm\:d-flex"
+                    <div class="items-center gap-2 px-2 py-1-5 rounded-md border d-none sm:d-flex"
                         style="background: var(--bg-secondary); border-color: var(--border-light);"
                         role="status" aria-live="polite">
                         <span class="text-xs font-medium text-muted" id="selectedCount"
@@ -329,11 +329,11 @@ $currentUser = \App\Core\Auth::getCurrentUser();
             <!-- PAGINATION FOOTER -->
             <nav class="pagination-footer"
                 role="navigation" aria-label="Pagination">
-                <div id="showing" class="text-center sm\:text-left" role="status" aria-live="polite">Menampilkan 0 dari 0
+                <div id="showing" class="text-center sm:text-left" role="status" aria-live="polite">Menampilkan 0 dari 0
                     item</div>
                 <div class="d-flex flex-wrap items-center justify-center gap-2">
                     <div class="d-flex items-center gap-2">
-                        <label for="pageSize" class="d-none sm\:d-inline">Item per halaman:</label>
+                        <label for="pageSize" class="d-none sm:d-inline">Item per halaman:</label>
                         <select id="pageSize"
                             class="px-2 py-1-5 border rounded-md text-sm"
                             style="border-color: var(--card-border); background: var(--card); color: var(--text);"

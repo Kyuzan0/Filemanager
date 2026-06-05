@@ -1075,56 +1075,117 @@ export function createMobileItem(item, state, params) {
 
     mobileItem.appendChild(rightSide);
 
-    // Single-click on item toggles checkbox selection (click-to-select enhancement)
-    // Double-click opens the item
-    // Supports Shift+Click for range selection and Ctrl+Click for toggle
-    let clickTimeout = null;
+    // Mobile-native interaction: single tap = open item, long press = toggle selection
+    // Long press threshold: 500ms (standard mobile UX)
+    let longPressTimer = null;
+    let isLongPress = false;
+    let touchMoved = false;
 
-    mobileItem.addEventListener('click', (event) => {
-        // Don't handle if clicking on interactive elements
-        if (event.target.closest('button') || event.target.closest('input')) {
-            return;
-        }
-
-        // Clear any pending click timeout for double-click detection
-        if (clickTimeout) {
-            clearTimeout(clickTimeout);
-            clickTimeout = null;
-            // This is a double-click - open the item
-            if (item.type === 'folder') {
-                navigateTo(item.path);
-            } else if (isPreviewable || isMediaPreviewable) {
-                if (isPreviewable) {
-                    openTextPreview(item);
-                } else {
-                    openMediaPreview(item);
-                }
+    // Helper: open the item (folder/file/preview)
+    const openItem = () => {
+        if (item.type === 'folder') {
+            navigateTo(item.path);
+        } else if (isPreviewable || isMediaPreviewable) {
+            if (isPreviewable) {
+                openTextPreview(item);
             } else {
-                const ext = getFileExtension(item.name);
-                if (isWordDocument(ext)) {
-                    openInWord(item);
-                } else {
-                    const url = buildFileUrl(item.path);
-                    const newWindow = window.open(url, '_blank');
-                    if (newWindow) {
-                        newWindow.opener = null;
-                    }
+                openMediaPreview(item);
+            }
+        } else {
+            const ext = getFileExtension(item.name);
+            if (isWordDocument(ext)) {
+                openInWord(item);
+            } else {
+                const url = buildFileUrl(item.path);
+                const newWindow = window.open(url, '_blank');
+                if (newWindow) {
+                    newWindow.opener = null;
                 }
             }
+        }
+    };
+
+    // Helper: toggle selection on this item
+    const toggleItemSelection = () => {
+        const mobileList = mobileItem.parentElement;
+        const allItems = Array.from(mobileList.querySelectorAll('div[data-item-path]'));
+        const currentIndex = allItems.indexOf(mobileItem);
+
+        const newState = !checkbox.checked;
+        checkbox.checked = newState;
+        toggleSelection(key, newState);
+
+        if (newState) {
+            mobileItem.classList.add('selected');
+            mobileItem.setAttribute('aria-selected', 'true');
+        } else {
+            mobileItem.classList.remove('selected');
+            mobileItem.setAttribute('aria-selected', 'false');
+        }
+        lastSelectedIndex = currentIndex;
+    };
+
+    // Touch events for long-press detection
+    mobileItem.addEventListener('touchstart', (event) => {
+        if (event.target.closest('button') || event.target.closest('input')) return;
+        touchMoved = false;
+        isLongPress = false;
+        longPressTimer = setTimeout(() => {
+            isLongPress = true;
+            // Haptic feedback if available
+            if (navigator.vibrate) navigator.vibrate(30);
+            toggleItemSelection();
+        }, 500);
+    }, { passive: true });
+
+    mobileItem.addEventListener('touchmove', () => {
+        touchMoved = true;
+        if (longPressTimer) {
+            clearTimeout(longPressTimer);
+            longPressTimer = null;
+        }
+    }, { passive: true });
+
+    mobileItem.addEventListener('touchend', (event) => {
+        if (longPressTimer) {
+            clearTimeout(longPressTimer);
+            longPressTimer = null;
+        }
+        // If it was a long press or finger moved, don't open
+        if (isLongPress || touchMoved) {
+            isLongPress = false;
             return;
         }
+        // Single tap on touch device = open item
+        if (event.target.closest('button') || event.target.closest('input')) return;
+        event.preventDefault();
+        openItem();
+    });
 
-        // For Shift+Click and Ctrl+Click, handle immediately without timeout
+    mobileItem.addEventListener('touchcancel', () => {
+        if (longPressTimer) {
+            clearTimeout(longPressTimer);
+            longPressTimer = null;
+        }
+        isLongPress = false;
+    });
+
+    // Desktop fallback: click for selection, dblclick for open
+    mobileItem.addEventListener('click', (event) => {
+        // Skip if touch event already handled this
+        if (event.target.closest('button') || event.target.closest('input')) return;
+        // Only handle mouse clicks (not touch-generated clicks)
+        if (event.sourceCapabilities && event.sourceCapabilities.firesTouchEvents) return;
+
+        // Shift+Click / Ctrl+Click for range/toggle selection
         if (event.shiftKey || event.ctrlKey || event.metaKey) {
             const mobileList = mobileItem.parentElement;
             const allItems = Array.from(mobileList.querySelectorAll('div[data-item-path]'));
             const currentIndex = allItems.indexOf(mobileItem);
 
             if (event.shiftKey && lastSelectedIndex >= 0) {
-                // Shift+Click: Range selection
                 const start = Math.min(lastSelectedIndex, currentIndex);
                 const end = Math.max(lastSelectedIndex, currentIndex);
-
                 for (let i = start; i <= end; i++) {
                     const targetItem = allItems[i];
                     if (targetItem) {
@@ -1140,49 +1201,13 @@ export function createMobileItem(item, state, params) {
                 }
                 debugLog('[TableRenderer] Mobile range selection from', start, 'to', end);
             } else if (event.ctrlKey || event.metaKey) {
-                // Ctrl+Click: Toggle without clearing
-                const newState = !checkbox.checked;
-                checkbox.checked = newState;
-                toggleSelection(key, newState);
-
-                if (newState) {
-                    mobileItem.classList.add('selected');
-                    mobileItem.setAttribute('aria-selected', 'true');
-                } else {
-                    mobileItem.classList.remove('selected');
-                    mobileItem.setAttribute('aria-selected', 'false');
-                }
-                lastSelectedIndex = currentIndex;
+                toggleItemSelection();
             }
             return;
         }
 
-        // Set a timeout for single click (toggle selection)
-        clickTimeout = setTimeout(() => {
-            clickTimeout = null;
-
-            // Get current index for tracking
-            const mobileList = mobileItem.parentElement;
-            const allItems = Array.from(mobileList.querySelectorAll('div[data-item-path]'));
-            const currentIndex = allItems.indexOf(mobileItem);
-
-            // Single click - toggle checkbox
-            const newState = !checkbox.checked;
-            checkbox.checked = newState;
-
-            toggleSelection(key, newState);
-
-            // Update visual state
-            if (newState) {
-                mobileItem.classList.add('selected');
-                mobileItem.setAttribute('aria-selected', 'true');
-            } else {
-                mobileItem.classList.remove('selected');
-                mobileItem.setAttribute('aria-selected', 'false');
-            }
-
-            lastSelectedIndex = currentIndex;
-        }, 250); // 250ms delay to distinguish single vs double click
+        // Normal click = toggle selection (desktop behavior for mobile layout)
+        toggleItemSelection();
     });
 
     // Context menu

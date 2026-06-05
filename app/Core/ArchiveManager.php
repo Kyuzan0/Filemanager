@@ -578,6 +578,19 @@ function get_7zip_path(): ?string
     }
     $pathChecked = true;
 
+    // Try to load from cache file first to avoid slow shell_exec detection
+    $cacheFile = dirname(__DIR__, 2) . DIRECTORY_SEPARATOR . 'storage' . DIRECTORY_SEPARATOR . '7zip_info_cache.json';
+    if (file_exists($cacheFile)) {
+        $cacheData = @json_decode(file_get_contents($cacheFile), true);
+        if (is_array($cacheData) && array_key_exists('path', $cacheData)) {
+            $path = $cacheData['path'];
+            if ($path === null || file_exists($path) || in_array($path, ['7z', '7za', '7zr'])) {
+                $cachedPath = $path;
+                return $cachedPath;
+            }
+        }
+    }
+
     // 1. First, check bundled binaries
     $bundledPath = get_bundled_7zip_path();
     if ($bundledPath !== null) {
@@ -647,6 +660,17 @@ function get_7zip_path(): ?string
  */
 function get_7zip_info(): array
 {
+    $cacheFile = dirname(__DIR__, 2) . DIRECTORY_SEPARATOR . 'storage' . DIRECTORY_SEPARATOR . '7zip_info_cache.json';
+    if (file_exists($cacheFile)) {
+        $cacheData = @json_decode(file_get_contents($cacheFile), true);
+        if (is_array($cacheData) && isset($cacheData['path'])) {
+            $path = $cacheData['path'];
+            if ($path === null || file_exists($path) || in_array($path, ['7z', '7za', '7zr'])) {
+                return $cacheData;
+            }
+        }
+    }
+
     $os = detect_os();
     $path = get_7zip_path();
     $bundledPath = get_bundled_7zip_path();
@@ -668,6 +692,12 @@ function get_7zip_info(): array
             $info['version'] = $matches[1];
         }
     }
+
+    // Write to cache file
+    if (!is_dir(dirname($cacheFile))) {
+        @mkdir(dirname($cacheFile), 0755, true);
+    }
+    @file_put_contents($cacheFile, json_encode($info));
 
     return $info;
 }

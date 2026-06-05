@@ -518,9 +518,9 @@ import {
 // LogManager will be lazy-loaded when needed
 // Create a basic logger that will be replaced when logManager loads
 const logger = {
-    info: () => {},
-    error: (msg, error) => console.error(`[INITIALIZER] ${msg}`, error || ''),
-    warn: (msg, data) => console.warn(`[INITIALIZER] ${msg}`, data || '')
+    info: (msg, data) => console.error(`[INITIALIZER INFO] ${msg}`, data || ''),
+    error: (msg, error) => console.error(`[INITIALIZER ERROR] ${msg}`, error || ''),
+    warn: (msg, data) => console.warn(`[INITIALIZER WARN] ${msg}`, data || '')
 };
 
 // Internal helper functions
@@ -2348,6 +2348,9 @@ export async function initializeApp() {
         // Start polling for updates
         startPolling();
 
+        // Initialize additional features (PWA, Theme, Keyboard Shortcuts, etc.)
+        initializeAdditionalFeatures();
+
         logger.info('Application initialized successfully');
 
     } catch (error) {
@@ -2938,21 +2941,22 @@ function setupNotifications() {
 function setupKeyboardShortcuts() {
     document.addEventListener('keydown', (event) => {
         // Ctrl/Cmd + K is now handled by Command Palette module
+        console.error('[KeyboardShortcuts Debug] key:', event.key, 'ctrlKey:', event.ctrlKey, 'metaKey:', event.metaKey, 'shiftKey:', event.shiftKey);
 
         // Ctrl/Cmd + N for new file
-        if ((event.ctrlKey || event.metaKey) && event.key === 'n') {
+        if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'n' && !event.shiftKey) {
             event.preventDefault();
             openCreateOverlayWrapper('file');
         }
 
         // Ctrl/Cmd + Shift + N for new folder
-        if ((event.ctrlKey || event.metaKey) && event.shiftKey && event.key === 'N') {
+        if ((event.ctrlKey || event.metaKey) && event.shiftKey && event.key.toLowerCase() === 'n') {
             event.preventDefault();
             openCreateOverlayWrapper('folder');
         }
 
         // Ctrl/Cmd + R for refresh (prevent browser refresh)
-        if ((event.ctrlKey || event.metaKey) && event.key === 'r') {
+        if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'r') {
             event.preventDefault();
             elements.btnRefresh.click();
         }
@@ -2963,12 +2967,12 @@ function setupKeyboardShortcuts() {
  * Menginisialisasi fitur-fitur tambahan
  */
 function initializeAdditionalFeatures() {
-    setupServiceWorker();
-    setupPWA();
-    setupAnalytics();
-    setupTheme();
-    setupNotifications();
-    setupKeyboardShortcuts();
+    try { setupServiceWorker(); } catch (e) { console.error('setupServiceWorker error:', e); }
+    try { setupPWA(); } catch (e) { console.error('setupPWA error:', e); }
+    try { setupAnalytics(); } catch (e) { console.error('setupAnalytics error:', e); }
+    try { setupTheme(); } catch (e) { console.error('setupTheme error:', e); }
+    try { setupNotifications(); } catch (e) { console.error('setupNotifications error:', e); }
+    try { setupKeyboardShortcuts(); } catch (e) { console.error('setupKeyboardShortcuts error:', e); }
 }
 
 // Enhanced scroll synchronization state

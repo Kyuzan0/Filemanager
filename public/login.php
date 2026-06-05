@@ -55,7 +55,7 @@ if (\App\Core\Auth::check()) {
         </div>
 
         <!-- Login Form -->
-        <form id="login-form" class="auth-form" autocomplete="on">
+        <form id="login-form" class="auth-form" autocomplete="on" novalidate>
             <div class="auth-field">
                 <label class="auth-label" for="login-username">Username</label>
                 <div class="auth-input-wrap">

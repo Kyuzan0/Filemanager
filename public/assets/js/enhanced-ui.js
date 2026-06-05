@@ -1243,20 +1243,17 @@ function renderGridView(items) {
       <div class="grid-meta">${f.type === 'folder' ? 'Folder' : f.size} · ${f.date}</div>
     `;
 
-    // Double-click to open folder / preview file
-    gridItem.addEventListener('dblclick', async (e) => {
-      e.preventDefault();
+    // Helper: open this grid item
+    const openEnhancedGridItem = async () => {
       if (f.type === 'folder') {
         await loadFiles(f.path);
       } else if (window.openPreviewModal) {
         window.openPreviewModal(f.path, f.name);
       }
-    });
+    };
 
-    // Single click to select
-    gridItem.addEventListener('click', (e) => {
-      if (e.target.closest('.grid-action-btn') || e.target.closest('input[type="checkbox"]')) return;
-
+    // Helper: toggle selection on this grid item
+    const toggleEnhancedGridSelection = () => {
       const path = f.path;
       const checkbox = gridItem.querySelector('.sel');
 
@@ -1281,6 +1278,55 @@ function renderGridView(items) {
         const row = tableCheckbox.closest('tr');
         if (row) row.classList.toggle('selected', selected.has(path));
       }
+    };
+
+    // Touch events: single tap = open, long press = select
+    let enhGridLPTimer = null;
+    let enhGridIsLP = false;
+    let enhGridTouchMoved = false;
+
+    gridItem.addEventListener('touchstart', (e) => {
+      if (e.target.closest('.grid-action-btn') || e.target.closest('input[type="checkbox"]')) return;
+      enhGridTouchMoved = false;
+      enhGridIsLP = false;
+      enhGridLPTimer = setTimeout(() => {
+        enhGridIsLP = true;
+        if (navigator.vibrate) navigator.vibrate(30);
+        toggleEnhancedGridSelection();
+      }, 500);
+    }, { passive: true });
+
+    gridItem.addEventListener('touchmove', () => {
+      enhGridTouchMoved = true;
+      if (enhGridLPTimer) { clearTimeout(enhGridLPTimer); enhGridLPTimer = null; }
+    }, { passive: true });
+
+    gridItem.addEventListener('touchend', (e) => {
+      if (enhGridLPTimer) { clearTimeout(enhGridLPTimer); enhGridLPTimer = null; }
+      if (enhGridIsLP || enhGridTouchMoved) { enhGridIsLP = false; return; }
+      if (e.target.closest('.grid-action-btn') || e.target.closest('input[type="checkbox"]')) return;
+      e.preventDefault();
+      openEnhancedGridItem();
+    });
+
+    gridItem.addEventListener('touchcancel', () => {
+      if (enhGridLPTimer) { clearTimeout(enhGridLPTimer); enhGridLPTimer = null; }
+      enhGridIsLP = false;
+    });
+
+    // Desktop: Double-click to open folder / preview file
+    gridItem.addEventListener('dblclick', async (e) => {
+      e.preventDefault();
+      openEnhancedGridItem();
+    });
+
+    // Desktop: Single click to select
+    gridItem.addEventListener('click', (e) => {
+      if (e.target.closest('.grid-action-btn') || e.target.closest('input[type="checkbox"]')) return;
+      // Skip touch-generated clicks
+      if (e.sourceCapabilities && e.sourceCapabilities.firesTouchEvents) return;
+
+      toggleEnhancedGridSelection();
     });
 
     // Wire grid action buttons
@@ -2586,27 +2632,75 @@ function initializeEventHandlers() {
     }
   });
 
-  // Double-click to open folder or preview file
-  tbody?.addEventListener('dblclick', async (e) => {
-    const row = e.target.closest('tr');
-    if (!row) return;
-
+  // Helper: open a table row item
+  const openTableRowItem = async (row) => {
     const path = row.dataset.path;
     const file = files.find(f => f.path === path);
-
     if (!file) return;
 
     if (file.type === 'folder') {
-      // Open folder
       await loadFiles(path);
-    } else {
-      // Open file in preview modal
-      if (window.openPreviewModal) {
-        window.openPreviewModal(path, file.name);
-      } else {
-
-      }
+    } else if (window.openPreviewModal) {
+      window.openPreviewModal(path, file.name);
     }
+  };
+
+  // Touch events on tbody: single tap = open, long press = select
+  let tbodyLPTimer = null;
+  let tbodyIsLP = false;
+  let tbodyTouchMoved = false;
+  let tbodyTouchRow = null;
+
+  tbody?.addEventListener('touchstart', (e) => {
+    const row = e.target.closest('tr');
+    if (!row || e.target.closest('button') || e.target.closest('input')) return;
+    tbodyTouchRow = row;
+    tbodyTouchMoved = false;
+    tbodyIsLP = false;
+    tbodyLPTimer = setTimeout(() => {
+      tbodyIsLP = true;
+      if (navigator.vibrate) navigator.vibrate(30);
+      // Toggle selection on long press
+      const path = row.dataset.path;
+      const checkbox = row.querySelector('.sel');
+      if (checkbox) {
+        checkbox.checked = !checkbox.checked;
+        if (checkbox.checked) {
+          selected.add(path);
+          row.classList.add('selected');
+        } else {
+          selected.delete(path);
+          row.classList.remove('selected');
+        }
+        if (selectedCount) selectedCount.textContent = `${selected.size} selected`;
+      }
+    }, 500);
+  }, { passive: true });
+
+  tbody?.addEventListener('touchmove', () => {
+    tbodyTouchMoved = true;
+    if (tbodyLPTimer) { clearTimeout(tbodyLPTimer); tbodyLPTimer = null; }
+  }, { passive: true });
+
+  tbody?.addEventListener('touchend', (e) => {
+    if (tbodyLPTimer) { clearTimeout(tbodyLPTimer); tbodyLPTimer = null; }
+    if (tbodyIsLP || tbodyTouchMoved) { tbodyIsLP = false; return; }
+    const row = e.target.closest('tr');
+    if (!row || e.target.closest('button') || e.target.closest('input')) return;
+    e.preventDefault();
+    openTableRowItem(row);
+  });
+
+  tbody?.addEventListener('touchcancel', () => {
+    if (tbodyLPTimer) { clearTimeout(tbodyLPTimer); tbodyLPTimer = null; }
+    tbodyIsLP = false;
+  });
+
+  // Desktop: Double-click to open folder or preview file
+  tbody?.addEventListener('dblclick', async (e) => {
+    const row = e.target.closest('tr');
+    if (!row) return;
+    openTableRowItem(row);
   });
 }
 

@@ -1783,17 +1783,53 @@ document.addEventListener('DOMContentLoaded', () => {
     if (e.target === this) closeDownloadOverlay();
   });
 
-  // Global keyboard handler for modals
+  // Global keyboard handler for modals and shortcuts
   document.addEventListener('keydown', (e) => {
+    const activeElement = document.activeElement;
+    const isInputActive = activeElement && (
+      ['INPUT', 'TEXTAREA', 'SELECT'].includes(activeElement.tagName) ||
+      activeElement.isContentEditable
+    );
+
     if (e.key === 'Escape') {
       // Check which modal is open and close it
       const deleteOverlay = document.getElementById('delete-overlay');
       const downloadOverlay = document.getElementById('download-overlay');
+      const createOverlay = document.getElementById('create-overlay');
+      const renameOverlay = document.getElementById('rename-overlay');
+      const moveOverlay = document.getElementById('move-overlay');
+      const previewOverlay = document.getElementById('preview-overlay');
 
       if (deleteOverlay && !deleteOverlay.classList.contains('hidden')) {
         closeDeleteOverlay();
       } else if (downloadOverlay && !downloadOverlay.classList.contains('hidden')) {
         closeDownloadOverlay();
+      } else if (createOverlay && !createOverlay.classList.contains('hidden')) {
+        closeCreateModal();
+      } else if (renameOverlay && !renameOverlay.classList.contains('hidden')) {
+        closeRenameModal();
+      } else if (moveOverlay && !moveOverlay.classList.contains('hidden')) {
+        closeMoveModal();
+      } else if (previewOverlay && !previewOverlay.classList.contains('hidden')) {
+        closePreviewModal();
+      }
+    } else if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'n') {
+      if (!isInputActive) {
+        e.preventDefault();
+        e.stopPropagation();
+        if (window.openCreateModal) {
+          window.openCreateModal();
+        }
+      }
+    } else if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'f') {
+      if (!isInputActive) {
+        e.preventDefault();
+        e.stopPropagation();
+        const searchInput = document.getElementById('search');
+        if (searchInput) {
+          searchInput.focus();
+          searchInput.select();
+        }
       }
     }
   });

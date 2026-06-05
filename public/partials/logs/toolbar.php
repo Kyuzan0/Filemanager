@@ -3,7 +3,7 @@
     <!-- Left Group: Mobile Toggle, Search, Filters -->
     <div class="toolbar-left">
         <!-- Mobile Menu Toggle -->
-        <button class="btn btn-icon md\:d-none toolbar-menu-toggle" id="mobile-menu-toggle" title="Menu">
+        <button class="btn btn-icon md:d-none toolbar-menu-toggle" id="mobile-menu-toggle" title="Menu">
             <i class="ri-menu-line text-base text-muted"></i>
         </button>
         <div class="search-box">

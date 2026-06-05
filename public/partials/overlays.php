@@ -46,7 +46,7 @@
                 <button class="btn-word-wrap" id="previewWordWrapToggle" title="Toggle Word Wrap"
                     aria-label="Toggle word wrap in editor" aria-pressed="false">
                     <i class="ri-text-wrap" aria-hidden="true"></i>
-                    <span class="d-none sm\:d-inline text-xs">Wrap</span>
+                    <span class="d-none sm:d-inline text-xs">Wrap</span>
                 </button>
                 <!-- Markdown render toggle (shown only for .md files) -->
                 <button class="btn-md-toggle" id="previewMdToggle" title="Toggle Markdown Preview"
@@ -57,7 +57,7 @@
                         <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/>
                         <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>
                     </svg>
-                    <span class="d-none sm\:d-inline text-xs">Preview</span>
+                    <span class="d-none sm:d-inline text-xs">Preview</span>
                 </button>
                 <!-- Fullscreen toggle -->
                 <button class="btn-fullscreen" id="previewFullscreen" title="Toggle Fullscreen (F11)"
