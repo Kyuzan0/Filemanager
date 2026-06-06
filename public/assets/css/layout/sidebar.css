@@ -112,14 +112,17 @@
 
 .sidebar-link:hover,
 .sidebar-link:focus-visible {
-  background: var(--accent-bg);
-  color: var(--accent-hover);
+  background: rgba(var(--accent-rgb), 0.10);
+  color: var(--accent);
   outline: none;
 }
 
 .sidebar-link--active {
-  background: var(--accent);
-  color: var(--sidebar-active-text);
+  background: rgba(var(--accent-rgb), 0.18);
+  color: var(--accent);
+  border-left: 2px solid var(--accent);
+  padding-left: 12px;
+  font-weight: 600;
   box-shadow: var(--sidebar-active-shadow);
 }
 
@@ -129,18 +132,19 @@
 
 [data-theme="dark"] .sidebar-link:hover,
 [data-theme="dark"] .sidebar-link:focus-visible {
-  background: var(--accent);
-  color: var(--slate-200);
+  background: rgba(var(--accent-rgb), 0.10);
+  color: var(--accent-light);
+  outline: none;
 }
 
 [data-theme="dark"] .sidebar-link--active {
-  background: var(--accent);
-  color: var(--sidebar-active-text);
+  background: rgba(var(--accent-rgb), 0.20);
+  color: var(--accent-light);
   box-shadow: var(--sidebar-active-shadow);
 }
 
 [data-theme="light"] .sidebar-link--active {
-  color: var(--sidebar-active-text);
+  color: var(--accent);
 }
 
 .sidebar-link:active {
@@ -316,7 +320,7 @@
 }
 
 .sidebar-section-item:hover {
-  background: var(--accent);
+  background: rgba(var(--accent-rgb), 0.10);
 }
 
 .sidebar-section-item-btn {
