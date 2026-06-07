@@ -11,7 +11,6 @@ function validate_file_extension(string $filename, ?array $allowedExtensions = n
 {
     // Dangerous extensions that should never be allowed
     $dangerousExtensions = [
-        'exe',
         'msi',
         'dll',
         'com',
@@ -59,6 +58,35 @@ function validate_file_extension(string $filename, ?array $allowedExtensions = n
         'jsp',
         'shtml',
     ];
+
+    // Load user-configured overrides from settings.json
+    $settingsFile = dirname(__DIR__, 2) . '/storage/settings.json';
+    $additionalAllowed = [];
+    $additionalBlocked = [];
+    if (file_exists($settingsFile)) {
+        $settings = json_decode(file_get_contents($settingsFile), true);
+        if (isset($settings['upload']['additionalAllowed'])) {
+            $raw = trim($settings['upload']['additionalAllowed']);
+            if ($raw !== '') {
+                $additionalAllowed = array_map('trim', explode(',', $raw));
+                $additionalAllowed = array_map('strtolower', $additionalAllowed);
+            }
+        }
+        if (isset($settings['upload']['additionalBlocked'])) {
+            $raw = trim($settings['upload']['additionalBlocked']);
+            if ($raw !== '') {
+                $additionalBlocked = array_map('trim', explode(',', $raw));
+                $additionalBlocked = array_map('strtolower', $additionalBlocked);
+            }
+        }
+    }
+
+    // Remove user-unblocked extensions from dangerous list
+    $dangerousExtensions = array_diff($dangerousExtensions, $additionalAllowed);
+
+    // Add user-blocked extensions
+    $dangerousExtensions = array_merge($dangerousExtensions, $additionalBlocked);
+    $dangerousExtensions = array_unique($dangerousExtensions);
 
     $ext = strtolower(pathinfo($filename, PATHINFO_EXTENSION));
 

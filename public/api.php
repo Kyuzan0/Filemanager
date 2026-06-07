@@ -93,6 +93,12 @@ try {
     route_request($action, $root, $sanitizedPath, $method, $editableExtensions);
 } catch (Throwable $e) {
     http_response_code(400);
+    // Log actual error for debugging
+    $logFile = dirname(__DIR__) . '/storage/logs/api_errors.log';
+    $logDir = dirname($logFile);
+    if (!is_dir($logDir)) @mkdir($logDir, 0755, true);
+    @file_put_contents($logFile, date('Y-m-d H:i:s') . ' [' . ($action ?? 'unknown') . '] ' . $e->getMessage() . ' in ' . $e->getFile() . ':' . $e->getLine() . "\n", FILE_APPEND);
+    
     echo json_encode([
         'success' => false,
         'error' => $e->getMessage(),

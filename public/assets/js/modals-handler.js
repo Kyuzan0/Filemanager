@@ -1767,16 +1767,28 @@ async function loadUploadSettings() {
       const phpLimit = data.phpLimits?.uploadMax || '-';
       document.getElementById('settings-php-upload-limit').textContent = phpLimit;
 
+      // Fill extension fields
+      const u = data.settings.upload || {};
+      document.getElementById('upload-extra-allowed').value = u.additionalAllowed || '';
+      document.getElementById('upload-extra-blocked').value = u.additionalBlocked || '';
+
       // Update window.uploadConfig for security.js
       window.uploadConfig = {
-        maxSizeMB: data.settings.upload?.maxSizeMB ?? 100,
-        imageMaxMB: data.settings.upload?.imageMaxMB ?? 100,
-        videoMaxMB: data.settings.upload?.videoMaxMB ?? 2048,
-        audioMaxMB: data.settings.upload?.audioMaxMB ?? 100,
-        documentMaxMB: data.settings.upload?.documentMaxMB ?? 100,
-        archiveMaxMB: data.settings.upload?.archiveMaxMB ?? 100,
-        codeMaxMB: data.settings.upload?.codeMaxMB ?? 100,
+        maxSizeMB: u.maxSizeMB ?? 100,
+        imageMaxMB: u.imageMaxMB ?? 100,
+        videoMaxMB: u.videoMaxMB ?? 2048,
+        audioMaxMB: u.audioMaxMB ?? 100,
+        documentMaxMB: u.documentMaxMB ?? 100,
+        archiveMaxMB: u.archiveMaxMB ?? 100,
+        codeMaxMB: u.codeMaxMB ?? 100,
+        additionalAllowed: u.additionalAllowed || '',
+        additionalBlocked: u.additionalBlocked || '',
       };
+
+      // Apply extension overrides in security.js
+      if (typeof applyExtensionOverrides === 'function') {
+        applyExtensionOverrides();
+      }
     }
   } catch (e) {
     console.warn('Failed to load upload settings:', e);
@@ -1789,6 +1801,8 @@ async function saveSettings() {
 
   // Collect upload settings from grid
   const uploadSettings = collectUploadLimits();
+  uploadSettings.additionalAllowed = document.getElementById('upload-extra-allowed').value || '';
+  uploadSettings.additionalBlocked = document.getElementById('upload-extra-blocked').value || '';
 
   try {
     const res = await fetch('api.php?action=settings', {
@@ -1804,6 +1818,10 @@ async function saveSettings() {
     if (data.success) {
       // Update window.uploadConfig for security.js
       window.uploadConfig = { ...uploadSettings };
+      // Re-apply extension overrides
+      if (typeof applyExtensionOverrides === 'function') {
+        applyExtensionOverrides();
+      }
       showSuccess('Pengaturan disimpan');
     } else {
       showError(data.error || 'Gagal menyimpan pengaturan');

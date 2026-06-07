@@ -27,6 +27,7 @@ storage/settings.json
 !storage/temp/.gitkeep
 !storage/database/.gitkeep
 !storage/thumbnails/.gitkeep
+!storage/sessions/.gitkeep
 
 # Legacy paths (to be removed after migration)
 file/*
@@ -61,3 +62,6 @@ docs/
 .playwright-mcp/
 .sisyphus/
 .trash/
+
+# Runtime logs
+storage/logs/api_errors.log

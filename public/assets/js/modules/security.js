@@ -67,12 +67,33 @@ const ALLOWED_EXTENSIONS = new Set([
  * Dangerous file extensions that should never be allowed
  */
 const DANGEROUS_EXTENSIONS = new Set([
-    'exe', 'msi', 'dll', 'com', 'scr', 'pif',
+    'msi', 'dll', 'com', 'scr', 'pif',
     'vbs', 'vbe', 'js', 'jse', 'ws', 'wsf', 'wsc', 'wsh',
     'ps1', 'ps1xml', 'ps2', 'ps2xml', 'psc1', 'psc2',
     'lnk', 'inf', 'reg', 'hta', 'cpl', 'msc',
     'jar', 'jnlp'
 ]);
+
+/**
+ * Apply server-configured extension overrides to DANGEROUS_EXTENSIONS and ALLOWED_EXTENSIONS
+ */
+function applyExtensionOverrides() {
+    const cfg = window.uploadConfig;
+    if (!cfg) return;
+
+    if (cfg.additionalAllowed) {
+        const allowed = cfg.additionalAllowed.split(',').map(s => s.trim().toLowerCase()).filter(Boolean);
+        allowed.forEach(ext => DANGEROUS_EXTENSIONS.delete(ext));
+        allowed.forEach(ext => ALLOWED_EXTENSIONS.add(ext));
+    }
+    if (cfg.additionalBlocked) {
+        const blocked = cfg.additionalBlocked.split(',').map(s => s.trim().toLowerCase()).filter(Boolean);
+        blocked.forEach(ext => { DANGEROUS_EXTENSIONS.add(ext); ALLOWED_EXTENSIONS.delete(ext); });
+    }
+}
+
+// Apply overrides when module loads
+applyExtensionOverrides();
 
 /**
  * Maximum file sizes by type (in bytes)
@@ -882,5 +903,5 @@ export default {
     // Constants
     ALLOWED_EXTENSIONS,
     DANGEROUS_EXTENSIONS,
-    MAX_FILE_SIZES
+    DEFAULT_FILE_SIZES
 };

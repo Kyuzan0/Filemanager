@@ -23,6 +23,8 @@ function get_default_settings(): array
             'documentMaxMB' => 100,
             'archiveMaxMB' => 100,
             'codeMaxMB' => 100,
+            'additionalAllowed' => '',  // comma-separated: exe,msi,dll
+            'additionalBlocked' => '',   // comma-separated: txt,log (extra blocked)
         ],
     ];
 }
@@ -96,10 +98,12 @@ function handle_settings_action(string $method): void
 
         if (isset($input['upload']) && is_array($input['upload'])) {
             $current['upload'] = array_merge($current['upload'], $input['upload']);
-            // Clamp values to PHP limits
+            // Clamp numeric values to PHP limits; keep strings as-is
             $phpMaxMB = (int) floor(parse_bytes(ini_get('upload_max_filesize')) / 1024 / 1024);
-            foreach ($current['upload'] as &$v) {
-                $v = max(1, min((int) $v, $phpMaxMB));
+            foreach ($current['upload'] as $k => &$v) {
+                if (is_int($v) || (is_string($v) && ctype_digit($v))) {
+                    $v = max(1, min((int) $v, $phpMaxMB));
+                }
             }
             unset($v);
         }

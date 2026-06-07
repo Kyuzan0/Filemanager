@@ -510,7 +510,9 @@ $currentUser = \App\Core\Auth::getCurrentUser();
                     audioMaxMB: u.audioMaxMB || 100,
                     documentMaxMB: u.documentMaxMB || 100,
                     archiveMaxMB: u.archiveMaxMB || 100,
-                    codeMaxMB: u.codeMaxMB || 100
+                    codeMaxMB: u.codeMaxMB || 100,
+                    additionalAllowed: u.additionalAllowed || '',
+                    additionalBlocked: u.additionalBlocked || ''
                 };
             }
         }).catch(function(){});

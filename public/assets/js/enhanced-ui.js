@@ -2286,8 +2286,40 @@ function initializeEventHandlers() {
         });
         const data = await response.json();
 
+        // If server returned an error response
+        if (!response.ok || data.success === false) {
+          const errorMsg = data.error || 'Terjadi kesalahan server';
+          rows.forEach(row => {
+            const progressEl = row?.querySelector('.card-upload-progress');
+            const statusEl = row?.querySelector('.card-upload-status');
+            if (progressEl) {
+              progressEl.style.width = '100%';
+              progressEl.classList.add('progress-error');
+            }
+            if (statusEl) {
+              statusEl.textContent = 'Gagal ✗';
+              statusEl.classList.add('status-error');
+            }
+          });
+          const summary = document.getElementById('cardUploadSummary');
+          const summaryText = document.getElementById('cardUploadSummaryText');
+          if (summary && summaryText) {
+            summary.style.display = 'block';
+            summary.className = 'card-upload-modal__summary summary-danger';
+            summaryText.textContent = `✗ Upload gagal: ${errorMsg}`;
+          }
+          if (uploadBtn) {
+            uploadBtn.innerHTML = '<span>Selesai</span>';
+            uploadBtn.disabled = false;
+          }
+          if (cancelBtn) cancelBtn.style.display = 'none';
+          isUploadCompleted = true;
+          isUploadInProgress = false;
+          return;
+        }
+
         const uploadedFiles = data.uploaded || [];
-        const failedFiles = data.failed || [];
+        const failedFiles = data.errors || data.failed || [];
         const successCount = uploadedFiles.length;
         const errorCount = failedFiles.length;
 
