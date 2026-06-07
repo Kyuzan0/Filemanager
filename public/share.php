@@ -105,7 +105,7 @@ $baseUrl = rtrim(dirname($_SERVER['SCRIPT_NAME']), '/');
         </div>
     </div>
 
-    <script>
+    <script nonce="<?= $_SERVER['csp_nonce'] ?? '' ?>">
     (function() {
         const token = <?php echo json_encode($token); ?>;
         const baseApiUrl = <?php echo json_encode($baseUrl); ?>;
@@ -134,12 +134,17 @@ $baseUrl = rtrim(dirname($_SERVER['SCRIPT_NAME']), '/');
             errorEl.style.display = 'none';
 
             try {
-                let url = `${baseApiUrl}/api.php?action=share-access&token=${encodeURIComponent(token)}`;
+                const url = `${baseApiUrl}/api.php?action=share-access&token=${encodeURIComponent(token)}`;
+                const body = { token };
                 if (sharePassword) {
-                    url += `&password=${encodeURIComponent(sharePassword)}`;
+                    body.password = sharePassword;
                 }
 
-                const resp = await fetch(url);
+                const resp = await fetch(url, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(body)
+                });
                 const data = await resp.json();
 
                 loadingEl.style.display = 'none';
@@ -180,10 +185,8 @@ $baseUrl = rtrim(dirname($_SERVER['SCRIPT_NAME']), '/');
             `;
 
             if (file.can_download && file.type !== 'folder') {
-                let downloadUrl = `${baseApiUrl}/api.php?action=share-download&token=${encodeURIComponent(token)}`;
-                if (sharePassword) {
-                    downloadUrl += `&password=${encodeURIComponent(sharePassword)}`;
-                }
+                // Download uses session-based auth — no password in URL
+                const downloadUrl = `${baseApiUrl}/api.php?action=share-download&token=${encodeURIComponent(token)}`;
                 html += `<a href="${downloadUrl}" class="share-btn share-btn-primary" id="download-btn">
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
                     Unduh File
@@ -243,8 +246,12 @@ $baseUrl = rtrim(dirname($_SERVER['SCRIPT_NAME']), '/');
                 errEl.style.display = 'none';
 
                 try {
-                    const url = `${baseApiUrl}/api.php?action=share-access&token=${encodeURIComponent(token)}&password=${encodeURIComponent(sharePassword)}`;
-                    const resp = await fetch(url);
+                    const url = `${baseApiUrl}/api.php?action=share-access&token=${encodeURIComponent(token)}`;
+                    const resp = await fetch(url, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ token, password: sharePassword })
+                    });
                     const data = await resp.json();
 
                     if (!data.success) {

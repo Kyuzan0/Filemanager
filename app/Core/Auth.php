@@ -58,9 +58,9 @@ class Auth
             return null;
         }
 
-        // Check session expiry (24 hours)
+        // Check session expiry (2 hours — appropriate for file manager)
         $lastActivity = strtotime($session['last_activity']);
-        if (time() - $lastActivity > 86400) {
+        if (time() - $lastActivity > 7200) {
             self::destroySession($session['user_id']);
             return null;
         }

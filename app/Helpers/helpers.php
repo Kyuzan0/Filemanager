@@ -5,6 +5,33 @@
  * Common utility functions used across handlers
  */
 
+// Load messages once
+$_messages_cache = null;
+
+/**
+ * Get a localized message by key
+ * 
+ * @param string $key Message key
+ * @param mixed ...$args sprintf arguments
+ * @return string Translated message
+ */
+function msg(string $key, mixed ...$args): string
+{
+    global $_messages_cache;
+
+    if ($_messages_cache === null) {
+        $_messages_cache = require __DIR__ . '/messages.php';
+    }
+
+    $message = $_messages_cache[$key] ?? $key;
+
+    if (!empty($args)) {
+        $message = sprintf($message, ...$args);
+    }
+
+    return $message;
+}
+
 /**
  * Get JSON payload from request body
  * 

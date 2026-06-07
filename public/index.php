@@ -25,7 +25,7 @@ $currentUser = \App\Core\Auth::getCurrentUser();
 
 <head>
     <!-- Anti-flash: Set theme before anything else -->
-    <script>
+    <script nonce="<?= $_SERVER['csp_nonce'] ?? '' ?>">
         (function () {
             const theme = localStorage.getItem('theme') || 'dark';
             document.documentElement.setAttribute('data-theme', theme);
@@ -57,7 +57,7 @@ $currentUser = \App\Core\Auth::getCurrentUser();
         }
     </style>
     <!-- Modular CSS - Main entry point -->
-    <link rel="stylesheet" href="assets/css/main.css?v=<?php echo time(); ?>">
+    <link rel="stylesheet" href="assets/css/main.css?v=<?= @md5_file(__DIR__ . '/assets/css/main.css') ?: time() ?>">
     <!-- RemixIcon CDN -->
     <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
     <!-- Component-specific styles -->
@@ -463,7 +463,7 @@ $currentUser = \App\Core\Auth::getCurrentUser();
     <?php include __DIR__ . '/partials/trash-overlay.php'; ?>
 
     <!-- Auth: pass current user data to JS -->
-    <script>
+    <script nonce="<?= $_SERVER['csp_nonce'] ?? '' ?>">
         window.__currentUser = <?php echo json_encode([
             'id' => $currentUser['id'],
             'username' => $currentUser['username'],
@@ -478,13 +478,13 @@ $currentUser = \App\Core\Auth::getCurrentUser();
     <script src="assets/js/vendor/codemirror.min.js"></script>
     <!-- CodeMirror Editor Integration -->
     <script src="assets/js/modules/codemirror-editor.js"></script>
-    <script src="assets/js/enhanced-ui.js?v=<?php echo time(); ?>"></script>
-    <script src="assets/js/modals-handler.js?v=<?php echo time(); ?>"></script>
-    <script src="assets/js/log-handler.js?v=<?php echo time(); ?>"></script>
+    <script src="assets/js/enhanced-ui.js?v=<?= @md5_file(__DIR__ . '/assets/js/enhanced-ui.js') ?: time() ?>"></script>
+    <script src="assets/js/modals-handler.js?v=<?= @md5_file(__DIR__ . '/assets/js/modals-handler.js') ?: time() ?>"></script>
+    <script src="assets/js/log-handler.js?v=<?= @md5_file(__DIR__ . '/assets/js/log-handler.js') ?: time() ?>"></script>
     <!-- Word Wrap Toggle Module -->
     <script type="module" src="assets/js/modules/wordWrapToggle.js"></script>
     <!-- SPA Router -->
-    <script src="assets/js/modules/router.js?v=<?php echo time(); ?>"></script>
+    <script src="assets/js/modules/router.js?v=<?= @md5_file(__DIR__ . '/assets/js/modules/router.js') ?: time() ?>"></script>
     <!-- Favorites & Recent Files Manager -->
     <script src="assets/js/modules/favorites-manager.js"></script>
     <!-- System Requirements Handler -->

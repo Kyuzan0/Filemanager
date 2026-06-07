@@ -21,6 +21,10 @@ require_once dirname(__DIR__) . '/bootstrap.php';
 
 header('Content-Type: application/json; charset=utf-8');
 
+// Generate CSRF token for state-changing requests
+$csrfToken = generate_csrf_token();
+header('X-CSRF-Token: ' . $csrfToken);
+
 // Enforce CSRF protection for state-changing requests
 if (!check_origin()) {
     http_response_code(403);

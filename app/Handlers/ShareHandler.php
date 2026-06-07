@@ -287,6 +287,39 @@ function handle_share_delete_action(string $method): void
 }
 
 /**
+ * Check if IP is rate-limited for share access.
+ * Max 20 requests per minute per IP+token combination.
+ */
+function check_share_rate_limit(string $ip, string $token): bool
+{
+    $db = Database::getConnection();
+    $stmt = $db->prepare('
+        SELECT COUNT(*) as cnt FROM share_access_log
+        WHERE ip_address = ? AND token = ?
+        AND accessed_at > datetime("now", "-1 minute")
+    ');
+    $stmt->execute([$ip, $token]);
+    $result = $stmt->fetch();
+    return ($result['cnt'] ?? 0) < 20;
+}
+
+/**
+ * Log a share access attempt.
+ */
+function log_share_access(string $ip, string $token, string $userAgent): void
+{
+    $db = Database::getConnection();
+    $stmt = $db->prepare('
+        INSERT INTO share_access_log (ip_address, token, user_agent)
+        VALUES (?, ?, ?)
+    ');
+    $stmt->execute([$ip, $token, substr($userAgent, 0, 500)]);
+
+    // Cleanup old entries (older than 1 hour)
+    $db->exec("DELETE FROM share_access_log WHERE accessed_at < datetime('now', '-1 hour')");
+}
+
+/**
  * Access a shared file (public, no auth required)
  * Validates token and returns file metadata
  * 
@@ -300,6 +333,15 @@ function handle_share_access_action(string $root): void
         json_error('Token wajib diisi.', 400);
         return;
     }
+
+    // Rate limit check
+    $ip = $_SERVER['REMOTE_ADDR'] ?? '0.0.0.0';
+    if (!check_share_rate_limit($ip, $token)) {
+        http_response_code(429);
+        json_error('Terlalu banyak permintaan. Coba lagi dalam beberapa menit.', 429);
+        return;
+    }
+    log_share_access($ip, $token, $_SERVER['HTTP_USER_AGENT'] ?? '');
 
     $db = Database::getConnection();
 
@@ -336,9 +378,10 @@ function handle_share_access_action(string $root): void
             return;
         }
 
-        // Check password
+        // Check password — accept from POST body only (never from URL)
         if (!empty($share['password_hash'])) {
-            $password = $_GET['password'] ?? '';
+            $payload = get_json_payload();
+            $password = $payload['password'] ?? '';
             if (empty($password)) {
                 json_response([
                     'success' => false,
@@ -352,6 +395,12 @@ function handle_share_access_action(string $root): void
                 json_error('Password salah.', 401);
                 return;
             }
+
+            // Store validated token in session for download
+            $_SESSION['share_access_' . $token] = [
+                'validated' => true,
+                'expires' => time() + 3600, // 1 hour
+            ];
         }
 
         // Validate file still exists
@@ -401,7 +450,6 @@ function handle_share_access_action(string $root): void
 function handle_share_download_action(string $root): void
 {
     $token = $_GET['token'] ?? '';
-    $password = $_GET['password'] ?? '';
 
     if (empty($token)) {
         http_response_code(400);
@@ -409,6 +457,16 @@ function handle_share_download_action(string $root): void
         echo json_encode(['success' => false, 'error' => 'Token wajib diisi.']);
         exit;
     }
+
+    // Rate limit check
+    $ip = $_SERVER['REMOTE_ADDR'] ?? '0.0.0.0';
+    if (!check_share_rate_limit($ip, $token)) {
+        http_response_code(429);
+        header('Content-Type: application/json');
+        echo json_encode(['success' => false, 'error' => 'Terlalu banyak permintaan. Coba lagi dalam beberapa menit.']);
+        exit;
+    }
+    log_share_access($ip, $token, $_SERVER['HTTP_USER_AGENT'] ?? '');
 
     $db = Database::getConnection();
 
@@ -453,12 +511,15 @@ function handle_share_download_action(string $root): void
             exit;
         }
 
-        // Check password
+        // Check password — use session validation from previous access
         if (!empty($share['password_hash'])) {
-            if (empty($password) || !password_verify($password, $share['password_hash'])) {
+            $sessionKey = 'share_access_' . $token;
+            $sessionData = $_SESSION[$sessionKey] ?? null;
+
+            if (!$sessionData || !$sessionData['validated'] || $sessionData['expires'] < time()) {
                 http_response_code(401);
                 header('Content-Type: application/json');
-                echo json_encode(['success' => false, 'error' => 'Password salah.']);
+                echo json_encode(['success' => false, 'error' => 'Password belum divalidasi. Silakan akses link lagi.']);
                 exit;
             }
         }

@@ -206,22 +206,30 @@ function handleManageUsers() {
 function setupAuthInterceptor() {
     const originalFetch = window.fetch;
 
+    // Guard against double-wrap
+    if (window._fetchInterceptorActive) {
+        return;
+    }
+    window._fetchInterceptorActive = true;
+
     window.fetch = async function (...args) {
         const response = await originalFetch.apply(this, args);
 
         if (response.status === 401) {
-            // Check if it's our API
             const url = typeof args[0] === 'string' ? args[0] : args[0]?.url || '';
             if (url.includes('api.php')) {
-                try {
-                    const clone = response.clone();
-                    const data = await clone.json();
-                    if (data.code === 'AUTH_REQUIRED') {
-                        window.location.href = 'login.php';
-                        return response;
+                // Check content-type header first — avoids cloning body for binary responses
+                const contentType = response.headers.get('content-type') || '';
+                if (contentType.includes('json')) {
+                    try {
+                        const data = await response.clone().json();
+                        if (data.code === 'AUTH_REQUIRED') {
+                            window.location.href = 'login.php';
+                            return response;
+                        }
+                    } catch {
+                        // Not JSON or parse error — ignore
                     }
-                } catch {
-                    // Not JSON, ignore
                 }
             }
         }

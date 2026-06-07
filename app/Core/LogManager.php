@@ -2,8 +2,12 @@
 /**
  * Log Manager
  * Handles activity logging, reading, filtering, and cleanup
- * Note: Depends on functions from file_manager.php (get_logs_directory, etc)
+ * Uses SQLite database for O(1) writes and indexed queries.
+ *
+ * @version 2.0.0
  */
+
+use App\Core\Database;
 
 /**
  * Write activity log entry
@@ -16,42 +20,25 @@
  */
 function write_activity_log(string $action, string $target, string $targetType, string $path = '', array $extra = []): void
 {
-    ensure_directories();
+    $db = Database::getConnection();
 
-    $logFile = ACTIVITY_LOG_FILE;
-    $logs = [];
+    $stmt = $db->prepare('
+        INSERT INTO activity_logs (action, filename, target_type, path, ip_address, user_agent, extra_data)
+        VALUES (?, ?, ?, ?, ?, ?, ?)
+    ');
 
-    if (file_exists($logFile)) {
-        $content = file_get_contents($logFile);
-        if ($content) {
-            $decoded = json_decode($content, true);
-            if (is_array($decoded)) {
-                $logs = $decoded;
-            }
-        }
-    }
+    $stmt->execute([
+        $action,
+        $target,
+        $targetType,
+        $path,
+        $_SERVER['REMOTE_ADDR'] ?? 'unknown',
+        $_SERVER['HTTP_USER_AGENT'] ?? '',
+        !empty($extra) ? json_encode($extra, JSON_UNESCAPED_UNICODE) : null,
+    ]);
 
-    $entry = [
-        'timestamp' => time(),
-        'action' => $action,
-        'filename' => $target,
-        'targetType' => $targetType,
-        'path' => $path,
-        'ip' => $_SERVER['REMOTE_ADDR'] ?? 'unknown',
-        'userAgent' => $_SERVER['HTTP_USER_AGENT'] ?? '',
-    ];
-
-    // Merge extra data (for count, items, etc)
-    $entry = array_merge($entry, $extra);
-
-    array_unshift($logs, $entry);
-
-    // Keep only last 10000 entries to prevent unbounded growth
-    $logs = array_slice($logs, 0, 10000);
-
-    if (!@file_put_contents($logFile, json_encode($logs, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT))) {
-        throw new RuntimeException('Gagal menulis log aktivitas.');
-    }
+    // Auto-cleanup: keep last 50,000 entries
+    $db->exec('DELETE FROM activity_logs WHERE id NOT IN (SELECT id FROM activity_logs ORDER BY id DESC LIMIT 50000)');
 }
 
 /**
@@ -63,78 +50,66 @@ function write_activity_log(string $action, string $target, string $targetType, 
  */
 function read_activity_logs(int $limit = 15, int $page = 1, array $filters = []): array
 {
-    $logFile = ACTIVITY_LOG_FILE;
+    $db = Database::getConnection();
 
-    if (!file_exists($logFile)) {
-        return [
-            'logs' => [],
-            'total' => 0,
-            'totalPages' => 0,
-        ];
+    $conditions = [];
+    $params = [];
+
+    if (!empty($filters['action'])) {
+        $conditions[] = 'action = ?';
+        $params[] = $filters['action'];
     }
 
-    $content = file_get_contents($logFile);
-    if ($content === false) {
-        return [
-            'logs' => [],
-            'total' => 0,
-            'totalPages' => 0,
-        ];
+    if (!empty($filters['type'])) {
+        $conditions[] = 'target_type = ?';
+        $params[] = $filters['type'];
     }
 
-    $allLogs = json_decode($content, true);
-    if (!is_array($allLogs)) {
-        $allLogs = [];
+    if (!empty($filters['search'])) {
+        $search = '%' . $filters['search'] . '%';
+        $conditions[] = '(filename LIKE ? OR path LIKE ? OR action LIKE ? OR ip_address LIKE ?)';
+        $params[] = $search;
+        $params[] = $search;
+        $params[] = $search;
+        $params[] = $search;
     }
 
-    // Sort by timestamp descending (newest first)
-    usort($allLogs, function ($a, $b) {
-        return ($b['timestamp'] ?? 0) - ($a['timestamp'] ?? 0);
-    });
+    $where = !empty($conditions) ? 'WHERE ' . implode(' AND ', $conditions) : '';
 
-    // Apply filters
-    $filteredLogs = array_filter($allLogs, function ($log) use ($filters) {
-        // Action filter
-        if (!empty($filters['action']) && ($log['action'] ?? '') !== $filters['action']) {
-            return false;
-        }
+    // Count total
+    $countStmt = $db->prepare("SELECT COUNT(*) as cnt FROM activity_logs {$where}");
+    $countStmt->execute($params);
+    $total = (int) $countStmt->fetch()['cnt'];
+    $totalPages = $limit > 0 ? (int) ceil($total / $limit) : 1;
 
-        // Type filter
-        if (!empty($filters['type']) && ($log['targetType'] ?? '') !== $filters['type']) {
-            return false;
-        }
-
-        // Search filter (search in filename, path, action)
-        if (!empty($filters['search'])) {
-            $search = strtolower($filters['search']);
-            $filename = strtolower($log['filename'] ?? $log['target'] ?? '');
-            $path = strtolower($log['path'] ?? '');
-            $action = strtolower($log['action'] ?? '');
-            $ip = $log['ip'] ?? '';
-
-            if (
-                strpos($filename, $search) === false &&
-                strpos($path, $search) === false &&
-                strpos($action, $search) === false &&
-                strpos($ip, $search) === false
-            ) {
-                return false;
-            }
-        }
-
-        return true;
-    });
-
-    $total = count($filteredLogs);
-    $totalPages = $limit > 0 ? ceil($total / $limit) : 1;
-
-    // Pagination
+    // Fetch page
     if ($limit > 0) {
         $page = max(1, min($page, $totalPages));
         $offset = ($page - 1) * $limit;
-        $logs = array_slice($filteredLogs, $offset, $limit);
     } else {
-        $logs = $filteredLogs;
+        $offset = 0;
+    }
+
+    $sql = "SELECT * FROM activity_logs {$where} ORDER BY id DESC LIMIT ? OFFSET ?";
+    $stmt = $db->prepare($sql);
+    $allParams = array_merge($params, [$limit, $offset]);
+    $stmt->execute($allParams);
+    $rows = $stmt->fetchAll();
+
+    // Normalize rows to match old JSON format for backward compatibility
+    $logs = [];
+    foreach ($rows as $row) {
+        $extra = $row['extra_data'] ? json_decode($row['extra_data'], true) : [];
+        $entry = array_merge([
+            'timestamp' => strtotime($row['created_at']),
+            'action' => $row['action'],
+            'filename' => $row['filename'],
+            'targetType' => $row['target_type'],
+            'path' => $row['path'],
+            'ip' => $row['ip_address'],
+            'userAgent' => $row['user_agent'],
+        ], is_array($extra) ? $extra : []);
+        $logs[] = $entry;
     }
 
     return [
@@ -142,25 +117,6 @@ function read_activity_logs(int $limit = 15, int $page = 1, array $filters = [])
         'total' => $total,
         'totalPages' => $totalPages,
     ];
-}
-
-/**
- * Get single log entry by index
- * @param int $index
- * @return array|null
- */
-function get_activity_log(int $index): ?array
-{
-    $logFile = ACTIVITY_LOG_FILE;
-
-    if (!file_exists($logFile)) {
-        return null;
-    }
-
-    $content = file_get_contents($logFile);
-    $logs = json_decode($content, true);
-
-    return isset($logs[$index]) ? $logs[$index] : null;
 }
 
 /**
@@ -182,34 +138,22 @@ function export_activity_logs(array $filters = [], int $limit = 10000): array
  */
 function cleanup_activity_logs(int $days = 30): int
 {
-    $logFile = ACTIVITY_LOG_FILE;
+    $db = Database::getConnection();
 
-    if (!file_exists($logFile)) {
+    $cutoff = date('Y-m-d H:i:s', time() - ($days * 86400));
+
+    $stmt = $db->prepare('SELECT COUNT(*) as cnt FROM activity_logs WHERE created_at < ?');
+    $stmt->execute([$cutoff]);
+    $initialCount = (int) $stmt->fetch()['cnt'];
+
+    if ($initialCount === 0) {
         return 0;
     }
 
-    $content = file_get_contents($logFile);
-    $logs = json_decode($content, true);
+    $stmt = $db->prepare('DELETE FROM activity_logs WHERE created_at < ?');
+    $stmt->execute([$cutoff]);
 
-    if (!is_array($logs)) {
-        return 0;
-    }
-
-    $cutoffTime = time() - ($days * 86400);
-    $initialCount = count($logs);
-
-    $logs = array_filter($logs, function ($log) use ($cutoffTime) {
-        return ($log['timestamp'] ?? 0) > $cutoffTime;
-    });
-
-    // Reindex array
-    $logs = array_values($logs);
-
-    if (!@file_put_contents($logFile, json_encode($logs, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT))) {
-        throw new RuntimeException('Gagal membersihkan log aktivitas.');
-    }
-
-    return $initialCount - count($logs);
+    return $initialCount;
 }
 
 /**
@@ -218,40 +162,29 @@ function cleanup_activity_logs(int $days = 30): int
  */
 function get_log_statistics(): array
 {
-    $logFile = ACTIVITY_LOG_FILE;
+    $db = Database::getConnection();
 
-    if (!file_exists($logFile)) {
-        return [
-            'total' => 0,
-            'byAction' => [],
-            'byType' => [],
-        ];
+    $totalStmt = $db->query('SELECT COUNT(*) as cnt FROM activity_logs');
+    $total = (int) $totalStmt->fetch()['cnt'];
+
+    if ($total === 0) {
+        return ['total' => 0, 'byAction' => [], 'byType' => []];
     }
 
-    $content = file_get_contents($logFile);
-    $logs = json_decode($content, true);
-
-    if (!is_array($logs)) {
-        return [
-            'total' => 0,
-            'byAction' => [],
-            'byType' => [],
-        ];
-    }
-
+    $byActionStmt = $db->query('SELECT action, COUNT(*) as cnt FROM activity_logs GROUP BY action');
     $byAction = [];
+    foreach ($byActionStmt->fetchAll() as $row) {
+        $byAction[$row['action']] = (int) $row['cnt'];
+    }
+
+    $byTypeStmt = $db->query('SELECT target_type, COUNT(*) as cnt FROM activity_logs GROUP BY target_type');
     $byType = [];
-
-    foreach ($logs as $log) {
-        $action = $log['action'] ?? 'unknown';
-        $type = $log['targetType'] ?? 'unknown';
-
-        $byAction[$action] = ($byAction[$action] ?? 0) + 1;
-        $byType[$type] = ($byType[$type] ?? 0) + 1;
+    foreach ($byTypeStmt->fetchAll() as $row) {
+        $byType[$row['target_type']] = (int) $row['cnt'];
     }
 
     return [
-        'total' => count($logs),
+        'total' => $total,
         'byAction' => $byAction,
         'byType' => $byType,
     ];

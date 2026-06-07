@@ -158,14 +158,9 @@ class Database
             ',
 
             '005_seed_admin_user' => "
-                INSERT OR IGNORE INTO users (username, email, password_hash, display_name, role)
-                VALUES (
-                    'admin',
-                    'admin@filemanager.local',
-                    '" . password_hash('admin123', PASSWORD_BCRYPT) . "',
-                    'Administrator',
-                    'admin'
-                )
+                -- Admin account is now created via setup wizard only (public/setup.php)
+                -- This migration is kept as a no-op for existing installations
+                SELECT 1
             ",
 
             '006_create_shares_table' => '
@@ -188,6 +183,55 @@ class Database
 
             '007_create_shares_index' => '
                 CREATE INDEX IF NOT EXISTS idx_shares_token ON shares(token)
+            ',
+
+            '008_create_share_access_log' => '
+                CREATE TABLE IF NOT EXISTS share_access_log (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    ip_address TEXT NOT NULL,
+                    token TEXT NOT NULL,
+                    user_agent TEXT,
+                    accessed_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+                )
+            ',
+
+            '009_create_share_access_log_index' => '
+                CREATE INDEX IF NOT EXISTS idx_share_access_ip_token
+                ON share_access_log(ip_address, token, accessed_at)
+            ',
+
+            '010_create_login_attempts_index' => '
+                CREATE INDEX IF NOT EXISTS idx_login_attempts_ip_time
+                ON login_attempts(ip_address, attempted_at, success)
+            ',
+
+            '011_create_user_sessions_index' => '
+                CREATE INDEX IF NOT EXISTS idx_user_sessions_id
+                ON user_sessions(id, user_id)
+            ',
+
+            '012_create_activity_logs_table' => '
+                CREATE TABLE IF NOT EXISTS activity_logs (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    action TEXT NOT NULL,
+                    filename TEXT NOT NULL DEFAULT \'\',
+                    target_type TEXT NOT NULL DEFAULT \'\',
+                    path TEXT NOT NULL DEFAULT \'\',
+                    ip_address TEXT NOT NULL DEFAULT \'unknown\',
+                    user_agent TEXT NOT NULL DEFAULT \'\',
+                    extra_data TEXT,
+                    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+                )
+            ',
+
+            '013_create_activity_logs_action_index' => '
+                CREATE INDEX IF NOT EXISTS idx_activity_logs_action
+                ON activity_logs(action, created_at)
+            ',
+
+            '014_create_activity_logs_type_index' => '
+                CREATE INDEX IF NOT EXISTS idx_activity_logs_type
+                ON activity_logs(target_type, created_at)
             ',
         ];
     }

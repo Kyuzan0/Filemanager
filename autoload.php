@@ -4,14 +4,19 @@
  * Autoloader
  * 
  * Loads all core classes, handlers, helpers, and configurations.
- * This file should be included at the beginning of api.php and index.php.
+ * Uses Composer autoloader for PSR-4 classes + manual requires for procedural functions.
  * 
- * @version 2.0.0
+ * @version 3.0.0
  */
 
 // Prevent direct access
 if (!defined('PROJECT_ROOT')) {
     define('PROJECT_ROOT', __DIR__);
+}
+
+// Composer autoloader — handles PSR-4 class loading and third-party packages
+if (file_exists(PROJECT_ROOT . '/vendor/autoload.php')) {
+    require_once PROJECT_ROOT . '/vendor/autoload.php';
 }
 
 // Load configuration
@@ -20,9 +25,11 @@ require_once PROJECT_ROOT . '/app/Config/paths.php';
 // Ensure required directories exist
 ensure_directories();
 
-// Load Core classes
+// Load Core classes (order matters: PathResolver first, then FileManager/UploadManager)
 require_once PROJECT_ROOT . '/app/Core/Security.php';
+require_once PROJECT_ROOT . '/app/Core/PathResolver.php';
 require_once PROJECT_ROOT . '/app/Core/FileManager.php';
+require_once PROJECT_ROOT . '/app/Core/UploadManager.php';
 require_once PROJECT_ROOT . '/app/Core/TrashManager.php';
 require_once PROJECT_ROOT . '/app/Core/LogManager.php';
 require_once PROJECT_ROOT . '/app/Core/ArchiveManager.php';

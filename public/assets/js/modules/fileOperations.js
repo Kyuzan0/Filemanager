@@ -1224,9 +1224,8 @@ export async function performMove(
         const results = [];
         for (const sp of sources) {
             try {
-                const resp = await apiMoveItem(sp, targetFolder ?? '');
-                const data = await resp.json().catch(() => null);
-                if (!resp.ok || !data || !data.success) {
+                const data = await apiMoveItem(sp, targetFolder ?? '');
+                if (!data || !data.success) {
                     const err = data && data.error ? data.error : 'Gagal memindahkan item.';
                     results.push({ path: sp, ok: false, error: err });
                 } else {

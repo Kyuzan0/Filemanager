@@ -252,12 +252,33 @@ function handle_auth_setup_action(string $method): void
         json_error('Method not allowed.', 405);
     }
 
-    // Allow setup if DB not initialized yet, otherwise require admin
-    if (Database::isInitialized()) {
-        Auth::requireRole('admin');
+    // Allow setup if no admin exists yet, otherwise require admin
+    $db = Database::getConnection();
+    $stmt = $db->query("SELECT COUNT(*) as cnt FROM users WHERE role = 'admin'");
+    $hasAdmin = $stmt->fetch()['cnt'] > 0;
+
+    if ($hasAdmin) {
+        // Admin already exists — this endpoint only works for first-time setup
+        json_error('Akun admin sudah ada. Gunakan login untuk mengakses sistem.', 403);
     }
 
+    // Run migrations to ensure tables exist
     Database::migrate();
 
-    json_success('setup', ['message' => 'Database berhasil diinisialisasi.']);
+    // Create admin account from request payload
+    $payload = get_json_payload();
+    $username = $payload['username'] ?? '';
+    $password = $payload['password'] ?? '';
+
+    if (empty($username) || empty($password)) {
+        json_error('Username dan password wajib diisi.');
+    }
+
+    $result = Auth::register($username, $password, 'admin');
+
+    if ($result['success']) {
+        json_success('setup', ['message' => 'Akun admin berhasil dibuat. Silakan login.']);
+    } else {
+        json_error($result['error']);
+    }
 }

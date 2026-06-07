@@ -5,7 +5,7 @@
  */
 
 import { config } from './constants.js';
-import { hasUnsavedChanges } from './utils.js';
+import { hasUnsavedChanges, formatBytes } from './utils.js';
 import { cleanupPreviewEditor } from './eventHandlers.js';
 
 /**
@@ -1097,50 +1097,83 @@ export function updateLogPagination(state, logPrev, logNext, logPageInfo) {
  */
 const overlayA11yMap = new WeakMap();
 
+/**
+ * Single document-level handler for ALL overlay accessibility.
+ * Avoids multiple keydown listeners when multiple overlays are open.
+ */
+const a11yHandler = (e) => {
+    // Find the topmost (most recently opened) overlay
+    let topOverlay = null;
+    let topEntry = null;
+
+    for (const [overlay, entry] of overlayA11yMap) {
+        if (!overlay.hidden && overlay.offsetParent !== null) {
+            topOverlay = overlay;
+            topEntry = entry;
+        }
+    }
+
+    if (!topEntry) {
+        return;
+    }
+
+    const closeCallback = topEntry.closeCallback;
+
+    // Close on Escape
+    if (e.key === 'Escape') {
+        e.preventDefault();
+        try {
+            if (closeCallback) {
+                closeCallback();
+            }
+        } catch (err) {}
+        return;
+    }
+
+    // Basic focus trap for Tab and Shift+Tab
+    if (e.key === 'Tab') {
+        try {
+            const focusable = Array.from(
+                topOverlay.querySelectorAll(
+                    'a[href], area[href], button:not([disabled]), input:not([disabled]), textarea:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])'
+                )
+            ).filter((el) => el.offsetParent !== null);
+
+            if (focusable.length === 0) {
+                return;
+            }
+
+            const first = focusable[0];
+            const last = focusable[focusable.length - 1];
+
+            if (e.shiftKey && document.activeElement === first) {
+                e.preventDefault();
+                last.focus();
+            } else if (!e.shiftKey && document.activeElement === last) {
+                e.preventDefault();
+                first.focus();
+            }
+        } catch (err) {
+            // swallow errors
+        }
+    }
+};
+
+// Register single document-level handler once
+let _a11yInitialized = false;
+function ensureA11yHandler() {
+    if (!_a11yInitialized) {
+        document.addEventListener('keydown', a11yHandler);
+        _a11yInitialized = true;
+    }
+}
+
 export function attachOverlayA11y(overlay, closeCallback) {
     if (!overlay || overlayA11yMap.has(overlay)) {
         return;
     }
-    const keydownHandler = (e) => {
-        // Close on Escape
-        if (e.key === 'Escape') {
-            e.preventDefault();
-            try {
-                if (closeCallback) {
-                    closeCallback();
-                }
-            } catch (err) {}
-            return;
-        }
 
-        // Basic focus trap for Tab and Shift+Tab
-        if (e.key === 'Tab') {
-            try {
-                const focusable = Array.from(
-                    overlay.querySelectorAll(
-                        'a[href], area[href], button:not([disabled]), input:not([disabled]), textarea:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])'
-                    )
-                ).filter((el) => el.offsetParent !== null); // visible only
-
-                if (focusable.length === 0) {
-                    return;
-                }
-
-                const first = focusable[0];
-                const last = focusable[focusable.length - 1];
-
-                if (e.shiftKey && document.activeElement === first) {
-                    e.preventDefault();
-                    last.focus();
-                } else if (!e.shiftKey && document.activeElement === last) {
-                    e.preventDefault();
-                    first.focus();
-                }
-            } catch (err) {
-                // swallow errors to avoid breaking the app
-            }
-        }
-    };
+    ensureA11yHandler();
 
     const initialFocus = () => {
         try {
@@ -1152,7 +1185,6 @@ export function attachOverlayA11y(overlay, closeCallback) {
             if (focusable.length > 0) {
                 focusable[0].focus();
             } else if (overlay && typeof overlay.focus === 'function') {
-                // Make overlay focusable then focus it
                 overlay.tabIndex = -1;
                 overlay.focus();
             }
@@ -1161,22 +1193,9 @@ export function attachOverlayA11y(overlay, closeCallback) {
         }
     };
 
-    // Register handler and store detach
-    document.addEventListener('keydown', keydownHandler);
-    const detach = () => {
-        try {
-            document.removeEventListener('keydown', keydownHandler);
-        } catch (e) {}
-        overlayA11yMap.delete(overlay);
-        try {
-            delete overlay._a11yDetach;
-        } catch (e) {}
-    };
+    overlayA11yMap.set(overlay, { closeCallback, initialFocus });
 
-    overlay._a11yDetach = detach;
-    overlayA11yMap.set(overlay, { detach, initialFocus });
-
-    // Run initial focus asynchronously so the overlay DOM has a chance to settle
+    // Run initial focus asynchronously
     setTimeout(initialFocus, 0);
 }
 
@@ -1184,17 +1203,10 @@ export function detachOverlayA11y(overlay) {
     if (!overlay) {
         return;
     }
-    const entry = overlayA11yMap.get(overlay);
-    if (entry && typeof entry.detach === 'function') {
-        try {
-            entry.detach();
-        } catch (e) {}
-    }
-    if (overlay && overlay._a11yDetach) {
-        try {
-            overlay._a11yDetach();
-        } catch (e) {}
-    }
+    overlayA11yMap.delete(overlay);
+    try {
+        delete overlay._a11yDetach;
+    } catch (e) {}
 }
 
 // ============================================================================
@@ -1371,7 +1383,7 @@ export function openDownloadOverlay(fileData, onConfirm, onCancel = null) {
 
     if (fileSize) {
         const size = fileData.size || 0;
-        fileSize.textContent = formatFileSize(size);
+        fileSize.textContent = formatBytes(size);
     }
 
     if (subtitle) {
@@ -1473,21 +1485,6 @@ export function closeDownloadOverlay() {
 
     markOverlayClosed();
     detachOverlayA11y(overlay);
-}
-
-/**
- * Helper function to format file size
- * @param {number} bytes - File size in bytes
- * @returns {string} Formatted file size
- */
-function formatFileSize(bytes) {
-    if (bytes === 0) {
-        return '0 Bytes';
-    }
-    const k = 1024;
-    const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
-    const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
 }
 
 /**

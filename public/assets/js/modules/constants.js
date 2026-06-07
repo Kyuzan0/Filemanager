@@ -333,17 +333,17 @@ export const config = {
 // When i18n is loaded, messages come from translation files.
 // Before i18n loads, fallback to hardcoded Indonesian strings.
 
-let _t = null;
+let _i18nReady = false;
 function getT() {
-    if (!_t) {
-        try {
-            // Dynamic lazy reference — i18n.js must be loaded by the time these are called
-            _t = window.__i18n_t || ((key) => key);
-        } catch {
-            _t = (key) => key;
+    // Always check window.__i18n_t — don't cache until i18n is initialized
+    try {
+        if (window.__i18n_t && !_i18nReady) {
+            _i18nReady = true;
         }
+        return window.__i18n_t || ((key) => key);
+    } catch {
+        return (key) => key;
     }
-    return _t;
 }
 
 // Error messages (i18n-aware with fallbacks)

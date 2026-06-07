@@ -116,4 +116,4 @@ $activePage = $activePage ?? 'dashboard';
 </aside>
 
 <!-- Sidebar Navigation Script -->
-<script src="assets/js/sidebar.js?v=<?php echo time(); ?>"></script>
+<script src="assets/js/sidebar.js?v=<?= @md5_file(__DIR__ . '/../assets/js/sidebar.js') ?: time() ?>"></script>

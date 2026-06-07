@@ -33,6 +33,27 @@ const DEFAULT_RETRY_OPTIONS = {
     backoffMultiplier: 2
 };
 
+// CSRF token cache (populated from response headers)
+let csrfToken = '';
+
+/**
+ * Get the current CSRF token
+ * @returns {string} CSRF token
+ */
+export function getCsrfToken() {
+    return csrfToken;
+}
+
+/**
+ * Set CSRF token (typically from response header)
+ * @param {string} token - CSRF token value
+ */
+export function setCsrfToken(token) {
+    if (token) {
+        csrfToken = token;
+    }
+}
+
 /**
  * Cancel any pending directory fetch request.
  * Only affects fetchDirectory() — other API calls use independent controllers.
@@ -45,7 +66,7 @@ export function cancelPendingRequests() {
 }
 
 /**
- * Enhanced fetch wrapper with timeout support
+ * Enhanced fetch wrapper with timeout and CSRF token support
  * @param {string} url - Request URL
  * @param {Object} options - Fetch options
  * @param {number} timeout - Timeout in milliseconds
@@ -55,9 +76,17 @@ async function fetchWithTimeout(url, options = {}, timeout = DEFAULT_TIMEOUT) {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), timeout);
 
+    // Add CSRF token header for state-changing requests
+    const method = (options.method || 'GET').toUpperCase();
+    const headers = { ...(options.headers || {}) };
+    if (method !== 'GET' && csrfToken) {
+        headers['X-CSRF-Token'] = csrfToken;
+    }
+
     try {
         const response = await fetch(url, {
             ...options,
+            headers,
             signal: options.signal || controller.signal
         });
         return response;
@@ -68,11 +97,18 @@ async function fetchWithTimeout(url, options = {}, timeout = DEFAULT_TIMEOUT) {
 
 /**
  * Parse response with error handling
+ * Extracts CSRF token from response headers for subsequent requests
  * @param {Response} response - Fetch response
  * @param {string} context - Context for error messages
  * @returns {Promise<Object>}
  */
 async function parseResponse(response, context = '') {
+    // Extract CSRF token from response header
+    const newToken = response.headers.get('X-CSRF-Token');
+    if (newToken) {
+        csrfToken = newToken;
+    }
+
     let data = null;
 
     try {

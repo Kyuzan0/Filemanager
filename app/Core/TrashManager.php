@@ -44,7 +44,18 @@ function read_trash_metadata(): array
         return [];
     }
 
-    $content = file_get_contents($metadataFile);
+    $fp = @fopen($metadataFile, 'rb');
+    if ($fp === false) {
+        return [];
+    }
+
+    $content = '';
+    if (flock($fp, LOCK_SH)) {
+        $content = fread($fp, filesize($metadataFile));
+        flock($fp, LOCK_UN);
+    }
+    fclose($fp);
+
     if ($content === false) {
         return [];
     }
@@ -64,7 +75,22 @@ function write_trash_metadata(array $metadata): void
         throw new RuntimeException('Gagal mengenkode metadata trash ke JSON.');
     }
 
-    if (file_put_contents($metadataFile, $json, LOCK_EX) === false) {
+    $fp = @fopen($metadataFile, 'cb');
+    if ($fp === false) {
+        throw new RuntimeException('Gagal menyimpan metadata trash.');
+    }
+
+    if (!flock($fp, LOCK_EX)) {
+        fclose($fp);
+        throw new RuntimeException('Gagal mengunci file metadata trash.');
+    }
+
+    ftruncate($fp, 0);
+    $written = fwrite($fp, $json);
+    flock($fp, LOCK_UN);
+    fclose($fp);
+
+    if ($written === false) {
         throw new RuntimeException('Gagal menyimpan metadata trash.');
     }
 }

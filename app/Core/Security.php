@@ -170,5 +170,21 @@ class Security
         header('X-Frame-Options: SAMEORIGIN');
         header('X-XSS-Protection: 1; mode=block');
         header('Referrer-Policy: strict-origin-when-cross-origin');
+        header('Permissions-Policy: camera=(), microphone=(), geolocation=()');
+
+        // CSP with nonce — nonce generated once in bootstrap.php
+        $nonce = $_SERVER['csp_nonce'] ?? '';
+        if ($nonce) {
+            header("Content-Security-Policy: default-src 'self'; "
+                . "script-src 'self' 'nonce-{$nonce}'; "
+                . "style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; "
+                . "font-src 'self' https://cdn.jsdelivr.net; "
+                . "img-src 'self' data: blob:; "
+                . "connect-src 'self'; "
+                . "frame-ancestors 'self'; "
+                . "base-uri 'self'; "
+                . "form-action 'self'"
+            );
+        }
     }
 }

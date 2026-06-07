@@ -179,7 +179,6 @@ export function handleItemClick(event, itemPath, itemIndex) {
     } else {
         // Single selection (if not clicking on checkbox)
         if (event.target.type !== 'checkbox') {
-            // Clear previous selection and select only this item
             state.selected.clear();
             state.selected.add(itemPath);
             lastSelectedIndex = itemIndex;
@@ -706,6 +705,11 @@ export function initBatchOperations(options = {}) {
     }
     if (options.getItems) {
         callbacks.getItems = options.getItems;
+    }
+
+    // Validate required callbacks before using them
+    if (typeof callbacks.getItems !== 'function') {
+        callbacks.getItems = () => Array.from(state.visibleItems || []);
     }
 
     // Create UI components
