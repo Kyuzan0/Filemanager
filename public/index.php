@@ -497,6 +497,25 @@ $currentUser = \App\Core\Auth::getCurrentUser();
     <script src="assets/js/modules/favorites-manager.js"></script>
     <!-- System Requirements Handler -->
     <script src="assets/js/modules/systemRequirements.js"></script>
+    <!-- Bootstrap upload config from server -->
+    <script>
+    (function() {
+        fetch('api.php?action=settings').then(r => r.json()).then(d => {
+            if (d.success && d.settings && d.settings.upload) {
+                var u = d.settings.upload;
+                window.uploadConfig = {
+                    maxSizeMB: u.maxSizeMB || 100,
+                    imageMaxMB: u.imageMaxMB || 100,
+                    videoMaxMB: u.videoMaxMB || 2048,
+                    audioMaxMB: u.audioMaxMB || 100,
+                    documentMaxMB: u.documentMaxMB || 100,
+                    archiveMaxMB: u.archiveMaxMB || 100,
+                    codeMaxMB: u.codeMaxMB || 100
+                };
+            }
+        }).catch(function(){});
+    })();
+    </script>
 </body>
 
 </html>

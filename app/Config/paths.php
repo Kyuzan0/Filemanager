@@ -42,7 +42,7 @@ define('TRASH_METADATA_FILE', TRASH_DIR . '/metadata.json');
 define('ACTIVITY_LOG_FILE', LOGS_DIR . '/activity.json');
 
 // Configuration for file manager
-define('MAX_UPLOAD_SIZE', 100 * 1024 * 1024); // 100MB default max
+define('MAX_UPLOAD_SIZE', 2 * 1024 * 1024 * 1024); // 2GB max (matches PHP upload_max_filesize)
 define('ALLOWED_UPLOAD_TYPES', '*'); // Allow all types by default
 
 // Editable file extensions

@@ -1623,6 +1623,116 @@ function closeUnsavedModal() {
 
 // ============= Settings Modal =============
 
+// ============================================================================
+// Upload Size Settings — Preset dropdown + custom input per file type
+// ============================================================================
+
+const UPLOAD_PRESETS = [
+    { label: '5 MB', value: 5 },
+    { label: '10 MB', value: 10 },
+    { label: '25 MB', value: 25 },
+    { label: '50 MB', value: 50 },
+    { label: '100 MB', value: 100 },
+    { label: '250 MB', value: 250 },
+    { label: '500 MB', value: 500 },
+    { label: '1 GB', value: 1024 },
+    { label: '2 GB', value: 2048 },
+];
+
+const UPLOAD_FIELDS = [
+    { key: 'maxSizeMB', label: 'Semua File', icon: '📁', defaultVal: 100 },
+    { key: 'imageMaxMB', label: 'Gambar', icon: '🖼️', defaultVal: 100 },
+    { key: 'videoMaxMB', label: 'Video', icon: '🎬', defaultVal: 2048 },
+    { key: 'audioMaxMB', label: 'Audio', icon: '🎵', defaultVal: 100 },
+    { key: 'documentMaxMB', label: 'Dokumen', icon: '📄', defaultVal: 100 },
+    { key: 'archiveMaxMB', label: 'Arsip', icon: '📦', defaultVal: 100 },
+    { key: 'codeMaxMB', label: 'Kode Sumber', icon: '💻', defaultVal: 100 },
+];
+
+function isCustomPreset(val) {
+    return !UPLOAD_PRESETS.some(p => p.value === val);
+}
+
+function initUploadLimitsGrid() {
+    const grid = document.getElementById('upload-limits-grid');
+    if (!grid) return;
+
+    grid.innerHTML = UPLOAD_FIELDS.map(f => {
+        const options = UPLOAD_PRESETS.map(p =>
+            `<option value="${p.value}">${p.label}</option>`
+        ).join('');
+
+        return `
+            <div class="upload-limit-row" data-key="${f.key}">
+                <span class="upload-limit-icon">${f.icon}</span>
+                <span class="upload-limit-label">${f.label}</span>
+                <div class="upload-limit-control">
+                    <select class="settings-select upload-limit-select" data-key="${f.key}">
+                        ${options}
+                        <option value="custom">Kustom…</option>
+                    </select>
+                    <div class="upload-limit-custom hidden" data-key="${f.key}">
+                        <input type="number" class="settings-input upload-limit-input" data-key="${f.key}"
+                            min="1" max="2048" value="${f.defaultVal}">
+                        <span class="upload-limit-unit">MB</span>
+                    </div>
+                </div>
+            </div>`;
+    }).join('');
+
+    // Wire up select → toggle custom input
+    grid.querySelectorAll('.upload-limit-select').forEach(sel => {
+        sel.addEventListener('change', (e) => {
+            const row = e.target.closest('.upload-limit-row');
+            const customWrap = row.querySelector('.upload-limit-custom');
+            if (e.target.value === 'custom') {
+                customWrap.classList.remove('hidden');
+                customWrap.querySelector('input').focus();
+            } else {
+                customWrap.classList.add('hidden');
+            }
+        });
+    });
+}
+
+function fillUploadLimitsGrid(settings) {
+    const u = settings.upload || {};
+    UPLOAD_FIELDS.forEach(f => {
+        const val = u[f.key] ?? f.defaultVal;
+        const sel = document.querySelector(`.upload-limit-select[data-key="${f.key}"]`);
+        const inp = document.querySelector(`.upload-limit-input[data-key="${f.key}"]`);
+        const wrap = document.querySelector(`.upload-limit-custom[data-key="${f.key}"]`);
+        if (!sel) return;
+
+        if (isCustomPreset(val)) {
+            sel.value = 'custom';
+            wrap.classList.remove('hidden');
+            inp.value = val;
+        } else {
+            sel.value = String(val);
+            wrap.classList.add('hidden');
+            inp.value = val;
+        }
+    });
+}
+
+function collectUploadLimits() {
+    const result = {};
+    UPLOAD_FIELDS.forEach(f => {
+        const sel = document.querySelector(`.upload-limit-select[data-key="${f.key}"]`);
+        const inp = document.querySelector(`.upload-limit-input[data-key="${f.key}"]`);
+        if (!sel) return;
+        result[f.key] = sel.value === 'custom'
+            ? (parseInt(inp.value, 10) || f.defaultVal)
+            : parseInt(sel.value, 10);
+    });
+    return result;
+}
+
+// ============================================================================
+// Settings Modal
+// ============================================================================
+
 function openSettingsModal() {
   const overlay = document.getElementById('settings-overlay');
   const debugToggle = document.getElementById('toggle-debug');
@@ -1632,6 +1742,11 @@ function openSettingsModal() {
   overlay.setAttribute('aria-hidden', 'false');
 
   debugToggle.checked = localStorage.getItem('fm-debug') === 'true';
+
+  // Ensure grid is initialized
+  initUploadLimitsGrid();
+  // Load upload settings from server
+  loadUploadSettings();
 }
 
 function closeSettingsModal() {
@@ -1641,11 +1756,63 @@ function closeSettingsModal() {
   overlay.setAttribute('aria-hidden', 'true');
 }
 
-function saveSettings() {
+async function loadUploadSettings() {
+  try {
+    const res = await fetch('api.php?action=settings');
+    const data = await res.json();
+    if (data.success && data.settings) {
+      fillUploadLimitsGrid(data.settings);
+
+      // Show PHP limit
+      const phpLimit = data.phpLimits?.uploadMax || '-';
+      document.getElementById('settings-php-upload-limit').textContent = phpLimit;
+
+      // Update window.uploadConfig for security.js
+      window.uploadConfig = {
+        maxSizeMB: data.settings.upload?.maxSizeMB ?? 100,
+        imageMaxMB: data.settings.upload?.imageMaxMB ?? 100,
+        videoMaxMB: data.settings.upload?.videoMaxMB ?? 2048,
+        audioMaxMB: data.settings.upload?.audioMaxMB ?? 100,
+        documentMaxMB: data.settings.upload?.documentMaxMB ?? 100,
+        archiveMaxMB: data.settings.upload?.archiveMaxMB ?? 100,
+        codeMaxMB: data.settings.upload?.codeMaxMB ?? 100,
+      };
+    }
+  } catch (e) {
+    console.warn('Failed to load upload settings:', e);
+  }
+}
+
+async function saveSettings() {
   const debugToggle = document.getElementById('toggle-debug');
   localStorage.setItem('fm-debug', debugToggle.checked);
+
+  // Collect upload settings from grid
+  const uploadSettings = collectUploadLimits();
+
+  try {
+    const res = await fetch('api.php?action=settings', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        debug: debugToggle.checked,
+        upload: uploadSettings,
+      }),
+    });
+    const data = await res.json();
+
+    if (data.success) {
+      // Update window.uploadConfig for security.js
+      window.uploadConfig = { ...uploadSettings };
+      showSuccess('Pengaturan disimpan');
+    } else {
+      showError(data.error || 'Gagal menyimpan pengaturan');
+    }
+  } catch (e) {
+    showError('Gagal menyimpan pengaturan: ' + e.message);
+  }
+
   closeSettingsModal();
-  showSuccess('Pengaturan disimpan');
 }
 
 // ============= Event Listeners Setup =============
@@ -1763,6 +1930,7 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('settings-close')?.addEventListener('click', closeSettingsModal);
   document.getElementById('settings-cancel')?.addEventListener('click', closeSettingsModal);
   document.getElementById('settings-save')?.addEventListener('click', saveSettings);
+  attachOverlayBackdropDismiss('settings-overlay', closeSettingsModal);
 
   // Toggle switch styling
   document.getElementById('toggle-debug')?.addEventListener('change', function () {

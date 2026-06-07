@@ -48,6 +48,7 @@ require_once PROJECT_ROOT . '/app/Handlers/RawHandler.php';
 require_once PROJECT_ROOT . '/app/Handlers/ThumbnailHandler.php';
 require_once PROJECT_ROOT . '/app/Handlers/SearchHandler.php';
 require_once PROJECT_ROOT . '/app/Handlers/SystemHandler.php';
+require_once PROJECT_ROOT . '/app/Handlers/SettingsHandler.php';
 require_once PROJECT_ROOT . '/app/Handlers/AuthHandler.php';
 require_once PROJECT_ROOT . '/app/Handlers/ShareHandler.php';
 

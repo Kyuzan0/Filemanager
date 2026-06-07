@@ -77,15 +77,33 @@ const DANGEROUS_EXTENSIONS = new Set([
 /**
  * Maximum file sizes by type (in bytes)
  */
-const MAX_FILE_SIZES = {
-    image: 10 * 1024 * 1024, // 10MB
-    video: 500 * 1024 * 1024, // 500MB
-    audio: 50 * 1024 * 1024, // 50MB
-    document: 50 * 1024 * 1024, // 50MB
+const DEFAULT_FILE_SIZES = {
+    image: 100 * 1024 * 1024, // 100MB
+    video: 2 * 1024 * 1024 * 1024, // 2GB
+    audio: 100 * 1024 * 1024, // 100MB
+    document: 100 * 1024 * 1024, // 100MB
     archive: 100 * 1024 * 1024, // 100MB
-    code: 5 * 1024 * 1024, // 5MB
-    default: 25 * 1024 * 1024 // 25MB
+    code: 100 * 1024 * 1024, // 100MB
+    default: 100 * 1024 * 1024 // 100MB
 };
+
+/**
+ * Get file size limits — uses server-configured values from window.uploadConfig if available
+ */
+function getMaxFileSizes() {
+    const cfg = window.uploadConfig;
+    if (!cfg) return DEFAULT_FILE_SIZES;
+
+    return {
+        image: (cfg.imageMaxMB || 100) * 1024 * 1024,
+        video: (cfg.videoMaxMB || 2048) * 1024 * 1024,
+        audio: (cfg.audioMaxMB || 100) * 1024 * 1024,
+        document: (cfg.documentMaxMB || 100) * 1024 * 1024,
+        archive: (cfg.archiveMaxMB || 100) * 1024 * 1024,
+        code: (cfg.codeMaxMB || 100) * 1024 * 1024,
+        default: (cfg.maxSizeMB || 100) * 1024 * 1024,
+    };
+}
 
 /**
  * Audit log storage key
@@ -349,7 +367,8 @@ export const validateFileSize = (size, filename) => {
 
     const ext = getExtension(filename)?.toLowerCase();
     const type = getFileType(ext);
-    const limit = MAX_FILE_SIZES[type] || MAX_FILE_SIZES.default;
+    const sizes = getMaxFileSizes();
+    const limit = sizes[type] || sizes.default;
 
     if (size > limit) {
         const limitMB = Math.round(limit / 1024 / 1024);

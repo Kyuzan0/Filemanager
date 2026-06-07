@@ -77,6 +77,7 @@ if (!in_array($action, $publicActions)) {
         'trash-restore', 'trash-delete', 'trash-empty', 'trash-cleanup',
         'logs-cleanup',
         'share-create', 'share-delete',
+        'settings',
     ];
     if (in_array($action, $writeActions)) {
         \App\Core\Auth::requireWrite();
@@ -145,6 +146,7 @@ function route_request(
         // System endpoints
         'system-requirements' => fn() => handle_system_requirements_action(),
         '7zip-status' => fn() => handle_7zip_status_action(),
+        'settings' => fn() => handle_settings_action($method),
 
         // Logs endpoints
         'logs' => fn() => handle_logs_action(),

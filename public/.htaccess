@@ -17,8 +17,8 @@ AddDefaultCharset UTF-8
 
 # PHP settings (if applicable)
 <IfModule mod_php.c>
-    php_value upload_max_filesize 100M
-    php_value post_max_size 105M
+    php_value upload_max_filesize 2G
+    php_value post_max_size 2100M
     php_value max_file_uploads 50
     php_value max_execution_time 300
     php_value memory_limit 256M

@@ -21,8 +21,8 @@ return [
     'max_execution_time' => (int) ($_ENV['APP_MAX_EXECUTION_TIME'] ?? 300),
 
     // Upload Settings
-    'upload_max_filesize' => $_ENV['APP_UPLOAD_MAX'] ?? '100M',
-    'post_max_size' => $_ENV['APP_POST_MAX_SIZE'] ?? '105M',
+    'upload_max_filesize' => $_ENV['APP_UPLOAD_MAX'] ?? '2G',
+    'post_max_size' => $_ENV['APP_POST_MAX_SIZE'] ?? '2100M',
     'max_file_uploads' => (int) ($_ENV['APP_MAX_FILE_UPLOADS'] ?? 50),
 
     // Session

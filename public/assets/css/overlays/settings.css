@@ -139,6 +139,127 @@
   margin-left: 3.75rem;
 }
 
+.setting-hint code {
+  font-size: 0.8125rem;
+  background: var(--surface-active);
+  padding: 1px 5px;
+  border-radius: 3px;
+}
+
+.settings-input {
+  padding: 6px 10px;
+  border: 1px solid var(--card-border);
+  border-radius: var(--radius-sm);
+  font-size: 0.875rem;
+  color: var(--text);
+  background: var(--card);
+  transition: border-color 0.2s ease;
+  outline: none;
+}
+
+.settings-input:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--focus-ring);
+}
+
+.settings-select {
+  padding: 6px 10px;
+  border: 1px solid var(--card-border);
+  border-radius: var(--radius-sm);
+  font-size: 0.875rem;
+  color: var(--text);
+  background: var(--card);
+  transition: border-color 0.2s ease;
+  outline: none;
+  cursor: pointer;
+  min-width: 110px;
+}
+
+.settings-select:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--focus-ring);
+}
+
+/* Upload limits grid */
+.upload-limits-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.upload-limit-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  background: var(--surface-hover);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-light);
+}
+
+.upload-limit-icon {
+  font-size: 1rem;
+  flex-shrink: 0;
+  width: 24px;
+  text-align: center;
+}
+
+.upload-limit-label {
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+  min-width: 90px;
+  flex-shrink: 0;
+}
+
+.upload-limit-control {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+  justify-content: flex-end;
+}
+
+.upload-limit-select {
+  width: 130px;
+}
+
+.upload-limit-custom {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.upload-limit-custom.hidden {
+  display: none;
+}
+
+.upload-limit-input {
+  width: 80px;
+  text-align: right;
+}
+
+.upload-limit-unit {
+  font-size: 0.8125rem;
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+@media (max-width: 480px) {
+  .upload-limit-row {
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+  .upload-limit-label {
+    min-width: auto;
+    flex: 1;
+  }
+  .upload-limit-control {
+    width: 100%;
+    justify-content: flex-start;
+  }
+}
+
 .settings-footer {
   display: flex;
   flex-direction: column;

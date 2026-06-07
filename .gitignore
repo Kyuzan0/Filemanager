@@ -18,6 +18,7 @@ storage/database/*
 storage/thumbnails/*
 storage/sessions/*
 storage/7zip_info_cache.json
+storage/settings.json
 
 # Keep directory structure
 !storage/files/.gitkeep
