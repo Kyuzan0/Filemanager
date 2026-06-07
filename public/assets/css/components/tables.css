@@ -333,6 +333,18 @@ tbody tr.selected .row-actions {
   }
 }
 
+/* Touch devices: always show row actions */
+@media (hover: none) and (pointer: coarse) {
+  .row-actions {
+    opacity: 0.7 !important;
+  }
+
+  tbody tr:hover .row-actions,
+  tbody tr:focus-within .row-actions {
+    opacity: 1;
+  }
+}
+
 /* File Name Hover Effect */
 .file-name {
   transition: color 0.2s ease;

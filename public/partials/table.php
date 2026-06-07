@@ -49,7 +49,6 @@
             </th>
             <th class="px-3 py-3 text-left text-sm font-semibold" scope="col">
                 <span class="sr-only">Actions</span>
-                Actions
             </th>
         </tr>
     </thead>

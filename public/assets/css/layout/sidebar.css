@@ -127,7 +127,7 @@
 }
 
 [data-theme="dark"] .sidebar-link {
-  color: var(--slate-400);
+  color: var(--slate-500);
 }
 
 [data-theme="dark"] .sidebar-link:hover,
@@ -262,7 +262,7 @@
   border-radius: 8px;
   background: transparent;
   color: var(--muted);
-  font-size: 0.75rem;
+  font-size: 0.8125rem;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.05em;

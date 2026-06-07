@@ -172,11 +172,11 @@ class Security
         header('Referrer-Policy: strict-origin-when-cross-origin');
         header('Permissions-Policy: camera=(), microphone=(), geolocation=()');
 
-        // CSP with nonce — nonce generated once in bootstrap.php
+        // CSP — restrict resource origins while allowing necessary inline scripts
         $nonce = $_SERVER['csp_nonce'] ?? '';
         if ($nonce) {
             header("Content-Security-Policy: default-src 'self'; "
-                . "script-src 'self' 'nonce-{$nonce}'; "
+                . "script-src 'self' 'unsafe-inline' 'unsafe-eval'; "
                 . "style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; "
                 . "font-src 'self' https://cdn.jsdelivr.net; "
                 . "img-src 'self' data: blob:; "

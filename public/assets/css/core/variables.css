@@ -35,6 +35,7 @@
   --accent-light: #c9a98a; /* Light caramel */
   --accent-light-rgb: 201, 169, 138;
   --danger: #c98a7a; /* Dusty terracotta */
+  --danger-rgb: 201, 138, 122;
   --warning: #d4a96a; /* Warm honey */
   --success: #8aab7c; /* Sage green */
   
@@ -521,6 +522,7 @@
   --accent-light: #c9c3e6;
   --accent-light-rgb: 201, 195, 230;
   --danger: #e69c9c; /* Pastel dark mode red */
+  --danger-rgb: 230, 156, 156;
   --warning: #e8cd9c; /* Pastel dark mode yellow */
   --success: #9dc2a8; /* Pastel dark mode green */
   

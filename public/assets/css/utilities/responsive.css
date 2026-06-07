@@ -42,6 +42,21 @@
 }
 
 /* ============================================================================
+   LARGE DESKTOP (1440px and up)
+   ============================================================================ */
+
+@media (min-width: 1440px) {
+  /* Optimize toolbar spacing for large desktops */
+  .header-actions {
+    padding: 6px 12px;
+  }
+
+  .search-bar input {
+    width: 240px !important;
+  }
+}
+
+/* ============================================================================
    SMALL DEVICES (max-width 640px)
    ============================================================================ */
 
@@ -145,6 +160,21 @@
   .container {
     padding: 8px;
   }
+
+  /* Mobile search trigger button */
+  #mobile-search-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 44px;
+    min-height: 44px;
+    padding: 8px;
+    background: none;
+    border: 1px solid var(--card-border);
+    border-radius: var(--radius-sm);
+    color: var(--text-secondary);
+    cursor: pointer;
+  }
 }
 
 /* ============================================================================
@@ -157,6 +187,13 @@
   .btn,
   .btn-sm,
   .icon {
+    min-height: 44px;
+    min-width: 44px;
+  }
+
+  /* Ensure header action buttons are touch-friendly */
+  .btn-primary,
+  .btn-secondary {
     min-height: 44px;
     min-width: 44px;
   }
@@ -217,8 +254,8 @@
   .controls .btn {
     padding: 4px 8px;
     font-size: 13px;
-    min-height: 32px;
-    min-width: 32px;
+    min-height: 44px;
+    min-width: 44px;
   }
 
   /* Action bar ultra-compact */
@@ -234,8 +271,8 @@
   }
 
   .action-btn-mobile {
-    min-width: 32px;
-    min-height: 32px;
+    min-width: 44px;
+    min-height: 44px;
     padding: 6px;
     font-size: 14px;
     flex-shrink: 0;
@@ -285,8 +322,8 @@
   }
 
   #fileTable tbody tr td:nth-child(1) input[type="checkbox"] {
-    width: 18px;
-    height: 18px;
+    width: 24px;
+    height: 24px;
     cursor: pointer;
   }
 

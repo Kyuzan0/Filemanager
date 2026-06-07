@@ -2,17 +2,30 @@
 # File Manager - .gitignore
 # =============================================================================
 
+# Dependencies
+vendor/
+node_modules/
+
+# Build artifacts
+build/
+
 # Storage directories (user data)
 storage/files/*
 storage/trash/*
 storage/logs/*
 storage/temp/*
+storage/database/*
+storage/thumbnails/*
+storage/sessions/*
+storage/7zip_info_cache.json
 
 # Keep directory structure
 !storage/files/.gitkeep
 !storage/trash/.gitkeep
 !storage/logs/.gitkeep
 !storage/temp/.gitkeep
+!storage/database/.gitkeep
+!storage/thumbnails/.gitkeep
 
 # Legacy paths (to be removed after migration)
 file/*
@@ -20,12 +33,8 @@ logs/*
 .trash/*
 
 # Development
-node_modules/
 bak/
 bak2/
-
-# Build artifacts
-build/
 
 # IDE
 .vscode/
@@ -46,6 +55,8 @@ php_errors.log
 # Documentation
 docs/
 
+# Tool artifacts
 .kilo/
 .playwright-mcp/
 .sisyphus/
+.trash/

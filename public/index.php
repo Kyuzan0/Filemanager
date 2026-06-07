@@ -9,10 +9,8 @@
 // Load bootstrap (which loads autoload.php and initializes everything)
 require_once dirname(__DIR__) . '/bootstrap.php';
 
-// Initialize database if needed
-if (!\App\Core\Database::isInitialized()) {
-    \App\Core\Database::migrate();
-}
+// Auto-migrate on every request
+\App\Core\Database::migrate();
 
 // Require authentication — redirects to login.php if not logged in
 \App\Core\Auth::requireAuth();
@@ -92,7 +90,7 @@ $currentUser = \App\Core\Auth::getCurrentUser();
         }
         .search-bar:focus-within {
             border-color: var(--accent);
-            box-shadow: var(--focus-ring);
+            box-shadow: 0 0 0 3px var(--focus-ring);
         }
         .search-bar input {
             transition: width 0.2s ease;
@@ -109,6 +107,7 @@ $currentUser = \App\Core\Auth::getCurrentUser();
             align-items: center;
             gap: 6px;
             padding: 6px 12px;
+            min-height: 32px;
             background: var(--accent);
             color: var(--btn-primary-text);
             border-radius: 6px;
@@ -126,6 +125,7 @@ $currentUser = \App\Core\Auth::getCurrentUser();
             align-items: center;
             gap: 6px;
             padding: 6px 12px;
+            min-height: 32px;
             background: var(--card);
             color: var(--text-secondary);
             border: 1px solid var(--card-border);
@@ -256,6 +256,14 @@ $currentUser = \App\Core\Auth::getCurrentUser();
                         id="mobile-menu-toggle" title="Menu" aria-label="Open navigation menu" aria-expanded="false"
                         aria-controls="sidebar">
                         <i class="ri-menu-line text-base text-muted" aria-hidden="true"></i>
+                    </button>
+
+                    <!-- Mobile Search Toggle -->
+                    <button
+                        class="btn btn-icon md:d-none p-1 rounded flex-shrink-0"
+                        id="mobile-search-btn" title="Search" aria-label="Open search"
+                        onclick="document.getElementById('search-modal').classList.remove('hidden'); document.getElementById('search-modal').setAttribute('aria-hidden','false'); setTimeout(function(){document.getElementById('search-modal-input').focus()},100);">
+                        <i class="ri-search-line text-base text-muted" aria-hidden="true"></i>
                     </button>
 
                     <!-- Breadcrumbs - Hidden on mobile, visible on desktop -->

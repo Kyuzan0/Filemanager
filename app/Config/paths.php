@@ -10,7 +10,9 @@
  */
 
 // Project root directory (parent of 'app', 'public', 'storage')
-define('PROJECT_ROOT', dirname(__DIR__, 2));
+if (!defined('PROJECT_ROOT')) {
+    define('PROJECT_ROOT', dirname(__DIR__, 2));
+}
 
 // Public directory (web-accessible)
 define('PUBLIC_DIR', PROJECT_ROOT . '/public');

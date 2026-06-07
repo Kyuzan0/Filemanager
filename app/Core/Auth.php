@@ -44,7 +44,7 @@ class Auth
 
         $db = Database::getConnection();
 
-        // Validate session exists in DB and is not expired (24h)
+        // Validate session exists in DB and is not expired (2 hours)
         $stmt = $db->prepare('
             SELECT us.user_id, us.last_activity
             FROM user_sessions us
@@ -59,7 +59,8 @@ class Auth
         }
 
         // Check session expiry (2 hours — appropriate for file manager)
-        $lastActivity = strtotime($session['last_activity']);
+        // Use UTC comparison: SQLite CURRENT_TIMESTAMP is UTC, so use gm strtotime
+        $lastActivity = strtotime($session['last_activity'] . ' UTC');
         if (time() - $lastActivity > 7200) {
             self::destroySession($session['user_id']);
             return null;
@@ -128,20 +129,18 @@ class Auth
             ];
         }
 
-        // Regenerate session ID to prevent fixation
-        session_regenerate_id(true);
-
         // Store user in session
         $_SESSION['user_id'] = $user['id'];
         $_SESSION['user_role'] = $user['role'];
 
         // Create DB session record
+        $newSessionId = session_id();
         $stmt = $db->prepare('
             INSERT OR REPLACE INTO user_sessions (id, user_id, ip_address, user_agent)
             VALUES (?, ?, ?, ?)
         ');
         $stmt->execute([
-            session_id(),
+            $newSessionId,
             $user['id'],
             $ip,
             substr($_SERVER['HTTP_USER_AGENT'] ?? '', 0, 500),

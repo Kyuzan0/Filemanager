@@ -8,10 +8,8 @@
 
 require_once dirname(__DIR__) . '/bootstrap.php';
 
-// Initialize database if needed
-if (!\App\Core\Database::isInitialized()) {
-    \App\Core\Database::migrate();
-}
+// Auto-migrate on every request
+\App\Core\Database::migrate();
 
 // Check if admin user exists — if not, redirect to setup wizard
 $db = \App\Core\Database::getConnection();

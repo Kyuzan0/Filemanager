@@ -104,7 +104,7 @@
     </div>
 </div>
 
-<script>
+<script nonce="<?= $_SERVER['csp_nonce'] ?? '' ?>">
     /**
      * Trash Overlay Handler
      */

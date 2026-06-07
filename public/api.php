@@ -60,10 +60,8 @@ $editableExtensions = get_editable_extensions();
 // AUTH INITIALIZATION
 // =============================================================================
 
-// Initialize database on first request (auto-migrate)
-if (!\App\Core\Database::isInitialized()) {
-    \App\Core\Database::migrate();
-}
+// Auto-migrate on every request (migrations are idempotent — skip already-run ones)
+\App\Core\Database::migrate();
 
 // Auth-free endpoints (login, logout, setup)
 $publicActions = ['auth-login', 'auth-logout', 'auth-setup', 'share-access', 'share-download'];

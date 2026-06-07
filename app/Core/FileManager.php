@@ -352,130 +352,35 @@ function list_directory(string $root, string $relativePath = ''): array
         throw new RuntimeException('Direktori tidak dapat diproses.', 0, $e);
     }
 
-    foreach ($entries as $entry) {
-        $originalName = is_string($entry['name']) ? $entry['name'] : '';
-        $tmpName = is_string($entry['tmp_name']) ? $entry['tmp_name'] : '';
-        $size = is_numeric($entry['size']) ? (int) $entry['size'] : 0;
-        $errorCode = is_numeric($entry['error']) ? (int) $entry['error'] : UPLOAD_ERR_NO_FILE;
-        $relPath = is_string($entry['relativePath']) ? $entry['relativePath'] : '';
-
-        if ($errorCode === UPLOAD_ERR_NO_FILE) {
+    foreach ($dir as $fileInfo) {
+        /** @var DirectoryIterator $fileInfo */
+        if ($fileInfo->isDot()) {
             continue;
         }
 
-        if ($errorCode !== UPLOAD_ERR_OK) {
-            $errors[] = [
-                'name' => $relPath ?: $originalName,
-                'error' => upload_code_to_message($errorCode),
-            ];
-            continue;
-        }
+        $relativeItemPath = substr($fileInfo->getPathname(), strlen($normalizedRoot));
+        $relativeItemPath = ltrim(str_replace(['\\'], '/', $relativeItemPath), '/');
 
-        $basename = basename($originalName);
-        if ($basename === '' || preg_match('/[\\\\\/]/', $basename)) {
-            $errors[] = [
-                'name' => $relPath ?: $originalName,
-                'error' => 'Nama file tidak valid.',
-            ];
-            continue;
-        }
-
-        // Validate file extension against dangerous extensions blocklist
-        $extValidation = validate_file_extension($basename);
-        if (!$extValidation['valid']) {
-            $errors[] = [
-                'name' => $relPath ?: $originalName,
-                'error' => $extValidation['error'],
-            ];
-            continue;
-        }
-
-        if (!is_uploaded_file($tmpName)) {
-            $errors[] = [
-                'name' => $relPath ?: $originalName,
-                'error' => 'File upload tidak valid.',
-            ];
-            continue;
-        }
-
-        // Determine target directory based on relative path
-        $subfolderPath = '';
-        if (!empty($relPath) && strpos($relPath, '/') !== false) {
-            // Extract folder path from relativePath (e.g., "folder/subfolder/file.txt" -> "folder/subfolder")
-            $subfolderPath = dirname($relPath);
-            // Sanitize the subfolder path
-            $subfolderPath = sanitize_relative_path($subfolderPath);
-        }
-
-        // Create target directory including subfolders
-        $targetDir = $realTargetPath;
-        if (!empty($subfolderPath)) {
-            $targetDir = $realTargetPath . DIRECTORY_SEPARATOR . str_replace('/', DIRECTORY_SEPARATOR, $subfolderPath);
-
-            // Create subdirectories if they don't exist
-            if (!is_dir($targetDir)) {
-                if (!@mkdir($targetDir, 0755, true)) {
-                    $error = error_get_last();
-                    $message = $error['message'] ?? 'Gagal membuat direktori.';
-                    $errors[] = [
-                        'name' => $relPath,
-                        'error' => $message,
-                    ];
-                    continue;
-                }
-            }
-        }
-
-        $targetPath = $targetDir . DIRECTORY_SEPARATOR . $basename;
-
-        // Check for existing file
-        if (file_exists($targetPath)) {
-            // Generate unique name
-            $pathInfo = pathinfo($basename);
-            $nameWithoutExt = $pathInfo['filename'];
-            $ext = isset($pathInfo['extension']) ? '.' . $pathInfo['extension'] : '';
-            $counter = 1;
-            while (file_exists($targetPath)) {
-                $newBasename = $nameWithoutExt . '_' . $counter . $ext;
-                $targetPath = $targetDir . DIRECTORY_SEPARATOR . $newBasename;
-                $counter++;
-            }
-            $basename = basename($targetPath);
-        }
-
-        if (!@move_uploaded_file($tmpName, $targetPath)) {
-            $error = error_get_last();
-            $message = $error['message'] ?? 'Gagal memindahkan file yang diunggah.';
-            $errors[] = [
-                'name' => $relPath ?: $originalName,
-                'error' => $message,
-            ];
-            continue;
-        }
-
-        clearstatcache(true, $targetPath);
-
-        // Build relative path for response
-        $relativeItemPath = $sanitizedRelativeUrl === '' ? '' : $sanitizedRelativeUrl . '/';
-        if (!empty($subfolderPath)) {
-            $relativeItemPath .= $subfolderPath . '/';
-        }
-        $relativeItemPath .= $basename;
-
-        $uploaded[] = [
-            'name' => $basename,
+        $itemData = [
+            'name' => $fileInfo->getFilename(),
             'path' => $relativeItemPath,
-            'relativePath' => $relPath,
-            'type' => 'file',
-            'modified' => filemtime($targetPath) ?: time(),
-            'size' => filesize($targetPath) ?: 0,
+            'type' => $fileInfo->isDir() ? 'folder' : 'file',
+            'modified' => $fileInfo->getMTime(),
+            'size' => $fileInfo->isFile() ? $fileInfo->getSize() : 0,
+            'extension' => $fileInfo->isFile() ? strtolower($fileInfo->getExtension()) : '',
         ];
+
+        $items[] = $itemData;
     }
 
-    return [
-        'uploaded' => $uploaded,
-        'errors' => $errors,
-    ];
+    // Sort: folders first, then alphabetically by name
+    usort($items, function ($a, $b) {
+        if ($a['type'] === 'folder' && $b['type'] !== 'folder') return -1;
+        if ($a['type'] !== 'folder' && $b['type'] === 'folder') return 1;
+        return strcasecmp($a['name'], $b['name']);
+    });
+
+    return $items;
 }
 
 /**

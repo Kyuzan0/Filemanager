@@ -24,7 +24,7 @@ if ($stmt->fetch()['cnt'] > 0) {
 <html lang="id">
 
 <head>
-    <script>
+    <script nonce="<?= $_SERVER['csp_nonce'] ?? '' ?>">
         (function () {
             const theme = localStorage.getItem('theme') || 'dark';
             document.documentElement.setAttribute('data-theme', theme);
@@ -145,7 +145,7 @@ if ($stmt->fetch()['cnt'] > 0) {
         </div>
     </div>
 
-    <script>
+    <script nonce="<?= $_SERVER['csp_nonce'] ?? '' ?>">
         (function () {
             const form = document.getElementById('setup-form');
             const usernameInput = document.getElementById('setup-username');

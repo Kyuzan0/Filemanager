@@ -128,8 +128,8 @@
     padding: 10px 12px 10px 40px;
     font-size: 0.9375rem;
     color: var(--text);
-    background: var(--bg);
-    border: 1px solid var(--border);
+    background: var(--card);
+    border: 1px solid var(--card-border);
     border-radius: var(--radius-sm);
     outline: none;
     transition: border-color var(--transition), box-shadow var(--transition);
@@ -138,7 +138,7 @@
 
 .auth-input:focus {
     border-color: var(--accent);
-    box-shadow: var(--focus-ring);
+    box-shadow: 0 0 0 3px var(--focus-ring);
 }
 
 .auth-input::placeholder {
@@ -172,6 +172,11 @@
     background: var(--surface-hover);
 }
 
+.auth-toggle-pw:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 2px var(--accent);
+}
+
 /* ============================================================================
    ERROR MESSAGE
    ============================================================================ */
@@ -180,8 +185,8 @@
     padding: 10px 14px;
     font-size: 0.8125rem;
     color: var(--danger);
-    background: rgba(var(--accent-rgb), 0.08);
-    border: 1px solid rgba(var(--accent-rgb), 0.2);
+    background: var(--danger-bg);
+    border: 1px solid var(--danger-border);
     border-radius: var(--radius-sm);
     margin-bottom: 16px;
     line-height: 1.4;
@@ -200,7 +205,7 @@
     padding: 12px 20px;
     font-size: 0.9375rem;
     font-weight: 600;
-    color: #fff;
+    color: var(--btn-primary-text);
     background: var(--accent);
     border: none;
     border-radius: var(--radius-sm);
@@ -225,6 +230,11 @@
 
 .auth-submit__spinner {
     animation: auth-spin 0.8s linear infinite;
+}
+
+/* Dark mode: use dark text on pastel accent for contrast */
+[data-theme="dark"] .auth-submit {
+    color: #2d2b38;
 }
 
 @keyframes auth-spin {
