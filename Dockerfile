@@ -6,6 +6,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         libjpeg62-turbo-dev \
         libfreetype6-dev \
         libzip-dev \
+        libsqlite3-dev \
+        pkg-config \
         zip \
         unzip \
     && docker-php-ext-configure gd --with-freetype --with-jpeg \
