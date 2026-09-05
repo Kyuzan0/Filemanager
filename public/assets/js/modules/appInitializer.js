@@ -28,6 +28,7 @@ import {
     setupRenameOverlayHandler,
     setupUnsavedOverlayHandler,
     setupKeyboardHandler,
+    setupBackdropClickHandlers,
     setupVisibilityHandler,
     setupContextMenuHandler,
     setupSplitActionHandler,
@@ -2629,16 +2630,59 @@ function setupEventHandlers() {
         );
     }
 
-    // Setup keyboard handler
+    // Setup keyboard handler with explicit mapping
     setupKeyboardHandler(
         state,
-        closeUnsavedOverlay,
-        closeConfirmOverlayWrapper,
-        closeCreateOverlayWrapper,
-        closeRenameOverlayWrapper,
-        closePreviewOverlayWrapper,
-        () => hasUnsavedChanges(state.preview)
+        {
+            closeUnsavedOverlay,
+            closeConfirmOverlay: closeConfirmOverlayWrapper,
+            closeCreateOverlay: closeCreateOverlayWrapper,
+            closeRenameOverlay: closeRenameOverlayWrapper,
+            closePreviewOverlay: closePreviewOverlayWrapper,
+            closeMoveOverlay: () => {
+                if (moveOverlayModule && typeof moveOverlayModule.closeMoveOverlay === 'function') {
+                    moveOverlayModule.closeMoveOverlay();
+                } else {
+                    const el = elements.moveOverlay || document.getElementById('move-overlay');
+                    if (el) {
+                        el.classList.add('hidden');
+                        el.classList.remove('visible');
+                        el.style.display = 'none';
+                    }
+                }
+            },
+            hasUnsavedChanges: () => hasUnsavedChanges(state.preview),
+            searchInput: elements.filterInput
+        }
     );
+
+    // Bind setupBackdropClickHandlers on overlays to dismiss when clicking backdrop
+    if (elements.createOverlay) {
+        setupBackdropClickHandlers([elements.createOverlay], closeCreateOverlayWrapper);
+    }
+    if (elements.renameOverlay) {
+        setupBackdropClickHandlers([elements.renameOverlay], closeRenameOverlayWrapper);
+    }
+    if (elements.confirmOverlay) {
+        setupBackdropClickHandlers([elements.confirmOverlay], closeConfirmOverlayWrapper);
+    }
+    if (elements.unsavedOverlay) {
+        setupBackdropClickHandlers([elements.unsavedOverlay], closeUnsavedOverlay);
+    }
+    if (elements.previewOverlay) {
+        setupBackdropClickHandlers([elements.previewOverlay], closePreviewOverlayWrapper);
+    }
+    if (elements.moveOverlay) {
+        setupBackdropClickHandlers([elements.moveOverlay], () => {
+            if (moveOverlayModule && typeof moveOverlayModule.closeMoveOverlay === 'function') {
+                moveOverlayModule.closeMoveOverlay();
+            } else if (elements.moveOverlay) {
+                elements.moveOverlay.classList.add('hidden');
+                elements.moveOverlay.classList.remove('visible');
+                elements.moveOverlay.style.display = 'none';
+            }
+        });
+    }
 
     // Setup visibility handler
     setupVisibilityHandler(state, fetchDirectoryWrapper, startPolling);

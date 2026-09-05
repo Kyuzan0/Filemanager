@@ -441,11 +441,126 @@ export function renderItems(
         // Show/hide empty state
         if (filtered.length === 0) {
             emptyState.hidden = false;
-            emptyState.textContent = items.length === 0
-                ? 'Direktori ini kosong.'
-                : `Tidak ada hasil untuk "${state.filter}".`;
+            emptyState.innerHTML = '';
+
+            const container = document.createElement('div');
+            container.className = 'empty-state-content text-center py-8';
+
+            if (state.filter) {
+                const icon = document.createElement('div');
+                icon.className = 'empty-state-icon text-3xl mb-2';
+                icon.textContent = '🔍';
+
+                const title = document.createElement('div');
+                title.className = 'empty-state-title font-medium text-dark mb-1';
+                title.textContent = `Tidak ada hasil untuk "${state.filter}"`;
+
+                const desc = document.createElement('div');
+                desc.className = 'empty-state-desc text-sm text-muted mb-3';
+                desc.textContent = 'Coba ubah kata kunci atau bersihkan filter pencarian.';
+
+                const resetBtn = document.createElement('button');
+                resetBtn.type = 'button';
+                resetBtn.className = 'btn btn-outline-primary btn-sm px-3 py-1';
+                resetBtn.textContent = 'Reset Filter';
+                resetBtn.addEventListener('click', () => {
+                    const filterInput = document.getElementById('filter-input');
+                    const clearBtn = document.getElementById('clear-search');
+                    if (filterInput) {
+                        filterInput.value = '';
+                    }
+                    if (clearBtn) {
+                        clearBtn.hidden = true;
+                    }
+                    state.filter = '';
+                    renderItems(
+                        tableBody,
+                        emptyState,
+                        state,
+                        items,
+                        generatedAt,
+                        highlightNew,
+                        openTextPreview,
+                        openMediaPreview,
+                        navigateTo,
+                        openInWord,
+                        copyPathToClipboard,
+                        openRenameOverlay,
+                        openMoveOverlay,
+                        openConfirmOverlay,
+                        toggleSelection,
+                        openContextMenu,
+                        isWordDocument,
+                        buildFileUrl,
+                        hasUnsavedChanges,
+                        confirmDiscardChanges,
+                        previewableExtensions,
+                        mediaPreviewableExtensions,
+                        handleDragStart,
+                        handleDragEnd,
+                        handleDragOver,
+                        handleDrop,
+                        handleDragLeave,
+                        flashStatusFn,
+                        setErrorFn
+                    );
+                });
+
+                container.appendChild(icon);
+                container.appendChild(title);
+                container.appendChild(desc);
+                container.appendChild(resetBtn);
+            } else {
+                const icon = document.createElement('div');
+                icon.className = 'empty-state-icon text-3xl mb-2';
+                icon.textContent = '📁';
+
+                const title = document.createElement('div');
+                title.className = 'empty-state-title font-medium text-dark mb-1';
+                title.textContent = 'Direktori ini kosong';
+
+                const desc = document.createElement('div');
+                desc.className = 'empty-state-desc text-sm text-muted mb-3';
+                desc.textContent = 'Mulai dengan menambahkan file atau folder baru.';
+
+                const actions = document.createElement('div');
+                actions.className = 'd-flex gap-2 justify-center';
+
+                const addBtn = document.createElement('button');
+                addBtn.type = 'button';
+                addBtn.className = 'btn btn-primary btn-sm px-3 py-1';
+                addBtn.textContent = '+ Tambah Item';
+                addBtn.addEventListener('click', () => {
+                    if (typeof openRenameOverlay === 'function' && window.openCreateModal) {
+                        window.openCreateModal();
+                    } else {
+                        const target = document.querySelector('[data-action="add-modal"], #btn-create-folder, .split-main');
+                        target?.click();
+                    }
+                });
+
+                const uploadBtn = document.createElement('button');
+                uploadBtn.type = 'button';
+                uploadBtn.className = 'btn btn-outline-secondary btn-sm px-3 py-1';
+                uploadBtn.textContent = 'Upload';
+                uploadBtn.addEventListener('click', () => {
+                    const uploadInput = document.getElementById('upload-input') || document.getElementById('fileInput');
+                    uploadInput?.click();
+                });
+
+                actions.appendChild(addBtn);
+                actions.appendChild(uploadBtn);
+
+                container.appendChild(icon);
+                container.appendChild(title);
+                container.appendChild(desc);
+                actions.querySelectorAll('button').length > 0 && container.appendChild(actions);
+            }
+
+            emptyState.appendChild(container);
         } else {
             emptyState.hidden = true;
+            emptyState.innerHTML = '';
         }
 
         // Prepare rendering parameters

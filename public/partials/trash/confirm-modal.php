@@ -1,9 +1,9 @@
 <!-- Trash Confirm Modal -->
 <div class="modal-overlay" id="modal">
-    <div class="modal-dialog">
+    <div class="modal-dialog" role="dialog" aria-modal="true" aria-labelledby="modal-title">
         <div class="modal-header">
-            <h3 id="modal-title"><i class="ri-information-line"></i> Konfirmasi</h3>
-            <button class="modal-close" id="modal-close"><i class="ri-close-line"></i></button>
+            <h3 id="modal-title"><i class="ri-information-line" aria-hidden="true"></i> Konfirmasi</h3>
+            <button class="modal-close" id="modal-close" aria-label="Tutup dialog"><i class="ri-close-line" aria-hidden="true"></i></button>
         </div>
         <div class="modal-body">
             <p id="modal-message">-</p>

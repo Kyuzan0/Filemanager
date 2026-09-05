@@ -7,10 +7,10 @@
             <i class="ri-menu-line text-base text-muted"></i>
         </button>
         <div class="search-box">
-            <i class="ri-search-line"></i>
-            <input type="text" id="log-search" placeholder="Cari...">
+            <i class="ri-search-line" aria-hidden="true"></i>
+            <input type="text" id="log-search" placeholder="Cari..." aria-label="Cari log">
         </div>
-        <select id="filter-action" class="filter-select">
+        <select id="filter-action" class="filter-select" aria-label="Filter aksi">
             <option value="">Semua Aksi</option>
             <option value="upload">Upload</option>
             <option value="bulk_upload">Upload Massal</option>
@@ -24,7 +24,7 @@
             <option value="rename">Rename</option>
             <option value="move">Move</option>
         </select>
-        <select id="filter-type" class="filter-select">
+        <select id="filter-type" class="filter-select" aria-label="Filter tipe">
             <option value="">Semua Tipe</option>
             <option value="file">File</option>
             <option value="folder">Folder</option>

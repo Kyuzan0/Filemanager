@@ -20,7 +20,7 @@ const toastIcons = {
 // Tipe notifikasi dan durasi
 const toastConfig = {
     success: { duration: 3000, title: 'Berhasil' },
-    error: { duration: 3000, title: 'Error' },
+    error: { duration: 8000, title: 'Error' },
     warning: { duration: 3000, title: 'Peringatan' },
     info: { duration: 3000, title: 'Informasi' }
 };
@@ -59,8 +59,13 @@ function showToast(type, message, title = null, duration = null, actions = null)
     if (actions && actions.length > 0) {
         toast.classList.add('toast-has-actions');
     }
-    toast.setAttribute('role', 'alert');
-    toast.setAttribute('aria-live', 'polite');
+    if (type === 'error') {
+        toast.setAttribute('role', 'alert');
+        toast.setAttribute('aria-live', 'assertive');
+    } else {
+        toast.setAttribute('role', 'status');
+        toast.setAttribute('aria-live', 'polite');
+    }
 
     // Build actions HTML
     let actionsHtml = '';

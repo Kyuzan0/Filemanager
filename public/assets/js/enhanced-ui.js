@@ -943,27 +943,27 @@ function render() {
         <div class="row-actions">
           <!-- Desktop: Show all action buttons -->
           <div class="hidden-mobile">
-            <button class="action-icon-btn action-icon-btn--blue" data-action="preview" data-path="${f.path}" title="Buka">
-              <i class="ri-folder-open-line"></i>
+            <button class="action-icon-btn action-icon-btn--blue" data-action="preview" data-path="${f.path}" title="Buka" aria-label="Buka ${f.name}">
+              <i class="ri-folder-open-line" aria-hidden="true"></i>
             </button>
             ${f.type === 'file' ? `
-            <button class="action-icon-btn action-icon-btn--green" data-action="download" data-path="${f.path}" title="Unduh">
-              <i class="ri-download-line"></i>
+            <button class="action-icon-btn action-icon-btn--green" data-action="download" data-path="${f.path}" title="Unduh" aria-label="Unduh ${f.name}">
+              <i class="ri-download-line" aria-hidden="true"></i>
             </button>
             ` : ''}
-            <button class="action-icon-btn action-icon-btn--amber" data-action="rename" data-path="${f.path}" title="Ganti Nama">
-              <i class="ri-edit-line"></i>
+            <button class="action-icon-btn action-icon-btn--amber" data-action="rename" data-path="${f.path}" title="Ganti Nama" aria-label="Ganti Nama ${f.name}">
+              <i class="ri-edit-line" aria-hidden="true"></i>
             </button>
-            <button class="action-icon-btn action-icon-btn--purple" data-action="move" data-path="${f.path}" title="Pindahkan">
-              <i class="ri-folder-transfer-line"></i>
+            <button class="action-icon-btn action-icon-btn--purple" data-action="move" data-path="${f.path}" title="Pindahkan" aria-label="Pindahkan ${f.name}">
+              <i class="ri-folder-transfer-line" aria-hidden="true"></i>
             </button>
-            <button class="action-icon-btn action-icon-btn--red" data-action="delete" data-path="${f.path}" title="Hapus">
-              <i class="ri-delete-bin-line"></i>
+            <button class="action-icon-btn action-icon-btn--red" data-action="delete" data-path="${f.path}" title="Hapus" aria-label="Hapus ${f.name}">
+              <i class="ri-delete-bin-line" aria-hidden="true"></i>
             </button>
           </div>
           <!-- Mobile: Show more button -->
-          <button class="mobile-more-btn hidden-desktop" data-path="${f.path}" data-type="${f.type}" data-name="${f.name}" title="Menu">
-            <i class="ri-more-2-fill"></i>
+          <button class="mobile-more-btn hidden-desktop" data-path="${f.path}" data-type="${f.type}" data-name="${f.name}" title="Menu" aria-label="Menu ${f.name}">
+            <i class="ri-more-2-fill" aria-hidden="true"></i>
           </button>
         </div>
       </td>
@@ -1697,25 +1697,31 @@ function handleContextMenu(e) {
   ctxMenu.style.display = 'block';
   ctxMenu.setAttribute('aria-hidden', 'false');
 
-  // Position the menu
+  // Position the menu using client coordinates clamped to viewport
   const menuWidth = ctxMenu.offsetWidth || 180;
   const menuHeight = ctxMenu.offsetHeight || 200;
   const viewportWidth = window.innerWidth;
   const viewportHeight = window.innerHeight;
+  const margin = 10;
 
-  let posX = e.pageX;
-  let posY = e.pageY;
+  let posX = (e.clientX !== undefined) ? e.clientX : e.pageX;
+  let posY = (e.clientY !== undefined) ? e.clientY : e.pageY;
 
   // Adjust if menu would overflow right edge
-  if (posX + menuWidth > viewportWidth - 10) {
-    posX = viewportWidth - menuWidth - 10;
+  if (posX + menuWidth > viewportWidth - margin) {
+    posX = Math.max(margin, viewportWidth - menuWidth - margin);
+  } else {
+    posX = Math.max(margin, posX);
   }
 
   // Adjust if menu would overflow bottom edge
-  if (posY + menuHeight > viewportHeight - 10) {
-    posY = viewportHeight - menuHeight - 10;
+  if (posY + menuHeight > viewportHeight - margin) {
+    posY = Math.max(margin, viewportHeight - menuHeight - margin);
+  } else {
+    posY = Math.max(margin, posY);
   }
 
+  ctxMenu.style.position = 'fixed';
   ctxMenu.style.left = posX + 'px';
   ctxMenu.style.top = posY + 'px';
 }
@@ -2137,6 +2143,15 @@ function initializeEventHandlers() {
     e.preventDefault();
     e.stopPropagation();
     fileInput.click();
+  });
+
+  // Keyboard accessibility for drop zone: Enter or Space triggers file picker
+  fileDropZone?.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      e.stopPropagation();
+      fileInput.click();
+    }
   });
 
   document.getElementById('cancelUpload')?.addEventListener('click', () => {

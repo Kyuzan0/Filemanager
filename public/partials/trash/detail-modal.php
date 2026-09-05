@@ -1,9 +1,9 @@
 <!-- Trash Detail Modal -->
 <div class="modal-overlay" id="detail-modal">
-    <div class="modal-dialog" style="max-width: 500px;">
+    <div class="modal-dialog" role="dialog" aria-modal="true" aria-labelledby="detail-modal-title" style="max-width: 500px;">
         <div class="modal-header">
-            <h3 id="detail-modal-title"><i class="ri-information-line"></i> Detail Item</h3>
-            <button class="modal-close" id="detail-modal-close"><i class="ri-close-line"></i></button>
+            <h3 id="detail-modal-title"><i class="ri-information-line" aria-hidden="true"></i> Detail Item</h3>
+            <button class="modal-close" id="detail-modal-close" aria-label="Tutup dialog"><i class="ri-close-line" aria-hidden="true"></i></button>
         </div>
         <div class="modal-body">
             <div class="detail-row" style="display: flex; margin-bottom: 0.75rem;">

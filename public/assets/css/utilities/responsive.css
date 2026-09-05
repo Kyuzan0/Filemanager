@@ -15,6 +15,8 @@
 
 @media (min-width: 640px) {
   /* Tablet-specific styles */
+  [class*="sm:d-inline"] { display: inline !important; }
+  [class*="sm:d-flex"] { display: flex !important; }
 }
 
 /* ============================================================================
@@ -23,6 +25,9 @@
 
 @media (min-width: 768px) {
   /* Desktop-specific styles */
+  [class*="md:d-none"] { display: none !important; }
+  [class*="md:d-flex"] { display: flex !important; }
+  [class*="md:d-block"] { display: block !important; }
 }
 
 /* ============================================================================
@@ -369,30 +374,25 @@
     overflow-wrap: break-word;
   }
 
-  /* Type - hide */
+  /* Date Modified - hide */
   #fileTable tbody tr td:nth-child(3) {
     display: none;
   }
 
-  /* Date - hide */
-  #fileTable tbody tr td:nth-child(4) {
-    display: none;
-  }
-
   /* Size - minimal */
-  #fileTable tbody tr td:nth-child(5) {
+  #fileTable tbody tr td:nth-child(4) {
     order: 3;
     width: auto;
     padding: 0;
     border: none;
-    font-size: 10px;
+    font-size: 11px;
     color: var(--muted);
     opacity: 0.7;
     flex-shrink: 0;
   }
 
   /* Actions - icon only */
-  #fileTable tbody tr td:nth-child(6),
+  #fileTable tbody tr td:nth-child(5),
   #fileTable tbody tr td.actions-cell {
     order: 4;
     width: auto;
@@ -403,9 +403,9 @@
     flex-shrink: 0;
   }
 
-  #fileTable tbody tr td:nth-child(6) .btn,
+  #fileTable tbody tr td:nth-child(5) .btn,
   #fileTable tbody tr td.actions-cell .btn,
-  #fileTable tbody tr td:nth-child(6) a,
+  #fileTable tbody tr td:nth-child(5) a,
   #fileTable tbody tr td.actions-cell a {
     padding: 4px 8px;
     font-size: 11px;
@@ -495,13 +495,13 @@
     font-size: 13px;
   }
 
-  #fileTable tbody tr td:nth-child(5) {
+  #fileTable tbody tr td:nth-child(4) {
     font-size: 11px;
   }
 
-  #fileTable tbody tr td:nth-child(6) .btn,
+  #fileTable tbody tr td:nth-child(5) .btn,
   #fileTable tbody tr td.actions-cell .btn,
-  #fileTable tbody tr td:nth-child(6) a,
+  #fileTable tbody tr td:nth-child(5) a,
   #fileTable tbody tr td.actions-cell a {
     padding: 5px 10px;
     font-size: 12px;
@@ -1009,17 +1009,15 @@
     padding-left: 26px !important;
   }
 
-  /* Type & Date - HIDE */
+  /* Date Modified - HIDE */
   #fileTable thead th:nth-child(3),
-  #fileTable tbody tr td:nth-child(3),
-  #fileTable thead th:nth-child(4),
-  #fileTable tbody tr td:nth-child(4) {
+  #fileTable tbody tr td:nth-child(3) {
     display: none !important;
   }
 
   /* Size column */
-  #fileTable thead th:nth-child(5),
-  #fileTable tbody tr td:nth-child(5) {
+  #fileTable thead th:nth-child(4),
+  #fileTable tbody tr td:nth-child(4) {
     width: 60px !important;
     flex-shrink: 0;
     order: 3;
@@ -1030,8 +1028,9 @@
   }
 
   /* Actions column */
-  #fileTable thead th:nth-child(6),
-  #fileTable tbody tr td:nth-child(6) {
+  #fileTable thead th:nth-child(5),
+  #fileTable tbody tr td:nth-child(5),
+  #fileTable tbody tr td.actions-cell {
     width: 24px !important;
     flex-shrink: 0;
     order: 4;
@@ -1042,7 +1041,7 @@
   }
 
   /* Hide "Actions" text in header to save space */
-  #fileTable thead th:nth-child(6) {
+  #fileTable thead th:nth-child(5) {
     color: transparent;
     overflow: hidden;
   }

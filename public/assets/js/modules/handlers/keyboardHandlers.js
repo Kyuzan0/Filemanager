@@ -36,30 +36,133 @@ export function setupKeyboardHandler(
     searchInput,
     handleSearchKey
 ) {
+    // Support object options or positional arguments
+    let handlers = {};
+    if (closePreviewOverlay && typeof closePreviewOverlay === 'object') {
+        handlers = closePreviewOverlay;
+    } else {
+        handlers = {
+            closePreviewOverlay,
+            closeMoveOverlay,
+            closeDetailsOverlay,
+            closeRenameOverlay,
+            closeDeleteOverlay,
+            closeDownloadOverlay,
+            closeConfirmOverlay,
+            closeCreateOverlay,
+            closeSettingsOverlay,
+            closeAllOverlays,
+            closeUnsavedOverlay,
+            searchInput,
+            handleSearchKey
+        };
+    }
+
+    const effectiveSearchInput = handlers.searchInput || searchInput;
+    const effectiveSearchKeyHandler = handlers.handleSearchKey || handleSearchKey;
+
     document.addEventListener('keydown', (event) => {
         // Handle Escape key - close overlays
         if (event.key === 'Escape') {
-            // Try to close overlays in order of priority
-            if (state.overlays.preview) {
-                closePreviewOverlay();
-            } else if (state.overlays.move) {
-                closeMoveOverlay();
-            } else if (state.overlays.details) {
-                closeDetailsOverlay();
-            } else if (state.overlays.rename) {
-                closeRenameOverlay();
-            } else if (state.overlays.delete) {
-                closeDeleteOverlay();
-            } else if (state.overlays.download) {
-                closeDownloadOverlay();
-            } else if (state.overlays.confirm) {
-                closeConfirmOverlay();
-            } else if (state.overlays.create) {
-                closeCreateOverlay();
-            } else if (state.overlays.settings) {
-                closeSettingsOverlay();
-            } else if (state.overlays.unsaved) {
-                closeUnsavedOverlay();
+            event.preventDefault();
+            // Try explicit callbacks or state.overlays or state.<key>.isOpen
+            if (state?.preview?.isOpen || state?.overlays?.preview) {
+                if (typeof handlers.closePreviewOverlay === 'function') {
+                    handlers.closePreviewOverlay();
+                    return;
+                }
+            }
+            if (state?.confirm?.isOpen || state?.overlays?.confirm) {
+                if (typeof handlers.closeConfirmOverlay === 'function') {
+                    handlers.closeConfirmOverlay();
+                    return;
+                }
+            }
+            if (state?.create?.isOpen || state?.overlays?.create) {
+                if (typeof handlers.closeCreateOverlay === 'function') {
+                    handlers.closeCreateOverlay();
+                    return;
+                }
+            }
+            if (state?.rename?.isOpen || state?.overlays?.rename) {
+                if (typeof handlers.closeRenameOverlay === 'function') {
+                    handlers.closeRenameOverlay();
+                    return;
+                }
+            }
+            if (state?.move?.isOpen || state?.overlays?.move) {
+                if (typeof handlers.closeMoveOverlay === 'function') {
+                    handlers.closeMoveOverlay();
+                    return;
+                }
+            }
+            if (state?.unsaved?.isOpen || state?.overlays?.unsaved) {
+                if (typeof handlers.closeUnsavedOverlay === 'function') {
+                    handlers.closeUnsavedOverlay();
+                    return;
+                }
+            }
+            if (state?.overlays?.details && typeof handlers.closeDetailsOverlay === 'function') {
+                handlers.closeDetailsOverlay();
+                return;
+            }
+            if (state?.overlays?.delete && typeof handlers.closeDeleteOverlay === 'function') {
+                handlers.closeDeleteOverlay();
+                return;
+            }
+            if (state?.overlays?.download && typeof handlers.closeDownloadOverlay === 'function') {
+                handlers.closeDownloadOverlay();
+                return;
+            }
+            if (state?.overlays?.settings && typeof handlers.closeSettingsOverlay === 'function') {
+                handlers.closeSettingsOverlay();
+                return;
+            }
+
+            // Fallback: Check standard modal close calls or DOM overlays
+            if (typeof handlers.closeAllOverlays === 'function') {
+                handlers.closeAllOverlays();
+                return;
+            }
+
+            // Fallback to globally registered close functions if present
+            if (typeof window.closePreviewModal === 'function' && document.getElementById('preview-overlay')?.classList.contains('visible')) {
+                window.closePreviewModal();
+                return;
+            }
+            if (typeof window.closeConfirmModal === 'function' && document.getElementById('confirm-overlay')?.classList.contains('visible')) {
+                window.closeConfirmModal();
+                return;
+            }
+            if (typeof window.closeCreateModal === 'function' && document.getElementById('create-overlay')?.classList.contains('visible')) {
+                window.closeCreateModal();
+                return;
+            }
+            if (typeof window.closeRenameModal === 'function' && document.getElementById('rename-overlay')?.classList.contains('visible')) {
+                window.closeRenameModal();
+                return;
+            }
+            if (typeof window.closeMoveModal === 'function' && document.getElementById('move-overlay')?.classList.contains('visible')) {
+                window.closeMoveModal();
+                return;
+            }
+            if (typeof window.closeSettingsModal === 'function' && document.getElementById('settings-overlay')?.classList.contains('visible')) {
+                window.closeSettingsModal();
+                return;
+            }
+
+            // Fallback: find any visible overlay in DOM and hide
+            const visibleOverlay = document.querySelector('.overlay.visible, .modal-overlay.visible, [id$="-overlay"].visible, [id$="-overlay"]:not(.hidden)');
+            if (visibleOverlay && visibleOverlay.id) {
+                const closeBtn = visibleOverlay.querySelector('.overlay-close, [id$="-close"], [id$="-cancel"]');
+                if (closeBtn) {
+                    closeBtn.click();
+                    return;
+                }
+                visibleOverlay.classList.add('hidden');
+                visibleOverlay.classList.remove('visible');
+                visibleOverlay.style.display = 'none';
+                visibleOverlay.setAttribute('aria-hidden', 'true');
             }
             return;
         }
@@ -67,15 +170,15 @@ export function setupKeyboardHandler(
         // Handle search shortcut (Ctrl+F or Cmd+F)
         if ((event.ctrlKey || event.metaKey) && event.key === 'f') {
             event.preventDefault();
-            if (searchInput) {
-                searchInput.focus();
-                searchInput.select();
+            if (effectiveSearchInput) {
+                effectiveSearchInput.focus();
+                effectiveSearchInput.select();
             }
             return;
         }
 
         // Handle search key (forward slash)
-        if (event.key === '/' && handleSearchKey) {
+        if (event.key === '/' && effectiveSearchKeyHandler) {
             // Don't trigger if user is typing in an input
             if (document.activeElement.tagName === 'INPUT' ||
                 document.activeElement.tagName === 'TEXTAREA' ||
@@ -84,7 +187,7 @@ export function setupKeyboardHandler(
             }
 
             event.preventDefault();
-            handleSearchKey();
+            effectiveSearchKeyHandler();
             return;
         }
 

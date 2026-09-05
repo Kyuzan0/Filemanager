@@ -4,6 +4,45 @@
  */
 
 // ============= Modal State =============
+let _lastFocusedTriggerElement = null;
+
+function rememberTriggerFocus() {
+  _lastFocusedTriggerElement = document.activeElement;
+}
+
+function restoreTriggerFocus() {
+  if (_lastFocusedTriggerElement && typeof _lastFocusedTriggerElement.focus === 'function') {
+    try {
+      _lastFocusedTriggerElement.focus();
+    } catch (_) {}
+  }
+  _lastFocusedTriggerElement = null;
+}
+
+// Trap focus inside an overlay container
+function trapFocus(overlayEl) {
+  if (!overlayEl) return;
+  const focusableSelectors = 'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])';
+  overlayEl.addEventListener('keydown', (e) => {
+    if (e.key !== 'Tab') return;
+    const focusables = Array.from(overlayEl.querySelectorAll(focusableSelectors)).filter(el => !el.disabled && el.offsetParent !== null);
+    if (focusables.length === 0) return;
+    const first = focusables[0];
+    const last = focusables[focusables.length - 1];
+    if (e.shiftKey) {
+      if (document.activeElement === first) {
+        e.preventDefault();
+        last.focus();
+      }
+    } else {
+      if (document.activeElement === last) {
+        e.preventDefault();
+        first.focus();
+      }
+    }
+  });
+}
+
 let modalState = {
   preview: {
     currentFile: null,
@@ -990,7 +1029,13 @@ function showPreviewWrapper(type) {
 }
 
 function openPreviewModal(filePath, fileName) {
+  rememberTriggerFocus();
+  document.body.classList.add('modal-open');
   const overlay = document.getElementById('preview-overlay');
+  if (overlay && !overlay._focusTrapAttached) {
+    trapFocus(overlay);
+    overlay._focusTrapAttached = true;
+  }
   const title = document.getElementById('preview-title');
   const meta = document.getElementById('preview-meta');
   const editor = document.getElementById('preview-editor');
@@ -1272,6 +1317,9 @@ function closePreviewModal() {
   modalState.preview.originalContent = '';
   modalState.preview.previewUrl = '';
   modalState.preview.previewName = '';
+
+  document.body.classList.remove('modal-open');
+  restoreTriggerFocus();
 }
 
 function attachOverlayBackdropDismiss(overlayId, closeHandler) {
@@ -1752,7 +1800,13 @@ function collectUploadLimits() {
 // ============================================================================
 
 function openSettingsModal() {
+  rememberTriggerFocus();
+  document.body.classList.add('modal-open');
   const overlay = document.getElementById('settings-overlay');
+  if (overlay && !overlay._focusTrapAttached) {
+    trapFocus(overlay);
+    overlay._focusTrapAttached = true;
+  }
   const debugToggle = document.getElementById('toggle-debug');
 
   overlay.classList.remove('hidden');
@@ -1772,6 +1826,8 @@ function closeSettingsModal() {
   overlay.classList.add('hidden');
   overlay.style.display = 'none';
   overlay.setAttribute('aria-hidden', 'true');
+  document.body.classList.remove('modal-open');
+  restoreTriggerFocus();
 }
 
 async function loadUploadSettings() {

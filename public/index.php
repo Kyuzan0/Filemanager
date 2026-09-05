@@ -30,6 +30,9 @@ $currentUser = \App\Core\Auth::getCurrentUser();
             if (theme === 'dark') {
                 document.documentElement.style.backgroundColor = '#2d2b38';
                 document.documentElement.style.colorScheme = 'dark';
+            } else {
+                document.documentElement.style.backgroundColor = '#f0ebe4';
+                document.documentElement.style.colorScheme = 'light';
             }
         })();
     </script>
@@ -235,33 +238,36 @@ $currentUser = \App\Core\Auth::getCurrentUser();
 
 <body class="overflow-hidden">
     <!-- Skip Links for Accessibility -->
-    <a href="#main-content" class="skip-link">Skip to main content</a>
-    <a href="#fileTable" class="skip-link">Skip to file list</a>
+    <div class="skip-links">
+        <a href="#main-content" class="skip-link">Skip to main content</a>
+        <a href="#fileTable" class="skip-link">Skip to file list</a>
+    </div>
 
     <div class="app h-screen d-flex overflow-hidden" id="app" role="application" aria-label="File Manager Application">
         <?php $activePage = 'dashboard';
         include __DIR__ . '/partials/sidebar.php'; ?>
 
-        <main class="main flex-1 h-full overflow-y-auto pos-relative" id="main-content" role="main"
+        <main class="main flex-1 h-full overflow-y-auto pos-relative" id="main-content" tabindex="-1" role="main"
             aria-label="File Manager Main Content">
             <!-- HEADER ACTIONS -->
-            <section
+            <header
                 class="header-actions"
-                role="toolbar" aria-label="File manager actions">
+                role="toolbar" aria-label="Aksi file manager">
                 <!-- Left Group: Navigation & Search -->
                 <div class="d-flex items-center gap-2 flex-1 min-w-0">
                     <!-- Mobile Menu Toggle -->
                     <button
                         class="btn btn-icon md:d-none p-1 rounded flex-shrink-0"
-                        id="mobile-menu-toggle" title="Menu" aria-label="Open navigation menu" aria-expanded="false"
-                        aria-controls="sidebar">
+                        id="mobile-menu-toggle" title="Menu" aria-label="Buka menu navigasi" aria-expanded="false"
+                        aria-controls="sidebar" style="min-width: 36px; min-height: 36px;">
                         <i class="ri-menu-line text-base text-muted" aria-hidden="true"></i>
                     </button>
 
                     <!-- Mobile Search Toggle -->
                     <button
                         class="btn btn-icon md:d-none p-1 rounded flex-shrink-0"
-                        id="mobile-search-btn" title="Search" aria-label="Open search"
+                        id="mobile-search-btn" title="Search" aria-label="Cari file"
+                        style="min-width: 36px; min-height: 36px;"
                         onclick="document.getElementById('search-modal').classList.remove('hidden'); document.getElementById('search-modal').setAttribute('aria-hidden','false'); setTimeout(function(){document.getElementById('search-modal-input').focus()},100);">
                         <i class="ri-search-line text-base text-muted" aria-hidden="true"></i>
                     </button>
@@ -324,7 +330,7 @@ $currentUser = \App\Core\Auth::getCurrentUser();
                         </button>
                     </div>
                 </div>
-            </section>
+            </header>
 
             <!-- TABLE CARD -->
             <div class="card" role="region" aria-label="File list container">

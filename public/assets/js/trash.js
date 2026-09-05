@@ -337,6 +337,9 @@ const TrashHandler = (function() {
 
     // ===== TOAST NOTIFICATION =====
     function showToast(message, type = 'info') {
+        if (typeof window.showToast === 'function') {
+            return window.showToast(type, message);
+        }
         const toast = document.createElement('div');
         toast.className = `toast toast-${type}`;
         toast.textContent = message;

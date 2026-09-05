@@ -85,20 +85,20 @@
 
                     <div class="d-flex flex-col gap-3">
                         <div>
-                            <label class="setting-hint" style="margin: 0 0 6px; display: block; font-weight: 500;">
+                            <label for="upload-extra-allowed" class="setting-hint" style="margin: 0 0 6px; display: block; font-weight: 500;">
                                 ✅ Tambahan Diizinkan <span style="font-weight: 400; opacity: 0.7;">(override blokir)</span>
                             </label>
                             <input type="text" id="upload-extra-allowed" class="settings-input" style="width: 100%;"
-                                placeholder="Contoh: exe, msi, dll">
-                            <p class="setting-hint" style="margin-top: 4px;">Ekstensi yang akan dilepas dari daftar blokir. Hati-hati hanya untuk file yang benar-benar aman.</p>
+                                placeholder="Contoh: exe, msi, dll" aria-describedby="upload-extra-allowed-hint">
+                            <p class="setting-hint" id="upload-extra-allowed-hint" style="margin-top: 4px;">Ekstensi yang akan dilepas dari daftar blokir. Hati-hati hanya untuk file yang benar-benar aman.</p>
                         </div>
                         <div>
-                            <label class="setting-hint" style="margin: 0 0 6px; display: block; font-weight: 500;">
+                            <label for="upload-extra-blocked" class="setting-hint" style="margin: 0 0 6px; display: block; font-weight: 500;">
                                 🚫 Tambahan Diblokir
                             </label>
                             <input type="text" id="upload-extra-blocked" class="settings-input" style="width: 100%;"
-                                placeholder="Contoh: bat, cmd, vbs">
-                            <p class="setting-hint" style="margin-top: 4px;">Ekstensi tambahan yang akan diblokir meskipun tidak di daftar default.</p>
+                                placeholder="Contoh: bat, cmd, vbs" aria-describedby="upload-extra-blocked-hint">
+                            <p class="setting-hint" id="upload-extra-blocked-hint" style="margin-top: 4px;">Ekstensi tambahan yang akan diblokir meskipun tidak di daftar default.</p>
                         </div>
                     </div>
                 </div>

@@ -27,7 +27,7 @@
   /* Text Colors */
   --text: #4a3f35; /* Dark brown */
   --text-secondary: #6d5f52; /* Medium brown */
-  --muted: #9a8d80; /* Warm taupe */
+  --muted: #706559; /* Warm taupe */
   
   /* Accent Colors */
   --accent: #b08968; /* Warm caramel brown */
@@ -257,7 +257,7 @@
   --slate-200: #e2e8f0;
   --slate-300: #cbd5e1;
   --slate-400: #94a3b8;
-  --slate-500: #64748b;
+  --slate-500: #526071;
   --slate-600: #475569;
   --slate-700: #334155;
   --slate-800: #1e293b;
@@ -518,7 +518,7 @@
   /* Text Colors */
   --text: #e6e4f0; /* Soft pastel white */
   --text-secondary: #b8b4cc;
-  --muted: #8d88a6;
+  --muted: #aba6c7;
   
   /* Accent Colors */
   --accent: #b0a8d6; /* Pastel purple/blue */

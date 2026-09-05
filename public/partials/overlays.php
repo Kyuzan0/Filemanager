@@ -292,9 +292,9 @@
         <div id="create-hint" style="display: none;"></div>
         <form id="create-form" style="display: none;"></form>
 
-        <div class="form-group-add-item">
-            <label for="create-type-select" class="label-add-item">Item Type</label>
-            <div class="radio-slide-container-add-item">
+        <fieldset class="form-group-add-item border-0 p-0 m-0">
+            <legend class="label-add-item" id="create-type-legend">Item Type</legend>
+            <div class="radio-slide-container-add-item" role="radiogroup" aria-labelledby="create-type-legend">
                 <input type="radio" id="file-option" name="create-type" value="file" class="radio-input-add-item">
                 <label for="file-option" class="radio-label-add-item">File</label>
 
@@ -303,7 +303,7 @@
 
                 <span class="radio-slider-add-item"></span>
             </div>
-        </div>
+        </fieldset>
 
         <div class="form-group-add-item" id="create-name-group" style="display: none;">
             <label for="create-name" class="label-add-item">Name</label>

@@ -874,46 +874,102 @@ export function setupKeyboardHandler(
     closePreviewOverlay,
     hasUnsavedChanges
 ) {
+    // Support object options or positional arguments
+    let opts = {};
+    if (closeUnsavedOverlay && typeof closeUnsavedOverlay === 'object') {
+        opts = closeUnsavedOverlay;
+    } else {
+        opts = {
+            closeUnsavedOverlay,
+            closeConfirmOverlay,
+            closeCreateOverlay,
+            closeRenameOverlay,
+            closePreviewOverlay,
+            hasUnsavedChanges
+        };
+    }
+
+    const checkUnsaved = typeof opts.hasUnsavedChanges === 'function'
+        ? opts.hasUnsavedChanges
+        : (typeof hasUnsavedChanges === 'function' ? hasUnsavedChanges : () => false);
+
     document.addEventListener('keydown', async (event) => {
         if (event.key === 'Escape') {
-            if (state.unsaved.isOpen) {
+            if (state.unsaved?.isOpen) {
                 event.preventDefault();
                 if (state.unsaved.callback && state.unsaved.callback.onCancel) {
                     await state.unsaved.callback.onCancel();
-                } else {
-                    closeUnsavedOverlay();
+                } else if (typeof opts.closeUnsavedOverlay === 'function') {
+                    opts.closeUnsavedOverlay();
                 }
                 return;
             }
 
-            if (state.confirm.isOpen && !state.isDeleting) {
+            if (state.confirm?.isOpen && !state.isDeleting) {
                 event.preventDefault();
-                closeConfirmOverlay();
+                opts.closeConfirmOverlay?.();
                 return;
             }
 
-            if (state.create.isOpen && !state.isLoading) {
+            if (state.create?.isOpen && !state.isLoading) {
                 event.preventDefault();
-                closeCreateOverlay();
+                opts.closeCreateOverlay?.();
                 return;
             }
 
-            if (state.rename.isOpen && !state.isLoading) {
+            if (state.rename?.isOpen && !state.isLoading) {
                 event.preventDefault();
-                closeRenameOverlay();
+                opts.closeRenameOverlay?.();
                 return;
             }
 
-            if (state.preview.isOpen) {
+            if (state.move?.isOpen) {
                 event.preventDefault();
-                closePreviewOverlay().catch(() => {});
+                opts.closeMoveOverlay?.();
+                return;
+            }
+
+            if (state.preview?.isOpen) {
+                event.preventDefault();
+                opts.closePreviewOverlay?.()?.catch?.(() => {});
+                return;
+            }
+
+            // Fallback to standard modal close calls if found in DOM
+            if (typeof opts.closeAllOverlays === 'function') {
+                opts.closeAllOverlays();
+                return;
+            }
+            if (typeof window.closePreviewModal === 'function' && document.getElementById('preview-overlay')?.classList.contains('visible')) {
+                window.closePreviewModal();
+                return;
+            }
+            if (typeof window.closeConfirmModal === 'function' && document.getElementById('confirm-overlay')?.classList.contains('visible')) {
+                window.closeConfirmModal();
+                return;
+            }
+            if (typeof window.closeCreateModal === 'function' && document.getElementById('create-overlay')?.classList.contains('visible')) {
+                window.closeCreateModal();
+                return;
+            }
+            if (typeof window.closeRenameModal === 'function' && document.getElementById('rename-overlay')?.classList.contains('visible')) {
+                window.closeRenameModal();
+                return;
+            }
+            if (typeof window.closeMoveModal === 'function' && document.getElementById('move-overlay')?.classList.contains('visible')) {
+                window.closeMoveModal();
+                return;
+            }
+            if (typeof window.closeSettingsModal === 'function' && document.getElementById('settings-overlay')?.classList.contains('visible')) {
+                window.closeSettingsModal();
+                return;
             }
         }
     });
 
     // Handle beforeunload event
     window.addEventListener('beforeunload', (event) => {
-        if (hasUnsavedChanges()) {
+        if (checkUnsaved()) {
             event.preventDefault();
             event.returnValue = '';
         }
