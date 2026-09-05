@@ -59,7 +59,7 @@
 
 .skip-link {
     position: absolute;
-    top: -100%;
+    top: 0;
     left: 0;
     padding: 0.75rem 1.5rem;
     background-color: var(--primary);
@@ -69,14 +69,18 @@
     text-decoration: none;
     border-radius: 0 0 0.5rem 0;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-    transition: top 0.2s ease-in-out;
+    transform: translateY(-120%);
+    transition: transform 0.2s ease-in-out;
     outline: none;
+    z-index: 9999;
+    pointer-events: none;
 }
 
 .skip-link:focus {
-    top: 0;
+    transform: translateY(0);
     outline: 3px solid var(--primary-dark);
     outline-offset: 2px;
+    pointer-events: auto;
 }
 
 /* ============================================================================
