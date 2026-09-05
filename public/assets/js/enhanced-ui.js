@@ -2204,7 +2204,7 @@ function initializeEventHandlers() {
       <div class="card-upload-modal">
         <div class="card-upload-modal__header">
           <div class="card-upload-modal__title-group">
-            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" aria-hidden="true" class="card-upload-modal__icon"><path d="M12 3v10" stroke="#0ea5e9" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"></path><path d="M8 9l4-4 4 4" stroke="#0ea5e9" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"></path><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" stroke="#0ea5e9" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" aria-hidden="true" class="card-upload-modal__icon"><path d="M12 3v10" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"></path><path d="M8 9l4-4 4 4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"></path><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"></path></svg>
             <div>
               <div class="card-upload-modal__title">Upload Files</div>
               <div class="card-upload-modal__subtitle">Klik tombol "Upload" untuk memulai unggahan</div>
@@ -2260,124 +2260,177 @@ function initializeEventHandlers() {
       const cancelBtn = document.getElementById('cardUploadCancel');
       if (uploadBtn) {
         uploadBtn.disabled = true;
-        uploadBtn.innerHTML = '<span class="flex items-center gap-1\.5">Mengupload...</span>';
+        uploadBtn.innerHTML = '<span class="card-upload-spinner"></span><span>Mengupload...</span>';
       }
       if (cancelBtn) cancelBtn.disabled = true;
 
       const list = document.getElementById('cardUploadList');
       const rows = list?.querySelectorAll('.card-upload-row') || [];
 
-      // Set all rows to "Mengupload..." status
-      rows.forEach(row => {
+      const CHUNK_SIZE = 5 * 1024 * 1024;
+      let successCount = 0;
+      let errorCount = 0;
+
+      // Sequential upload file by file
+      for (let fileIdx = 0; fileIdx < pendingUploadFiles.length; fileIdx++) {
+        const file = pendingUploadFiles[fileIdx];
+        const row = rows[fileIdx];
+        const progressEl = row?.querySelector('.card-upload-progress');
         const statusEl = row?.querySelector('.card-upload-status');
-        if (statusEl) statusEl.textContent = 'Mengupload...';
-      });
+        const progressBarEl = row?.querySelector('.card-upload-row__progress-bar');
 
-      // Upload all files in a single request for bulk logging
-      const formData = new FormData();
-      for (const file of pendingUploadFiles) {
-        formData.append('files[]', file);
-      }
+        row?.classList.add('is-uploading');
+        progressEl?.classList.add('is-uploading');
+        progressBarEl?.classList.add('is-indeterminate');
 
-      try {
-        const response = await fetch(`${API_BASE}?action=upload&path=${encodeURIComponent(currentPath)}`, {
-          method: 'POST',
-          body: formData
-        });
-        const data = await response.json();
+        let fileSuccess = false;
 
-        // If server returned an error response
-        if (!response.ok || data.success === false) {
-          const errorMsg = data.error || 'Terjadi kesalahan server';
-          rows.forEach(row => {
-            const progressEl = row?.querySelector('.card-upload-progress');
-            const statusEl = row?.querySelector('.card-upload-status');
-            if (progressEl) {
-              progressEl.style.width = '100%';
-              progressEl.classList.add('progress-error');
+        if (file.size > CHUNK_SIZE) {
+          // Chunked upload XHR
+          const totalChunks = Math.ceil(file.size / CHUNK_SIZE);
+          let chunkFailed = false;
+
+          for (let i = 0; i < totalChunks; i++) {
+            const start = i * CHUNK_SIZE;
+            const end = Math.min(start + CHUNK_SIZE, file.size);
+            const chunkBlob = file.slice(start, end);
+
+            const chunkFd = new FormData();
+            chunkFd.append('file', chunkBlob, file.name);
+            chunkFd.append('originalName', file.name);
+            chunkFd.append('chunkIndex', String(i));
+            chunkFd.append('totalChunks', String(totalChunks));
+            chunkFd.append('path', currentPath);
+
+            const chunkResult = await new Promise((resolve) => {
+              const xhr = new XMLHttpRequest();
+              xhr.open('POST', `${API_BASE}?action=upload&path=${encodeURIComponent(currentPath)}`, true);
+
+              xhr.upload.onprogress = (e) => {
+                if (e.lengthComputable) {
+                  const loadedBytes = (i * CHUNK_SIZE) + e.loaded;
+                  const percent = Math.min(99, Math.round((loadedBytes / file.size) * 100));
+                  if (progressEl) progressEl.style.width = percent + '%';
+                  if (statusEl) statusEl.textContent = 'Mengupload ' + percent + '%';
+                  progressBarEl?.classList.remove('is-indeterminate');
+                }
+              };
+
+              xhr.onload = () => {
+                try {
+                  const data = JSON.parse(xhr.responseText || '{}');
+                  if (xhr.status >= 200 && xhr.status < 300 && (data.success || data.finished)) {
+                    resolve({ success: true, data });
+                  } else {
+                    resolve({ success: false, data });
+                  }
+                } catch (err) {
+                  resolve({ success: false, error: err.message });
+                }
+              };
+
+              xhr.onerror = () => resolve({ success: false, error: 'Network error' });
+              xhr.send(chunkFd);
+            });
+
+            if (!chunkResult.success) {
+              chunkFailed = true;
+              break;
             }
-            if (statusEl) {
-              statusEl.textContent = 'Gagal ✗';
-              statusEl.classList.add('status-error');
+
+            if (chunkResult.data && (chunkResult.data.finished || chunkResult.data.success)) {
+              if (i === totalChunks - 1) {
+                fileSuccess = true;
+              }
             }
+          }
+
+          if (!chunkFailed && !fileSuccess) {
+            fileSuccess = true;
+          }
+        } else {
+          // Standard upload XHR (<= 5 MB)
+          const stdFd = new FormData();
+          stdFd.append('files[]', file, file.name);
+
+          const stdResult = await new Promise((resolve) => {
+            const xhr = new XMLHttpRequest();
+            xhr.open('POST', `${API_BASE}?action=upload&path=${encodeURIComponent(currentPath)}`, true);
+
+            xhr.upload.onprogress = (e) => {
+              if (e.lengthComputable) {
+                const percent = Math.round((e.loaded / e.total) * 100);
+                if (progressEl) progressEl.style.width = percent + '%';
+                if (statusEl) statusEl.textContent = 'Mengupload ' + percent + '%';
+                progressBarEl?.classList.remove('is-indeterminate');
+              }
+            };
+
+            xhr.onload = () => {
+              try {
+                const data = JSON.parse(xhr.responseText || '{}');
+                if (xhr.status >= 200 && xhr.status < 300 && data.success) {
+                  const uploaded = data.uploaded || [];
+                  const isUploaded = uploaded.some(u => (u.name || u) === file.name);
+                  resolve({ success: isUploaded || (data.errors && data.errors.length === 0), data });
+                } else {
+                  resolve({ success: false, data });
+                }
+              } catch (err) {
+                resolve({ success: false, error: err.message });
+              }
+            };
+
+            xhr.onerror = () => resolve({ success: false, error: 'Network error' });
+            xhr.send(stdFd);
           });
-          const summary = document.getElementById('cardUploadSummary');
-          const summaryText = document.getElementById('cardUploadSummaryText');
-          if (summary && summaryText) {
-            summary.style.display = 'block';
-            summary.className = 'card-upload-modal__summary summary-danger';
-            summaryText.textContent = `✗ Upload gagal: ${errorMsg}`;
-          }
-          if (uploadBtn) {
-            uploadBtn.innerHTML = '<span>Selesai</span>';
-            uploadBtn.disabled = false;
-          }
-          if (cancelBtn) cancelBtn.style.display = 'none';
-          isUploadCompleted = true;
-          isUploadInProgress = false;
-          return;
+
+          fileSuccess = stdResult.success;
         }
 
-        const uploadedFiles = data.uploaded || [];
-        const failedFiles = data.errors || data.failed || [];
-        const successCount = uploadedFiles.length;
-        const errorCount = failedFiles.length;
+        // Update row outcome
+        row?.classList.remove('is-uploading');
+        progressBarEl?.classList.remove('is-indeterminate');
 
-        // Update individual row statuses
-        rows.forEach((row, i) => {
-          const file = pendingUploadFiles[i];
-          const progressEl = row?.querySelector('.card-upload-progress');
-          const statusEl = row?.querySelector('.card-upload-status');
-
-          const isUploaded = uploadedFiles.some(f => f.name === file.name || f === file.name);
-
+        if (fileSuccess) {
+          successCount++;
           if (progressEl) {
-            progressEl.style.width = '100%';
+            progressEl.classList.remove('is-uploading');
             progressEl.classList.add('progress-success');
+            progressEl.style.width = '100%';
           }
           if (statusEl) {
-            statusEl.textContent = isUploaded ? 'Selesai ✓' : 'Gagal ✗';
-            statusEl.classList.add(isUploaded ? 'status-success' : 'status-error');
+            statusEl.textContent = 'Selesai ✓';
+            statusEl.classList.add('status-success');
           }
-        });
-
-        // Show summary
-        const summary = document.getElementById('cardUploadSummary');
-        const summaryText = document.getElementById('cardUploadSummaryText');
-        if (summary && summaryText) {
-          summary.style.display = 'block';
-          if (successCount > 0 && errorCount === 0) {
-            summary.className = 'card-upload-modal__summary summary-success';
-            summaryText.textContent = `✓ ${successCount} file berhasil diupload`;
-          } else if (successCount > 0 && errorCount > 0) {
-            summary.className = 'card-upload-modal__summary summary-warning';
-            summaryText.textContent = `${successCount} berhasil, ${errorCount} gagal`;
-          } else {
-            summary.className = 'card-upload-modal__summary summary-danger';
-            summaryText.textContent = `✗ Semua file gagal diupload`;
-          }
-        }
-      } catch (error) {
-        // On error, mark all as failed
-        rows.forEach(row => {
-          const progressEl = row?.querySelector('.card-upload-progress');
-          const statusEl = row?.querySelector('.card-upload-status');
+        } else {
+          errorCount++;
           if (progressEl) {
-            progressEl.style.width = '100%';
+            progressEl.classList.remove('is-uploading');
             progressEl.classList.add('progress-error');
+            progressEl.style.width = '100%';
           }
           if (statusEl) {
             statusEl.textContent = 'Gagal ✗';
             statusEl.classList.add('status-error');
           }
-        });
+        }
+      }
 
-        const summary = document.getElementById('cardUploadSummary');
-        const summaryText = document.getElementById('cardUploadSummaryText');
-        if (summary && summaryText) {
-          summary.style.display = 'block';
+      // Show summary
+      const summary = document.getElementById('cardUploadSummary');
+      const summaryText = document.getElementById('cardUploadSummaryText');
+      if (summary && summaryText) {
+        summary.style.display = 'block';
+        if (successCount > 0 && errorCount === 0) {
+          summary.className = 'card-upload-modal__summary summary-success';
+          summaryText.textContent = `✓ ${successCount} file berhasil diupload`;
+        } else if (successCount > 0 && errorCount > 0) {
+          summary.className = 'card-upload-modal__summary summary-warning';
+          summaryText.textContent = `${successCount} berhasil, ${errorCount} gagal`;
+        } else {
           summary.className = 'card-upload-modal__summary summary-danger';
-          summaryText.textContent = `✗ Upload gagal: ${error.message}`;
+          summaryText.textContent = `✗ Semua file gagal diupload`;
         }
       }
 

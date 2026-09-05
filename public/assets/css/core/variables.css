@@ -38,6 +38,10 @@
   --danger-rgb: 201, 138, 122;
   --warning: #d4a96a; /* Warm honey */
   --success: #8aab7c; /* Sage green */
+  --primary: var(--accent);
+  --text-headings: var(--text);
+  --info-text: var(--text);
+  --danger-text: #dc2626;
   
   /* Layout & Radius */
   --radius: 12px;
@@ -525,6 +529,10 @@
   --danger-rgb: 230, 156, 156;
   --warning: #e8cd9c; /* Pastel dark mode yellow */
   --success: #9dc2a8; /* Pastel dark mode green */
+  --primary: var(--accent);
+  --text-headings: var(--text);
+  --info-text: var(--text);
+  --danger-text: #f87171;
   
   /* Layout & Radius */
   --radius: 12px;
