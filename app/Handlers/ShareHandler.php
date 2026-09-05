@@ -535,9 +535,20 @@ function handle_share_download_action(string $root): void
             exit;
         }
 
-        // Increment download count
-        $stmt = $db->prepare('UPDATE shares SET download_count = download_count + 1 WHERE id = ?');
+        // Increment download count atomically and verify limit
+        $stmt = $db->prepare('
+            UPDATE shares 
+            SET download_count = download_count + 1 
+            WHERE id = ? AND (max_downloads IS NULL OR download_count < max_downloads)
+        ');
         $stmt->execute([$share['id']]);
+
+        if ($stmt->rowCount() === 0) {
+            http_response_code(410);
+            header('Content-Type: application/json');
+            echo json_encode(['success' => false, 'error' => 'Batas unduhan sudah tercapai.']);
+            exit;
+        }
 
         // Stream file
         $mimeTypes = function_exists('get_mime_types') ? get_mime_types() : [];

@@ -778,10 +778,28 @@ function renderMarkdownToHtml(md) {
   html = html.replace(/~~(.+?)~~/g, '<del>$1</del>');
 
   // Images (before links to avoid conflict)
-  html = html.replace(/!\[([^\]]*)\]\(([^)]+)\)/g, '<img src="$2" alt="$1" class="md-image">');
+  // Sanitize src to allow only http://, https://, or relative paths (strictly block javascript:, data:, vbscript:)
+  // Escape quotes in attributes
+  html = html.replace(/!\[([^\]]*)\]\(([^)]+)\)/g, (match, alt, src) => {
+    const cleanSrc = src.trim();
+    if (/^(https?:\/\/|\/|\.\/|\.\.\/)/i.test(cleanSrc)) {
+      const safeSrc = cleanSrc.replace(/"/g, '&quot;');
+      const safeAlt = alt.replace(/"/g, '&quot;');
+      return `<img src="${safeSrc}" alt="${safeAlt}" class="md-image">`;
+    }
+    return '';
+  });
 
   // Links
-  html = html.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>');
+  // Sanitize href to only allow http://, https://, mailto:, or relative URLs
+  html = html.replace(/\[([^\]]+)\]\(([^)]+)\)/g, (match, text, href) => {
+    const cleanHref = href.trim();
+    if (/^(https?:\/\/|mailto:|\/|\.\/|\.\.\/|#)/i.test(cleanHref) && !/^(javascript|data|vbscript):/i.test(cleanHref)) {
+      const safeHref = cleanHref.replace(/"/g, '&quot;');
+      return `<a href="${safeHref}" target="_blank" rel="noopener">${text}</a>`;
+    }
+    return text;
+  });
 
   // Blockquotes
   html = html.replace(/^&gt;\s+(.+)$/gm, '<blockquote>$1</blockquote>');

@@ -73,7 +73,14 @@ class Security
         $realPath = str_replace('\\', '/', $realPath);
         $realRoot = str_replace('\\', '/', $realRoot);
 
-        return strpos($realPath, $realRoot) === 0;
+        if ($realPath === $realRoot) {
+            return true;
+        }
+
+        $realRootWithSlash = rtrim($realRoot, '/') . '/';
+        $realPathWithSlash = rtrim($realPath, '/') . '/';
+
+        return str_starts_with($realPathWithSlash, $realRootWithSlash);
     }
 
     /**
@@ -93,10 +100,61 @@ class Security
         // Replace potentially dangerous characters
         $filename = preg_replace('/[<>:"\/\\|?*]/', '_', $filename);
 
-        // Remove leading/trailing dots and spaces
+        // Strip or reject trailing dots and spaces (Windows strips automatically)
         $filename = trim($filename, ". \t\n\r");
 
+        // Disallow Windows reserved names (CON, PRN, AUX, NUL, COM1-COM9, LPT1-LPT9)
+        $baseWithoutExt = pathinfo($filename, PATHINFO_FILENAME);
+        $reserved = ['CON', 'PRN', 'AUX', 'NUL',
+            'COM1', 'COM2', 'COM3', 'COM4', 'COM5', 'COM6', 'COM7', 'COM8', 'COM9',
+            'LPT1', 'LPT2', 'LPT3', 'LPT4', 'LPT5', 'LPT6', 'LPT7', 'LPT8', 'LPT9'];
+        if (in_array(strtoupper($baseWithoutExt), $reserved, true)) {
+            $filename = '_' . $filename;
+        }
+
         return $filename;
+    }
+
+    /**
+     * Check if a filename is a Windows reserved device name
+     *
+     * @param string $filename
+     * @return bool
+     */
+    public static function isWindowsReservedName(string $filename): bool
+    {
+        $base = pathinfo($filename, PATHINFO_FILENAME);
+        $reserved = ['CON', 'PRN', 'AUX', 'NUL',
+            'COM1', 'COM2', 'COM3', 'COM4', 'COM5', 'COM6', 'COM7', 'COM8', 'COM9',
+            'LPT1', 'LPT2', 'LPT3', 'LPT4', 'LPT5', 'LPT6', 'LPT7', 'LPT8', 'LPT9'];
+        return in_array(strtoupper($base), $reserved, true);
+    }
+
+    /**
+     * Check if file extension is dangerous
+     *
+     * @param string $filename
+     * @return bool
+     */
+    public static function isDangerousExtension(string $filename): bool
+    {
+        $ext = strtolower(pathinfo($filename, PATHINFO_EXTENSION));
+        $dangerous = [
+            'php', 'phtml', 'phar', 'php3', 'php4', 'php5', 'php7', 'phps',
+            'cgi', 'pl', 'asp', 'aspx', 'jsp', 'shtml',
+            'exe', 'sh', 'bash', 'bat', 'cmd', 'ps1', 'ps2',
+            'vbs', 'vbe', 'jse', 'ws', 'wsf', 'wsc', 'wsh',
+            'msi', 'dll', 'com', 'scr', 'pif', 'hta', 'cpl', 'msc', 'jar',
+            'htaccess', 'htpasswd', 'ini'
+        ];
+
+        // Also block .htaccess explicitly even if pathinfo treats whole name as filename
+        $basename = strtolower(basename($filename));
+        if ($basename === '.htaccess' || $basename === '.htpasswd') {
+            return true;
+        }
+
+        return in_array($ext, $dangerous, true);
     }
 
     /**

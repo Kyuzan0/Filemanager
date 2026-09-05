@@ -273,17 +273,33 @@ function extract_zip(string $root, string $zipRelativePath, ?string $extractToPa
     }
 
     // Security check: validate all entries before extraction
+    $normalizedExtractDir = realpath($extractDir) ?: $extractDir;
+    $normalizedExtractDir = rtrim(str_replace('\\', '/', $normalizedExtractDir), '/') . '/';
+
     for ($i = 0; $i < $zip->numFiles; $i++) {
         $entryName = $zip->getNameIndex($i);
         if ($entryName === false) {
             continue;
         }
 
-        // Check for path traversal attempts
-        $sanitizedEntry = sanitize_relative_path($entryName);
-        if (strpos($entryName, '..') !== false) {
+        // Prevent absolute paths or path traversal (Zip Slip)
+        if (strpos($entryName, '..') !== false || strpos($entryName, ':') !== false || str_starts_with($entryName, '/') || str_starts_with($entryName, '\\')) {
             $zip->close();
             throw new RuntimeException('File ZIP mengandung path tidak aman: ' . $entryName);
+        }
+
+        // Check if entry target stays strictly within extract directory
+        $sanitizedEntry = sanitize_relative_path($entryName);
+        $entryTarget = str_replace('\\', '/', $extractDir . DIRECTORY_SEPARATOR . str_replace('/', DIRECTORY_SEPARATOR, $sanitizedEntry));
+        if (!str_starts_with($entryTarget . (str_ends_with($entryName, '/') ? '/' : ''), $normalizedExtractDir)) {
+            $zip->close();
+            throw new RuntimeException('File ZIP mencoba keluar dari direktori tujuan: ' . $entryName);
+        }
+
+        // Block dangerous file extensions from being extracted
+        if (!str_ends_with($entryName, '/') && \App\Core\Security::isDangerousExtension($entryName)) {
+            $zip->close();
+            throw new RuntimeException('File ZIP berisi file berbahaya yang dilarang: ' . $entryName);
         }
     }
 
@@ -816,11 +832,30 @@ function extract_archive(string $root, string $archiveRelativePath, ?string $ext
         }
 
         // Security check
+        $normalizedExtractDir = realpath($extractDir) ?: $extractDir;
+        $normalizedExtractDir = rtrim(str_replace('\\', '/', $normalizedExtractDir), '/') . '/';
+
         for ($i = 0; $i < $zip->numFiles; $i++) {
             $entryName = $zip->getNameIndex($i);
-            if ($entryName !== false && strpos($entryName, '..') !== false) {
+            if ($entryName === false) {
+                continue;
+            }
+
+            if (strpos($entryName, '..') !== false || strpos($entryName, ':') !== false || str_starts_with($entryName, '/') || str_starts_with($entryName, '\\')) {
                 $zip->close();
                 throw new RuntimeException('File ZIP mengandung path tidak aman: ' . $entryName);
+            }
+
+            $sanitizedEntry = sanitize_relative_path($entryName);
+            $entryTarget = str_replace('\\', '/', $extractDir . DIRECTORY_SEPARATOR . str_replace('/', DIRECTORY_SEPARATOR, $sanitizedEntry));
+            if (!str_starts_with($entryTarget . (str_ends_with($entryName, '/') ? '/' : ''), $normalizedExtractDir)) {
+                $zip->close();
+                throw new RuntimeException('File ZIP mencoba keluar dari direktori tujuan: ' . $entryName);
+            }
+
+            if (!str_ends_with($entryName, '/') && \App\Core\Security::isDangerousExtension($entryName)) {
+                $zip->close();
+                throw new RuntimeException('File ZIP berisi file berbahaya yang dilarang: ' . $entryName);
             }
         }
 

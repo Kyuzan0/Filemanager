@@ -128,12 +128,14 @@ function verify_csrf_token(?string $token = null): bool
 }
 
 /**
- * Check if request is from valid origin (basic CSRF protection).
- * Enhanced: For POST/PUT/DELETE, also verifies CSRF token when available.
+ * Check if request is from valid origin and has valid CSRF token.
+ * For mutating requests (POST, PUT, DELETE, PATCH), validates Origin/Referer
+ * AND requires a valid CSRF token.
  */
 function check_origin(): bool
 {
-    if ($_SERVER['REQUEST_METHOD'] === 'GET') {
+    $method = $_SERVER['REQUEST_METHOD'] ?? 'GET';
+    if ($method === 'GET' || $method === 'HEAD' || $method === 'OPTIONS') {
         return true;
     }
 
@@ -154,17 +156,16 @@ function check_origin(): bool
         $originValid = ($refererHost === $hostName);
     }
 
-    if ($originValid) {
-        return true;
+    // Always require CSRF token validation on mutating requests
+    $csrfValid = verify_csrf_token();
+
+    // If Origin/Referer is present, it must be valid AND CSRF token must be valid.
+    // If neither Origin nor Referer is present (e.g. CLI or certain clients), CSRF token must be valid.
+    if (!empty($origin) || !empty($referer)) {
+        return $originValid && $csrfValid;
     }
 
-    // If origin/referer missing (proxy stripped it), fall back to CSRF token check
-    $csrfHeader = $_SERVER['HTTP_X_CSRF_TOKEN'] ?? '';
-    if (!empty($csrfHeader) || !empty($_SESSION['csrf_token'])) {
-        return verify_csrf_token();
-    }
-
-    return false;
+    return $csrfValid;
 }
 
 /**

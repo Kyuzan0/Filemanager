@@ -142,11 +142,14 @@ function search_file_contents(
 
     // Skip directories
     $skipDirs = ['.git', 'node_modules', 'vendor', '.svn', '.hg', '__pycache__', '.idea', '.vscode', 'storage'];
+    $maxExecutionTime = 30; // 30 seconds time limit for search
+    $startTime = time();
+    $maxLineLength = 4096; // limit line length to prevent memory exhaustion
 
     try {
         $iterator = new RecursiveDirectoryIterator(
             $realStartPath,
-            RecursiveDirectoryIterator::SKIP_DOTS | RecursiveDirectoryIterator::FOLLOW_SYMLINKS
+            RecursiveDirectoryIterator::SKIP_DOTS
         );
 
         $filterIterator = new RecursiveCallbackFilterIterator(
@@ -166,6 +169,10 @@ function search_file_contents(
 
         foreach ($files as $file) {
             if ($truncated) break;
+            if (time() - $startTime > $maxExecutionTime) {
+                $truncated = true;
+                break;
+            }
             if (!$file->isFile() || !$file->isReadable()) continue;
 
             $ext = strtolower($file->getExtension());
@@ -186,57 +193,58 @@ function search_file_contents(
             $filesSearched++;
             $filePath = $file->getRealPath();
 
-            // Read file content
-            $content = @file_get_contents($filePath);
-            if ($content === false) continue;
+            // Read file content line-by-line using fopen/fgets
+            $handle = @fopen($filePath, 'r');
+            if ($handle === false) continue;
 
-            // Skip binary files (check for null bytes in first 8KB)
-            $sample = substr($content, 0, 8192);
-            if (strpos($sample, "\0") !== false) continue;
+            // Check first 8KB for null byte to skip binary files
+            $sample = fread($handle, 8192);
+            if ($sample === false || strpos($sample, "\0") !== false) {
+                fclose($handle);
+                continue;
+            }
+            rewind($handle);
 
-            // Search line by line
-            $lines = explode("\n", $content);
             $fileMatches = [];
+            $lineBuffer = []; // Circular or sliding buffer for previous context
+            $lineNumber = 0;
 
-            foreach ($lines as $lineIndex => $line) {
+            while (($rawLine = fgets($handle, $maxLineLength)) !== false) {
+                $lineNumber++;
+                $line = rtrim($rawLine, "\r\n");
+
                 if (preg_match($pattern, $line, $matches)) {
-                    $lineNumber = $lineIndex + 1;
-
-                    // Get context lines
                     $contextBefore = [];
-                    $contextAfter = [];
-
-                    for ($i = max(0, $lineIndex - $contextLines); $i < $lineIndex; $i++) {
+                    foreach ($lineBuffer as $bufItem) {
                         $contextBefore[] = [
-                            'line' => $i + 1,
-                            'text' => mb_substr($lines[$i], 0, 500),
-                        ];
-                    }
-
-                    for ($i = $lineIndex + 1; $i <= min(count($lines) - 1, $lineIndex + $contextLines); $i++) {
-                        $contextAfter[] = [
-                            'line' => $i + 1,
-                            'text' => mb_substr($lines[$i], 0, 500),
+                            'line' => $bufItem['line'],
+                            'text' => mb_substr($bufItem['text'], 0, 500),
                         ];
                     }
 
                     $fileMatches[] = [
                         'line' => $lineNumber,
-                        'text' => mb_substr(rtrim($line, "\r"), 0, 500),
+                        'text' => mb_substr($line, 0, 500),
                         'match' => $matches[0],
                         'column' => mb_strpos($caseSensitive ? $line : mb_strtolower($line), $caseSensitive ? $matches[0] : mb_strtolower($matches[0])) + 1,
                         'contextBefore' => $contextBefore,
-                        'contextAfter' => $contextAfter,
+                        'contextAfter' => [],
                     ];
 
                     $totalMatches++;
-
                     if ($totalMatches >= $maxResults) {
                         $truncated = true;
                         break;
                     }
                 }
+
+                // Update sliding buffer
+                $lineBuffer[] = ['line' => $lineNumber, 'text' => $line];
+                if (count($lineBuffer) > $contextLines) {
+                    array_shift($lineBuffer);
+                }
             }
+            fclose($handle);
 
             if (!empty($fileMatches)) {
                 $filesMatched++;

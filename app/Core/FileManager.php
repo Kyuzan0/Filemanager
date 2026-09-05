@@ -261,6 +261,21 @@ function prepare_creation_target(string $root, string $relativePath): array
         throw new RuntimeException('Nama tidak valid.');
     }
 
+    // Windows reserved names & trailing dots/spaces
+    if (rtrim($name, ". \t\n\r") !== $name) {
+        throw new RuntimeException('Nama tidak boleh diakhiri titik atau spasi.');
+    }
+
+    $baseNameOnly = pathinfo($name, PATHINFO_FILENAME);
+    $reservedNames = [
+        'CON', 'PRN', 'AUX', 'NUL',
+        'COM1', 'COM2', 'COM3', 'COM4', 'COM5', 'COM6', 'COM7', 'COM8', 'COM9',
+        'LPT1', 'LPT2', 'LPT3', 'LPT4', 'LPT5', 'LPT6', 'LPT7', 'LPT8', 'LPT9'
+    ];
+    if (in_array(strtoupper($baseNameOnly), $reservedNames, true)) {
+        throw new RuntimeException('Nama file/folder merupakan reserved name sistem.');
+    }
+
     $parentRelative = implode('/', array_filter($segments, static fn($value) => $value !== ''));
     $parentPath = $normalizedRoot;
 
@@ -315,6 +330,11 @@ function create_folder(string $root, string $relativePath): array
 function create_file(string $root, string $relativePath, string $content = ''): array
 {
     $info = prepare_creation_target($root, $relativePath);
+
+    // Security: Block dangerous extensions from being created
+    if (\App\Core\Security::isDangerousExtension($info['name'])) {
+        throw new RuntimeException('Tipe file berbahaya tidak diizinkan untuk dibuat.');
+    }
 
     $bytes = @file_put_contents($info['target_path'], $content, LOCK_EX);
     if ($bytes === false) {
@@ -575,6 +595,25 @@ function rename_item(string $root, string $oldRelativePath, string $newRelativeP
 
     if (preg_match('/[\\\\\/]/', $newName)) {
         throw new RuntimeException('Nama tidak valid.');
+    }
+
+    // Windows reserved names & trailing dots/spaces
+    if (rtrim($newName, ". \t\n\r") !== $newName) {
+        throw new RuntimeException('Nama tidak boleh diakhiri titik atau spasi.');
+    }
+
+    $baseNameOnly = pathinfo($newName, PATHINFO_FILENAME);
+    $reservedNames = [
+        'CON', 'PRN', 'AUX', 'NUL',
+        'COM1', 'COM2', 'COM3', 'COM4', 'COM5', 'COM6', 'COM7', 'COM8', 'COM9',
+        'LPT1', 'LPT2', 'LPT3', 'LPT4', 'LPT5', 'LPT6', 'LPT7', 'LPT8', 'LPT9'
+    ];
+    if (in_array(strtoupper($baseNameOnly), $reservedNames, true)) {
+        throw new RuntimeException('Nama file/folder merupakan reserved name sistem.');
+    }
+
+    if (!$isDir && \App\Core\Security::isDangerousExtension($newName)) {
+        throw new RuntimeException('Tipe file berbahaya tidak diizinkan.');
     }
 
     // Pastikan direktori induk dari path baru ada dan dapat ditulisi

@@ -26,11 +26,15 @@ $csrfToken = generate_csrf_token();
 header('X-CSRF-Token: ' . $csrfToken);
 
 // Enforce CSRF protection for state-changing requests
-if (!check_origin()) {
+// Note: auth-login and auth-setup do not require CSRF token before session is established,
+// but check_origin handles general state changing actions.
+$skipCsrfActions = ['auth-login', 'auth-setup'];
+$currentAction = $_GET['action'] ?? 'list';
+if (!in_array($currentAction, $skipCsrfActions, true) && !check_origin()) {
     http_response_code(403);
     echo json_encode([
         'success' => false,
-        'error' => 'Request origin tidak valid.',
+        'error' => 'Request origin atau CSRF token tidak valid.',
     ]);
     exit;
 }
@@ -99,9 +103,20 @@ try {
     if (!is_dir($logDir)) @mkdir($logDir, 0755, true);
     @file_put_contents($logFile, date('Y-m-d H:i:s') . ' [' . ($action ?? 'unknown') . '] ' . $e->getMessage() . ' in ' . $e->getFile() . ':' . $e->getLine() . "\n", FILE_APPEND);
     
+    global $_app_config;
+    $debug = $_app_config['debug'] ?? false;
+
+    // Mask sensitive details (DB errors, system paths) unless debug is on
+    $errorMessage = $e->getMessage();
+    if (!$debug) {
+        if ($e instanceof PDOException || preg_match('/(SQLSTATE|SELECT|INSERT|UPDATE|DELETE|table|column|database|[A-Z]:\\\\|\/var\/|\/etc\/)/i', $errorMessage)) {
+            $errorMessage = 'Terjadi kesalahan pada server.';
+        }
+    }
+
     echo json_encode([
         'success' => false,
-        'error' => $e->getMessage(),
+        'error' => $errorMessage,
     ], JSON_UNESCAPED_UNICODE);
 }
 

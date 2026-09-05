@@ -129,6 +129,11 @@ class Auth
             ];
         }
 
+        // Regenerate session ID to prevent session fixation
+        if (session_status() === PHP_SESSION_ACTIVE) {
+            session_regenerate_id(true);
+        }
+
         // Store user in session
         $_SESSION['user_id'] = $user['id'];
         $_SESSION['user_role'] = $user['role'];
@@ -177,6 +182,10 @@ class Auth
 
         self::clearSession();
         self::$currentUser = null;
+
+        if (session_status() === PHP_SESSION_ACTIVE) {
+            session_regenerate_id(true);
+        }
     }
 
     // =========================================================================

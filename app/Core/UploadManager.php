@@ -11,6 +11,7 @@ function validate_file_extension(string $filename, ?array $allowedExtensions = n
 {
     // Dangerous extensions that should never be allowed
     $dangerousExtensions = [
+        'exe',
         'msi',
         'dll',
         'com',
@@ -517,10 +518,31 @@ function upload_chunk(string $root, string $relativePath, array $fileEntry, stri
             return $result; // uploaded empty, finished false
         }
 
+        // Acquire exclusive lock on chunk assembly to prevent race condition across concurrent requests
+        $assemblyLockPath = $chunkDir . DIRECTORY_SEPARATOR . '.assembly.lock';
+        $assemblyLockFp = @fopen($assemblyLockPath, 'c');
+        if ($assemblyLockFp === false || !@flock($assemblyLockFp, LOCK_EX | LOCK_NB)) {
+            // Another worker is actively assembling or lock failed
+            if ($assemblyLockFp !== false) {
+                fclose($assemblyLockFp);
+            }
+            return $result;
+        }
+
+        // Re-check chunk files under lock
+        $found = glob($chunkDir . DIRECTORY_SEPARATOR . 'chunk_*.part') ?: [];
+        if (count($found) < $totalChunks) {
+            flock($assemblyLockFp, LOCK_UN);
+            fclose($assemblyLockFp);
+            return $result;
+        }
+
         // All chunks present -> assemble final file
         $targetPath = $realTargetPath . DIRECTORY_SEPARATOR . $basename;
 
         if (file_exists($targetPath)) {
+            flock($assemblyLockFp, LOCK_UN);
+            fclose($assemblyLockFp);
             $result['errors'][] = [
                 'name' => $originalName,
                 'error' => 'File dengan nama sama sudah ada.'
@@ -530,6 +552,8 @@ function upload_chunk(string $root, string $relativePath, array $fileEntry, stri
 
         $outHandle = @fopen($targetPath, 'c');
         if ($outHandle === false) {
+            flock($assemblyLockFp, LOCK_UN);
+            fclose($assemblyLockFp);
             $result['errors'][] = [
                 'name' => $originalName,
                 'error' => 'Gagal membuat berkas akhir.'
@@ -540,6 +564,8 @@ function upload_chunk(string $root, string $relativePath, array $fileEntry, stri
         // Lock final file while assembling
         if (!@flock($outHandle, LOCK_EX)) {
             fclose($outHandle);
+            flock($assemblyLockFp, LOCK_UN);
+            fclose($assemblyLockFp);
             $result['errors'][] = [
                 'name' => $originalName,
                 'error' => 'Gagal mendapatkan kunci untuk menulis berkas akhir.'
@@ -554,6 +580,8 @@ function upload_chunk(string $root, string $relativePath, array $fileEntry, stri
                 // Missing part - abort
                 flock($outHandle, LOCK_UN);
                 fclose($outHandle);
+                flock($assemblyLockFp, LOCK_UN);
+                fclose($assemblyLockFp);
                 $result['errors'][] = [
                     'name' => $originalName,
                     'error' => "Chunk ke-{$i} hilang saat merakit file."
@@ -565,6 +593,8 @@ function upload_chunk(string $root, string $relativePath, array $fileEntry, stri
             if ($in === false) {
                 flock($outHandle, LOCK_UN);
                 fclose($outHandle);
+                flock($assemblyLockFp, LOCK_UN);
+                fclose($assemblyLockFp);
                 $result['errors'][] = [
                     'name' => $originalName,
                     'error' => "Gagal membaca chunk ke-{$i}."
@@ -578,6 +608,8 @@ function upload_chunk(string $root, string $relativePath, array $fileEntry, stri
                     fclose($in);
                     flock($outHandle, LOCK_UN);
                     fclose($outHandle);
+                    flock($assemblyLockFp, LOCK_UN);
+                    fclose($assemblyLockFp);
                     $result['errors'][] = [
                         'name' => $originalName,
                         'error' => "Gagal membaca chunk ke-{$i} saat menulis."
@@ -589,6 +621,8 @@ function upload_chunk(string $root, string $relativePath, array $fileEntry, stri
                     fclose($in);
                     flock($outHandle, LOCK_UN);
                     fclose($outHandle);
+                    flock($assemblyLockFp, LOCK_UN);
+                    fclose($assemblyLockFp);
                     $result['errors'][] = [
                         'name' => $originalName,
                         'error' => 'Gagal menulis ke berkas akhir.'
@@ -608,6 +642,9 @@ function upload_chunk(string $root, string $relativePath, array $fileEntry, stri
         foreach (glob($chunkDir . DIRECTORY_SEPARATOR . 'chunk_*.part') as $p) {
             @unlink($p);
         }
+        flock($assemblyLockFp, LOCK_UN);
+        fclose($assemblyLockFp);
+        @unlink($assemblyLockPath);
         @rmdir($chunkDir);
 
         clearstatcache(true, $targetPath);
@@ -743,6 +780,24 @@ function upload_chunk_with_folder(string $root, string $relativePath, array $fil
             return $result;
         }
 
+        // Acquire exclusive lock on chunk assembly to prevent race condition
+        $assemblyLockPath = $chunkDir . DIRECTORY_SEPARATOR . '.assembly.lock';
+        $assemblyLockFp = @fopen($assemblyLockPath, 'c');
+        if ($assemblyLockFp === false || !@flock($assemblyLockFp, LOCK_EX | LOCK_NB)) {
+            if ($assemblyLockFp !== false) {
+                fclose($assemblyLockFp);
+            }
+            return $result;
+        }
+
+        // Re-check chunk files under lock
+        $found = glob($chunkDir . DIRECTORY_SEPARATOR . 'chunk_*.part') ?: [];
+        if (count($found) < $totalChunks) {
+            flock($assemblyLockFp, LOCK_UN);
+            fclose($assemblyLockFp);
+            return $result;
+        }
+
         // All chunks present -> assemble final file
         $targetPath = $targetDir . DIRECTORY_SEPARATOR . $basename;
 
@@ -762,6 +817,8 @@ function upload_chunk_with_folder(string $root, string $relativePath, array $fil
 
         $outHandle = @fopen($targetPath, 'c');
         if ($outHandle === false) {
+            flock($assemblyLockFp, LOCK_UN);
+            fclose($assemblyLockFp);
             $result['errors'][] = [
                 'name' => $folderRelativePath ?: $originalName,
                 'error' => 'Gagal membuat berkas akhir.'
@@ -771,6 +828,8 @@ function upload_chunk_with_folder(string $root, string $relativePath, array $fil
 
         if (!@flock($outHandle, LOCK_EX)) {
             fclose($outHandle);
+            flock($assemblyLockFp, LOCK_UN);
+            fclose($assemblyLockFp);
             $result['errors'][] = [
                 'name' => $folderRelativePath ?: $originalName,
                 'error' => 'Gagal mendapatkan kunci untuk menulis berkas akhir.'
@@ -784,6 +843,8 @@ function upload_chunk_with_folder(string $root, string $relativePath, array $fil
             if (!is_file($part)) {
                 flock($outHandle, LOCK_UN);
                 fclose($outHandle);
+                flock($assemblyLockFp, LOCK_UN);
+                fclose($assemblyLockFp);
                 $result['errors'][] = [
                     'name' => $folderRelativePath ?: $originalName,
                     'error' => "Chunk ke-{$i} hilang saat merakit file."
@@ -795,6 +856,8 @@ function upload_chunk_with_folder(string $root, string $relativePath, array $fil
             if ($in === false) {
                 flock($outHandle, LOCK_UN);
                 fclose($outHandle);
+                flock($assemblyLockFp, LOCK_UN);
+                fclose($assemblyLockFp);
                 $result['errors'][] = [
                     'name' => $folderRelativePath ?: $originalName,
                     'error' => "Gagal membaca chunk ke-{$i}."
@@ -808,6 +871,8 @@ function upload_chunk_with_folder(string $root, string $relativePath, array $fil
                     fclose($in);
                     flock($outHandle, LOCK_UN);
                     fclose($outHandle);
+                    flock($assemblyLockFp, LOCK_UN);
+                    fclose($assemblyLockFp);
                     $result['errors'][] = [
                         'name' => $folderRelativePath ?: $originalName,
                         'error' => "Gagal membaca chunk ke-{$i} saat menulis."
@@ -819,6 +884,8 @@ function upload_chunk_with_folder(string $root, string $relativePath, array $fil
                     fclose($in);
                     flock($outHandle, LOCK_UN);
                     fclose($outHandle);
+                    flock($assemblyLockFp, LOCK_UN);
+                    fclose($assemblyLockFp);
                     $result['errors'][] = [
                         'name' => $folderRelativePath ?: $originalName,
                         'error' => 'Gagal menulis ke berkas akhir.'
@@ -831,6 +898,16 @@ function upload_chunk_with_folder(string $root, string $relativePath, array $fil
 
         fflush($outHandle);
         flock($outHandle, LOCK_UN);
+        fclose($outHandle);
+
+        // Cleanup chunk files
+        foreach (glob($chunkDir . DIRECTORY_SEPARATOR . 'chunk_*.part') as $p) {
+            @unlink($p);
+        }
+        flock($assemblyLockFp, LOCK_UN);
+        fclose($assemblyLockFp);
+        @unlink($assemblyLockPath);
+        @rmdir($chunkDir);
         fclose($outHandle);
 
         // Cleanup chunk files

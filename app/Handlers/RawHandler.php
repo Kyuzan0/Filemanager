@@ -35,7 +35,8 @@ function handle_raw_action(string $root, string $sanitizedPath): void
     $mimeType = isset($mimeTypes[$ext]) ? $mimeTypes[$ext] : 'application/octet-stream';
 
     // Determine if file should be downloaded as attachment (not displayed inline)
-    $forceDownload = in_array($ext, ['zip', 'rar', '7z', 'tar', 'gz', 'exe', 'msi', 'dmg', 'iso']);
+    // SVG files can contain inline JavaScript; force attachment and restrict execution
+    $forceDownload = in_array($ext, ['zip', 'rar', '7z', 'tar', 'gz', 'exe', 'msi', 'dmg', 'iso', 'svg']);
     $disposition = $forceDownload ? 'attachment' : 'inline';
 
     // Clear any previous output
@@ -49,6 +50,11 @@ function handle_raw_action(string $root, string $sanitizedPath): void
     header('Content-Disposition: ' . $disposition . '; filename="' . basename($realFile) . '"');
     header('Cache-Control: public, max-age=3600');
     header('Accept-Ranges: bytes');
+
+    // Extra sandbox headers for SVG files if served
+    if ($ext === 'svg') {
+        header("Content-Security-Policy: default-src 'none'; sandbox");
+    }
 
     // Handle range requests for video/audio seeking
     $fileSize = filesize($realFile);
